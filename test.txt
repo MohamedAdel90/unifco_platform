@@ -1,3 +1,0 @@
-UNIFCO Platform test file
-
-This file was created to verify GitHub repository write access.
