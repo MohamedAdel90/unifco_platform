@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\{AuditController,PermissionController};
+use App\Http\Controllers\Api\PlatformApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CRM\CustomerController;
 use App\Http\Controllers\DashboardController;
@@ -11,8 +12,10 @@ use App\Http\Controllers\Inventory\StockController;
 use App\Http\Controllers\Maintenance\WorkOrderController;
 use App\Http\Controllers\Manufacturing\ProductionOrderController;
 use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\Platform\{DocumentController,NotificationController};
 use App\Http\Controllers\Procurement\{GoodsReceiptController,PurchaseOrderController};
 use App\Http\Controllers\Projects\ProjectController;
+use App\Http\Controllers\Reporting\ExecutiveReportController;
 use App\Http\Controllers\Workflow\ApprovalController;
 use Illuminate\Support\Facades\Route;
 
@@ -103,6 +106,24 @@ Route::middleware('auth')->group(function () {
         Route::get('/work-orders/{workOrder}/edit',[WorkOrderController::class,'edit'])->middleware('permission:maintenance.work_order.manage')->name('work-orders.edit');
         Route::put('/work-orders/{workOrder}',[WorkOrderController::class,'update'])->middleware('permission:maintenance.work_order.manage')->name('work-orders.update');
         Route::post('/work-orders/{workOrder}/complete',[WorkOrderController::class,'complete'])->middleware('permission:maintenance.work_order.manage')->name('work-orders.complete');
+    });
+
+    Route::prefix('reporting')->name('reporting.')->group(function () {
+        Route::get('/executive',[ExecutiveReportController::class,'index'])->middleware('permission:reporting.read')->name('executive');
+    });
+
+    Route::prefix('platform')->name('platform.')->group(function () {
+        Route::get('/notifications',[NotificationController::class,'index'])->name('notifications.index');
+        Route::post('/notifications/{notification}/read',[NotificationController::class,'read'])->name('notifications.read');
+        Route::post('/notifications/read-all',[NotificationController::class,'readAll'])->name('notifications.read-all');
+        Route::get('/documents',[DocumentController::class,'index'])->middleware('permission:documents.read')->name('documents.index');
+        Route::post('/documents',[DocumentController::class,'store'])->middleware('permission:documents.manage')->name('documents.store');
+        Route::get('/documents/{document}/download',[DocumentController::class,'download'])->middleware('permission:documents.read')->name('documents.download');
+    });
+
+    Route::prefix('api/v1')->name('api.v1.')->group(function () {
+        Route::get('/status',[PlatformApiController::class,'status'])->name('status');
+        Route::get('/summary',[PlatformApiController::class,'summary'])->middleware('permission:reporting.read')->name('summary');
     });
 
     Route::prefix('admin')->name('admin.')->group(function () {
