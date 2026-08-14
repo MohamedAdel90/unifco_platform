@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Bom,Item,ProductionOrder,Routing,Tenant,User,Warehouse,WorkCenter};
+use App\Models\{Bom,Item,Organization,ProductionOrder,Routing,Tenant,User,Warehouse,WorkCenter};
 use App\Services\Inventory\StockService;
 use App\Services\Manufacturing\ManufacturingOperationsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +16,8 @@ class Wave12ManufacturingExpansionTest extends TestCase
     private function user(): User
     {
         $tenant=Tenant::create(['code'=>'MFG','name'=>'Manufacturing Tenant','status'=>'ACTIVE']);
-        return User::create(['tenant_id'=>$tenant->id,'name'=>'Manufacturing Admin','email'=>'mfg@test.local','password'=>'password','role'=>'ADMIN','status'=>'ACTIVE']);
+        $organization=Organization::create(['tenant_id'=>$tenant->id,'code'=>'MFG-ORG','name'=>'Manufacturing Organization','status'=>'ACTIVE']);
+        return User::create(['tenant_id'=>$tenant->id,'organization_id'=>$organization->id,'name'=>'Manufacturing Admin','email'=>'mfg@test.local','password'=>'password','role'=>'ADMIN','status'=>'ACTIVE']);
     }
 
     public function test_bom_routing_material_issue_quality_completion_and_cost_variance(): void
