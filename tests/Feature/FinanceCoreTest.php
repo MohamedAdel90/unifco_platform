@@ -22,9 +22,9 @@ class FinanceCoreTest extends TestCase
     public function test_ap_invoice_requires_open_period_and_separate_poster(): void
     {
         $this->seed(); $creator=User::firstOrFail();
-        FiscalPeriod::create(['organization_id'=>$creator->organization_id,'code'=>'2026-08','starts_on'=>'2026-08-01','ends_on'=>'2026-08-31','status'=>'OPEN']);
+        FiscalPeriod::create(['tenant_id'=>$creator->tenant_id,'organization_id'=>$creator->organization_id,'code'=>'2026-08','starts_on'=>'2026-08-01','ends_on'=>'2026-08-31','status'=>'OPEN']);
         foreach ([['2000','Accounts Payable','LIABILITY','CREDIT'],['5000','Expense','EXPENSE','DEBIT']] as [$code,$name,$type,$normal])
-            ChartAccount::create(['organization_id'=>$creator->organization_id,'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$normal,'posting_allowed'=>true,'status'=>'ACTIVE']);
+            ChartAccount::create(['tenant_id'=>$creator->tenant_id,'organization_id'=>$creator->organization_id,'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$normal,'posting_allowed'=>true,'status'=>'ACTIVE']);
 
         $this->actingAs($creator)->post('/finance/core/documents',[
             'document_no'=>'AP-001','document_type'=>'AP_INVOICE','counterparty_name'=>'Vendor A','document_date'=>'2026-08-10','currency'=>'USD','amount'=>150,
@@ -42,10 +42,10 @@ class FinanceCoreTest extends TestCase
     public function test_payment_reduces_open_amount_and_creates_balanced_journal(): void
     {
         $this->seed(); $user=User::firstOrFail();
-        FiscalPeriod::create(['organization_id'=>$user->organization_id,'code'=>'2026-08','starts_on'=>'2026-08-01','ends_on'=>'2026-08-31','status'=>'OPEN']);
+        FiscalPeriod::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'code'=>'2026-08','starts_on'=>'2026-08-01','ends_on'=>'2026-08-31','status'=>'OPEN']);
         foreach ([['1100','Accounts Receivable','ASSET','DEBIT'],['4000','Revenue','REVENUE','CREDIT'],['1000','Cash','ASSET','DEBIT']] as [$code,$name,$type,$normal])
-            ChartAccount::create(['organization_id'=>$user->organization_id,'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$normal,'posting_allowed'=>true,'status'=>'ACTIVE']);
-        $doc=FinancialDocument::create(['organization_id'=>$user->organization_id,'document_no'=>'AR-001','document_type'=>'AR_INVOICE','counterparty_name'=>'Customer A','document_date'=>'2026-08-05','currency'=>'USD','amount'=>200,'control_account_code'=>'1100','offset_account_code'=>'4000','status'=>'POSTED','created_by'=>$user->id,'posted_by'=>$user->id,'posted_at'=>now(),'open_amount'=>200]);
+            ChartAccount::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$normal,'posting_allowed'=>true,'status'=>'ACTIVE']);
+        $doc=FinancialDocument::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'document_no'=>'AR-001','document_type'=>'AR_INVOICE','counterparty_name'=>'Customer A','document_date'=>'2026-08-05','currency'=>'USD','amount'=>200,'control_account_code'=>'1100','offset_account_code'=>'4000','status'=>'POSTED','created_by'=>$user->id,'posted_by'=>$user->id,'posted_at'=>now(),'open_amount'=>200]);
         $this->actingAs($user)->post('/finance/core/documents/'.$doc->id.'/pay',['payment_no'=>'RCPT-001','payment_date'=>'2026-08-12','amount'=>75,'cash_account_code'=>'1000'])->assertRedirect();
         $this->assertDatabaseHas('financial_documents',['id'=>$doc->id,'open_amount'=>125]);
         $this->assertDatabaseHas('payments',['payment_no'=>'RCPT-001','amount'=>75]);
