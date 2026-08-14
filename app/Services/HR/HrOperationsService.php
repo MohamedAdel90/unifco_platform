@@ -23,18 +23,18 @@ class HrOperationsService
         return $leave->fresh();
     }
 
-    public function postPayroll(PayrollRun $run, string $expenseAccount, string $payableAccount): PayrollRun
+    public function postPayroll(PayrollRun $run, string $expenseAccount, string $payableAccount, string $deductionsAccount): PayrollRun
     {
         if ($run->status !== 'DRAFT') throw ValidationException::withMessages(['payroll'=>'Only DRAFT payroll runs can be posted.']);
         if ((int)$run->created_by === (int)Auth::id()) throw ValidationException::withMessages(['payroll'=>'Segregation of duties: payroll creator cannot post the same run.']);
         $run->load('lines');
         if ($run->lines->isEmpty()) throw ValidationException::withMessages(['payroll'=>'Payroll run requires at least one line.']);
-        foreach ([$expenseAccount,$payableAccount] as $code) {
+        foreach ([$expenseAccount,$payableAccount,$deductionsAccount] as $code) {
             if (!ChartAccount::where('code',$code)->where('status','ACTIVE')->where('posting_allowed',true)->exists())
                 throw ValidationException::withMessages(['accounts'=>"Posting account {$code} is invalid."]);
         }
 
-        return DB::transaction(function () use ($run,$expenseAccount,$payableAccount) {
+        return DB::transaction(function () use ($run,$expenseAccount,$payableAccount,$deductionsAccount) {
             $gross=(float)$run->lines->sum(fn($l)=>(float)$l->basic_pay+(float)$l->allowances);
             $deductions=(float)$run->lines->sum('deductions');
             $net=round($gross-$deductions,2);
@@ -44,10 +44,12 @@ class HrOperationsService
                 'organization_id'=>$run->organization_id,'created_by'=>$run->created_by,'journal_no'=>'PAYROLL-'.$run->payroll_no,
                 'journal_date'=>$run->posting_date,'description'=>'Payroll '.$run->payroll_no,'status'=>'DRAFT',
             ]);
-            $journal->lines()->createMany([
+            $lines=[
                 ['line_no'=>1,'account_code'=>$expenseAccount,'debit'=>$gross,'credit'=>0,'description'=>'Payroll gross expense'],
-                ['line_no'=>2,'account_code'=>$payableAccount,'debit'=>0,'credit'=>$gross,'description'=>'Payroll payable'],
-            ]);
+                ['line_no'=>2,'account_code'=>$payableAccount,'debit'=>0,'credit'=>$net,'description'=>'Net payroll payable'],
+            ];
+            if ($deductions > 0) $lines[]=['line_no'=>3,'account_code'=>$deductionsAccount,'debit'=>0,'credit'=>$deductions,'description'=>'Payroll deductions payable'];
+            $journal->lines()->createMany($lines);
             $this->posting->post($journal);
             $before=$run->toArray();
             $run->update(['status'=>'POSTED','approved_by'=>Auth::id(),'journal_id'=>$journal->id]);
