@@ -31,9 +31,9 @@ class Wave10HrOperationsTest extends TestCase
     {
         $this->seed(); $creator=User::firstOrFail();
         $employee=Employee::create(['tenant_id'=>$creator->tenant_id,'organization_id'=>$creator->organization_id,'employee_no'=>'E-200','name'=>'Employee 200','status'=>'ACTIVE']);
-        FiscalPeriod::create(['organization_id'=>$creator->organization_id,'code'=>'2026-08','starts_on'=>'2026-08-01','ends_on'=>'2026-08-31','status'=>'OPEN']);
+        FiscalPeriod::create(['tenant_id'=>$creator->tenant_id,'organization_id'=>$creator->organization_id,'code'=>'2026-08','starts_on'=>'2026-08-01','ends_on'=>'2026-08-31','status'=>'OPEN']);
         foreach ([['6100','Payroll Expense','EXPENSE','DEBIT'],['2100','Payroll Payable','LIABILITY','CREDIT'],['2200','Payroll Deductions','LIABILITY','CREDIT']] as [$code,$name,$type,$normal])
-            ChartAccount::create(['organization_id'=>$creator->organization_id,'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$normal,'posting_allowed'=>true,'status'=>'ACTIVE']);
+            ChartAccount::create(['tenant_id'=>$creator->tenant_id,'organization_id'=>$creator->organization_id,'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$normal,'posting_allowed'=>true,'status'=>'ACTIVE']);
 
         $this->actingAs($creator)->post('/hr/operations/payroll',[
             'payroll_no'=>'PAY-2026-08','period_start'=>'2026-08-01','period_end'=>'2026-08-31','posting_date'=>'2026-08-31','currency'=>'USD',
