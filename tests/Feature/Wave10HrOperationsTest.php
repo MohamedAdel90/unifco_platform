@@ -13,7 +13,7 @@ class Wave10HrOperationsTest extends TestCase
     public function test_hr_position_attendance_and_leave_workflow(): void
     {
         $this->seed(); $admin=User::firstOrFail();
-        $employee=Employee::create(['organization_id'=>$admin->organization_id,'employee_no'=>'E-100','name'=>'Employee 100','status'=>'ACTIVE']);
+        $employee=Employee::create(['tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,'employee_no'=>'E-100','name'=>'Employee 100','status'=>'ACTIVE']);
         $this->actingAs($admin)->post('/hr/operations/positions',['code'=>'ENG','title'=>'Engineer','department'=>'Operations'])->assertRedirect();
         $positionId=(int)\DB::table('job_positions')->value('id');
         $this->actingAs($admin)->post("/hr/operations/employees/{$employee->id}/position",['job_position_id'=>$positionId])->assertRedirect();
@@ -30,7 +30,7 @@ class Wave10HrOperationsTest extends TestCase
     public function test_payroll_posts_balanced_journal_with_segregation_of_duties(): void
     {
         $this->seed(); $creator=User::firstOrFail();
-        $employee=Employee::create(['organization_id'=>$creator->organization_id,'employee_no'=>'E-200','name'=>'Employee 200','status'=>'ACTIVE']);
+        $employee=Employee::create(['tenant_id'=>$creator->tenant_id,'organization_id'=>$creator->organization_id,'employee_no'=>'E-200','name'=>'Employee 200','status'=>'ACTIVE']);
         FiscalPeriod::create(['organization_id'=>$creator->organization_id,'code'=>'2026-08','starts_on'=>'2026-08-01','ends_on'=>'2026-08-31','status'=>'OPEN']);
         foreach ([['6100','Payroll Expense','EXPENSE','DEBIT'],['2100','Payroll Payable','LIABILITY','CREDIT'],['2200','Payroll Deductions','LIABILITY','CREDIT']] as [$code,$name,$type,$normal])
             ChartAccount::create(['organization_id'=>$creator->organization_id,'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$normal,'posting_allowed'=>true,'status'=>'ACTIVE']);
