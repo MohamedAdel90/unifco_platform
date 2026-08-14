@@ -5,7 +5,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Finance\JournalController;
 use App\Http\Controllers\Inventory\StockController;
 use App\Http\Controllers\ModuleController;
-use App\Http\Controllers\Procurement\PurchaseOrderController;
+use App\Http\Controllers\Procurement\{GoodsReceiptController,PurchaseOrderController};
+use App\Http\Controllers\Workflow\ApprovalController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -33,5 +34,12 @@ Route::middleware('auth')->group(function () {
     Route::prefix('procurement')->name('procurement.')->group(function () {
         Route::get('/purchase-orders',[PurchaseOrderController::class,'index'])->middleware('permission:procurement.po.read')->name('purchase-orders.index');
         Route::post('/purchase-orders/{purchaseOrder}/approve',[PurchaseOrderController::class,'approve'])->middleware('permission:procurement.po.approve')->name('purchase-orders.approve');
+        Route::get('/purchase-orders/{purchaseOrder}/receive',[GoodsReceiptController::class,'create'])->middleware('permission:inventory.stock.move')->name('goods-receipts.create');
+        Route::post('/purchase-orders/{purchaseOrder}/receive',[GoodsReceiptController::class,'store'])->middleware('permission:inventory.stock.move')->name('goods-receipts.store');
+    });
+
+    Route::prefix('workflow')->name('workflow.')->group(function () {
+        Route::get('/approvals',[ApprovalController::class,'index'])->middleware('permission:workflow.approval.read')->name('approvals.index');
+        Route::post('/approvals/{approval}/decide',[ApprovalController::class,'decide'])->middleware('permission:workflow.approval.decide')->name('approvals.decide');
     });
 });
