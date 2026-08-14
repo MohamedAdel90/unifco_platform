@@ -4,9 +4,12 @@ use App\Http\Controllers\Admin\{AuditController,PermissionController};
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CRM\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EAM\AssetController;
 use App\Http\Controllers\Finance\JournalController;
 use App\Http\Controllers\HR\EmployeeController;
 use App\Http\Controllers\Inventory\StockController;
+use App\Http\Controllers\Maintenance\WorkOrderController;
+use App\Http\Controllers\Manufacturing\ProductionOrderController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\Procurement\{GoodsReceiptController,PurchaseOrderController};
 use App\Http\Controllers\Projects\ProjectController;
@@ -72,6 +75,34 @@ Route::middleware('auth')->group(function () {
         Route::get('/{project}/edit',[ProjectController::class,'edit'])->middleware('permission:projects.project.manage')->name('projects.edit');
         Route::put('/{project}',[ProjectController::class,'update'])->middleware('permission:projects.project.manage')->name('projects.update');
         Route::post('/{project}/activate',[ProjectController::class,'activate'])->middleware('permission:projects.project.manage')->name('projects.activate');
+    });
+
+    Route::prefix('manufacturing')->name('manufacturing.')->group(function () {
+        Route::get('/production-orders',[ProductionOrderController::class,'index'])->middleware('permission:manufacturing.production.read')->name('production-orders.index');
+        Route::get('/production-orders/create',[ProductionOrderController::class,'create'])->middleware('permission:manufacturing.production.manage')->name('production-orders.create');
+        Route::post('/production-orders',[ProductionOrderController::class,'store'])->middleware('permission:manufacturing.production.manage')->name('production-orders.store');
+        Route::get('/production-orders/{productionOrder}/edit',[ProductionOrderController::class,'edit'])->middleware('permission:manufacturing.production.manage')->name('production-orders.edit');
+        Route::put('/production-orders/{productionOrder}',[ProductionOrderController::class,'update'])->middleware('permission:manufacturing.production.manage')->name('production-orders.update');
+        Route::post('/production-orders/{productionOrder}/release',[ProductionOrderController::class,'release'])->middleware('permission:manufacturing.production.manage')->name('production-orders.release');
+        Route::post('/production-orders/{productionOrder}/complete',[ProductionOrderController::class,'complete'])->middleware('permission:manufacturing.production.manage')->name('production-orders.complete');
+    });
+
+    Route::prefix('eam')->name('eam.')->group(function () {
+        Route::get('/assets',[AssetController::class,'index'])->middleware('permission:eam.asset.read')->name('assets.index');
+        Route::get('/assets/create',[AssetController::class,'create'])->middleware('permission:eam.asset.manage')->name('assets.create');
+        Route::post('/assets',[AssetController::class,'store'])->middleware('permission:eam.asset.manage')->name('assets.store');
+        Route::get('/assets/{asset}/edit',[AssetController::class,'edit'])->middleware('permission:eam.asset.manage')->name('assets.edit');
+        Route::put('/assets/{asset}',[AssetController::class,'update'])->middleware('permission:eam.asset.manage')->name('assets.update');
+        Route::post('/assets/{asset}/capitalize',[AssetController::class,'capitalize'])->middleware('permission:eam.asset.capitalize')->name('assets.capitalize');
+    });
+
+    Route::prefix('maintenance')->name('maintenance.')->group(function () {
+        Route::get('/work-orders',[WorkOrderController::class,'index'])->middleware('permission:maintenance.work_order.read')->name('work-orders.index');
+        Route::get('/work-orders/create',[WorkOrderController::class,'create'])->middleware('permission:maintenance.work_order.manage')->name('work-orders.create');
+        Route::post('/work-orders',[WorkOrderController::class,'store'])->middleware('permission:maintenance.work_order.manage')->name('work-orders.store');
+        Route::get('/work-orders/{workOrder}/edit',[WorkOrderController::class,'edit'])->middleware('permission:maintenance.work_order.manage')->name('work-orders.edit');
+        Route::put('/work-orders/{workOrder}',[WorkOrderController::class,'update'])->middleware('permission:maintenance.work_order.manage')->name('work-orders.update');
+        Route::post('/work-orders/{workOrder}/complete',[WorkOrderController::class,'complete'])->middleware('permission:maintenance.work_order.manage')->name('work-orders.complete');
     });
 
     Route::prefix('admin')->name('admin.')->group(function () {
