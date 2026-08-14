@@ -5,7 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CRM\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EAM\AssetController;
-use App\Http\Controllers\Finance\JournalController;
+use App\Http\Controllers\Finance\{FinanceCoreController,JournalController};
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HR\EmployeeController;
 use App\Http\Controllers\Inventory\StockController;
@@ -33,6 +33,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/modules/{module}',[ModuleController::class,'index'])->name('modules.index');
 
     Route::prefix('finance')->name('finance.')->group(function () {
+        Route::get('/core',[FinanceCoreController::class,'index'])->middleware('permission:finance.journal.read')->name('core.index');
+        Route::post('/core/accounts',[FinanceCoreController::class,'storeAccount'])->middleware('permission:finance.journal.create')->name('core.accounts.store');
+        Route::post('/core/periods',[FinanceCoreController::class,'storePeriod'])->middleware('permission:finance.journal.create')->name('core.periods.store');
+        Route::post('/core/periods/{period}/close',[FinanceCoreController::class,'closePeriod'])->middleware('permission:finance.journal.post')->name('core.periods.close');
+        Route::post('/core/periods/{period}/reopen',[FinanceCoreController::class,'reopenPeriod'])->middleware('permission:finance.journal.post')->name('core.periods.reopen');
+        Route::post('/core/documents',[FinanceCoreController::class,'storeDocument'])->middleware('permission:finance.journal.create')->name('core.documents.store');
+        Route::post('/core/documents/{document}/post',[FinanceCoreController::class,'postDocument'])->middleware('permission:finance.journal.post')->name('core.documents.post');
+        Route::post('/core/documents/{document}/pay',[FinanceCoreController::class,'payDocument'])->middleware('permission:finance.journal.post')->name('core.documents.pay');
         Route::get('/journals',[JournalController::class,'index'])->middleware('permission:finance.journal.read')->name('journals.index');
         Route::get('/journals/create',[JournalController::class,'create'])->middleware('permission:finance.journal.create')->name('journals.create');
         Route::post('/journals',[JournalController::class,'store'])->middleware('permission:finance.journal.create')->name('journals.store');

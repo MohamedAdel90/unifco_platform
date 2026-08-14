@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Item,PurchaseOrder,Tenant,User};
+use App\Models\{ChartAccount,FiscalPeriod,Item,PurchaseOrder,Tenant,User};
 use App\Services\Procurement\GoodsReceiptService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +21,24 @@ class Wave3OperationalIntegrationTest extends TestCase
     public function test_goods_receipt_updates_inventory_and_posts_finance(): void
     {
         $user=$this->admin('receiver@test.local'); $this->actingAs($user);
+        FiscalPeriod::create([
+            'organization_id'=>$user->organization_id,
+            'code'=>now()->format('Y-m'),
+            'starts_on'=>now()->startOfMonth()->toDateString(),
+            'ends_on'=>now()->endOfMonth()->toDateString(),
+            'status'=>'OPEN',
+        ]);
+        foreach ([['INVENTORY','Inventory','ASSET','DEBIT'],['GRIR','Goods Received Clearing','LIABILITY','CREDIT']] as [$code,$name,$type,$normal]) {
+            ChartAccount::create([
+                'organization_id'=>$user->organization_id,
+                'code'=>$code,
+                'name'=>$name,
+                'type'=>$type,
+                'normal_balance'=>$normal,
+                'posting_allowed'=>true,
+                'status'=>'ACTIVE',
+            ]);
+        }
         $item=Item::create(['item_code'=>'RM-1','name'=>'Raw Material','uom'=>'EA','status'=>'ACTIVE']);
         $po=PurchaseOrder::create(['created_by'=>$user->id,'po_number'=>'PO-100','supplier_name'=>'Supplier','order_date'=>now()->toDateString(),'total'=>50,'status'=>'APPROVED']);
         $line=$po->lines()->create(['line_no'=>1,'item_id'=>$item->id,'quantity'=>5,'unit_price'=>10]);

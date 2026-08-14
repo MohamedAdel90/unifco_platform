@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Item,Journal,Tenant,User};
+use App\Models\{ChartAccount,FiscalPeriod,Item,Journal,Tenant,User};
 use App\Services\Finance\JournalPostingService;
 use App\Services\Inventory\StockService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,6 +23,9 @@ class Wave2ControlsTransactionsTest extends TestCase
     {
         $creator=$this->user('creator@test.local'); $poster=$this->user('poster@test.local');
         $this->actingAs($creator);
+        FiscalPeriod::create(['code'=>'CURRENT','starts_on'=>now()->startOfMonth()->toDateString(),'ends_on'=>now()->endOfMonth()->toDateString(),'status'=>'OPEN']);
+        ChartAccount::create(['code'=>'1000','name'=>'Cash','type'=>'ASSET','normal_balance'=>'DEBIT','posting_allowed'=>true,'status'=>'ACTIVE']);
+        ChartAccount::create(['code'=>'2000','name'=>'Liability','type'=>'LIABILITY','normal_balance'=>'CREDIT','posting_allowed'=>true,'status'=>'ACTIVE']);
         $journal=Journal::create(['journal_no'=>'JV-1','journal_date'=>now()->toDateString(),'created_by'=>$creator->id,'status'=>'DRAFT']);
         $journal->lines()->createMany([
             ['line_no'=>1,'account_code'=>'1000','debit'=>100,'credit'=>0],
