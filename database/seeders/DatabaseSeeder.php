@@ -16,5 +16,20 @@ class DatabaseSeeder extends Seeder
             'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'UNIFCO Administrator',
             'password'=>Hash::make(env('UNIFCO_ADMIN_PASSWORD','ChangeMe123!')),'role'=>'ADMIN','status'=>'ACTIVE',
         ]);
+
+        if (! app()->environment('testing')) {
+            $this->call([
+                CoreDemoSeeder::class,
+                FinanceDemoSeeder::class,
+                ProcurementDemoSeeder::class,
+                InventoryDemoSeeder::class,
+                HrDemoSeeder::class,
+                CrmDemoSeeder::class,
+                ProjectsDemoSeeder::class,
+                ManufacturingDemoSeeder::class,
+                MaintenanceEamDemoSeeder::class,
+                PlatformDemoSeeder::class,
+            ]);
+        }
     }
 }
