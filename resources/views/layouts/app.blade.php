@@ -11,7 +11,7 @@ body{margin:0}
 .side a:hover{background:#24446f}
 .side .section{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8fa7c7;margin:18px 10px 6px}
 .brand{font-size:20px;font-weight:800;margin-bottom:18px}
-.main{padding:28px}
+.main{padding:28px;min-width:0}
 .top,.page-head,.row{display:flex;justify-content:space-between;align-items:center;gap:16px}
 .top{margin-bottom:24px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
@@ -19,8 +19,8 @@ body{margin:0}
 .card{background:#fff;border:1px solid #e3e8ef;border-radius:12px;padding:18px;box-shadow:0 2px 10px #172b4d0a}
 .metric{font-size:28px;font-weight:750;color:#1e315b}
 .muted{color:#68758a}
-.table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;margin-top:16px}
-.table th,.table td{padding:11px;border-bottom:1px solid #edf0f5;text-align:left}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;display:block;overflow-x:auto;margin-top:16px}
+.table th,.table td,table th,table td{padding:11px;border-bottom:1px solid #edf0f5;text-align:left}
 .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef3fa}
 .btn{border:0;background:#1e315b;color:#fff;padding:9px 13px;border-radius:8px;cursor:pointer;text-decoration:none;display:inline-block}
 .btn.secondary{background:#eef3fa;color:#1e315b}
