@@ -20,7 +20,7 @@ body{margin:0}
 .metric{font-size:28px;font-weight:750;color:#1e315b}
 .muted{color:#68758a}
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;display:block;overflow-x:auto;margin-top:16px}
-.table th,.table td,table th,table td{padding:11px;border-bottom:1px solid #edf0f5;text-align:left}
+table th,table td{padding:11px;border-bottom:1px solid #edf0f5;text-align:left}
 .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef3fa}
 .btn{border:0;background:#1e315b;color:#fff;padding:9px 13px;border-radius:8px;cursor:pointer;text-decoration:none;display:inline-block}
 .btn.secondary{background:#eef3fa;color:#1e315b}
@@ -43,7 +43,8 @@ input,select,textarea{padding:9px;border:1px solid #ccd5e2;border-radius:7px;max
   .top,.page-head,.row{flex-wrap:wrap}
   .grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
   .form-grid{grid-template-columns:1fr}
-  table,table.table{display:block;overflow-x:auto;white-space:nowrap;border-radius:10px}
+  table,table.table{display:block;overflow-x:auto;border-radius:10px}
+table th,table td,table.table th,table.table td{padding:9px 8px;font-size:13px}
   .metric{font-size:24px}
 }
 </style>
