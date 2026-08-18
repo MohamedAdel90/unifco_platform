@@ -4,6 +4,7 @@ use App\Http\Controllers\CRM\CustomerPortalAdminController;
 use App\Http\Controllers\CRM\CustomerPortalServiceAdminController;
 use App\Http\Controllers\CustomerPortalController;
 use App\Http\Controllers\CustomerPortalOperationsController;
+use App\Http\Controllers\CustomerWorkAcceptanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/customer/contracts/{contract}/pdf', [CustomerPortalOperationsController::class,'contractPdf'])->name('customer.contracts.pdf');
     Route::get('/customer/visit-reports/{report}/pdf', [CustomerPortalOperationsController::class,'visitPdf'])->name('customer.visits.pdf');
     Route::get('/customer/attachments/{id}', [CustomerPortalOperationsController::class,'attachment'])->name('customer.attachments.download');
+    Route::get('/customer/work-acceptance', [CustomerWorkAcceptanceController::class,'index'])->name('customer.work-acceptance.index');
+    Route::post('/customer/work-orders/{workOrder}/acceptance', [CustomerWorkAcceptanceController::class,'decide'])->name('customer.work-acceptance.decide');
 
     Route::middleware('permission:crm.customer.manage')->group(function () {
         Route::get('/crm/customers/{customer}/portal', [CustomerPortalAdminController::class, 'show'])->name('crm.customers.portal');
