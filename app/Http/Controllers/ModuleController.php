@@ -25,6 +25,19 @@ class ModuleController extends Controller
         abort_unless(isset(self::MODULES[$module]), 404);
         [$model,$title,$key,$secondary] = self::MODULES[$module];
         $records = $model::query()->latest('id')->paginate(20)->withQueryString();
-        return view('modules.index', compact('module','title','key','secondary','records'));
+
+        $financeSummary = null;
+        if ($module === 'finance') {
+            $financeSummary = [
+                'total' => Journal::query()->count(),
+                'draft' => Journal::query()->where('status', 'DRAFT')->count(),
+                'posted' => Journal::query()->where('status', 'POSTED')->count(),
+                'this_month' => Journal::query()
+                    ->whereBetween('journal_date', [now()->startOfMonth()->toDateString(), now()->endOfMonth()->toDateString()])
+                    ->count(),
+            ];
+        }
+
+        return view('modules.index', compact('module','title','key','secondary','records','financeSummary'));
     }
 }
