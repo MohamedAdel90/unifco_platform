@@ -1,0 +1,8 @@
+@extends('layouts.app')
+@section('title','Scheduled Reports · UNIFCO')
+@section('heading','Scheduled Reports')
+@section('content')
+@if(session('status'))<div class="notice">{{ session('status') }}</div>@endif
+<div class="card" style="max-width:820px"><h2 style="color:var(--navy);margin-top:0">Executive report distribution</h2><p class="muted">Schedule the executive summary for in-app delivery or email delivery when mail is configured.</p><form method="POST" action="{{ route('reporting.subscriptions.store') }}">@csrf<div class="form-grid"><label>Frequency<select name="frequency"><option>DAILY</option><option selected>WEEKLY</option><option>MONTHLY</option></select></label><label>Channel<select name="delivery_channel"><option>IN_APP</option><option>EMAIL</option></select></label><label>Email recipient<input type="email" name="recipient" placeholder="optional for in-app"></label></div><button class="btn">Create subscription</button></form></div>
+<div class="card" style="margin-top:16px"><h2 style="color:var(--navy);margin-top:0">Active subscriptions</h2><table><thead><tr><th>Report</th><th>Frequency</th><th>Channel</th><th>Recipient</th><th>Next delivery</th><th></th></tr></thead><tbody>@forelse($subscriptions as $s)<tr><td>{{ $s->report_code }}</td><td>{{ $s->frequency }}</td><td>{{ $s->delivery_channel }}</td><td>{{ $s->recipient ?: 'Current user' }}</td><td>{{ $s->next_delivery_at?->format('Y-m-d H:i') }}</td><td><form method="POST" action="{{ route('reporting.subscriptions.destroy',$s) }}">@csrf @method('DELETE')<button class="btn secondary">Remove</button></form></td></tr>@empty<tr><td colspan="6">No scheduled reports yet.</td></tr>@endforelse</tbody></table></div>
+@endsection
