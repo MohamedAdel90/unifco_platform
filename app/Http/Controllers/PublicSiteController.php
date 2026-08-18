@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PublicServiceRequest;
+use App\Services\PublicRequestPipelineService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -10,22 +11,11 @@ use Illuminate\View\View;
 
 class PublicSiteController extends Controller
 {
-    public function home(): View
-    {
-        return view('public.home');
-    }
+    public function home(): View { return view('public.home'); }
+    public function quote(): View { return view('public.request', ['type' => 'QUOTATION']); }
+    public function emergency(): View { return view('public.request', ['type' => 'EMERGENCY_MAINTENANCE']); }
 
-    public function quote(): View
-    {
-        return view('public.request', ['type' => 'QUOTATION']);
-    }
-
-    public function emergency(): View
-    {
-        return view('public.request', ['type' => 'EMERGENCY_MAINTENANCE']);
-    }
-
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, PublicRequestPipelineService $pipeline): RedirectResponse
     {
         $data = $request->validate([
             'request_type' => ['required','in:QUOTATION,EMERGENCY_MAINTENANCE'],
@@ -45,6 +35,7 @@ class PublicSiteController extends Controller
         $data['status'] = 'NEW';
 
         $record = PublicServiceRequest::create($data);
+        $pipeline->convert($record);
 
         return redirect()->route('public.request.received', $record->reference_no);
     }
