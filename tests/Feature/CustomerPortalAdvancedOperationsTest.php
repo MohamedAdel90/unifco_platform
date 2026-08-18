@@ -1,0 +1,58 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\{Asset,CrmQuotation,Customer,FinancialDocument,Organization,ServiceContract,Tenant,User};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class CustomerPortalAdvancedOperationsTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private function context(): array
+    {
+        $tenant=Tenant::create(['name'=>'UNIFCO','code'=>'UNIFCO','status'=>'ACTIVE']);
+        $org=Organization::create(['tenant_id'=>$tenant->id,'name'=>'HQ','code'=>'HQ','status'=>'ACTIVE']);
+        $customer=Customer::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_code'=>'C1','name'=>'Client One','email'=>'client@example.test','status'=>'ACTIVE']);
+        $user=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'name'=>'Client','email'=>'client.user@example.test','password'=>'StrongPassword123','role'=>'CUSTOMER','status'=>'ACTIVE']);
+        $asset=Asset::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'asset_code'=>'GEN-1','name'=>'Generator','location_code'=>'RIYADH','status'=>'REGISTERED']);
+        $contract=ServiceContract::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'contract_no'=>'CTR-1','title'=>'AMC','starts_on'=>now(),'ends_on'=>now()->addYear(),'contract_value'=>120000,'currency'=>'SAR','billing_cycle'=>'MONTHLY','status'=>'ACTIVE']);
+        return compact('tenant','org','customer','user','asset','contract');
+    }
+
+    public function test_customer_can_submit_contract_asset_service_request_with_sla(): void
+    {
+        $c=$this->context();
+        $this->actingAs($c['user'])->post('/customer/service-requests',[
+            'service_contract_id'=>$c['contract']->id,'asset_id'=>$c['asset']->id,'service_category'=>'Maintenance',
+            'subject'=>'Urgent generator issue','details'=>'Generator is unavailable','site_city'=>'Riyadh','priority'=>'EMERGENCY',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('service_requests',[
+            'customer_id'=>$c['customer']->id,'asset_id'=>$c['asset']->id,'service_contract_id'=>$c['contract']->id,
+            'priority'=>'EMERGENCY','response_sla_minutes'=>30,'resolution_sla_minutes'=>240,'status'=>'OPEN',
+        ]);
+    }
+
+    public function test_customer_can_download_own_invoice_and_contract_as_pdf(): void
+    {
+        $c=$this->context();
+        $invoice=FinancialDocument::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,'document_no'=>'INV-100','document_type'=>'AR_INVOICE','counterparty_name'=>'Client One','document_date'=>now(),'due_date'=>now()->addDays(30),'currency'=>'SAR','amount'=>5000,'open_amount'=>5000,'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED']);
+
+        $this->actingAs($c['user'])->get('/customer/invoices/'.$invoice->id.'/pdf')->assertOk()->assertHeader('Content-Type','application/pdf')->assertSee('%PDF',false);
+        $this->actingAs($c['user'])->get('/customer/contracts/'.$c['contract']->id.'/pdf')->assertOk()->assertHeader('Content-Type','application/pdf')->assertSee('%PDF',false);
+    }
+
+    public function test_customer_can_approve_only_own_quotation(): void
+    {
+        $c=$this->context();
+        $quotation=CrmQuotation::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,'quotation_no'=>'QT-1','quotation_date'=>now(),'currency'=>'SAR','amount'=>7500,'status'=>'SENT']);
+        $this->actingAs($c['user'])->post('/customer/quotations/'.$quotation->id.'/decision',['decision'=>'APPROVE','notes'=>'Approved'])->assertRedirect();
+        $this->assertDatabaseHas('crm_quotations',['id'=>$quotation->id,'status'=>'CUSTOMER_APPROVED','customer_decision_notes'=>'Approved']);
+
+        $other=Customer::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_code'=>'C2','name'=>'Other','status'=>'ACTIVE']);
+        $otherQuote=CrmQuotation::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$other->id,'quotation_no'=>'QT-2','quotation_date'=>now(),'currency'=>'SAR','amount'=>1000,'status'=>'SENT']);
+        $this->actingAs($c['user'])->post('/customer/quotations/'.$otherQuote->id.'/decision',['decision'=>'APPROVE'])->assertForbidden();
+    }
+}
