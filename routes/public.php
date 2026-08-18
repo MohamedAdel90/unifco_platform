@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CustomerPortalController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
@@ -12,6 +13,7 @@ Route::get('/request-received/{reference}', [PublicSiteController::class, 'recei
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
     Route::get('/admin/public-requests', [PublicSiteController::class, 'adminIndex'])
         ->middleware('permission:crm.customer.manage')
         ->name('admin.public-requests.index');
