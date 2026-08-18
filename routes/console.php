@@ -12,12 +12,12 @@ Artisan::command('unifco:notify-admins {title} {--message=}', function (): void 
 })->purpose('Queue a platform notification for all active tenant administrators');
 
 Artisan::command('unifco:deliver-reports', function (): void {
-    ReportSubscription::where('is_active',true)->whereNotNull('next_delivery_at')->where('next_delivery_at','<=',now())->with('')->get()->each(function(ReportSubscription $s): void {
+    ReportSubscription::where('is_active',true)->whereNotNull('next_delivery_at')->where('next_delivery_at','<=',now())->get()->each(function(ReportSubscription $s): void {
         $url=route('reporting.executive');
         if($s->delivery_channel==='EMAIL' && $s->recipient){
             Mail::raw('Your scheduled UNIFCO Executive Summary is ready: '.$url,fn($m)=>$m->to($s->recipient)->subject('UNIFCO Executive Summary'));
         } else {
-            CreatePlatformNotification::dispatch($s->tenant_id,$s->user_id,'Scheduled Executive Report','Your scheduled executive summary is ready.',$url);
+            CreatePlatformNotification::dispatch($s->tenant_id,$s->user_id,'Scheduled Executive Report','Your scheduled executive summary is ready.','REPORT',$url);
         }
         $next=match($s->frequency){'DAILY'=>now()->addDay(),'MONTHLY'=>now()->addMonth(),default=>now()->addWeek()};
         $s->update(['last_delivered_at'=>now(),'next_delivery_at'=>$next]);
