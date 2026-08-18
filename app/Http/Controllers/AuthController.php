@@ -19,6 +19,11 @@ class AuthController extends Controller
         }
         $request->session()->regenerate();
         abort_unless(Auth::user()->status === 'ACTIVE', 403, 'User is inactive.');
+
+        if (Auth::user()->role === 'CUSTOMER') {
+            return redirect()->intended(route('customer.portal'));
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 
