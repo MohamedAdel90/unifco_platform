@@ -22,8 +22,11 @@ class FinanceResponsiveWorkspaceTest extends TestCase
 
         $this->actingAs($user)->get('/modules/finance')
             ->assertOk()
-            ->assertSee('Finance workspace')
+            ->assertSee('Finance Workspace')
             ->assertSee('Financial control at a glance')
+            ->assertSee('All Journals')
+            ->assertSee('/brand/unifco-logo.webp', false)
+            ->assertSee('finance-kpis', false)
             ->assertSee('JE-001')
             ->assertSee('4,500.00')
             ->assertSee('2,100.00')
