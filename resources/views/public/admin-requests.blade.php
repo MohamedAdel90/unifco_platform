@@ -1,0 +1,6 @@
+@extends('layouts.app')
+@section('title','Public Requests · UNIFCO')
+@section('heading','Public Requests')
+@section('content')
+<div class="card"><div class="page-head"><div><h2 style="margin:0">Website Requests</h2><p class="muted">Guest quotation and emergency maintenance submissions.</p></div><a class="btn secondary" href="{{ route('public.home') }}" target="_blank">Open public site</a></div><table><thead><tr><th>Reference</th><th>Type</th><th>Company</th><th>CR</th><th>Service</th><th>Contact</th><th>Status</th><th>Submitted</th></tr></thead><tbody>@forelse($requests as $r)<tr><td><strong>{{ $r->reference_no }}</strong><br><small>{{ $r->subject }}</small></td><td>{{ $r->request_type === 'EMERGENCY_MAINTENANCE' ? 'Emergency' : 'Quotation' }}</td><td>{{ $r->company_name }}</td><td>{{ $r->commercial_registration }}</td><td>{{ $r->service_category }}@if($r->site_city)<br><small>{{ $r->site_city }}</small>@endif</td><td>{{ $r->email }}<br>{{ $r->mobile }}</td><td><span class="pill">{{ $r->status }}</span></td><td>{{ optional($r->submitted_at)->format('Y-m-d H:i') }}</td></tr><tr><td colspan="8" class="muted">{{ $r->details }}</td></tr>@empty<tr><td colspan="8">No public requests yet.</td></tr>@endforelse</tbody></table></div>
+@endsection
