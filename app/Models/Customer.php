@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Customer extends Model
 {
     use BelongsToTenant;
-    protected $fillable = ['tenant_id','organization_id','customer_code','name','email','status'];
+    protected $fillable = ['tenant_id','organization_id','customer_code','name','email','contact_name','phone','city','address','status'];
 }
