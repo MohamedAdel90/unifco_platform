@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CRM\CustomerPortalAdminController;
+use App\Http\Controllers\CRM\CustomerPortalServiceAdminController;
 use App\Http\Controllers\CustomerPortalController;
 use App\Http\Controllers\CustomerPortalOperationsController;
 use App\Http\Controllers\DashboardController;
@@ -29,6 +30,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/crm/customers/{customer}/portal/contracts', [CustomerPortalAdminController::class, 'storeContract'])->name('crm.customers.portal.contracts.store');
         Route::post('/crm/customers/{customer}/portal/assets', [CustomerPortalAdminController::class, 'assignAsset'])->name('crm.customers.portal.assets.store');
         Route::post('/crm/customers/{customer}/portal/invoices', [CustomerPortalAdminController::class, 'linkInvoice'])->name('crm.customers.portal.invoices.store');
+        Route::post('/crm/service-requests/{serviceRequest}/status', [CustomerPortalServiceAdminController::class,'updateRequest'])->name('crm.service-requests.status');
+        Route::post('/crm/customer-visits', [CustomerPortalServiceAdminController::class,'storeVisit'])->name('crm.customer-visits.store');
+        Route::post('/crm/customer-maintenance-attachments', [CustomerPortalServiceAdminController::class,'storeAttachment'])->name('crm.customer-attachments.store');
         Route::get('/admin/public-requests', [PublicSiteController::class, 'adminIndex'])->name('admin.public-requests.index');
     });
 });
