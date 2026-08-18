@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Asset,CrmQuotation,Customer,FinancialDocument,Organization,ServiceContract,Tenant,User};
+use App\Models\{Asset,CrmLead,CrmOpportunity,CrmQuotation,Customer,FinancialDocument,Organization,ServiceContract,Tenant,User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,6 +19,18 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
         $asset=Asset::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'asset_code'=>'GEN-1','name'=>'Generator','location_code'=>'RIYADH','status'=>'REGISTERED']);
         $contract=ServiceContract::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'contract_no'=>'CTR-1','title'=>'AMC','starts_on'=>now(),'ends_on'=>now()->addYear(),'contract_value'=>120000,'currency'=>'SAR','billing_cycle'=>'MONTHLY','status'=>'ACTIVE']);
         return compact('tenant','org','customer','user','asset','contract');
+    }
+
+    private function opportunity(array $c, string $suffix): CrmOpportunity
+    {
+        $lead=CrmLead::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'lead_no'=>'LEAD-'.$suffix,
+            'name'=>'Portal quotation '.$suffix,'company'=>'Portal Client','email'=>'portal-'.$suffix.'@example.test','status'=>'QUALIFIED',
+        ]);
+        return CrmOpportunity::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'lead_id'=>$lead->id,'opportunity_no'=>'OPP-'.$suffix,
+            'name'=>'Portal opportunity '.$suffix,'stage'=>'PROPOSAL','expected_value'=>7500,'probability'=>50,'status'=>'OPEN',
+        ]);
     }
 
     public function test_customer_can_submit_contract_asset_service_request_with_sla(): void
@@ -47,12 +59,14 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
     public function test_customer_can_approve_only_own_quotation(): void
     {
         $c=$this->context();
-        $quotation=CrmQuotation::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,'quotation_no'=>'QT-1','quotation_date'=>now(),'currency'=>'SAR','amount'=>7500,'status'=>'SENT']);
+        $opportunity=$this->opportunity($c,'1');
+        $quotation=CrmQuotation::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'opportunity_id'=>$opportunity->id,'customer_id'=>$c['customer']->id,'quotation_no'=>'QT-1','quotation_date'=>now(),'currency'=>'SAR','amount'=>7500,'status'=>'SENT']);
         $this->actingAs($c['user'])->post('/customer/quotations/'.$quotation->id.'/decision',['decision'=>'APPROVE','notes'=>'Approved'])->assertRedirect();
         $this->assertDatabaseHas('crm_quotations',['id'=>$quotation->id,'status'=>'CUSTOMER_APPROVED','customer_decision_notes'=>'Approved']);
 
         $other=Customer::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_code'=>'C2','name'=>'Other','status'=>'ACTIVE']);
-        $otherQuote=CrmQuotation::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$other->id,'quotation_no'=>'QT-2','quotation_date'=>now(),'currency'=>'SAR','amount'=>1000,'status'=>'SENT']);
+        $otherOpportunity=$this->opportunity($c,'2');
+        $otherQuote=CrmQuotation::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'opportunity_id'=>$otherOpportunity->id,'customer_id'=>$other->id,'quotation_no'=>'QT-2','quotation_date'=>now(),'currency'=>'SAR','amount'=>1000,'status'=>'SENT']);
         $this->actingAs($c['user'])->post('/customer/quotations/'.$otherQuote->id.'/decision',['decision'=>'APPROVE'])->assertForbidden();
     }
 }
