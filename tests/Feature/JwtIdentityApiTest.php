@@ -22,7 +22,7 @@ class JwtIdentityApiTest extends TestCase
 
         $this->withHeader('Authorization','Bearer '.$jwt)->getJson('/api/v1/auth/me')->assertOk()->assertJsonPath('tenant_id',$tenant->id);
         $this->withHeaders(['Authorization'=>'Bearer '.$jwt,'X-Tenant-Id'=>(string)($tenant->id+99)])->getJson('/api/v1/auth/me')->assertForbidden();
-        $this->withHeader('Authorization','Bearer '.$jwt)->postJson('/api/v1/identity/users',[
+        $this->withHeaders(['Authorization'=>'Bearer '.$jwt,'X-Tenant-Id'=>(string)$tenant->id])->postJson('/api/v1/identity/users',[
             'name'=>'New User','email'=>'new.jwt@example.test','password'=>'AnotherStrong123','role'=>'TECHNICIAN','organization_id'=>$org->id,
         ])->assertCreated()->assertJsonPath('role','TECHNICIAN');
         $this->assertDatabaseHas('users',['email'=>'new.jwt@example.test','tenant_id'=>$tenant->id]);
