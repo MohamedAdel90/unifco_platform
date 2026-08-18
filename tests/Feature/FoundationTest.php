@@ -27,6 +27,6 @@ class FoundationTest extends TestCase
     {
         $tenant = Tenant::create(['name'=>'Test Tenant','code'=>'TEST','status'=>'ACTIVE']);
         $user = User::create(['tenant_id'=>$tenant->id,'name'=>'Admin','email'=>'admin@example.test','password'=>'password','role'=>'ADMIN','status'=>'ACTIVE']);
-        $this->actingAs($user)->get('/modules/finance')->assertOk()->assertSee('Finance workspace');
+        $this->actingAs($user)->get('/modules/finance')->assertOk()->assertSee('Finance Workspace');
     }
 }
