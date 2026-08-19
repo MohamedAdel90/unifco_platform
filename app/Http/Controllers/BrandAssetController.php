@@ -21,7 +21,7 @@ class BrandAssetController extends Controller
         return response($binary, 200, [
             'Content-Type' => 'image/webp',
             'Content-Length' => (string) strlen($binary),
-            'Cache-Control' => 'public, max-age=31536000, immutable',
+            'Cache-Control' => 'public, max-age=300, must-revalidate',
         ]);
     }
 }
