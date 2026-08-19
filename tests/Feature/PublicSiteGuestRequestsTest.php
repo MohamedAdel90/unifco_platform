@@ -14,6 +14,11 @@ class PublicSiteGuestRequestsTest extends TestCase
         $this->get('/')->assertOk()->assertSee('UNIFCO')->assertSee('طلب عرض سعر')->assertSee('صيانة طارئة');
     }
 
+    public function test_guest_request_service_page_is_available(): void
+    {
+        $this->get('/request-service')->assertOk()->assertSee('طلب خدمة');
+    }
+
     public function test_guest_quote_is_converted_to_lead_opportunity_and_quotation(): void
     {
         $this->post('/service-requests', [
