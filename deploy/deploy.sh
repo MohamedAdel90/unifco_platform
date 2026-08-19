@@ -15,6 +15,9 @@ git reset --hard origin/main
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
 
+echo "==> Materializing official UNIFCO logo"
+php artisan brand:materialize
+
 echo "==> Applying migrations"
 php artisan migrate --force
 
