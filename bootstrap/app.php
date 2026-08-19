@@ -10,6 +10,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: [
             __DIR__.'/../routes/web.php',
             __DIR__.'/../routes/public.php',
+            __DIR__.'/../routes/brand.php',
             __DIR__.'/../routes/field.php',
             __DIR__.'/../routes/reporting.php',
         ],
