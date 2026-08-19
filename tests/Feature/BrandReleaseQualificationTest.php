@@ -34,13 +34,17 @@ class BrandReleaseQualificationTest extends TestCase
         $this->assertFileExists(public_path('images/unifco-logo.webp'));
     }
 
-    public function test_public_and_login_pages_use_the_official_logo_and_brand_palette(): void
+    public function test_public_and_login_pages_use_the_official_logo_and_palette(): void
     {
-        $public = $this->get('/');
-        $public->assertOk()->assertSee('/brand/unifco-logo.webp', false);
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('/brand/unifco-logo.webp', false)
+            ->assertSee('#1e315b', false)
+            ->assertSee('#132137', false)
+            ->assertSee('#ce122d', false);
 
-        $login = $this->get('/login');
-        $login->assertOk()
+        $this->get('/login')
+            ->assertOk()
             ->assertSee('/brand/unifco-logo.webp', false)
             ->assertSee('#06275c', false)
             ->assertSee('#071f4d', false)
