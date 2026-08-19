@@ -11,7 +11,20 @@ use Illuminate\View\View;
 
 class PublicSiteController extends Controller
 {
-    public function home(): View { return view('public.home'); }
+    public function home(Request $request): View
+    {
+        $requested = $request->query('lang');
+        if (in_array($requested, ['ar', 'en'], true)) {
+            $request->session()->put('public_locale', $requested);
+        }
+
+        $locale = in_array($requested, ['ar', 'en'], true)
+            ? $requested
+            : $request->session()->get('public_locale', 'ar');
+
+        return view($locale === 'en' ? 'public.home-en' : 'public.home', compact('locale'));
+    }
+
     public function quote(): View { return view('public.request', ['type' => 'QUOTATION']); }
     public function emergency(): View { return view('public.request', ['type' => 'EMERGENCY_MAINTENANCE']); }
 
