@@ -29,7 +29,7 @@ class BrandReleaseQualificationTest extends TestCase
 
     public function test_official_brand_route_serves_the_materialized_file(): void
     {
-        $response = $this->get('/brand/unifco-logo.webp');
+        $response = $this->get('/brand/unifco-logo-v2.webp');
         $response->assertOk()->assertHeader('Content-Type', 'image/webp');
         $this->assertFileExists(public_path('images/unifco-logo.webp'));
     }
@@ -38,14 +38,14 @@ class BrandReleaseQualificationTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('/brand/unifco-logo.webp', false)
+            ->assertSee('/brand/unifco-logo-v2.webp', false)
             ->assertSee('#1e315b', false)
             ->assertSee('#132137', false)
             ->assertSee('#ce122d', false);
 
         $this->get('/login')
             ->assertOk()
-            ->assertSee('/brand/unifco-logo.webp', false)
+            ->assertSee('/brand/unifco-logo-v2.webp', false)
             ->assertSee('#06275c', false)
             ->assertSee('#071f4d', false)
             ->assertSee('#e20b24', false);
