@@ -8,7 +8,7 @@ class BrandIdentityTest extends TestCase
 {
     public function test_official_brand_logo_is_public_and_valid_webp(): void
     {
-        $response = $this->get('/brand/unifco-logo.webp');
+        $response = $this->get('/brand/unifco-logo-v2.webp');
 
         $response->assertOk()->assertHeader('Content-Type', 'image/webp');
         $content = $response->getContent();
@@ -22,7 +22,7 @@ class BrandIdentityTest extends TestCase
     {
         $this->get('/login')
             ->assertOk()
-            ->assertSee('/brand/unifco-logo.webp', false)
+            ->assertSee('/brand/unifco-logo-v2.webp', false)
             ->assertSee('UNIFCO — One Facility Shop');
     }
 }
