@@ -34,11 +34,12 @@ fi
 
 # Apply the v10 asset and cache-busting release marker to the deployed checkout.
 sed -i 's#unifco-hero-workers-v7.jpg?v=20260821-9#unifco-hero-approved-v10.jpg?v=20260821-10#g' app/Http/Controllers/PublicSiteController.php
-sed -i 's#hero-20260821-v9#hero-20260821-v10#g' app/Http/Controllers/PublicSiteController.php
+sed -i 's#unifco-hero-release-20260821-v9#unifco-hero-release-20260821-v10#g' app/Http/Controllers/PublicSiteController.php
 sed -i 's#hero-20260821-9#hero-20260821-10#g' app/Http/Controllers/PublicSiteController.php
 
 grep -q 'unifco-hero-approved-v10.jpg' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage does not reference hero v10"; exit 1; }
-grep -q 'hero-20260821-v10' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release does not contain hero v10"; exit 1; }
+grep -q 'unifco-hero-release-20260821-v10' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage style release does not contain hero v10"; exit 1; }
+grep -q "X-UNIFCO-Release', 'hero-20260821-10" app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage response header release does not contain hero v10"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
