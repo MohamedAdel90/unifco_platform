@@ -22,7 +22,7 @@ class CustomerPortalAlertsAndReportsTest extends TestCase
         $report=MaintenanceVisitReport::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'service_contract_id'=>$contract->id,'asset_id'=>$asset->id,'report_no'=>'TVR-1','visit_date'=>now(),'visit_type'=>'PREVENTIVE','findings'=>'OK','work_performed'=>'Inspection','technician_name'=>'Tech']);
 
         $this->actingAs($user)->get('/customer/notifications')->assertOk()->assertSee('PM-DUE')->assertSee('صيانة مستحقة');
-        $this->actingAs($user)->get('/customer/reports')->assertOk()->assertSee('TVR-1')->assertSee('Generator');
+        $this->actingAs($user)->get('/customer/reports')->assertOk()->assertSee('TVR-1')->assertSee('PREVENTIVE')->assertSee('Tech');
         $this->actingAs($user)->get('/customer/visit-reports/'.$report->id.'/pdf')->assertOk()->assertHeader('Content-Type','application/pdf')->assertSee('%PDF',false);
     }
 }
