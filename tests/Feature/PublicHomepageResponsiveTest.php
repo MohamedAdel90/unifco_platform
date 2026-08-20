@@ -11,6 +11,7 @@ class PublicHomepageResponsiveTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('/brand/unifco-logo-v2.webp', false)
+            ->assertSee('/images/unifco-facility-hero.jpg', false)
             ->assertSee('ONE FACILITY SHOP')
             ->assertSee('شريك واحد لجميع احتياجات منشأتك')
             ->assertSee('حلول متكاملة تحت سقف واحد')
