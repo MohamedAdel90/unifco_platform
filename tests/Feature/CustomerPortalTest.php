@@ -32,7 +32,12 @@ class CustomerPortalTest extends TestCase
 
         $this->actingAs($user)->get('/customer')
             ->assertOk()
-            ->assertSee('Portal Client')
+            ->assertSee('Welcome, Portal Client')
+            ->assertSee('Open Work Orders')
+            ->assertSee('Recent Work Orders')
+            ->assertSee('SLA Performance')
+            ->assertSee('Upcoming Maintenance')
+            ->assertSee('My Contracts')
             ->assertSee('AMC-001')
             ->assertSee('GEN-001')
             ->assertSee('PM-001')
@@ -40,6 +45,19 @@ class CustomerPortalTest extends TestCase
             ->assertSee('INV-001')
             ->assertDontSee('OTHER-001')
             ->assertDontSee('INV-OTHER');
+    }
+
+    public function test_login_page_matches_client_portal_reference_shell(): void
+    {
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('One Facility Shop')
+            ->assertSee('All Your Facility Needs')
+            ->assertSee('One Trusted Partner')
+            ->assertSee('Welcome back')
+            ->assertSee('SECURE &amp; COMPLIANT', false)
+            ->assertSee('ROLE BASED ACCESS')
+            ->assertSee('RESPONSIVE DESIGN');
     }
 
     public function test_non_customer_user_cannot_open_customer_portal(): void
