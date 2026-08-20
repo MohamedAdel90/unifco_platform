@@ -5,11 +5,38 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Validate hero v10 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s resources/hero/v10.part0
+          test -s resources/hero/v10.part1
+          test -s resources/hero/v10.part2
+          test -s resources/hero/v10.part3
+          test -s resources/hero/v10.part4
+          test -s resources/hero/v10.part5
+          cat resources/hero/v10.part0 \
+              resources/hero/v10.part1 \
+              resources/hero/v10.part2 \
+              resources/hero/v10.part3 \
+              resources/hero/v10.part4 \
+              resources/hero/v10.part5 \
+            | tr -d '\n\r ' \
+            | base64 -d > /tmp/unifco-hero-v10.jpg
+          test -s /tmp/unifco-hero-v10.jpg
+          test "$(head -c 2 /tmp/unifco-hero-v10.jpg | od -An -tx1 | tr -d ' \n')" = "ffd8"
+          test "$(tail -c 2 /tmp/unifco-hero-v10.jpg | od -An -tx1 | tr -d ' \n')" = "ffd9"
+          echo "Hero v10 validated: $(stat -c '%s bytes' /tmp/unifco-hero-v10.jpg)"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -19,3 +46,16 @@ jobs:
           port: ${{ secrets.DEPLOY_PORT }}
           script: |
             bash /var/www/unifco_platform/deploy/deploy.sh
+
+      - name: Record successful deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p deploy/status
+          printf 'release=hero-20260821-10\nsource_sha=%s\ndeployed_at=%s\nresult=success\n' \
+            "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > deploy/status/latest.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deploy/status/latest.txt
+          git commit -m "Record successful hero v10 deployment [skip ci]"
+          git push origin HEAD:main
