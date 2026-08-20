@@ -1,0 +1,2 @@
+Redeploy hero v10 after completing all image chunks.
+Expected release: hero-20260821-10
