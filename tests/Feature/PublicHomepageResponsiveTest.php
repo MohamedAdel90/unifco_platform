@@ -18,6 +18,8 @@ class PublicHomepageResponsiveTest extends TestCase
             ->assertSee('@media(max-width:1050px)', false)
             ->assertSee('@media(max-width:720px)', false)
             ->assertSee('@media(max-width:460px)', false)
+            ->assertSee('fonts.googleapis.com/css2?family=Cairo', false)
+            ->assertSee('font-family:"Cairo",Tahoma,Arial,sans-serif', false)
             ->assertSee('#1e315b', false)
             ->assertSee('#132137', false)
             ->assertSee('#ce122d', false);

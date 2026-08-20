@@ -6,12 +6,13 @@ use App\Models\PublicServiceRequest;
 use App\Services\PublicRequestPipelineService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PublicSiteController extends Controller
 {
-    public function home(Request $request): View
+    public function home(Request $request): Response
     {
         $requested = $request->query('lang');
         if (in_array($requested, ['ar', 'en'], true)) {
@@ -22,7 +23,10 @@ class PublicSiteController extends Controller
             ? $requested
             : $request->session()->get('public_locale', 'ar');
 
-        return view($locale === 'en' ? 'public.home-en' : 'public.home', compact('locale'));
+        $html = view($locale === 'en' ? 'public.home-en' : 'public.home', compact('locale'))->render();
+        $cairo = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><style id="unifco-cairo-font">html,body,button,input,select,textarea{font-family:"Cairo",Tahoma,Arial,sans-serif}</style>';
+
+        return response(str_replace('</head>', $cairo.'</head>', $html));
     }
 
     public function quote(): View { return view('public.request', ['type' => 'QUOTATION']); }
