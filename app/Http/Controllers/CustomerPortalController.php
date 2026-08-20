@@ -53,7 +53,7 @@ class CustomerPortalController extends Controller
 
         $alerts = collect();
         foreach ($plans->whereNotNull('next_due_date')->filter(fn ($p) => $p->next_due_date->lte(now()->addDays(30))) as $p) {
-            $alerts->push((object) ['type' => 'MAINTENANCE_DUE', 'title' => 'Maintenance due: '.$p->plan_no, 'due_date' => $p->next_due_date, 'severity' => $p->next_due_date->isPast() ? 'HIGH' : 'INFO']);
+            $alerts->push((object) ['type' => 'MAINTENANCE_DUE', 'title' => 'صيانة مستحقة · Maintenance due: '.$p->plan_no, 'due_date' => $p->next_due_date, 'severity' => $p->next_due_date->isPast() ? 'HIGH' : 'INFO']);
         }
         foreach ($invoices->filter(fn ($i) => $i->open_amount > 0 && $i->due_date && $i->due_date->lte(now()->addDays(14))) as $i) {
             $alerts->push((object) ['type' => 'INVOICE_DUE', 'title' => 'Invoice due: '.$i->document_no, 'due_date' => $i->due_date, 'severity' => $i->due_date->isPast() ? 'HIGH' : 'INFO']);
