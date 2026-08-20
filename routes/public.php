@@ -19,6 +19,9 @@ Route::get('/request-received/{reference}', [PublicSiteController::class, 'recei
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
+    Route::get('/customer/{section}', CustomerPortalController::class)
+        ->whereIn('section', ['dashboard','contracts','assets','work-orders','maintenance','invoices','reports','sla','documents','notifications'])
+        ->name('customer.section');
     Route::post('/customer/service-requests', [CustomerPortalOperationsController::class,'requestService'])->name('customer.requests.store');
     Route::post('/customer/quotations/{quotation}/decision', [CustomerPortalOperationsController::class,'decideQuotation'])->name('customer.quotations.decision');
     Route::get('/customer/invoices/{invoice}/pdf', [CustomerPortalOperationsController::class,'invoicePdf'])->name('customer.invoices.pdf');
