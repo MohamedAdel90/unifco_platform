@@ -2,9 +2,9 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   bea7531..98504f3  main       -> origin/main
+   98504f3..db819b9  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at 98504f3 Capture deployment failure diagnostics
-==> Server checkout: 98504f34c3ebbd16730dd5493a61b3aad6833125
+HEAD is now at db819b9 Fix hero v10 deployment release check
+==> Server checkout: db819b992eae32df69cede5da976effbaca16342
 ==> Materializing sharpened UNIFCO hero v10
 ERROR: homepage release does not contain hero v10
