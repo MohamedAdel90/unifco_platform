@@ -15,7 +15,7 @@ git reset --hard origin/main
 echo "==> Server checkout: $(git rev-parse HEAD)"
 
 test -f public/images/unifco-hero-workers-v7.jpg || { echo "ERROR: clean hero image is missing from deployed checkout"; exit 1; }
-grep -q 'hero-20260821-v8' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release does not contain approved hero v8"; exit 1; }
+grep -q 'hero-20260821-v9' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release does not contain approved hero v9"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -35,7 +35,7 @@ supervisorctl restart "$APP_NAME"
 echo "==> Verifying homepage release"
 verified=0
 for attempt in $(seq 1 20); do
-    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: hero-20260821-8'; then
+    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: hero-20260821-9'; then
         verified=1
         break
     fi
