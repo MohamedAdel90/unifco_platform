@@ -9,11 +9,15 @@ use Illuminate\View\View;
 
 class CustomerPortalController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request, ?string $section = null): View
     {
         $user = auth()->user();
         abort_unless($user && $user->role === 'CUSTOMER' && $user->customer_id, 403, 'Customer portal access is not configured for this user.');
         $customer = Customer::findOrFail($user->customer_id);
+        $section = $section ?: 'dashboard';
+
+        $allowedSections = ['dashboard','contracts','assets','work-orders','maintenance','invoices','reports','sla','documents','notifications'];
+        abort_unless(in_array($section, $allowedSections, true), 404);
 
         $contractFilter = $request->integer('contract_id') ?: null;
         $assetFilter = $request->integer('asset_id') ?: null;
@@ -69,7 +73,7 @@ class CustomerPortalController extends Controller
         $completedCount = $workOrders->filter(fn ($w) => in_array(strtoupper((string) $w->status), $completeStatuses, true))->count();
         $overdueCount = $workOrders->filter(fn ($w) => $w->planned_start && $w->planned_start->isPast() && ! in_array(strtoupper((string) $w->status), $completeStatuses, true))->count();
         $recentWorkOrders = $workOrders->take(4);
-        $upcomingPlans = $plans->whereNotNull('next_due_date')->filter(fn ($p) => $p->next_due_date->gte(today()))->take(2);
+        $upcomingPlans = $plans->whereNotNull('next_due_date')->filter(fn ($p) => $p->next_due_date->gte(today()))->take(4);
         $workOrderTotal = max(1, $workOrders->count());
         $slaPerformance = $workOrders->isEmpty() ? 100 : (int) round(($completedCount / $workOrderTotal) * 100);
         $preventiveCount = $workOrders->where('maintenance_type', 'PREVENTIVE')->count();
@@ -78,8 +82,8 @@ class CustomerPortalController extends Controller
         $locations = Asset::where('customer_id', $customer->id)->whereNotNull('location_code')->distinct()->orderBy('location_code')->pluck('location_code');
         $warrantyParts = Asset::whereIn('id', $allCustomerAssetIds)->orderBy('warranty_expiry')->get();
 
-        return view('customer.portal', compact(
-            'customer', 'contracts', 'assets', 'plans', 'workOrders', 'invoices', 'payments', 'materials', 'requests', 'quotations', 'visitReports', 'attachments', 'alerts', 'locations', 'warrantyParts',
+        return view('customer.section', compact(
+            'section', 'customer', 'contracts', 'assets', 'plans', 'workOrders', 'invoices', 'payments', 'materials', 'requests', 'quotations', 'visitReports', 'attachments', 'alerts', 'locations', 'warrantyParts',
             'openInvoiceAmount', 'openWorkOrders', 'inProgressCount', 'completedCount', 'overdueCount', 'recentWorkOrders', 'upcomingPlans', 'slaPerformance', 'preventiveCount', 'correctiveCount',
             'contractFilter', 'assetFilter', 'locationFilter'
         ));
