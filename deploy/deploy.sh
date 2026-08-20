@@ -21,6 +21,7 @@ cat resources/hero/v10.part0 \
     resources/hero/v10.part2 \
     resources/hero/v10.part3 \
     resources/hero/v10.part4 \
+    resources/hero/v10.part5 \
   | tr -d '\n\r ' \
   | base64 -d > public/images/unifco-hero-approved-v10.jpg
 
