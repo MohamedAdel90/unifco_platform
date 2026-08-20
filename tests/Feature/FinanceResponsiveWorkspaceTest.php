@@ -25,7 +25,7 @@ class FinanceResponsiveWorkspaceTest extends TestCase
             ->assertSee('Finance Workspace')
             ->assertSee('Financial control at a glance')
             ->assertSee('All Journals')
-            ->assertSee('/brand/unifco-logo.webp', false)
+            ->assertSee('/brand/unifco-logo-v2.webp', false)
             ->assertSee('finance-kpis', false)
             ->assertSee('JE-001')
             ->assertSee('4,500.00')
