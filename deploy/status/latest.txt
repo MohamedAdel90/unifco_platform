@@ -1,0 +1,7 @@
+release=hero-20260821-10
+source_sha=bea753163fef295c75cd6c9e55e6526379b0dae1
+deployed_at=2026-08-20T23:51:13Z
+result=failure
+validate=success
+deploy=failure
+failed_stage=deploy
