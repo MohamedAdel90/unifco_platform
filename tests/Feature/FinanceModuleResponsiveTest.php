@@ -39,6 +39,6 @@ class FinanceModuleResponsiveTest extends TestCase
             ->assertSee('JRN-DRAFT')
             ->assertSee('finance-kpis', false)
             ->assertSee('@media(max-width:700px)', false)
-            ->assertSee('/brand/unifco-logo.webp', false);
+            ->assertSee('/brand/unifco-logo-v2.webp', false);
     }
 }
