@@ -1,0 +1,3 @@
+UNIFCO hero v6
+asset=/images/unifco-hero-workers-v7.jpg
+release=hero-20260821-6
