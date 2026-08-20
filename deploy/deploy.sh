@@ -35,7 +35,7 @@ supervisorctl restart "$APP_NAME"
 echo "==> Verifying homepage release"
 verified=0
 for attempt in $(seq 1 20); do
-    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: hero-20260821-4'; then
+    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: hero-20260821-5'; then
         verified=1
         break
     fi
