@@ -1,0 +1,2 @@
+Trigger second deployment so the corrected deploy.sh is used from process start.
+Expected release: hero-20260821-10
