@@ -26,7 +26,14 @@ class PublicSiteController extends Controller
         $html = view($locale === 'en' ? 'public.home-en' : 'public.home', compact('locale'))->render();
         $cairo = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><style id="unifco-cairo-font">html,body,button,input,select,textarea{font-family:"Cairo",Tahoma,Arial,sans-serif}</style>';
 
-        return response(str_replace('</head>', $cairo.'</head>', $html));
+        if ($locale === 'ar') {
+            $heroRelease = '<style id="unifco-hero-release-20260821">.hero{min-height:0!important;aspect-ratio:1672/819!important;background-image:url("/images/unifco-facility-hero.jpg?v=20260821-3")!important;background-size:100% auto!important;background-position:center bottom!important;background-repeat:no-repeat!important}.hero .hero-grid{display:none!important}@media(max-width:700px){.hero{aspect-ratio:1.25!important;background-size:auto 100%!important;background-position:center bottom!important}}@media(max-width:450px){.hero{aspect-ratio:1/1.05!important}}</style>';
+            $html = str_replace('</head>', $heroRelease.'</head>', $html);
+        }
+
+        return response(str_replace('</head>', $cairo.'</head>', $html))
+            ->header('X-UNIFCO-Release', 'hero-20260821-3')
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function quote(): View { return view('public.request', ['type' => 'QUOTATION']); }
