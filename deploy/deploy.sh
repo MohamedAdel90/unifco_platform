@@ -14,8 +14,8 @@ git reset --hard origin/main
 
 echo "==> Server checkout: $(git rev-parse HEAD)"
 
-test -f public/images/unifco-facility-hero.jpg || { echo "ERROR: approved hero image is missing from deployed checkout"; exit 1; }
-grep -q 'unifco-facility-hero.jpg' resources/views/public/home.blade.php || { echo "ERROR: homepage does not reference approved hero image"; exit 1; }
+test -f public/images/unifco-hero-workers-v7.jpg || { echo "ERROR: clean hero image is missing from deployed checkout"; exit 1; }
+grep -q 'unifco-hero-workers-v7.jpg' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release does not reference clean hero image"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -35,7 +35,7 @@ supervisorctl restart "$APP_NAME"
 echo "==> Verifying homepage release"
 verified=0
 for attempt in $(seq 1 20); do
-    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: hero-20260821-5'; then
+    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: hero-20260821-6'; then
         verified=1
         break
     fi
@@ -47,5 +47,5 @@ if [ "$verified" -ne 1 ]; then
     exit 1
 fi
 
-echo "==> Hero asset present: $(stat -c '%s bytes' public/images/unifco-facility-hero.jpg)"
+echo "==> Hero asset present: $(stat -c '%s bytes' public/images/unifco-hero-workers-v7.jpg)"
 echo "==> Deploy complete at $(git rev-parse HEAD)"
