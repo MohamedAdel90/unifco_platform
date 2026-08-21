@@ -2,8 +2,8 @@
 
 use App\Jobs\CreatePlatformNotification;
 use App\Models\{ApiToken,Asset,MaintenancePlan,ReportSubscription,User,WorkOrder};
-use App\Services\EAM\AssetHealthService;
-use Illuminate\Support\Facades\{Artisan,Mail,Schedule,Schema};
+use App\Services\EAM\{AssetHealthService,AssetSparePartReorderService};
+use Illuminate\Support\Facades\{Artisan,DB,Mail,Schedule,Schema};
 
 Artisan::command('unifco:status', function (): void { $this->info('UNIFCO Platform runtime is available.'); })->purpose('Show the UNIFCO runtime status');
 
@@ -101,8 +101,26 @@ Artisan::command('unifco:recalculate-asset-health', function (AssetHealthService
     $this->info("Asset health recalculation complete. Assets processed: {$count}.");
 })->purpose('Recalculate lifecycle health score and replacement recommendation for active assets');
 
+Artisan::command('unifco:check-spare-reorder-alerts', function (AssetSparePartReorderService $reorder): void {
+    $alerts=$reorder->syncStatuses()->filter(fn($a)=>$a->computed_alert_status!=='OK');
+    $notified=0;
+    foreach($alerts as $alert){
+        $last=$alert->last_reorder_notified_at ? \Carbon\Carbon::parse($alert->last_reorder_notified_at) : null;
+        if($last && $last->gt(now()->subHours(24))) continue;
+        $title=$alert->computed_alert_status==='OUT_OF_STOCK'?'Critical Spare Out of Stock':'Spare Part Reorder Alert';
+        $message=$alert->asset_code.' · '.$alert->item_code.' · '.str_replace('_',' ',$alert->computed_alert_status).' · Available '.number_format($alert->available_quantity,2).' '.$alert->uom.' · Reorder level '.number_format((float)$alert->reorder_level,2);
+        User::where('tenant_id',$alert->tenant_id)->where('status','ACTIVE')->where('role','ADMIN')->each(function(User $user) use($title,$message): void {
+            CreatePlatformNotification::dispatch($user->tenant_id,$user->id,$title,$message,'EAM',route('eam.health.index'));
+        });
+        DB::table('asset_spare_parts')->where('id',$alert->id)->update(['last_reorder_notified_at'=>now(),'reorder_alert_status'=>$alert->computed_alert_status,'updated_at'=>now()]);
+        $notified++;
+    }
+    $this->info("Spare reorder check complete. Active alerts: {$alerts->count()}; notifications refreshed: {$notified}.");
+})->purpose('Evaluate asset spare part availability and notify administrators when reorder action is required');
+
 Schedule::call(fn()=>ApiToken::whereNotNull('expires_at')->where('expires_at','<',now()->subDays(30))->delete())->dailyAt('02:10')->name('prune-expired-api-tokens')->withoutOverlapping();
 Schedule::command('queue:prune-failed --hours=168')->dailyAt('02:20');
 Schedule::command('unifco:deliver-reports')->hourly()->withoutOverlapping();
 Schedule::command('unifco:generate-pm-work-orders')->hourly()->withoutOverlapping();
 Schedule::command('unifco:recalculate-asset-health')->dailyAt('03:10')->withoutOverlapping();
+Schedule::command('unifco:check-spare-reorder-alerts')->dailyAt('07:30')->withoutOverlapping();
