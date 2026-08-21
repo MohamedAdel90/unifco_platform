@@ -62,6 +62,7 @@ jobs:
           grep -q "customer-portal-20260821-5" app/Http/Controllers/CustomerPortalController.php
           ! grep -q "select('maintenance_materials\.\*'" app/Http/Controllers/CustomerPortalController.php
           grep -q '000030_add_asset_spare_part_reorder_tracking' deploy/deploy.sh
+          grep -q 'Skipping UNIFCO logo materialization by request' deploy/deploy.sh
 
       - name: Laravel application preflight
         id: preflight
@@ -133,9 +134,9 @@ jobs:
           chmod 600 "$HOME/.ssh/unifco_deploy_key"
           rc=1
           : > /tmp/unifco-eam-deploy.log
-          for attempt in 1 2 3 4 5 6; do
-            echo "SSH deploy attempt $attempt/6" | tee -a /tmp/unifco-eam-deploy.log
-            ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+          for attempt in $(seq 1 12); do
+            echo "SSH deploy attempt $attempt/12" | tee -a /tmp/unifco-eam-deploy.log
+            ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
               -i "$HOME/.ssh/unifco_deploy_key" \
               -p "$DEPLOY_PORT" \
               "$DEPLOY_USER@$DEPLOY_HOST" \
@@ -143,7 +144,7 @@ jobs:
               >> /tmp/unifco-eam-deploy.log 2>&1
             rc=$?
             if [ "$rc" -eq 0 ]; then break; fi
-            if [ "$attempt" -lt 6 ]; then sleep 20; fi
+            if [ "$attempt" -lt 12 ]; then sleep 30; fi
           done
           cat /tmp/unifco-eam-deploy.log
           echo "rc=$rc" >> "$GITHUB_OUTPUT"
