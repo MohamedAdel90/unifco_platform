@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: deploy-main
@@ -19,7 +19,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Validate electrical homepage release
-        id: validate
         shell: bash
         run: |
           set -euo pipefail
@@ -44,8 +43,7 @@ jobs:
           ! grep -q '<span>الضيافة</span>' resources/views/public/home.blade.php
           grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php
 
-      - name: Deploy via SSH with diagnostics
-        id: deploy
+      - name: Deploy via SSH
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -53,41 +51,24 @@ jobs:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
         run: |
-          set +e
+          set -euo pipefail
           install -m 700 -d "$HOME/.ssh"
           printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_deploy_key"
           chmod 600 "$HOME/.ssh/unifco_deploy_key"
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 \
-            -i "$HOME/.ssh/unifco_deploy_key" \
-            -p "$DEPLOY_PORT" \
-            "$DEPLOY_USER@$DEPLOY_HOST" \
-            'bash /var/www/unifco_platform/deploy/deploy.sh' \
-            > /tmp/unifco-deploy.log 2>&1
-          rc=$?
-          cat /tmp/unifco-deploy.log
-          echo "rc=$rc" >> "$GITHUB_OUTPUT"
-          exit 0
 
-      - name: Record temporary deployment diagnostics
-        if: ${{ always() }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p deploy/status
-          rc="${{ steps.deploy.outputs.rc }}"
-          printf 'source_sha=%s\nvalidate=%s\ndeploy_rc=%s\nrecorded_at=%s\n' \
-            "$GITHUB_SHA" "${{ steps.validate.outcome }}" "${rc:-unknown}" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > deploy/status/latest.txt
-          if [ -f /tmp/unifco-deploy.log ]; then
-            tail -n 120 /tmp/unifco-deploy.log > deploy/status/deploy.log
-          else
-            printf 'No SSH deploy log produced.\n' > deploy/status/deploy.log
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add deploy/status/latest.txt deploy/status/deploy.log
-          git commit -m "Record electrical homepage deploy diagnostics [skip ci]" || true
-          git push origin HEAD:main
+          for attempt in 1 2 3 4 5 6; do
+            echo "SSH deploy attempt $attempt/6"
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+              -i "$HOME/.ssh/unifco_deploy_key" \
+              -p "$DEPLOY_PORT" \
+              "$DEPLOY_USER@$DEPLOY_HOST" \
+              'bash /var/www/unifco_platform/deploy/deploy.sh'; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 6 ]; then
+              sleep 20
+            fi
+          done
 
-      - name: Fail workflow when deploy failed
-        if: ${{ always() && (steps.validate.outcome != 'success' || steps.deploy.outputs.rc != '0') }}
-        run: exit 1
+          echo "ERROR: VPS SSH remained unavailable after retries"
+          exit 1
