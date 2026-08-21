@@ -18,10 +18,20 @@ echo "==> Verifying required release files"
 test -s resources/views/public/request.blade.php || { echo "ERROR: emergency request form missing"; exit 1; }
 test -s database/migrations/2026_08_21_000020_add_emergency_request_details.php || { echo "ERROR: emergency request migration missing"; exit 1; }
 test -s database/migrations/2026_08_21_000023_create_customer_messaging.php || { echo "ERROR: customer messaging migration missing"; exit 1; }
+for migration in \
+  database/migrations/2026_08_21_000025_build_asset_master_phase_one.php \
+  database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php \
+  database/migrations/2026_08_21_000027_add_asset_spare_parts_compatibility.php \
+  database/migrations/2026_08_21_000028_add_work_order_execution_and_reliability.php \
+  database/migrations/2026_08_21_000029_add_asset_health_and_replacement_intelligence.php; do
+  test -s "$migration" || { echo "ERROR: required EAM migration missing: $migration"; exit 1; }
+done
 grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
-grep -q 'customer-portal-20260821-4' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: customer portal v4 release missing"; exit 1; }
+grep -q 'customer-portal-20260821-5' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: customer portal v5 release missing"; exit 1; }
 grep -q 'customer-logo-plain' resources/views/customer/section.blade.php || { echo "ERROR: plain customer logo layout missing"; exit 1; }
 grep -q 'customer.inbox' resources/views/customer/section.blade.php || { echo "ERROR: inbox link missing from customer layout"; exit 1; }
+grep -q 'CustomerAssetReadController' routes/public.php || { echo "ERROR: customer asset read-only routes missing"; exit 1; }
+grep -q 'unifco:recalculate-asset-health' routes/console.php || { echo "ERROR: asset health command missing"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -55,11 +65,22 @@ php artisan migrate --force --path=database/migrations/2026_08_21_000023_create_
 echo "==> Applying all remaining migrations"
 php artisan migrate --force
 
+echo "==> Verifying EAM routes and commands"
+php artisan route:list --name=eam.assets.index >/dev/null
+php artisan route:list --name=maintenance.work-orders.show >/dev/null
+php artisan route:list --name=customer.asset.show >/dev/null
+php artisan route:list --name=customer.work-orders.show >/dev/null
+php artisan list | grep -q 'unifco:generate-pm-work-orders'
+php artisan list | grep -q 'unifco:recalculate-asset-health'
+
+echo "==> Calculating initial asset health intelligence"
+php artisan unifco:recalculate-asset-health
+
 echo "==> Verifying customer messaging tables"
 php -r '
 $db=new PDO("sqlite:".getcwd()."/database/database.sqlite");
-$tables=$db->query("SELECT name FROM sqlite_master WHERE type=\"table\" AND name IN (\"customer_conversations\",\"customer_messages\")")->fetchAll(PDO::FETCH_COLUMN);
-if(count($tables)!==2){fwrite(STDERR,"ERROR: customer messaging tables are missing after migrate\n");exit(1);} echo "Customer messaging tables ready\n";
+$tables=$db->query("SELECT name FROM sqlite_master WHERE type=\"table\" AND name IN (\"customer_conversations\",\"customer_messages\",\"asset_failures\",\"work_order_checklist_results\",\"asset_spare_parts\")")->fetchAll(PDO::FETCH_COLUMN);
+if(count($tables)!==5){fwrite(STDERR,"ERROR: one or more required operational tables are missing after migrate\n");exit(1);} echo "Operational tables ready\n";
 '
 
 echo "==> Ensuring public upload storage link"
