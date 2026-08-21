@@ -1,30 +1,12 @@
-   ERROR  The [public/storage] link already exists.  
-
-==> Clearing caches after environment repair
-
-   INFO  Clearing cached bootstrap files.  
-
-  config ......................................................... 0.88ms DONE
-  cache .......................................................... 2.77ms DONE
-  compiled ....................................................... 0.75ms DONE
-  events ......................................................... 0.43ms DONE
-  routes ......................................................... 0.39ms DONE
-  views .......................................................... 3.23ms DONE
-
-==> Restarting unifco-app
-unifco-app: stopped
-unifco-app: started
-==> Waiting for application
-==> Verifying homepage release
-==> Verifying login session and CSRF round trip
-/var/www/unifco_platform/deploy/deploy.sh: line 150: unexpected EOF while looking for matching `)'
-SSH deploy attempt 11/12
+SSH deploy attempt 1/12
+Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
+   a2620fb..5176349  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at a2620fb Increase SSH deployment retry window
-==> Server checkout: a2620fb906f10c8008656009797b836e1ce9f08d
+HEAD is now at 5176349 Rerun final EAM deployment verification
+==> Server checkout: 51763497fe53ed5a6a1b4ba108d5a5600e696836
 ==> Verifying required release files
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -74,12 +56,12 @@ Operational tables and reorder intelligence ready
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 0.86ms DONE
-  cache .......................................................... 2.50ms DONE
-  compiled ....................................................... 0.68ms DONE
-  events ......................................................... 0.40ms DONE
-  routes ......................................................... 0.31ms DONE
-  views .......................................................... 2.92ms DONE
+  config ......................................................... 0.81ms DONE
+  cache .......................................................... 2.38ms DONE
+  compiled ....................................................... 0.58ms DONE
+  events ......................................................... 0.34ms DONE
+  routes ......................................................... 0.29ms DONE
+  views .......................................................... 2.79ms DONE
 
 ==> Restarting unifco-app
 unifco-app: stopped
@@ -88,13 +70,13 @@ unifco-app: started
 ==> Verifying homepage release
 ==> Verifying login session and CSRF round trip
 /var/www/unifco_platform/deploy/deploy.sh: line 150: unexpected EOF while looking for matching `)'
-SSH deploy attempt 12/12
+SSH deploy attempt 2/12
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
 ==> Checking out origin/main
-HEAD is now at a2620fb Increase SSH deployment retry window
-==> Server checkout: a2620fb906f10c8008656009797b836e1ce9f08d
+HEAD is now at 5176349 Rerun final EAM deployment verification
+==> Server checkout: 51763497fe53ed5a6a1b4ba108d5a5600e696836
 ==> Verifying required release files
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -118,10 +100,10 @@ Generating optimized autoload files
 
 ==> Repairing Laravel session directories and permissions
 ==> Enforcing HTTP-safe session cookie settings
-78 packages you are using are looking for funding.
-Use the `composer fund` command to find out more!
 ==> Skipping UNIFCO logo materialization by request
 ==> Repairing customer messaging schema first
+78 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
 
    INFO  Nothing to migrate.  
 
@@ -144,12 +126,12 @@ Operational tables and reorder intelligence ready
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.26ms DONE
-  cache .......................................................... 3.26ms DONE
-  compiled ....................................................... 0.95ms DONE
-  events ......................................................... 0.55ms DONE
-  routes ......................................................... 0.55ms DONE
-  views .......................................................... 3.75ms DONE
+  config ......................................................... 4.44ms DONE
+  cache .......................................................... 5.19ms DONE
+  compiled ....................................................... 2.03ms DONE
+  events ......................................................... 0.52ms DONE
+  routes ......................................................... 0.52ms DONE
+  views .......................................................... 8.49ms DONE
 
 ==> Restarting unifco-app
 unifco-app: stopped
@@ -157,4 +139,5 @@ unifco-app: started
 ==> Waiting for application
 ==> Verifying homepage release
 ==> Verifying login session and CSRF round trip
-/var/www/unifco_platform/deploy/deploy.sh: line 150: unexpected EOF while looking for matching `)'
+Login CSRF/session round trip verified: HTTP 302
+==> Deploy complete at 51763497fe53ed5a6a1b4ba108d5a5600e696836
