@@ -1,0 +1,2 @@
+Rerun deployment after deploy.sh and release validation were updated.
+Expected release: home-electrical-20260821-12
