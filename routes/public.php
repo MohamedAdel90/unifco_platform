@@ -9,6 +9,7 @@ use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\CustomerWorkAcceptanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EAM\{AssetController,AssetMeterController,AssetSparePartController};
+use App\Http\Controllers\Maintenance\WorkOrderController;
 use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,18 @@ Route::middleware('auth')->group(function () {
         Route::delete('/eam/assets/{asset}/spare-parts/{part}', [AssetSparePartController::class,'destroy'])->name('eam.assets.spare-parts.destroy');
         Route::post('/eam/assets/{asset}/maintenance-plans', [AssetController::class,'storeMaintenancePlan'])->name('eam.assets.maintenance-plans.store');
         Route::post('/eam/assets/{asset}/maintenance-plans/{plan}/tasks', [AssetController::class,'storeMaintenanceTask'])->name('eam.assets.maintenance-plans.tasks.store');
+    });
+
+    Route::middleware('permission:maintenance.work_order.read')->group(function () {
+        Route::get('/maintenance/work-orders/{workOrder}', [WorkOrderController::class,'show'])->name('maintenance.work-orders.show');
+        Route::get('/maintenance/work-orders/{workOrder}/attachments/{attachment}', [WorkOrderController::class,'downloadAttachment'])->name('maintenance.work-orders.attachments.download');
+    });
+    Route::middleware('permission:maintenance.work_order.manage')->group(function () {
+        Route::post('/maintenance/work-orders/{workOrder}/start', [WorkOrderController::class,'start'])->name('maintenance.work-orders.start');
+        Route::post('/maintenance/work-orders/{workOrder}/checklist', [WorkOrderController::class,'saveChecklist'])->name('maintenance.work-orders.checklist');
+        Route::post('/maintenance/work-orders/{workOrder}/attachments', [WorkOrderController::class,'uploadAttachment'])->name('maintenance.work-orders.attachments.store');
+        Route::post('/maintenance/work-orders/{workOrder}/materials', [WorkOrderController::class,'issueMaterial'])->name('maintenance.work-orders.materials.store');
+        Route::post('/maintenance/work-orders/{workOrder}/failures', [WorkOrderController::class,'recordFailure'])->name('maintenance.work-orders.failures.store');
     });
 
     Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
