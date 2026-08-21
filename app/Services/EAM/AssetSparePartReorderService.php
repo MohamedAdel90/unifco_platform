@@ -3,17 +3,19 @@
 namespace App\Services\EAM;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Auth,DB};
 
 class AssetSparePartReorderService
 {
     public function alerts(?int $customerId=null, ?int $siteId=null): Collection
     {
+        $tenantId=Auth::check()?Auth::user()->tenant_id:null;
         $rows=DB::table('asset_spare_parts')
             ->join('assets','assets.id','=','asset_spare_parts.asset_id')
             ->join('items','items.id','=','asset_spare_parts.item_id')
             ->leftJoin('customers','customers.id','=','assets.customer_id')
             ->leftJoin('customer_sites','customer_sites.id','=','assets.customer_site_id')
+            ->when($tenantId,fn($q)=>$q->where('assets.tenant_id',$tenantId))
             ->when($customerId,fn($q)=>$q->where('assets.customer_id',$customerId))
             ->when($siteId,fn($q)=>$q->where('assets.customer_site_id',$siteId))
             ->select(
