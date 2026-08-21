@@ -1,1 +1,10 @@
-No SSH deploy log produced.
+Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
+==> Fetching latest main from origin
+From github.com:zeroonesolutions0101/unifco_platform
+ * branch            main       -> FETCH_HEAD
+   2119596..b5f4b63  main       -> origin/main
+==> Checking out origin/main
+HEAD is now at b5f4b63 Fix electrical homepage workflow validation
+==> Server checkout: b5f4b63ce3f47dbb4e16b7012211d2fdbcd0f618
+==> Verifying electrical homepage assets
+ERROR: homepage release marker missing
