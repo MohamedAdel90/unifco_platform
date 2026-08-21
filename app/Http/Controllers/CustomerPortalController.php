@@ -6,6 +6,7 @@ use App\Models\{Asset,CrmQuotation,Customer,FinancialDocument,MaintenancePlan,Ma
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CustomerPortalController extends Controller
 {
@@ -88,12 +89,16 @@ class CustomerPortalController extends Controller
             'contractFilter', 'assetFilter', 'locationFilter'
         ))->render();
 
-        $unreadInbox = DB::table('customer_messages')
-            ->join('customer_conversations','customer_conversations.id','=','customer_messages.conversation_id')
-            ->where('customer_conversations.customer_id',$customer->id)
-            ->where('customer_messages.sender_side','UNIFCO')
-            ->whereNull('customer_messages.read_at')
-            ->count();
+        $inboxReady = Schema::hasTable('customer_messages') && Schema::hasTable('customer_conversations');
+        $unreadInbox = 0;
+        if ($inboxReady) {
+            $unreadInbox = DB::table('customer_messages')
+                ->join('customer_conversations','customer_conversations.id','=','customer_messages.conversation_id')
+                ->where('customer_conversations.customer_id',$customer->id)
+                ->where('customer_messages.sender_side','UNIFCO')
+                ->whereNull('customer_messages.read_at')
+                ->count();
+        }
 
         $customerBrand = $customer->logo_path
             ? '<img class="customer-sidebar-logo" src="'.e(asset('storage/'.$customer->logo_path)).'" alt="'.e($customer->name).'">'
@@ -108,10 +113,15 @@ class CustomerPortalController extends Controller
         $html = preg_replace('#<a[^>]+href="'.preg_quote($notificationsUrl,'#').'"[^>]*>.*?</a>#s', '', $html, 1);
 
         $profileUrl = route('customer.profile.edit');
-        $inboxLink = '<a href="'.route('customer.inbox').'"><span class="ico">✉</span><span>Inbox'.($unreadInbox ? ' ('.$unreadInbox.')' : '').'</span></a>';
-        $html = str_replace('<a href="'.$profileUrl.'">', $inboxLink.'<a href="'.$profileUrl.'">', $html);
+        if ($inboxReady) {
+            $inboxLink = '<a href="'.route('customer.inbox').'"><span class="ico">✉</span><span>Inbox'.($unreadInbox ? ' ('.$unreadInbox.')' : '').'</span></a>';
+            $html = str_replace('<a href="'.$profileUrl.'">', $inboxLink.'<a href="'.$profileUrl.'">', $html);
+        }
 
-        $topIcons = '<div class="portal-icons"><a class="portal-icon" href="'.$notificationsUrl.'" aria-label="Notifications">♢'.($alerts->count() ? '<span class="portal-badge">'.$alerts->count().'</span>' : '').'</a><a class="portal-icon" href="'.route('customer.inbox').'" aria-label="Inbox">✉'.($unreadInbox ? '<span class="portal-badge">'.$unreadInbox.'</span>' : '').'</a></div>';
+        $inboxTop = $inboxReady
+            ? '<a class="portal-icon" href="'.route('customer.inbox').'" aria-label="Inbox">✉'.($unreadInbox ? '<span class="portal-badge">'.$unreadInbox.'</span>' : '').'</a>'
+            : '';
+        $topIcons = '<div class="portal-icons"><a class="portal-icon" href="'.$notificationsUrl.'" aria-label="Notifications">♢'.($alerts->count() ? '<span class="portal-badge">'.$alerts->count().'</span>' : '').'</a>'.$inboxTop.'</div>';
         $html = preg_replace('/<div class="avatar">.*?<\/div>/', $topIcons, $html, 1);
 
         if ($section === 'dashboard') {
@@ -129,7 +139,7 @@ class CustomerPortalController extends Controller
         }
 
         return response($html)
-            ->header('X-UNIFCO-Customer-Portal-Release','customer-portal-20260821-2')
+            ->header('X-UNIFCO-Customer-Portal-Release','customer-portal-20260821-3')
             ->header('Cache-Control','no-cache, no-store, must-revalidate');
     }
 }
