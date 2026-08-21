@@ -1,0 +1,8 @@
+release=eam-health-reorder-v2
+source_sha=bb661ea25cf0392a2b2e68e89c2e722a6c5e763a
+verified_at=2026-08-21T18:56:12Z
+result=failure
+source_validation=failure
+laravel_preflight=skipped
+homepage_validation=skipped
+deploy_rc=not-run
