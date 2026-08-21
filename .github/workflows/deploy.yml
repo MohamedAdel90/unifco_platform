@@ -41,8 +41,8 @@ jobs:
             test -s "$asset"
           done
           grep -q '/images/home/hero-electrical.svg' resources/views/public/home.blade.php
-          ! grep -q 'الضيافة' resources/views/public/home.blade.php
-          grep -q 'home-electrical-20260821-11' app/Http/Controllers/PublicSiteController.php
+          ! grep -q '<span>الضيافة</span>' resources/views/public/home.blade.php
+          grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php
 
       - name: Deploy via SSH with diagnostics
         id: deploy
