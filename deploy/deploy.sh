@@ -127,7 +127,7 @@ fi
 echo "==> Verifying login session and CSRF round trip"
 rm -f /tmp/unifco-login.cookies /tmp/unifco-login.html /tmp/unifco-login-post.headers
 curl -fsS -c /tmp/unifco-login.cookies http://127.0.0.1:8081/login -o /tmp/unifco-login.html
-csrf_token="$(php -r '$h=file_get_contents("/tmp/unifco-login.html"); if(preg_match('/"'"'name="_token" value="([^"]+)"'"'/',$h,$m)) echo html_entity_decode($m[1],ENT_QUOTES);')"
+csrf_token="$(grep -o 'name="_token" value="[^"]*"' /tmp/unifco-login.html | head -n1 | sed 's/^.*value="//;s/"$//')"
 if [ -z "$csrf_token" ]; then
     echo "ERROR: could not extract CSRF token from login form"
     exit 1
