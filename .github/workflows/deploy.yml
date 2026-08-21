@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: deploy-main
@@ -26,6 +26,7 @@ jobs:
           coverage: none
 
       - name: Validate PHP source
+        id: source
         shell: bash
         run: |
           set -euo pipefail
@@ -47,13 +48,14 @@ jobs:
           for migration in database/migrations/2026_08_21_00002{5,6,7,8,9}_*.php database/migrations/2026_08_21_000030_*.php; do php -l "$migration"; done
           grep -q 'PLAN_REPLACEMENT' app/Services/EAM/AssetHealthService.php
           grep -q 'OUT_OF_STOCK' app/Services/EAM/AssetSparePartReorderService.php
+          grep -q 'Auth::check' app/Services/EAM/AssetSparePartReorderService.php
           grep -q 'preferred_warehouse_code' database/migrations/2026_08_21_000030_add_asset_spare_part_reorder_tracking.php
           grep -q 'unifco:generate-pm-work-orders' routes/console.php
           grep -q 'unifco:recalculate-asset-health' routes/console.php
           grep -q 'unifco:check-spare-reorder-alerts' routes/console.php
           grep -q 'eam.health.index' resources/views/eam/assets/index.blade.php
-          grep -q 'Portfolio Health' resources/views/eam/health/index.blade.php
-          grep -q 'Asset Health Portfolio' resources/views/customer/asset-health.blade.php
+          grep -q 'Spare Parts Consumption' resources/views/eam/health/index.blade.php
+          grep -q 'Spare Parts Consumption' resources/views/customer/asset-health.blade.php
           grep -q 'maintenance.work-orders.checklist' resources/views/maintenance/work-orders/show.blade.php
           grep -q 'customer.asset.show' resources/views/customer/asset-detail.blade.php
           grep -q 'CUSTOMER SERVICE REPORT' resources/views/customer/work-order-detail.blade.php
@@ -62,12 +64,14 @@ jobs:
           grep -q '000030_add_asset_spare_part_reorder_tracking' deploy/deploy.sh
 
       - name: Laravel application preflight
+        id: preflight
         shell: bash
         run: |
           set -euo pipefail
           composer install --no-interaction --prefer-dist --no-progress
           cp -n .env.example .env || true
           mkdir -p database storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
+          rm -f database/database.sqlite
           touch database/database.sqlite
           php artisan key:generate --force
           php artisan migrate:fresh --force
@@ -80,6 +84,7 @@ jobs:
           php artisan unifco:check-spare-reorder-alerts
 
       - name: Validate electrical homepage release
+        id: homepage
         shell: bash
         run: |
           set -euo pipefail
@@ -105,6 +110,8 @@ jobs:
           grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php
 
       - name: Deploy via SSH
+        id: deploy
+        if: ${{ steps.source.outcome == 'success' && steps.preflight.outcome == 'success' && steps.homepage.outcome == 'success' }}
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -112,24 +119,53 @@ jobs:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
         run: |
-          set -euo pipefail
+          set +e
           install -m 700 -d "$HOME/.ssh"
           printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_deploy_key"
           chmod 600 "$HOME/.ssh/unifco_deploy_key"
-
+          rc=1
+          : > /tmp/unifco-eam-deploy.log
           for attempt in 1 2 3 4 5 6; do
-            echo "SSH deploy attempt $attempt/6"
-            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+            echo "SSH deploy attempt $attempt/6" | tee -a /tmp/unifco-eam-deploy.log
+            ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
               -i "$HOME/.ssh/unifco_deploy_key" \
               -p "$DEPLOY_PORT" \
               "$DEPLOY_USER@$DEPLOY_HOST" \
-              'bash /var/www/unifco_platform/deploy/deploy.sh'; then
-              exit 0
-            fi
-            if [ "$attempt" -lt 6 ]; then
-              sleep 20
-            fi
+              'bash /var/www/unifco_platform/deploy/deploy.sh' \
+              >> /tmp/unifco-eam-deploy.log 2>&1
+            rc=$?
+            if [ "$rc" -eq 0 ]; then break; fi
+            if [ "$attempt" -lt 6 ]; then sleep 20; fi
           done
+          cat /tmp/unifco-eam-deploy.log
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit 0
 
-          echo "ERROR: VPS SSH remained unavailable after retries"
-          exit 1
+      - name: Record EAM verification result
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p deploy/status
+          source_result="${{ steps.source.outcome }}"
+          preflight_result="${{ steps.preflight.outcome }}"
+          homepage_result="${{ steps.homepage.outcome }}"
+          deploy_rc="${{ steps.deploy.outputs.rc }}"
+          if [ "$source_result" = "success" ] && [ "$preflight_result" = "success" ] && [ "$homepage_result" = "success" ] && [ "${deploy_rc:-999}" = "0" ]; then
+            result="success"
+          else
+            result="failure"
+          fi
+          printf 'release=eam-health-reorder-v2\nsource_sha=%s\nverified_at=%s\nresult=%s\nsource_validation=%s\nlaravel_preflight=%s\nhomepage_validation=%s\ndeploy_rc=%s\n' \
+            "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "$source_result" "$preflight_result" "$homepage_result" "${deploy_rc:-not-run}" \
+            > deploy/status/eam-lifecycle-latest.txt
+          if [ -f /tmp/unifco-eam-deploy.log ]; then tail -n 160 /tmp/unifco-eam-deploy.log > deploy/status/eam-lifecycle-deploy.log; else printf 'Deployment step did not produce an SSH log.\n' > deploy/status/eam-lifecycle-deploy.log; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deploy/status/eam-lifecycle-latest.txt deploy/status/eam-lifecycle-deploy.log
+          git commit -m "Record EAM deployment verification [skip ci]" || true
+          git push origin HEAD:main
+
+      - name: Fail workflow when verification failed
+        if: ${{ always() && (steps.source.outcome != 'success' || steps.preflight.outcome != 'success' || steps.homepage.outcome != 'success' || steps.deploy.outputs.rc != '0') }}
+        run: exit 1
