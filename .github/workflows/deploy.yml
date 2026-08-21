@@ -18,6 +18,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup PHP for source validation
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: none
+          coverage: none
+
+      - name: Validate EAM and customer source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l app/Models/Asset.php
+          php -l app/Models/MaintenancePlan.php
+          php -l app/Http/Controllers/EAM/AssetController.php
+          php -l app/Http/Controllers/EAM/AssetMeterController.php
+          php -l routes/public.php
+          php -l routes/console.php
+          php -l database/migrations/2026_08_21_000025_build_asset_master_phase_one.php
+          php -l database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
+          grep -q 'GENERATOR' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
+          grep -q 'TRANSFORMER' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
+          grep -q 'UPS' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
+          grep -q 'MV_SWITCHGEAR' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
+          grep -q 'maintenance_plan_tasks' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
+          grep -q 'unifco:generate-pm-work-orders' routes/console.php
+          grep -q 'eam.assets.maintenance-plans.store' resources/views/eam/assets/show.blade.php
+          grep -q 'eam.assets.meters.show' resources/views/eam/assets/index.blade.php
+
       - name: Validate electrical homepage release
         shell: bash
         run: |
