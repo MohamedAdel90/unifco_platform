@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerPortalOperationsController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\CustomerWorkAcceptanceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EAM\AssetController;
 use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,18 @@ Route::get('/request-received/{reference}', [PublicSiteController::class, 'recei
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    Route::middleware('permission:eam.asset.read')->group(function () {
+        Route::get('/eam/assets/{asset}', [AssetController::class,'show'])->name('eam.assets.show');
+        Route::get('/eam/assets/{asset}/documents/{document}', [AssetController::class,'downloadDocument'])->name('eam.assets.documents.download');
+    });
+    Route::middleware('permission:eam.asset.manage')->group(function () {
+        Route::post('/eam/assets/{asset}/status', [AssetController::class,'updateStatus'])->name('eam.assets.status');
+        Route::post('/eam/assets/{asset}/contracts', [AssetController::class,'assignContract'])->name('eam.assets.contracts.store');
+        Route::post('/eam/assets/{asset}/specifications', [AssetController::class,'storeSpecification'])->name('eam.assets.specifications.store');
+        Route::post('/eam/assets/{asset}/documents', [AssetController::class,'storeDocument'])->name('eam.assets.documents.store');
+    });
+
     Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
     Route::get('/customer/inbox', [CustomerInboxController::class,'customerIndex'])->name('customer.inbox');
     Route::post('/customer/inbox', [CustomerInboxController::class,'customerStart'])->name('customer.inbox.start');
