@@ -31,7 +31,11 @@ class OperationsCommandCenterTest extends TestCase
             ->assertSee('Global Scope Filters')
             ->assertSee('Month-over-Month')
             ->assertSee('Operational Health Score')
-            ->assertSee('Action Required');
+            ->assertSee('Action Required')
+            ->assertSee('Executive Analytics')
+            ->assertSee('Backlog Aging')
+            ->assertSee('Asset Health Distribution')
+            ->assertSee('Contract Expiry Timeline');
     }
 
     public function test_dashboard_accepts_customer_scope_filter(): void
@@ -46,7 +50,8 @@ class OperationsCommandCenterTest extends TestCase
             ->assertOk()
             ->assertSee('Scoped Customer')
             ->assertSee('FILTERED SCOPE')
-            ->assertSee('60 days');
+            ->assertSee('60 days')
+            ->assertSee('Executive Analytics');
     }
 
     public function test_customer_role_is_redirected_to_customer_portal(): void
