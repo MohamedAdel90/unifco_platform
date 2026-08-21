@@ -1,0 +1,1 @@
+Deployment trigger: skip UNIFCO brand materialization temporarily, run full Laravel/EAM preflight, migrations 000025-000030, health recalculation, spare reorder validation, application restart and production verification.
