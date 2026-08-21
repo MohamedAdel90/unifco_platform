@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use Illuminate\Http\{RedirectResponse,Request};
+use Illuminate\Http\{RedirectResponse,Request,Response};
 use Illuminate\Support\Facades\{Hash,Storage};
 use Illuminate\Validation\Rules\Password;
-use Illuminate\View\View;
 
 class CustomerProfileController extends Controller
 {
@@ -17,11 +16,14 @@ class CustomerProfileController extends Controller
         return Customer::findOrFail($user->customer_id);
     }
 
-    public function edit(Request $request): View
+    public function edit(Request $request): Response
     {
         $customer = $this->customer();
         $locale = $request->query('lang') === 'en' ? 'en' : 'ar';
-        return view('customer.profile', compact('customer','locale'));
+        $html = view('customer.profile', compact('customer','locale'))->render();
+        $direction = $locale === 'ar' ? 'rtl' : 'ltr';
+        $html = str_replace('</head>', '<style id="profile-logo-position">.brand-row{direction:ltr}.hero-center{direction:'.$direction.'}</style></head>', $html);
+        return response($html)->header('X-UNIFCO-Profile-Release','success-partner-20260821-1')->header('Cache-Control','no-cache, no-store, must-revalidate');
     }
 
     public function update(Request $request): RedirectResponse
