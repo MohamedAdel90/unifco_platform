@@ -8,7 +8,7 @@ use App\Http\Controllers\CustomerPortalOperationsController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\CustomerWorkAcceptanceController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EAM\AssetController;
+use App\Http\Controllers\EAM\{AssetController,AssetMeterController};
 use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/eam/assets/{asset}/specifications', [AssetController::class,'storeSpecification'])->name('eam.assets.specifications.store');
         Route::post('/eam/assets/{asset}/template-specifications', [AssetController::class,'storeTemplateSpecifications'])->name('eam.assets.specifications.template.store');
         Route::post('/eam/assets/{asset}/documents', [AssetController::class,'storeDocument'])->name('eam.assets.documents.store');
+        Route::post('/eam/assets/{asset}/meter-readings', [AssetMeterController::class,'store'])->name('eam.assets.meter-readings.store');
         Route::post('/eam/assets/{asset}/maintenance-plans', [AssetController::class,'storeMaintenancePlan'])->name('eam.assets.maintenance-plans.store');
         Route::post('/eam/assets/{asset}/maintenance-plans/{plan}/tasks', [AssetController::class,'storeMaintenanceTask'])->name('eam.assets.maintenance-plans.tasks.store');
     });
