@@ -14,32 +14,31 @@ git reset --hard origin/main
 
 echo "==> Server checkout: $(git rev-parse HEAD)"
 
-echo "==> Materializing sharpened UNIFCO hero v10"
-mkdir -p public/images
-cat resources/hero/v10.part0 \
-    resources/hero/v10.part1 \
-    resources/hero/v10.part2 \
-    resources/hero/v10.part3 \
-    resources/hero/v10.part4 \
-    resources/hero/v10.part5 \
-  | tr -d '\n\r ' \
-  | base64 -d > public/images/unifco-hero-approved-v10.jpg
+echo "==> Verifying electrical homepage assets"
+for asset in \
+  public/images/home/hero-electrical.svg \
+  public/images/home/facility-power.svg \
+  public/images/home/generator.svg \
+  public/images/home/ats.svg \
+  public/images/home/transformer.svg \
+  public/images/home/ups.svg \
+  public/images/home/mv-switchgear.svg \
+  public/images/home/sector-commercial.svg \
+  public/images/home/sector-industrial.svg \
+  public/images/home/sector-healthcare.svg \
+  public/images/home/sector-education.svg \
+  public/images/home/sector-government.svg \
+  public/images/home/sector-warehouse.svg \
+  public/images/home/sector-datacenter.svg; do
+  test -s "$asset" || { echo "ERROR: missing homepage asset $asset"; exit 1; }
+done
 
-test -s public/images/unifco-hero-approved-v10.jpg || { echo "ERROR: hero v10 image was not materialized"; exit 1; }
-hero_size="$(stat -c '%s' public/images/unifco-hero-approved-v10.jpg)"
-if [ "$hero_size" -lt 50000 ]; then
-    echo "ERROR: hero v10 image is unexpectedly small: ${hero_size} bytes"
-    exit 1
+grep -q 'home-electrical-20260821-11' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
+grep -q '/images/home/hero-electrical.svg' resources/views/public/home.blade.php || { echo "ERROR: electrical hero is not referenced"; exit 1; }
+if grep -q 'الضيافة' resources/views/public/home.blade.php; then
+  echo "ERROR: hospitality sector is still present"
+  exit 1
 fi
-
-# Apply the v10 asset and cache-busting release marker to the deployed checkout.
-sed -i 's#unifco-hero-workers-v7.jpg?v=20260821-9#unifco-hero-approved-v10.jpg?v=20260821-10#g' app/Http/Controllers/PublicSiteController.php
-sed -i 's#unifco-hero-release-20260821-v9#unifco-hero-release-20260821-v10#g' app/Http/Controllers/PublicSiteController.php
-sed -i 's#hero-20260821-9#hero-20260821-10#g' app/Http/Controllers/PublicSiteController.php
-
-grep -q 'unifco-hero-approved-v10.jpg' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage does not reference hero v10"; exit 1; }
-grep -q 'unifco-hero-release-20260821-v10' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage style release does not contain hero v10"; exit 1; }
-grep -q "X-UNIFCO-Release', 'hero-20260821-10" app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage response header release does not contain hero v10"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -59,7 +58,7 @@ supervisorctl restart "$APP_NAME"
 echo "==> Verifying homepage release"
 verified=0
 for attempt in $(seq 1 20); do
-    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: hero-20260821-10'; then
+    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-electrical-20260821-11'; then
         verified=1
         break
     fi
@@ -67,9 +66,11 @@ for attempt in $(seq 1 20); do
 done
 
 if [ "$verified" -ne 1 ]; then
-    echo "ERROR: deployed homepage did not expose expected X-UNIFCO-Release header"
+    echo "ERROR: deployed homepage did not expose expected release header"
     exit 1
 fi
 
-echo "==> Hero v10 asset present: ${hero_size} bytes"
+curl -fsS http://127.0.0.1:8081/ | grep -q '/images/home/generator.svg' || { echo "ERROR: deployed homepage missing electrical service imagery"; exit 1; }
+
+echo "==> Electrical homepage assets verified"
 echo "==> Deploy complete at $(git rev-parse HEAD)"
