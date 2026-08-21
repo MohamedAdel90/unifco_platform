@@ -4,6 +4,7 @@ use App\Http\Controllers\CRM\CustomerPortalAdminController;
 use App\Http\Controllers\CRM\CustomerPortalServiceAdminController;
 use App\Http\Controllers\CustomerPortalController;
 use App\Http\Controllers\CustomerPortalOperationsController;
+use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\CustomerWorkAcceptanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PublicSiteController;
@@ -19,6 +20,10 @@ Route::get('/request-received/{reference}', [PublicSiteController::class, 'recei
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
+    Route::get('/customer/profile', [CustomerProfileController::class,'edit'])->name('customer.profile.edit');
+    Route::put('/customer/profile', [CustomerProfileController::class,'update'])->name('customer.profile.update');
+    Route::post('/customer/profile/logo', [CustomerProfileController::class,'updateLogo'])->name('customer.profile.logo');
+    Route::put('/customer/profile/password', [CustomerProfileController::class,'updatePassword'])->name('customer.profile.password');
     Route::get('/customer/{section}', CustomerPortalController::class)
         ->whereIn('section', ['dashboard','contracts','assets','work-orders','maintenance','invoices','reports','sla','documents','notifications'])
         ->name('customer.section');
