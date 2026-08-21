@@ -1,11 +1,27 @@
 @extends('layouts.app')
+@section('title',($asset->exists?'Edit':'Register').' Asset · UNIFCO')
+@section('heading',$asset->exists?'Edit Asset Master':'Register New Asset')
 @section('content')
-<h1>{{ $asset->exists?'Edit':'Register' }} Asset</h1>
-@if($errors->any())<div class="error">{{ implode(' | ',$errors->all()) }}</div>@endif
-<form method="POST" action="{{ $asset->exists?route('eam.assets.update',$asset):route('eam.assets.store') }}">@csrf @if($asset->exists)@method('PUT')@endif
-<label>Asset Code <input name="asset_code" value="{{ old('asset_code',$asset->asset_code) }}" required></label>
-<label>Name <input name="name" value="{{ old('name',$asset->name) }}" required></label>
-<label>Acquisition Cost <input type="number" step="0.01" min="0" name="acquisition_cost" value="{{ old('acquisition_cost',$asset->acquisition_cost) }}" required></label>
-<label>Commission Date <input type="date" name="commission_date" value="{{ old('commission_date',optional($asset->commission_date)->format('Y-m-d')) }}"></label>
-<button>Save</button></form>
+<style>.asset-form{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}.asset-form label{font-size:11px;font-weight:700}.asset-form .wide{grid-column:1/-1}.section-title{grid-column:1/-1;color:#071f4d;font-size:13px;font-weight:900;padding-top:8px;border-top:1px solid #edf1f5;margin-top:5px}@media(max-width:900px){.asset-form{grid-template-columns:1fr 1fr}}@media(max-width:600px){.asset-form{grid-template-columns:1fr}}</style>
+<div class="page-head"><div><h2 style="margin:0">{{ $asset->exists?'Asset Master Data':'Register Asset' }}</h2><p class="muted">The asset belongs to the customer and site. Contract coverage is assigned separately in Asset 360.</p></div><a class="btn secondary" href="{{ route('eam.assets.index') }}">Back to Asset Register</a></div>
+@if($errors->any())<div class="error" style="margin-top:12px">{{ $errors->first() }}</div>@endif
+<div class="card" style="margin-top:14px"><form method="POST" action="{{ $asset->exists?route('eam.assets.update',$asset):route('eam.assets.store') }}">@csrf @if($asset->exists)@method('PUT')@endif<div class="asset-form">
+<div class="section-title">Ownership & Hierarchy</div>
+<label>Customer<select name="customer_id" required><option value="">Select customer</option>@foreach($customers as $c)<option value="{{ $c->id }}" @selected(old('customer_id',$asset->customer_id)==$c->id)>{{ $c->customer_code }} · {{ $c->name }}</option>@endforeach</select></label>
+<label>Customer Site<select name="customer_site_id"><option value="">No site selected</option>@foreach($sites as $s)<option value="{{ $s->id }}" @selected(old('customer_site_id',$asset->customer_site_id)==$s->id)>{{ $s->site_code }} · {{ $s->name }}</option>@endforeach</select></label>
+<label>Parent Asset<select name="parent_asset_id"><option value="">Top-level asset</option>@foreach($parents as $p)<option value="{{ $p->id }}" @selected(old('parent_asset_id',$asset->parent_asset_id)==$p->id)>{{ $p->asset_code }} · {{ $p->name }}</option>@endforeach</select></label>
+<label>Asset Code<input name="asset_code" value="{{ old('asset_code',$asset->asset_code) }}" required placeholder="WIT-RYD-ELE-GEN-0001"></label>
+<label>Asset Name<input name="name" value="{{ old('name',$asset->name) }}" required></label>
+<label>Category<input name="asset_category" value="{{ old('asset_category',$asset->asset_category) }}" required placeholder="Generator / ATS / UPS / Transformer"></label>
+<label>Subcategory<input name="asset_subcategory" value="{{ old('asset_subcategory',$asset->asset_subcategory) }}"></label>
+<label>Criticality<select name="criticality">@foreach(['CRITICAL','HIGH','MEDIUM','LOW'] as $s)<option @selected(old('criticality',$asset->criticality ?: 'MEDIUM')===$s)>{{ $s }}</option>@endforeach</select></label>
+<div class="section-title">Technical Identity</div>
+<label>Manufacturer<input name="manufacturer" value="{{ old('manufacturer',$asset->manufacturer) }}"></label><label>Model<input name="model_no" value="{{ old('model_no',$asset->model_no) }}"></label><label>Serial Number<input name="serial_no" value="{{ old('serial_no',$asset->serial_no) }}"></label><label>Supplier<input name="supplier_name" value="{{ old('supplier_name',$asset->supplier_name) }}"></label><label>Installer<input name="installer_name" value="{{ old('installer_name',$asset->installer_name) }}"></label>
+<div class="section-title">Lifecycle & Operating Condition</div>
+<label>Lifecycle Status<select name="lifecycle_status">@foreach(['DRAFT','INSTALLED','COMMISSIONED','ACTIVE','INACTIVE','RETIRED','DISPOSED'] as $s)<option @selected(old('lifecycle_status',$asset->lifecycle_status ?: 'ACTIVE')===$s)>{{ $s }}</option>@endforeach</select></label>
+<label>Operational Status<select name="operational_status">@foreach(['RUNNING','STANDBY','STOPPED','UNDER_MAINTENANCE','BREAKDOWN','ISOLATED','OUT_OF_SERVICE'] as $s)<option @selected(old('operational_status',$asset->operational_status ?: 'RUNNING')===$s)>{{ $s }}</option>@endforeach</select></label>
+<label>Manufacture Date<input type="date" name="manufacture_date" value="{{ old('manufacture_date',optional($asset->manufacture_date)->format('Y-m-d')) }}"></label><label>Installation Date<input type="date" name="installation_date" value="{{ old('installation_date',optional($asset->installation_date)->format('Y-m-d')) }}"></label><label>Commission Date<input type="date" name="commission_date" value="{{ old('commission_date',optional($asset->commission_date)->format('Y-m-d')) }}"></label><label>Warranty Expiry<input type="date" name="warranty_expiry" value="{{ old('warranty_expiry',optional($asset->warranty_expiry)->format('Y-m-d')) }}"></label><label>Useful Life (months)<input type="number" min="1" name="useful_life_months" value="{{ old('useful_life_months',$asset->useful_life_months) }}"></label><label>Expected Replacement<input type="date" name="expected_replacement_date" value="{{ old('expected_replacement_date',optional($asset->expected_replacement_date)->format('Y-m-d')) }}"></label>
+<div class="section-title">Financial Lifecycle</div>
+<label>Acquisition Cost<input type="number" step="0.01" min="0" name="acquisition_cost" value="{{ old('acquisition_cost',$asset->acquisition_cost) }}"></label><label>Replacement Value<input type="number" step="0.01" min="0" name="replacement_value" value="{{ old('replacement_value',$asset->replacement_value) }}"></label>
+</div><button class="btn" style="margin-top:14px">{{ $asset->exists?'Save Asset Master':'Register Asset & Start Verification' }}</button></form></div>
 @endsection
