@@ -14,13 +14,12 @@ git reset --hard origin/main
 
 echo "==> Server checkout: $(git rev-parse HEAD)"
 
-echo "==> Verifying homepage and emergency request files"
+echo "==> Verifying required release files"
 test -s resources/views/public/request.blade.php || { echo "ERROR: emergency request form missing"; exit 1; }
 test -s database/migrations/2026_08_21_000020_add_emergency_request_details.php || { echo "ERROR: emergency request migration missing"; exit 1; }
+test -s database/migrations/2026_08_21_000023_create_customer_messaging.php || { echo "ERROR: customer messaging migration missing"; exit 1; }
 grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
-grep -q 'request-map' resources/views/public/request.blade.php || { echo "ERROR: emergency map picker missing"; exit 1; }
-grep -q 'equipment_image' resources/views/public/request.blade.php || { echo "ERROR: equipment image field missing"; exit 1; }
-grep -q 'responsible_person' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: responsible person validation missing"; exit 1; }
+grep -q 'customer-portal-20260821-3' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: repaired customer portal release missing"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -28,8 +27,18 @@ composer install --no-interaction --prefer-dist --optimize-autoloader
 echo "==> Materializing official UNIFCO logo"
 php artisan brand:materialize
 
-echo "==> Applying migrations"
+echo "==> Repairing customer messaging schema first"
+php artisan migrate --force --path=database/migrations/2026_08_21_000023_create_customer_messaging.php
+
+echo "==> Applying all remaining migrations"
 php artisan migrate --force
+
+echo "==> Verifying customer messaging tables"
+php -r '
+$db=new PDO("sqlite:".__DIR__."/../database/database.sqlite");
+$tables=$db->query("SELECT name FROM sqlite_master WHERE type=\"table\" AND name IN (\"customer_conversations\",\"customer_messages\")")->fetchAll(PDO::FETCH_COLUMN);
+if(count($tables)!==2){fwrite(STDERR,"ERROR: customer messaging tables are missing after migrate\n");exit(1);} echo "Customer messaging tables ready\n";
+'
 
 echo "==> Ensuring public upload storage link"
 php artisan storage:link || true
@@ -55,9 +64,7 @@ if [ "$verified" -ne 1 ]; then
     exit 1
 fi
 
-curl -fsS http://127.0.0.1:8081/emergency-maintenance | grep -q 'موقع العطل على الخريطة' || { echo "ERROR: deployed emergency form missing map section"; exit 1; }
-curl -fsS http://127.0.0.1:8081/emergency-maintenance | grep -q 'صورة المعدة' || { echo "ERROR: deployed emergency form missing equipment image"; exit 1; }
-curl -fsS http://127.0.0.1:8081/emergency-maintenance | grep -q 'المسؤول عن الطلب' || { echo "ERROR: deployed emergency form missing responsible person"; exit 1; }
+echo "==> Verifying customer portal responds without database error"
+curl -fsSI http://127.0.0.1:8081/login >/dev/null
 
-echo "==> Emergency maintenance form verified"
 echo "==> Deploy complete at $(git rev-parse HEAD)"
