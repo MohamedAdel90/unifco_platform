@@ -1,0 +1,93 @@
+name: Capture Live EAM Screenshots
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/capture-live-screenshots.trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare SSH tunnel
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_capture_key"
+          chmod 600 "$HOME/.ssh/unifco_capture_key"
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_capture_key" -p "$DEPLOY_PORT" \
+            "$DEPLOY_USER@$DEPLOY_HOST" "awk -F= '/^UNIFCO_ADMIN_PASSWORD=/{sub(/^[^=]*=/,\"\"); gsub(/^\"|\"$/,\"\"); print; exit}' /var/www/unifco_platform/.env" \
+            > /tmp/unifco-admin-password
+          if [ ! -s /tmp/unifco-admin-password ]; then printf '%s' 'ChangeMe123!' > /tmp/unifco-admin-password; fi
+          ssh -f -N -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=no -o ServerAliveInterval=20 \
+            -i "$HOME/.ssh/unifco_capture_key" -p "$DEPLOY_PORT" \
+            -L 18081:127.0.0.1:8081 "$DEPLOY_USER@$DEPLOY_HOST"
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:18081/login >/dev/null && exit 0; sleep 2; done
+          exit 1
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 --no-save
+          npx playwright install --with-deps chromium
+
+      - name: Capture live pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p deploy/screenshots
+          export UNIFCO_SCREENSHOT_PASSWORD="$(cat /tmp/unifco-admin-password)"
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1600,height:1000}, deviceScaleFactor:1});
+            const base='http://127.0.0.1:18081';
+            await page.goto(base+'/login',{waitUntil:'networkidle'});
+            await page.fill('input[name="email"]','admin@unifco.local');
+            await page.fill('input[name="password"]',process.env.UNIFCO_SCREENSHOT_PASSWORD);
+            await Promise.all([page.waitForLoadState('networkidle'),page.click('button[type="submit"]')]);
+            if(page.url().includes('/login')) throw new Error('Admin login failed; screenshots not captured.');
+
+            async function shot(path,name){
+              await page.goto(base+path,{waitUntil:'networkidle'});
+              await page.screenshot({path:'deploy/screenshots/'+name,fullPage:true});
+            }
+            await shot('/eam/assets','01-asset-register.png');
+            await shot('/eam/health','02-asset-health-dashboard.png');
+            await shot('/maintenance/work-orders','03-work-orders.png');
+
+            await page.goto(base+'/eam/assets',{waitUntil:'networkidle'});
+            const assetHref=await page.locator('a').evaluateAll(as=>as.map(a=>a.getAttribute('href')).find(h=>h && /^http:\/\/[^/]+\/eam\/assets\/\d+$/.test(h)) || null);
+            if(assetHref){ await page.goto(assetHref,{waitUntil:'networkidle'}); await page.screenshot({path:'deploy/screenshots/04-asset-360.png',fullPage:true}); }
+
+            await page.goto(base+'/maintenance/work-orders',{waitUntil:'networkidle'});
+            const woHref=await page.locator('a').evaluateAll(as=>as.map(a=>a.getAttribute('href')).find(h=>h && /^http:\/\/[^/]+\/maintenance\/work-orders\/\d+$/.test(h)) || null);
+            if(woHref){ await page.goto(woHref,{waitUntil:'networkidle'}); await page.screenshot({path:'deploy/screenshots/05-work-order-execution.png',fullPage:true}); }
+
+            fs.writeFileSync('deploy/screenshots/README.txt','Captured from live production via SSH tunnel on '+new Date().toISOString()+'\n');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+
+      - name: Commit screenshots
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deploy/screenshots
+          git commit -m "Capture live EAM screenshots [skip ci]" || true
+          git push origin HEAD:main
