@@ -24,6 +24,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('permission:eam.asset.read')->group(function () {
         Route::get('/eam/assets/{asset}', [AssetController::class,'show'])->name('eam.assets.show');
+        Route::get('/eam/assets/{asset}/meters', [AssetMeterController::class,'show'])->name('eam.assets.meters.show');
         Route::get('/eam/assets/{asset}/documents/{document}', [AssetController::class,'downloadDocument'])->name('eam.assets.documents.download');
     });
     Route::middleware('permission:eam.asset.manage')->group(function () {
