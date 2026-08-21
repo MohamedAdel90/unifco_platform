@@ -2,10 +2,10 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   db819b9..2d8a6b4  main       -> origin/main
+   2d8a6b4..69cd88f  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at 2d8a6b4 Rerun deployment with corrected deploy script
-==> Server checkout: 2d8a6b4eefcf0aeae43a69dc1bd3ef0e0f622791
+HEAD is now at 69cd88f Add show password toggle to client login
+==> Server checkout: 69cd88ff9164e42539a34b80465e1979b21e3381
 ==> Materializing sharpened UNIFCO hero v10
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -27,9 +27,9 @@ Generating optimized autoload files
   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
 
-==> Materializing official UNIFCO logo
 78 packages you are using are looking for funding.
 Use the `composer fund` command to find out more!
+==> Materializing official UNIFCO logo
 Materialized /var/www/unifco_platform/public/images/unifco-logo.webp (2000x3089, 24159 bytes).
 ==> Applying migrations
 
@@ -40,15 +40,15 @@ Materialized /var/www/unifco_platform/public/images/unifco-logo.webp (2000x3089,
    INFO  Clearing cached bootstrap files.  
 
   config ......................................................... 1.20ms DONE
-  cache .......................................................... 2.32ms DONE
-  compiled ....................................................... 0.81ms DONE
-  events ......................................................... 0.53ms DONE
-  routes ......................................................... 0.46ms DONE
-  views .......................................................... 3.71ms DONE
+  cache .......................................................... 2.98ms DONE
+  compiled ....................................................... 0.85ms DONE
+  events ......................................................... 0.50ms DONE
+  routes ......................................................... 0.41ms DONE
+  views .......................................................... 3.61ms DONE
 
 ==> Restarting unifco-app
 unifco-app: stopped
 unifco-app: started
 ==> Verifying homepage release
 ==> Hero v10 asset present: 55394 bytes
-==> Deploy complete at 2d8a6b4eefcf0aeae43a69dc1bd3ef0e0f622791
+==> Deploy complete at 69cd88ff9164e42539a34b80465e1979b21e3381

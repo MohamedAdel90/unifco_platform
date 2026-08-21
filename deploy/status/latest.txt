@@ -1,6 +1,6 @@
 release=hero-20260821-10
-source_sha=2d8a6b4eefcf0aeae43a69dc1bd3ef0e0f622791
-deployed_at=2026-08-20T23:54:53Z
+source_sha=69cd88ff9164e42539a34b80465e1979b21e3381
+deployed_at=2026-08-21T00:02:28Z
 result=success
 validate=success
 deploy_rc=0
