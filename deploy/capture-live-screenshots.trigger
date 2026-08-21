@@ -1,1 +1,1 @@
-Capture verified live EAM pages after successful production deployment. Retry 2.
+Capture verified live Operations Command Center and EAM pages after successful production deployment.
