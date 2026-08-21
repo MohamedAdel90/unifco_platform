@@ -1,0 +1,1 @@
+Rerun deployment after deploy.sh was updated for Customer Portal v5, EAM phases 1-3, work-order execution, reliability, spare parts, and asset health intelligence.
