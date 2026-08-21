@@ -57,7 +57,7 @@ jobs:
           grep -q 'Spare Parts Consumption' resources/views/eam/health/index.blade.php
           grep -q 'Spare Parts Consumption' resources/views/customer/asset-health.blade.php
           grep -q 'maintenance.work-orders.checklist' resources/views/maintenance/work-orders/show.blade.php
-          grep -q 'customer.asset.show' resources/views/customer/asset-detail.blade.php
+          grep -q 'customer.asset.show' resources/views/customer/asset-health.blade.php
           grep -q 'CUSTOMER SERVICE REPORT' resources/views/customer/work-order-detail.blade.php
           grep -q "customer-portal-20260821-5" app/Http/Controllers/CustomerPortalController.php
           ! grep -q "select('maintenance_materials\.\*'" app/Http/Controllers/CustomerPortalController.php
