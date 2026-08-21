@@ -25,7 +25,7 @@ class CustomerPortalController extends Controller
         $locationFilter = trim((string) $request->query('location', '')) ?: null;
 
         $contracts = ServiceContract::where('customer_id', $customer->id)->orderByDesc('starts_on')->get();
-        $assetsQuery = Asset::where('customer_id', $customer->id);
+        $assetsQuery = Asset::with('site')->where('customer_id', $customer->id);
         if ($assetFilter) $assetsQuery->whereKey($assetFilter);
         if ($locationFilter) $assetsQuery->where('location_code', $locationFilter);
         $assets = $assetsQuery->orderBy('asset_code')->get();
@@ -38,12 +38,23 @@ class CustomerPortalController extends Controller
         $workOrders = WorkOrder::with('asset')->whereIn('asset_id', $assetIds)
             ->when($contractFilter, fn ($q) => $q->where('service_contract_id', $contractFilter))
             ->latest('created_at')->limit(100)->get();
+
+        // Customer users may see execution status and evidence, but never UNIFCO internal costing.
+        $workOrders->each(function (WorkOrder $workOrder): void {
+            $workOrder->setAttribute('labor_cost', null);
+            $workOrder->setAttribute('material_cost', null);
+            $workOrder->setAttribute('external_cost', null);
+            $workOrder->setAttribute('total_cost', null);
+        });
+
         $invoices = FinancialDocument::where('customer_id', $customer->id)->where('document_type', 'AR_INVOICE')->latest('document_date')->limit(100)->get();
         $payments = DB::table('payments')->join('financial_documents', 'financial_documents.id', '=', 'payments.financial_document_id')
             ->where('financial_documents.customer_id', $customer->id)->select('payments.*', 'financial_documents.document_no')->orderByDesc('payments.payment_date')->limit(100)->get();
         $materials = DB::table('maintenance_materials')->join('work_orders', 'work_orders.id', '=', 'maintenance_materials.work_order_id')
             ->join('assets', 'assets.id', '=', 'work_orders.asset_id')->join('items', 'items.id', '=', 'maintenance_materials.item_id')
-            ->whereIn('assets.id', $assetIds)->select('maintenance_materials.*', 'work_orders.work_order_no', 'assets.asset_code', 'assets.name as asset_name', 'items.item_code', 'items.name as item_name')
+            ->whereIn('assets.id', $assetIds)
+            ->select('maintenance_materials.id','maintenance_materials.work_order_id','maintenance_materials.item_id','maintenance_materials.warehouse_code','maintenance_materials.quantity','maintenance_materials.created_at',
+                'work_orders.work_order_no', 'assets.asset_code', 'assets.name as asset_name', 'items.item_code', 'items.name as item_name','items.uom')
             ->orderByDesc('maintenance_materials.created_at')->limit(100)->get();
 
         $requests = ServiceRequest::where('customer_id', $customer->id)
@@ -109,6 +120,20 @@ class CustomerPortalController extends Controller
             $html = str_replace('<section class="stats">', $quickActions.'<section class="stats">', $html);
         }
 
+        if ($section === 'assets') {
+            $assetLinks = $assets->mapWithKeys(fn (Asset $asset) => [$asset->asset_code => route('customer.asset.show',$asset)]);
+            $json = json_encode($assetLinks, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+            $script = '<script>document.addEventListener("DOMContentLoaded",function(){const links='.$json.';document.querySelectorAll(".asset").forEach(function(card){const title=card.querySelector("strong");if(!title)return;const code=title.textContent.split("·")[0].trim();if(!links[code])return;card.style.cursor="pointer";card.setAttribute("role","link");card.addEventListener("click",function(){location.href=links[code]});const a=document.createElement("a");a.className="pill";a.href=links[code];a.textContent="Asset 360 · تفاصيل الأصل";a.addEventListener("click",function(e){e.stopPropagation()});card.appendChild(a);});});</script>';
+            $html = str_replace('</body>', $script.'</body>', $html);
+        }
+
+        if ($section === 'work-orders') {
+            $workOrderLinks = $workOrders->mapWithKeys(fn (WorkOrder $wo) => [$wo->work_order_no => route('customer.work-orders.show',$wo)]);
+            $json = json_encode($workOrderLinks, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+            $script = '<script>document.addEventListener("DOMContentLoaded",function(){const links='.$json.';document.querySelectorAll("table.table tbody tr").forEach(function(row){const cell=row.querySelector("td");if(!cell)return;const no=cell.textContent.trim();if(!links[no])return;cell.innerHTML="<a class=\"pill\" href=\""+links[no]+"\">"+no+" · View Report</a>";});const table=document.querySelector("table.table");if(table){const heads=table.querySelectorAll("thead th");if(heads.length>=6)heads[5].style.display="none";table.querySelectorAll("tbody tr").forEach(function(row){const cells=row.querySelectorAll("td");if(cells.length>=6)cells[5].style.display="none";});}});</script>';
+            $html = str_replace('</body>', $script.'</body>', $html);
+        }
+
         if ($section === 'work-orders' && ($request->filled('priority') || $request->filled('service_category'))) {
             $priority = json_encode((string) $request->query('priority', ''));
             $category = json_encode((string) $request->query('service_category', ''));
@@ -117,7 +142,7 @@ class CustomerPortalController extends Controller
         }
 
         return response($html)
-            ->header('X-UNIFCO-Customer-Portal-Release','customer-portal-20260821-4')
+            ->header('X-UNIFCO-Customer-Portal-Release','customer-portal-20260821-5')
             ->header('Cache-Control','no-cache, no-store, must-revalidate');
     }
 }
