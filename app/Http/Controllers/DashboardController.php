@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{Asset,Customer,CustomerSite,Employee,FinancialDocument,MaintenancePlan,PlatformNotification,PurchaseOrder,ServiceContract,ServiceRequest,WorkOrder};
 use App\Services\AuthorizationService;
+use App\Services\Dashboard\ExecutiveAnalyticsService;
 use App\Services\EAM\AssetSparePartReorderService;
 use Carbon\Carbon;
 use Illuminate\Http\{RedirectResponse,Request};
@@ -13,7 +14,7 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request, AssetSparePartReorderService $reorder, AuthorizationService $authorization): View|RedirectResponse
+    public function __invoke(Request $request, AssetSparePartReorderService $reorder, AuthorizationService $authorization, ExecutiveAnalyticsService $analyticsService): View|RedirectResponse
     {
         $user=auth()->user();
         if($user->role==='CUSTOMER') return redirect()->route('customer.portal');
@@ -150,8 +151,9 @@ class DashboardController extends Controller
         $trend=$this->monthlyWorkOrderTrend($assetIds,$contractId,$scopeApplied);
         $unreadNotifications=PlatformNotification::where('user_id',$user->id)->whereNull('read_at')->count();
         $filterActive=$scopeApplied;
+        $analytics=$analyticsService->build($assets,$openWorkOrders,$serviceRequests,$slaBreaches,$contracts,$stockAlerts);
 
-        return view('dashboard',compact('days','dashboardMode','capabilities','customerId','siteId','contractId','customers','sites','contractOptions','filterActive','unreadNotifications','comparison','operationalScore','operationalBand','averageAssetHealth','pmCompliance','slaPerformance','openWorkOrders','overdueWorkOrders','criticalWorkOrders','overduePm','criticalAssets','replacementAssets','stockAlerts','outOfStock','newServiceRequests','openServiceRequests','slaBreaches','outstandingReceivables','overdueReceivables','revenueThisMonth','pendingPOs','pendingPOValue','activeEmployees','activeCustomers','expiringContracts','pmDue30','actionItems','recentActivity','topRiskAssets','recentWorkOrders','statusDistribution','trend','assets','contracts'));
+        return view('dashboard',compact('days','dashboardMode','capabilities','customerId','siteId','contractId','customers','sites','contractOptions','filterActive','unreadNotifications','comparison','operationalScore','operationalBand','averageAssetHealth','pmCompliance','slaPerformance','openWorkOrders','overdueWorkOrders','criticalWorkOrders','overduePm','criticalAssets','replacementAssets','stockAlerts','outOfStock','newServiceRequests','openServiceRequests','slaBreaches','outstandingReceivables','overdueReceivables','revenueThisMonth','pendingPOs','pendingPOValue','activeEmployees','activeCustomers','expiringContracts','pmDue30','actionItems','recentActivity','topRiskAssets','recentWorkOrders','statusDistribution','trend','assets','contracts','analytics'));
     }
 
     private function dashboardMode(string $role,array $c): string
