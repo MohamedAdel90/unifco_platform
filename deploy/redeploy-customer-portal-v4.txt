@@ -1,0 +1,2 @@
+Rerun deployment after customer portal logo and inbox layout were made permanent in Blade.
+Expected release: customer-portal-20260821-4
