@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\{Asset,CrmQuotation,Customer,FinancialDocument,MaintenancePlan,MaintenanceVisitReport,ServiceContract,ServiceRequest,WorkOrder};
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
 
 class CustomerPortalController extends Controller
 {
-    public function __invoke(Request $request, ?string $section = null): View
+    public function __invoke(Request $request, ?string $section = null): Response
     {
         $user = auth()->user();
         abort_unless($user && $user->role === 'CUSTOMER' && $user->customer_id, 403, 'Customer portal access is not configured for this user.');
@@ -82,10 +82,26 @@ class CustomerPortalController extends Controller
         $locations = Asset::where('customer_id', $customer->id)->whereNotNull('location_code')->distinct()->orderBy('location_code')->pluck('location_code');
         $warrantyParts = Asset::whereIn('id', $allCustomerAssetIds)->orderBy('warranty_expiry')->get();
 
-        return view('customer.section', compact(
+        $html = view('customer.section', compact(
             'section', 'customer', 'contracts', 'assets', 'plans', 'workOrders', 'invoices', 'payments', 'materials', 'requests', 'quotations', 'visitReports', 'attachments', 'alerts', 'locations', 'warrantyParts',
             'openInvoiceAmount', 'openWorkOrders', 'inProgressCount', 'completedCount', 'overdueCount', 'recentWorkOrders', 'upcomingPlans', 'slaPerformance', 'preventiveCount', 'correctiveCount',
             'contractFilter', 'assetFilter', 'locationFilter'
-        ));
+        ))->render();
+
+        if ($section === 'dashboard') {
+            $emergencyUrl = route('customer.section', 'work-orders').'?priority=EMERGENCY#request-service';
+            $partsUrl = route('customer.section', 'work-orders').'?service_category=Spare%20Parts&priority=HIGH#request-service';
+            $quickActions = '<style>.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}.quick-action{display:flex;align-items:center;gap:15px;padding:19px;border-radius:12px;background:linear-gradient(135deg,#e20b24,#b8071b);color:#fff;box-shadow:0 10px 24px rgba(226,11,36,.18)}.quick-action.parts{background:linear-gradient(135deg,#a8071a,#e20b24)}.quick-icon{width:46px;height:46px;border-radius:11px;background:#ffffff18;display:grid;place-items:center;font-size:22px}.quick-action b{display:block;font-size:14px}.quick-action small{display:block;margin-top:3px;color:#ffe5e9;font-size:10px}@media(max-width:760px){.quick-actions{grid-template-columns:1fr}}</style><section class="quick-actions"><a class="quick-action" href="'.$emergencyUrl.'"><span class="quick-icon">⚡</span><span><b>طلب صيانة طارئة · Emergency Maintenance</b><small>Open a high-priority maintenance request</small></span></a><a class="quick-action parts" href="'.$partsUrl.'"><span class="quick-icon">⚙</span><span><b>طلب قطع غيار · Spare Parts Request</b><small>Request parts for an assigned asset</small></span></a></section>';
+            $html = str_replace('<section class="stats">', $quickActions.'<section class="stats">', $html);
+        }
+
+        if ($section === 'work-orders' && ($request->filled('priority') || $request->filled('service_category'))) {
+            $priority = json_encode((string) $request->query('priority', ''));
+            $category = json_encode((string) $request->query('service_category', ''));
+            $script = '<script>document.addEventListener("DOMContentLoaded",function(){var p=document.querySelector("select[name=priority]");var c=document.querySelector("input[name=service_category]");if(p&&'.$priority.')p.value='.$priority.';if(c&&'.$category.')c.value='.$category.';});</script>';
+            $html = str_replace('</body>', $script.'</body>', $html);
+        }
+
+        return response($html);
     }
 }
