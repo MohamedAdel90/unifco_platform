@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['permission'=>RequirePermission::class,'api.token'=>AuthenticateApiToken::class,'jwt'=>AuthenticateJwt::class]);
+        // Temporary narrow exception for the login POST only. The production server is currently
+        // serving over plain HTTP on an IP address and is returning 419 before credentials are checked.
+        // All authenticated and business forms remain CSRF protected.
+        $middleware->validateCsrfTokens(except: ['login']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // API and web exception rendering use Laravel defaults; production logging remains authoritative.
