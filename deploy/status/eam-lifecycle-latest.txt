@@ -1,6 +1,6 @@
-release=eam-health-reorder-v2
-source_sha=9073c76b33ffddd23b9200fe72b28ba67dbf07a0
-verified_at=2026-08-21T20:31:33Z
+release=operations-command-center-v1
+source_sha=c28d96f9a327b482d2ca2358bf47ccc7101de817
+verified_at=2026-08-21T20:32:37Z
 result=success
 source_validation=success
 laravel_preflight_rc=0

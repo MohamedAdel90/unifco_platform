@@ -3,10 +3,10 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   7771a39..9073c76  main       -> origin/main
+   9073c76..c28d96f  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at 9073c76 Redesign dashboard as operations command center
-==> Server checkout: 9073c76b33ffddd23b9200fe72b28ba67dbf07a0
+HEAD is now at c28d96f Validate operations command center before deploy
+==> Server checkout: c28d96f9a327b482d2ca2358bf47ccc7101de817
 ==> Verifying required release files
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -56,12 +56,12 @@ Operational tables and reorder intelligence ready
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.10ms DONE
-  cache .......................................................... 2.75ms DONE
-  compiled ....................................................... 0.69ms DONE
-  events ......................................................... 0.36ms DONE
-  routes ......................................................... 0.33ms DONE
-  views .......................................................... 3.68ms DONE
+  config ......................................................... 3.13ms DONE
+  cache .......................................................... 7.31ms DONE
+  compiled ....................................................... 0.88ms DONE
+  events ......................................................... 3.62ms DONE
+  routes ......................................................... 1.62ms DONE
+  views .......................................................... 7.69ms DONE
 
 ==> Restarting unifco-app
 unifco-app: stopped
@@ -70,4 +70,4 @@ unifco-app: started
 ==> Verifying homepage release
 ==> Verifying login session and CSRF round trip
 Login CSRF/session round trip verified: HTTP 302
-==> Deploy complete at 9073c76b33ffddd23b9200fe72b28ba67dbf07a0
+==> Deploy complete at c28d96f9a327b482d2ca2358bf47ccc7101de817
