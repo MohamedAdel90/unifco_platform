@@ -33,10 +33,12 @@ jobs:
           php -l app/Models/MaintenancePlan.php
           php -l app/Http/Controllers/EAM/AssetController.php
           php -l app/Http/Controllers/EAM/AssetMeterController.php
+          php -l app/Http/Controllers/EAM/AssetSparePartController.php
           php -l routes/public.php
           php -l routes/console.php
           php -l database/migrations/2026_08_21_000025_build_asset_master_phase_one.php
           php -l database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
+          php -l database/migrations/2026_08_21_000027_add_asset_spare_parts_compatibility.php
           grep -q 'GENERATOR' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
           grep -q 'TRANSFORMER' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
           grep -q 'UPS' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
@@ -45,6 +47,7 @@ jobs:
           grep -q 'unifco:generate-pm-work-orders' routes/console.php
           grep -q 'eam.assets.maintenance-plans.store' resources/views/eam/assets/show.blade.php
           grep -q 'eam.assets.meters.show' resources/views/eam/assets/index.blade.php
+          grep -q 'eam.assets.spare-parts.show' resources/views/eam/assets/index.blade.php
 
       - name: Validate electrical homepage release
         shell: bash
