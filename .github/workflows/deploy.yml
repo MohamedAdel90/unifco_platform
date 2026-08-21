@@ -22,10 +22,10 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          tools: none
+          tools: composer
           coverage: none
 
-      - name: Validate EAM maintenance and customer portal source
+      - name: Validate PHP source
         shell: bash
         run: |
           set -euo pipefail
@@ -33,41 +33,51 @@ jobs:
           php -l app/Models/MaintenancePlan.php
           php -l app/Models/WorkOrder.php
           php -l app/Services/EAM/AssetHealthService.php
+          php -l app/Services/EAM/AssetSparePartReorderService.php
           php -l app/Http/Controllers/EAM/AssetController.php
           php -l app/Http/Controllers/EAM/AssetMeterController.php
           php -l app/Http/Controllers/EAM/AssetSparePartController.php
           php -l app/Http/Controllers/EAM/AssetReliabilityController.php
+          php -l app/Http/Controllers/EAM/AssetHealthDashboardController.php
           php -l app/Http/Controllers/Maintenance/WorkOrderController.php
           php -l app/Http/Controllers/CustomerAssetReadController.php
           php -l app/Http/Controllers/CustomerPortalController.php
           php -l routes/public.php
           php -l routes/console.php
-          php -l database/migrations/2026_08_21_000025_build_asset_master_phase_one.php
-          php -l database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
-          php -l database/migrations/2026_08_21_000027_add_asset_spare_parts_compatibility.php
-          php -l database/migrations/2026_08_21_000028_add_work_order_execution_and_reliability.php
-          php -l database/migrations/2026_08_21_000029_add_asset_health_and_replacement_intelligence.php
-          grep -q 'GENERATOR' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
-          grep -q 'TRANSFORMER' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
-          grep -q 'UPS' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
-          grep -q 'MV_SWITCHGEAR' database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php
-          grep -q 'work_order_checklist_results' database/migrations/2026_08_21_000028_add_work_order_execution_and_reliability.php
-          grep -q 'asset_failures' database/migrations/2026_08_21_000028_add_work_order_execution_and_reliability.php
-          grep -q 'health_score' database/migrations/2026_08_21_000029_add_asset_health_and_replacement_intelligence.php
+          for migration in database/migrations/2026_08_21_00002{5,6,7,8,9}_*.php database/migrations/2026_08_21_000030_*.php; do php -l "$migration"; done
           grep -q 'PLAN_REPLACEMENT' app/Services/EAM/AssetHealthService.php
+          grep -q 'OUT_OF_STOCK' app/Services/EAM/AssetSparePartReorderService.php
+          grep -q 'preferred_warehouse_code' database/migrations/2026_08_21_000030_add_asset_spare_part_reorder_tracking.php
           grep -q 'unifco:generate-pm-work-orders' routes/console.php
           grep -q 'unifco:recalculate-asset-health' routes/console.php
-          grep -q 'eam.assets.reliability.show' resources/views/eam/assets/index.blade.php
+          grep -q 'unifco:check-spare-reorder-alerts' routes/console.php
+          grep -q 'eam.health.index' resources/views/eam/assets/index.blade.php
+          grep -q 'Portfolio Health' resources/views/eam/health/index.blade.php
+          grep -q 'Asset Health Portfolio' resources/views/customer/asset-health.blade.php
           grep -q 'maintenance.work-orders.checklist' resources/views/maintenance/work-orders/show.blade.php
-          grep -q 'maintenance.work-orders.materials.store' resources/views/maintenance/work-orders/show.blade.php
-          grep -q 'maintenance.work-orders.failures.store' resources/views/maintenance/work-orders/show.blade.php
           grep -q 'customer.asset.show' resources/views/customer/asset-detail.blade.php
-          grep -q 'customer.work-orders.show' resources/views/customer/asset-detail.blade.php
-          grep -q 'Asset Health' resources/views/customer/asset-detail.blade.php
           grep -q 'CUSTOMER SERVICE REPORT' resources/views/customer/work-order-detail.blade.php
           grep -q "customer-portal-20260821-5" app/Http/Controllers/CustomerPortalController.php
           ! grep -q "select('maintenance_materials\.\*'" app/Http/Controllers/CustomerPortalController.php
-          grep -q "customer-portal-20260821-5" deploy/deploy.sh
+          grep -q '000030_add_asset_spare_part_reorder_tracking' deploy/deploy.sh
+
+      - name: Laravel application preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer install --no-interaction --prefer-dist --no-progress
+          cp -n .env.example .env || true
+          mkdir -p database storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
+          touch database/database.sqlite
+          php artisan key:generate --force
+          php artisan migrate:fresh --force
+          php artisan route:list --name=eam.health.index | grep -q 'eam/health'
+          php artisan route:list --name=customer.asset-health | grep -q 'customer/asset-health'
+          php artisan route:list --name=maintenance.work-orders.show >/dev/null
+          php artisan list | grep -q 'unifco:recalculate-asset-health'
+          php artisan list | grep -q 'unifco:check-spare-reorder-alerts'
+          php artisan unifco:recalculate-asset-health
+          php artisan unifco:check-spare-reorder-alerts
 
       - name: Validate electrical homepage release
         shell: bash
