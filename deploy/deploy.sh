@@ -26,6 +26,26 @@ grep -q 'customer.inbox' resources/views/customer/section.blade.php || { echo "E
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
 
+echo "==> Repairing Laravel session directories and permissions"
+mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
+chmod -R ug+rwX storage bootstrap/cache
+
+upsert_env() {
+    key="$1"
+    value="$2"
+    if grep -qE "^${key}=" .env; then
+        sed -i "s#^${key}=.*#${key}=${value}#" .env
+    else
+        printf '%s=%s\n' "$key" "$value" >> .env
+    fi
+}
+
+echo "==> Enforcing HTTP-safe session cookie settings"
+upsert_env SESSION_DRIVER file
+upsert_env SESSION_SECURE_COOKIE false
+upsert_env SESSION_SAME_SITE lax
+upsert_env SESSION_DOMAIN ""
+
 echo "==> Materializing official UNIFCO logo"
 php artisan brand:materialize
 
@@ -45,28 +65,52 @@ if(count($tables)!==2){fwrite(STDERR,"ERROR: customer messaging tables are missi
 echo "==> Ensuring public upload storage link"
 php artisan storage:link || true
 
-echo "==> Clearing caches"
+echo "==> Clearing caches after environment repair"
 php artisan optimize:clear
 
 echo "==> Restarting $APP_NAME"
 supervisorctl restart "$APP_NAME"
 
-echo "==> Verifying homepage release"
-verified=0
+echo "==> Waiting for application"
+ready=0
 for attempt in $(seq 1 20); do
-    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-electrical-20260821-12'; then
-        verified=1
+    if curl -fsSI http://127.0.0.1:8081/login >/dev/null; then
+        ready=1
         break
     fi
     sleep 2
 done
+if [ "$ready" -ne 1 ]; then
+    echo "ERROR: application did not become ready"
+    exit 1
+fi
 
-if [ "$verified" -ne 1 ]; then
+echo "==> Verifying homepage release"
+if ! curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-electrical-20260821-12'; then
     echo "ERROR: deployed homepage did not expose expected release header"
     exit 1
 fi
 
-echo "==> Verifying application is responding"
-curl -fsSI http://127.0.0.1:8081/login >/dev/null
+echo "==> Verifying login session and CSRF round trip"
+rm -f /tmp/unifco-login.cookies /tmp/unifco-login.html /tmp/unifco-login-post.headers
+curl -fsS -c /tmp/unifco-login.cookies http://127.0.0.1:8081/login -o /tmp/unifco-login.html
+csrf_token="$(php -r '$h=file_get_contents("/tmp/unifco-login.html"); if(preg_match('/"'"'name="_token" value="([^"]+)"'"'/',$h,$m)) echo html_entity_decode($m[1],ENT_QUOTES);')"
+if [ -z "$csrf_token" ]; then
+    echo "ERROR: could not extract CSRF token from login form"
+    exit 1
+fi
+login_status="$(curl -sS -o /dev/null -D /tmp/unifco-login-post.headers -w '%{http_code}' -b /tmp/unifco-login.cookies -c /tmp/unifco-login.cookies -X POST http://127.0.0.1:8081/login \
+    --data-urlencode "_token=${csrf_token}" \
+    --data-urlencode 'email=csrf-check@unifco.invalid' \
+    --data-urlencode 'password=invalid-password')"
+if [ "$login_status" = "419" ]; then
+    echo "ERROR: login CSRF/session validation still returns 419"
+    exit 1
+fi
+if [ "$login_status" != "302" ]; then
+    echo "ERROR: unexpected login validation status: $login_status"
+    exit 1
+fi
+echo "Login CSRF/session round trip verified: HTTP ${login_status}"
 
 echo "==> Deploy complete at $(git rev-parse HEAD)"
