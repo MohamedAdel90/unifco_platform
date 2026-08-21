@@ -8,7 +8,7 @@ use App\Http\Controllers\CustomerPortalOperationsController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\CustomerWorkAcceptanceController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EAM\{AssetController,AssetMeterController,AssetSparePartController};
+use App\Http\Controllers\EAM\{AssetController,AssetMeterController,AssetReliabilityController,AssetSparePartController};
 use App\Http\Controllers\Maintenance\WorkOrderController;
 use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/eam/assets/{asset}', [AssetController::class,'show'])->name('eam.assets.show');
         Route::get('/eam/assets/{asset}/meters', [AssetMeterController::class,'show'])->name('eam.assets.meters.show');
         Route::get('/eam/assets/{asset}/spare-parts', [AssetSparePartController::class,'show'])->name('eam.assets.spare-parts.show');
+        Route::get('/eam/assets/{asset}/reliability', [AssetReliabilityController::class,'show'])->name('eam.assets.reliability.show');
         Route::get('/eam/assets/{asset}/documents/{document}', [AssetController::class,'downloadDocument'])->name('eam.assets.documents.download');
     });
     Route::middleware('permission:eam.asset.manage')->group(function () {
