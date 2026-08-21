@@ -1,0 +1,2 @@
+Rerun deployment so the updated deploy.sh starts with repaired session and CSRF settings.
+Expected result: login POST round trip returns 302, never 419.
