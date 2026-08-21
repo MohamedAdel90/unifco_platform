@@ -24,10 +24,18 @@ class PublicSiteController extends Controller
             : $request->session()->get('public_locale', 'ar');
 
         $html = view($locale === 'en' ? 'public.home-en' : 'public.home', compact('locale'))->render();
+        if ($locale === 'ar') {
+            $html = str_replace(
+                'تم حذف قطاع الضيافة وتوجيه القطاعات نحو المواقع التي تعتمد على التشغيل والصيانة واستمرارية الطاقة.',
+                'تغطي خدماتنا القطاعات التي تعتمد على جاهزية المرافق واستمرارية الطاقة الكهربائية.',
+                $html
+            );
+        }
+
         $cairo = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><style id="unifco-cairo-font">html,body,button,input,select,textarea{font-family:"Cairo",Tahoma,Arial,sans-serif}</style>';
 
         return response(str_replace('</head>', $cairo.'</head>', $html))
-            ->header('X-UNIFCO-Release', 'home-electrical-20260821-11')
+            ->header('X-UNIFCO-Release', 'home-electrical-20260821-12')
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
