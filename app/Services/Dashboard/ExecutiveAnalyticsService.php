@@ -6,14 +6,8 @@ use Illuminate\Support\Collection;
 
 class ExecutiveAnalyticsService
 {
-    public function build(
-        Collection $assets,
-        Collection $openWorkOrders,
-        Collection $serviceRequests,
-        Collection $slaBreaches,
-        Collection $contracts,
-        Collection $stockAlerts
-    ): array {
+    public function build(Collection $assets, Collection $openWorkOrders, Collection $serviceRequests, Collection $slaBreaches, Collection $contracts, Collection $stockAlerts, array $capabilities=[]): array
+    {
         $assetMap=$assets->keyBy('id');
 
         $backlogAging=['0-1 Days'=>0,'2-7 Days'=>0,'8-30 Days'=>0,'31+ Days'=>0];
@@ -38,10 +32,7 @@ class ExecutiveAnalyticsService
             $total=$serviceRequests->filter(fn($r)=>strtoupper((string)$r->priority)===$priority)->count();
             $breaches=$slaBreaches->filter(fn($r)=>strtoupper((string)$r->priority)===$priority)->count();
             if($total===0 && $breaches===0) continue;
-            $slaByPriority[]=(object)[
-                'priority'=>$priority,'total'=>$total,'breaches'=>$breaches,
-                'performance'=>$total?round(max(0,100-($breaches/$total*100)),1):100,
-            ];
+            $slaByPriority[]=(object)['priority'=>$priority,'total'=>$total,'breaches'=>$breaches,'performance'=>$total?round(max(0,100-($breaches/$total*100)),1):100];
         }
 
         $customerStats=[];$siteStats=[];
@@ -77,27 +68,27 @@ class ExecutiveAnalyticsService
         }
 
         $exceptions=collect();
-        foreach($assets->filter(fn($a)=>in_array($a->health_band,['CRITICAL','ATTENTION'],true))->sortBy('health_score')->take(4) as $asset){
-            $exceptions->push((object)['severity'=>$asset->health_band==='CRITICAL'?'CRITICAL':'HIGH','type'=>'ASSET','title'=>$asset->asset_code.' · '.$asset->name,'detail'=>'Health '.($asset->health_score ?? '—').'/100 · '.str_replace('_',' ',$asset->replacement_recommendation ?: 'Engineering review'),'url'=>route('eam.assets.show',$asset)]);
+        if($capabilities['eam']??false){
+            foreach($assets->filter(fn($a)=>in_array($a->health_band,['CRITICAL','ATTENTION'],true))->sortBy('health_score')->take(4) as $asset){
+                $exceptions->push((object)['severity'=>$asset->health_band==='CRITICAL'?'CRITICAL':'HIGH','type'=>'ASSET','title'=>$asset->asset_code.' · '.$asset->name,'detail'=>'Health '.($asset->health_score ?? '—').'/100 · '.str_replace('_',' ',$asset->replacement_recommendation ?: 'Engineering review'),'url'=>route('eam.assets.show',$asset)]);
+            }
         }
-        foreach($openWorkOrders->filter(fn($w)=>in_array(strtoupper((string)$w->priority),['CRITICAL','EMERGENCY'],true))->take(4) as $wo){
-            $exceptions->push((object)['severity'=>'CRITICAL','type'=>'WORK ORDER','title'=>$wo->work_order_no,'detail'=>str_replace('_',' ',$wo->maintenance_type).' · '.$wo->status,'url'=>route('maintenance.work-orders.show',$wo)]);
+        if($capabilities['maintenance']??false){
+            foreach($openWorkOrders->filter(fn($w)=>in_array(strtoupper((string)$w->priority),['CRITICAL','EMERGENCY'],true))->take(4) as $wo){
+                $exceptions->push((object)['severity'=>'CRITICAL','type'=>'WORK ORDER','title'=>$wo->work_order_no,'detail'=>str_replace('_',' ',$wo->maintenance_type).' · '.$wo->status,'url'=>route('maintenance.work-orders.show',$wo)]);
+            }
         }
-        foreach($slaBreaches->take(3) as $request){
-            $exceptions->push((object)['severity'=>'HIGH','type'=>'SLA','title'=>$request->request_no,'detail'=>'SLA breached · '.$request->priority.' · '.$request->status,'url'=>route('admin.public-requests.index')]);
+        if($capabilities['crm_manage']??false){
+            foreach($slaBreaches->take(3) as $request){
+                $exceptions->push((object)['severity'=>'HIGH','type'=>'SLA','title'=>$request->request_no,'detail'=>'SLA breached · '.$request->priority.' · '.$request->status,'url'=>route('admin.public-requests.index')]);
+            }
         }
-        foreach($stockAlerts->where('computed_alert_status','OUT_OF_STOCK')->take(3) as $stock){
-            $exceptions->push((object)['severity'=>'CRITICAL','type'=>'SPARE PART','title'=>$stock->item_code.' · '.$stock->item_name,'detail'=>$stock->asset_code.' · Out of stock','url'=>route('eam.health.index')]);
+        if(($capabilities['inventory']??false) && ($capabilities['eam']??false)){
+            foreach($stockAlerts->where('computed_alert_status','OUT_OF_STOCK')->take(3) as $stock){
+                $exceptions->push((object)['severity'=>'CRITICAL','type'=>'SPARE PART','title'=>$stock->item_code.' · '.$stock->item_name,'detail'=>$stock->asset_code.' · Out of stock','url'=>route('eam.health.index')]);
+            }
         }
 
-        return [
-            'backlogAging'=>$backlogAging,
-            'healthDistribution'=>$healthDistribution,
-            'slaByPriority'=>$slaByPriority,
-            'topCustomers'=>$topCustomers,
-            'topSites'=>$topSites,
-            'contractExpiry'=>$contractExpiry,
-            'exceptions'=>$exceptions->take(10)->values(),
-        ];
+        return ['backlogAging'=>$backlogAging,'healthDistribution'=>$healthDistribution,'slaByPriority'=>$slaByPriority,'topCustomers'=>$topCustomers,'topSites'=>$topSites,'contractExpiry'=>$contractExpiry,'exceptions'=>$exceptions->take(10)->values()];
     }
 }
