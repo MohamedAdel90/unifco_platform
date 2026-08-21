@@ -6,12 +6,23 @@ use App\Models\Customer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class CustomerInboxController extends Controller
 {
+    private function ensureReady(): void
+    {
+        abort_unless(
+            Schema::hasTable('customer_conversations') && Schema::hasTable('customer_messages'),
+            503,
+            'Customer messaging is being initialized. Please try again shortly.'
+        );
+    }
+
     public function customerIndex(Request $request): View
     {
+        $this->ensureReady();
         $user = auth()->user();
         abort_unless($user && $user->role === 'CUSTOMER' && $user->customer_id, 403);
         $customer = Customer::findOrFail($user->customer_id);
@@ -39,6 +50,7 @@ class CustomerInboxController extends Controller
 
     public function customerStart(Request $request): RedirectResponse
     {
+        $this->ensureReady();
         $user = auth()->user();
         abort_unless($user && $user->role === 'CUSTOMER' && $user->customer_id,403);
         $data = $request->validate(['subject'=>['required','string','max:255'],'body'=>['required','string','max:5000']]);
@@ -49,6 +61,7 @@ class CustomerInboxController extends Controller
 
     public function customerReply(Request $request, int $conversation): RedirectResponse
     {
+        $this->ensureReady();
         $user = auth()->user();
         abort_unless($user && $user->role === 'CUSTOMER' && $user->customer_id,403);
         $exists = DB::table('customer_conversations')->where('id',$conversation)->where('customer_id',$user->customer_id)->exists();
@@ -61,6 +74,7 @@ class CustomerInboxController extends Controller
 
     public function adminIndex(Request $request): View
     {
+        $this->ensureReady();
         $conversationId = $request->integer('conversation');
         $conversations = DB::table('customer_conversations')->join('customers','customers.id','=','customer_conversations.customer_id')
             ->select('customer_conversations.*','customers.name as customer_name','customers.customer_code')
@@ -78,6 +92,7 @@ class CustomerInboxController extends Controller
 
     public function adminReply(Request $request, int $conversation): RedirectResponse
     {
+        $this->ensureReady();
         $data = $request->validate(['body'=>['required','string','max:5000']]);
         abort_unless(DB::table('customer_conversations')->where('id',$conversation)->exists(),404);
         DB::table('customer_messages')->insert(['conversation_id'=>$conversation,'sender_user_id'=>auth()->id(),'sender_side'=>'UNIFCO','body'=>$data['body'],'created_at'=>now(),'updated_at'=>now()]);
