@@ -1,0 +1,1 @@
+Final deployment trigger for portfolio Asset Health, spare parts consumption analytics, live reorder alerts, customer-safe health dashboard, tenant isolation, migration 000030, and deployment preflight tests.
