@@ -182,38 +182,38 @@ cp: warning: behavior of -n is non-portable and may change in future; use --upda
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 20.69ms DONE
+  Creating migration table ...................................... 13.87ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables ................... 97.56ms DONE
-  2026_08_14_000002_add_controls_and_transactions .............. 114.14ms DONE
-  2026_08_14_000003_add_operational_integration .................. 5.82ms DONE
-  2026_08_14_000005_create_platform_services_tables .............. 5.56ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ......... 8.62ms DONE
-  2026_08_15_000008_add_finance_core ............................. 9.55ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ........ 55.81ms DONE
-  2026_08_15_000010_add_hr_operations ........................... 18.99ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................. 50.06ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................. 22.91ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .............. 127.38ms DONE
-  2026_08_18_000014_add_public_site_requests ..................... 3.14ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines .. 67.07ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ........... 108.33ms DONE
-  2026_08_18_000017_expand_customer_portal_operations ........... 86.42ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ........... 23.93ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  6.79ms DONE
-  2026_08_21_000020_add_emergency_request_details ............... 12.28ms DONE
-  2026_08_21_000021_add_customer_onboarding ..................... 13.43ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile ...... 8.07ms DONE
-  2026_08_21_000023_create_customer_messaging .................... 3.69ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 0.41ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ................ 60.47ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 186.91ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.50ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability .... 31.62ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  92.01ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 6.30ms DONE
+  2026_08_14_000001_create_unifco_core_tables ................... 37.25ms DONE
+  2026_08_14_000002_add_controls_and_transactions ............... 37.71ms DONE
+  2026_08_14_000003_add_operational_integration .................. 6.29ms DONE
+  2026_08_14_000005_create_platform_services_tables .............. 5.50ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ......... 8.61ms DONE
+  2026_08_15_000008_add_finance_core ............................. 8.95ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ........ 29.45ms DONE
+  2026_08_15_000010_add_hr_operations ........................... 18.47ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................. 15.32ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................. 21.79ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion ............... 41.70ms DONE
+  2026_08_18_000014_add_public_site_requests ..................... 3.13ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines .. 69.24ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ............ 56.78ms DONE
+  2026_08_18_000017_expand_customer_portal_operations ........... 41.26ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps ........... 24.27ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  7.51ms DONE
+  2026_08_21_000020_add_emergency_request_details ............... 13.19ms DONE
+  2026_08_21_000021_add_customer_onboarding ..................... 13.54ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile ...... 6.78ms DONE
+  2026_08_21_000023_create_customer_messaging .................... 3.50ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 0.44ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ................ 43.81ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation ........... 77.93ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.40ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability .... 29.45ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  13.41ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 6.64ms DONE
 
 Asset health recalculation complete. Assets processed: 0.
 Spare reorder check complete. Active alerts: 0; notifications refreshed: 0.
@@ -226,15 +226,15 @@ Spare reorder check complete. Active alerts: 0; notifications refreshed: 0.
 
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\OperationsCommandCenterTest[39m
-  [32;1m✓[39;22m[90m [39m[90madmin can render role aware command center[39m[90m                          [39m [90m0.53s[39m  
-  [32;1m✓[39;22m[90m [39m[90mdashboard accepts customer scope filter[39m[90m                             [39m [90m0.22s[39m  
-  [32;1m✓[39;22m[90m [39m[90mcustomer role is redirected to customer portal[39m[90m                      [39m [90m0.41s[39m  
+  [32;1m✓[39;22m[90m [39m[90madmin can render role aware command center[39m[90m                          [39m [90m0.69s[39m  
+  [32;1m✓[39;22m[90m [39m[90mdashboard accepts customer scope filter[39m[90m                             [39m [90m0.28s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcustomer role is redirected to customer portal[39m[90m                      [39m [90m0.53s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\FoundationTest[39m
-  [32;1m✓[39;22m[90m [39m[90mguest can open public homepage[39m[90m                                      [39m [90m0.01s[39m  
-  [32;1m✓[39;22m[90m [39m[90mauthenticated user can open dashboard[39m[90m                               [39m [90m0.22s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmodule workspace is available[39m[90m                                       [39m [90m0.21s[39m  
+  [32;1m✓[39;22m[90m [39m[90mguest can open public homepage[39m[90m                                      [39m [90m0.02s[39m  
+  [32;1m✓[39;22m[90m [39m[90mauthenticated user can open dashboard[39m[90m                               [39m [90m0.28s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmodule workspace is available[39m[90m                                       [39m [90m0.27s[39m  
 
-  [90mTests:[39m    [32;1m6 passed[39;22m[90m (19 assertions)[39m
-  [90mDuration:[39m [39m1.66s[39m
+  [90mTests:[39m    [32;1m6 passed[39;22m[90m (24 assertions)[39m
+  [90mDuration:[39m [39m2.15s[39m
 
