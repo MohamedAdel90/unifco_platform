@@ -9,7 +9,7 @@ use App\Http\Controllers\CustomerPortalOperationsController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\CustomerWorkAcceptanceController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EAM\{AssetController,AssetMeterController,AssetReliabilityController,AssetSparePartController};
+use App\Http\Controllers\EAM\{AssetController,AssetHealthDashboardController,AssetMeterController,AssetReliabilityController,AssetSparePartController};
 use App\Http\Controllers\Maintenance\WorkOrderController;
 use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::middleware('permission:eam.asset.read')->group(function () {
+        Route::get('/eam/health', [AssetHealthDashboardController::class,'index'])->name('eam.health.index');
         Route::get('/eam/assets/{asset}', [AssetController::class,'show'])->name('eam.assets.show');
         Route::get('/eam/assets/{asset}/meters', [AssetMeterController::class,'show'])->name('eam.assets.meters.show');
         Route::get('/eam/assets/{asset}/spare-parts', [AssetSparePartController::class,'show'])->name('eam.assets.spare-parts.show');
@@ -57,6 +58,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
+    Route::get('/customer/asset-health', [AssetHealthDashboardController::class,'customer'])->name('customer.asset-health');
     Route::get('/customer/assets/{asset}', [CustomerAssetReadController::class,'asset'])->name('customer.asset.show');
     Route::get('/customer/work-orders/{workOrder}', [CustomerAssetReadController::class,'workOrder'])->name('customer.work-orders.show');
     Route::get('/customer/work-orders/{workOrder}/attachments/{attachment}', [CustomerAssetReadController::class,'attachment'])->name('customer.work-orders.attachments.download');
