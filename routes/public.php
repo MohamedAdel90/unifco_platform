@@ -30,7 +30,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/eam/assets/{asset}/status', [AssetController::class,'updateStatus'])->name('eam.assets.status');
         Route::post('/eam/assets/{asset}/contracts', [AssetController::class,'assignContract'])->name('eam.assets.contracts.store');
         Route::post('/eam/assets/{asset}/specifications', [AssetController::class,'storeSpecification'])->name('eam.assets.specifications.store');
+        Route::post('/eam/assets/{asset}/template-specifications', [AssetController::class,'storeTemplateSpecifications'])->name('eam.assets.specifications.template.store');
         Route::post('/eam/assets/{asset}/documents', [AssetController::class,'storeDocument'])->name('eam.assets.documents.store');
+        Route::post('/eam/assets/{asset}/maintenance-plans', [AssetController::class,'storeMaintenancePlan'])->name('eam.assets.maintenance-plans.store');
+        Route::post('/eam/assets/{asset}/maintenance-plans/{plan}/tasks', [AssetController::class,'storeMaintenanceTask'])->name('eam.assets.maintenance-plans.tasks.store');
     });
 
     Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
