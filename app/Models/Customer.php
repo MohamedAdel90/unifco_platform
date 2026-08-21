@@ -11,7 +11,8 @@ class Customer extends Model
 
     protected $fillable = [
         'tenant_id','organization_id','customer_code','name','commercial_registration','vat_number','industry',
-        'email','contact_name','phone','city','country','address','status','onboarding_status'
+        'email','contact_name','contract_manager_name','contract_manager_title','project_name','logo_path',
+        'phone','city','country','address','status','onboarding_status'
     ];
 
     public function contacts(){ return $this->hasMany(CustomerContact::class); }
