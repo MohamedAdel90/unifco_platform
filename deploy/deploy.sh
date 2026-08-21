@@ -59,8 +59,7 @@ upsert_env SESSION_SECURE_COOKIE false
 upsert_env SESSION_SAME_SITE lax
 upsert_env SESSION_DOMAIN ""
 
-echo "==> Materializing official UNIFCO logo"
-php artisan brand:materialize
+echo "==> Skipping UNIFCO logo materialization by request"
 
 echo "==> Repairing customer messaging schema first"
 php artisan migrate --force --path=database/migrations/2026_08_21_000023_create_customer_messaging.php
