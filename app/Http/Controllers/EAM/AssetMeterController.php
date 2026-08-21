@@ -7,9 +7,28 @@ use App\Models\Asset;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\{Auth,DB};
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class AssetMeterController extends Controller
 {
+    public function show(Asset $asset): View
+    {
+        $asset->load(['customer','site']);
+        $readings = DB::table('asset_meter_readings')
+            ->leftJoin('users','users.id','=','asset_meter_readings.recorded_by')
+            ->where('asset_meter_readings.asset_id',$asset->id)
+            ->select('asset_meter_readings.*','users.name as recorded_by_name')
+            ->orderByDesc('reading_date')->orderByDesc('asset_meter_readings.id')->limit(100)->get();
+
+        $meterPlans = DB::table('maintenance_plans')
+            ->where('asset_id',$asset->id)
+            ->where('frequency_type','METER')
+            ->where('status','ACTIVE')
+            ->orderBy('next_due_meter')->get();
+
+        return view('eam.assets.meters',compact('asset','readings','meterPlans'));
+    }
+
     public function store(Request $request, Asset $asset): RedirectResponse
     {
         $data=$request->validate([
