@@ -70,9 +70,10 @@ jobs:
           set +e
           (
             set -euo pipefail
+            mkdir -p database storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
+            chmod -R u+rwX storage bootstrap/cache
             composer install --no-interaction --prefer-dist --no-progress
             cp -n .env.example .env || true
-            mkdir -p database storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
             rm -f database/database.sqlite
             touch database/database.sqlite
             php artisan key:generate --force
