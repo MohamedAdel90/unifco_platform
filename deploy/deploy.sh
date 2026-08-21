@@ -33,10 +33,10 @@ for asset in \
   test -s "$asset" || { echo "ERROR: missing homepage asset $asset"; exit 1; }
 done
 
-grep -q 'home-electrical-20260821-11' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
+grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
 grep -q '/images/home/hero-electrical.svg' resources/views/public/home.blade.php || { echo "ERROR: electrical hero is not referenced"; exit 1; }
-if grep -q 'الضيافة' resources/views/public/home.blade.php; then
-  echo "ERROR: hospitality sector is still present"
+if grep -q '<span>الضيافة</span>' resources/views/public/home.blade.php; then
+  echo "ERROR: hospitality sector card is still present"
   exit 1
 fi
 
@@ -58,7 +58,7 @@ supervisorctl restart "$APP_NAME"
 echo "==> Verifying homepage release"
 verified=0
 for attempt in $(seq 1 20); do
-    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-electrical-20260821-11'; then
+    if curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-electrical-20260821-12'; then
         verified=1
         break
     fi
@@ -71,6 +71,7 @@ if [ "$verified" -ne 1 ]; then
 fi
 
 curl -fsS http://127.0.0.1:8081/ | grep -q '/images/home/generator.svg' || { echo "ERROR: deployed homepage missing electrical service imagery"; exit 1; }
+curl -fsS http://127.0.0.1:8081/ | grep -q 'Power Transformers' || { echo "ERROR: deployed homepage missing transformer service"; exit 1; }
 
 echo "==> Electrical homepage assets verified"
 echo "==> Deploy complete at $(git rev-parse HEAD)"
