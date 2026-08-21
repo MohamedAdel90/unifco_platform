@@ -14,31 +14,13 @@ git reset --hard origin/main
 
 echo "==> Server checkout: $(git rev-parse HEAD)"
 
-echo "==> Verifying electrical homepage assets"
-for asset in \
-  public/images/home/hero-electrical.svg \
-  public/images/home/facility-power.svg \
-  public/images/home/generator.svg \
-  public/images/home/ats.svg \
-  public/images/home/transformer.svg \
-  public/images/home/ups.svg \
-  public/images/home/mv-switchgear.svg \
-  public/images/home/sector-commercial.svg \
-  public/images/home/sector-industrial.svg \
-  public/images/home/sector-healthcare.svg \
-  public/images/home/sector-education.svg \
-  public/images/home/sector-government.svg \
-  public/images/home/sector-warehouse.svg \
-  public/images/home/sector-datacenter.svg; do
-  test -s "$asset" || { echo "ERROR: missing homepage asset $asset"; exit 1; }
-done
-
+echo "==> Verifying homepage and emergency request files"
+test -s resources/views/public/request.blade.php || { echo "ERROR: emergency request form missing"; exit 1; }
+test -s database/migrations/2026_08_21_000020_add_emergency_request_details.php || { echo "ERROR: emergency request migration missing"; exit 1; }
 grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
-grep -q '/images/home/hero-electrical.svg' resources/views/public/home.blade.php || { echo "ERROR: electrical hero is not referenced"; exit 1; }
-if grep -q '<span>الضيافة</span>' resources/views/public/home.blade.php; then
-  echo "ERROR: hospitality sector card is still present"
-  exit 1
-fi
+grep -q 'request-map' resources/views/public/request.blade.php || { echo "ERROR: emergency map picker missing"; exit 1; }
+grep -q 'equipment_image' resources/views/public/request.blade.php || { echo "ERROR: equipment image field missing"; exit 1; }
+grep -q 'responsible_person' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: responsible person validation missing"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -48,6 +30,9 @@ php artisan brand:materialize
 
 echo "==> Applying migrations"
 php artisan migrate --force
+
+echo "==> Ensuring public upload storage link"
+php artisan storage:link || true
 
 echo "==> Clearing caches"
 php artisan optimize:clear
@@ -70,8 +55,9 @@ if [ "$verified" -ne 1 ]; then
     exit 1
 fi
 
-curl -fsS http://127.0.0.1:8081/ | grep -q '/images/home/generator.svg' || { echo "ERROR: deployed homepage missing electrical service imagery"; exit 1; }
-curl -fsS http://127.0.0.1:8081/ | grep -q 'Power Transformers' || { echo "ERROR: deployed homepage missing transformer service"; exit 1; }
+curl -fsS http://127.0.0.1:8081/emergency-maintenance | grep -q 'موقع العطل على الخريطة' || { echo "ERROR: deployed emergency form missing map section"; exit 1; }
+curl -fsS http://127.0.0.1:8081/emergency-maintenance | grep -q 'صورة المعدة' || { echo "ERROR: deployed emergency form missing equipment image"; exit 1; }
+curl -fsS http://127.0.0.1:8081/emergency-maintenance | grep -q 'المسؤول عن الطلب' || { echo "ERROR: deployed emergency form missing responsible person"; exit 1; }
 
-echo "==> Electrical homepage assets verified"
+echo "==> Emergency maintenance form verified"
 echo "==> Deploy complete at $(git rev-parse HEAD)"

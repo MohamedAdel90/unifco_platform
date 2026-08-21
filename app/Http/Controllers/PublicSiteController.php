@@ -44,17 +44,41 @@ class PublicSiteController extends Controller
 
     public function store(Request $request, PublicRequestPipelineService $pipeline): RedirectResponse
     {
+        $isEmergency = $request->input('request_type') === 'EMERGENCY_MAINTENANCE';
+
         $data = $request->validate([
             'request_type' => ['required','in:QUOTATION,EMERGENCY_MAINTENANCE'],
             'service_category' => ['required','string','max:120'],
             'subject' => ['required','string','max:180'],
             'details' => ['required','string','max:5000'],
-            'site_city' => ['nullable','string','max:120'],
+            'site_city' => [$isEmergency ? 'required' : 'nullable','string','max:120'],
+            'site_address' => [$isEmergency ? 'required' : 'nullable','string','max:500'],
+            'latitude' => [$isEmergency ? 'required' : 'nullable','numeric','between:-90,90'],
+            'longitude' => [$isEmergency ? 'required' : 'nullable','numeric','between:-180,180'],
+            'requested_date' => [$isEmergency ? 'required' : 'nullable','date','after_or_equal:today'],
+            'requested_time' => [$isEmergency ? 'required' : 'nullable','date_format:H:i'],
+            'equipment_image' => [$isEmergency ? 'required' : 'nullable','image','mimes:jpg,jpeg,png,webp','max:8192'],
+            'supporting_images' => ['nullable','array','max:6'],
+            'supporting_images.*' => ['image','mimes:jpg,jpeg,png,webp','max:8192'],
             'company_name' => ['required','string','max:180'],
+            'responsible_person' => [$isEmergency ? 'required' : 'nullable','string','max:180'],
             'commercial_registration' => ['required','string','max:60'],
             'email' => ['required','email','max:180'],
             'mobile' => ['required','string','max:32'],
         ]);
+
+        unset($data['equipment_image'], $data['supporting_images']);
+
+        if ($request->hasFile('equipment_image')) {
+            $data['equipment_image_path'] = $request->file('equipment_image')->store('public-requests/equipment', 'public');
+        }
+
+        if ($request->hasFile('supporting_images')) {
+            $data['supporting_image_paths'] = collect($request->file('supporting_images'))
+                ->map(fn ($image) => $image->store('public-requests/supporting', 'public'))
+                ->values()
+                ->all();
+        }
 
         $data['reference_no'] = ($data['request_type'] === 'QUOTATION' ? 'RFQ-' : 'EMR-').now()->format('Ymd').'-'.strtoupper(Str::random(6));
         $data['urgency'] = $data['request_type'] === 'EMERGENCY_MAINTENANCE' ? 'EMERGENCY' : 'NORMAL';
