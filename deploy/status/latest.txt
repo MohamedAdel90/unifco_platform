@@ -1,7 +1,4 @@
-release=hero-20260821-10
-source_sha=69cd88ff9164e42539a34b80465e1979b21e3381
-deployed_at=2026-08-21T00:02:28Z
-result=success
+source_sha=21195960a541be35fd20a63c462880017af86d28
 validate=success
-deploy_rc=0
-failed_stage=none
+deploy_rc=1
+recorded_at=2026-08-21T11:31:50Z
