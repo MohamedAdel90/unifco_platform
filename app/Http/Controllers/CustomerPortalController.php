@@ -88,10 +88,36 @@ class CustomerPortalController extends Controller
             'contractFilter', 'assetFilter', 'locationFilter'
         ))->render();
 
+        $unreadInbox = DB::table('customer_messages')
+            ->join('customer_conversations','customer_conversations.id','=','customer_messages.conversation_id')
+            ->where('customer_conversations.customer_id',$customer->id)
+            ->where('customer_messages.sender_side','UNIFCO')
+            ->whereNull('customer_messages.read_at')
+            ->count();
+
+        $customerBrand = $customer->logo_path
+            ? '<img class="customer-sidebar-logo" src="'.e(asset('storage/'.$customer->logo_path)).'" alt="'.e($customer->name).'">'
+            : '<div class="customer-sidebar-fallback">'.e($customer->name).'</div>';
+
+        $portalUiCss = '<style id="customer-portal-branding">.customer-brand-wrap{height:112px;background:#fff;border-radius:14px;padding:12px;margin-bottom:15px;display:flex;align-items:center;justify-content:center}.customer-sidebar-logo{max-width:100%;max-height:86px;object-fit:contain}.customer-sidebar-fallback{color:#06275c;text-align:center;font-size:12px;font-weight:900}.portal-icons{display:flex;align-items:center;gap:8px}.portal-icon{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid #dce4ee;background:#fff;display:grid;place-items:center;color:#06275c;text-decoration:none;font-size:17px}.portal-icon:hover{background:#f2f6fb}.portal-badge{position:absolute;top:-5px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#e20b24;color:#fff;font-size:9px;display:grid;place-items:center;font-weight:900}.quick-actions{gap:10px!important;margin-bottom:14px!important}.quick-action{padding:13px 15px!important;border-radius:10px!important}.quick-icon{width:38px!important;height:38px!important;font-size:18px!important}.quick-action b{font-size:12px!important}.quick-action small{font-size:9px!important}</style>';
+        $html = str_replace('</head>', $portalUiCss.'</head>', $html);
+
+        $html = preg_replace('/<aside class="sidebar"><img class="logo"[^>]*>/', '<aside class="sidebar"><div class="customer-brand-wrap">'.$customerBrand.'</div>', $html, 1);
+
+        $notificationsUrl = route('customer.section','notifications');
+        $html = preg_replace('#<a[^>]+href="'.preg_quote($notificationsUrl,'#').'"[^>]*>.*?</a>#s', '', $html, 1);
+
+        $profileUrl = route('customer.profile.edit');
+        $inboxLink = '<a href="'.route('customer.inbox').'"><span class="ico">✉</span><span>Inbox'.($unreadInbox ? ' ('.$unreadInbox.')' : '').'</span></a>';
+        $html = str_replace('<a href="'.$profileUrl.'">', $inboxLink.'<a href="'.$profileUrl.'">', $html);
+
+        $topIcons = '<div class="portal-icons"><a class="portal-icon" href="'.$notificationsUrl.'" aria-label="Notifications">♢'.($alerts->count() ? '<span class="portal-badge">'.$alerts->count().'</span>' : '').'</a><a class="portal-icon" href="'.route('customer.inbox').'" aria-label="Inbox">✉'.($unreadInbox ? '<span class="portal-badge">'.$unreadInbox.'</span>' : '').'</a></div>';
+        $html = preg_replace('/<div class="avatar">.*?<\/div>/', $topIcons, $html, 1);
+
         if ($section === 'dashboard') {
             $emergencyUrl = route('customer.section', 'work-orders').'?priority=EMERGENCY#request-service';
             $partsUrl = route('customer.section', 'work-orders').'?service_category=Spare%20Parts&priority=HIGH#request-service';
-            $quickActions = '<style>.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}.quick-action{display:flex;align-items:center;gap:15px;padding:19px;border-radius:12px;background:linear-gradient(135deg,#e20b24,#b8071b);color:#fff;box-shadow:0 10px 24px rgba(226,11,36,.18)}.quick-action.parts{background:linear-gradient(135deg,#a8071a,#e20b24)}.quick-icon{width:46px;height:46px;border-radius:11px;background:#ffffff18;display:grid;place-items:center;font-size:22px}.quick-action b{display:block;font-size:14px}.quick-action small{display:block;margin-top:3px;color:#ffe5e9;font-size:10px}@media(max-width:760px){.quick-actions{grid-template-columns:1fr}}</style><section class="quick-actions"><a class="quick-action" href="'.$emergencyUrl.'"><span class="quick-icon">⚡</span><span><b>طلب صيانة طارئة · Emergency Maintenance</b><small>Open a high-priority maintenance request</small></span></a><a class="quick-action parts" href="'.$partsUrl.'"><span class="quick-icon">⚙</span><span><b>طلب قطع غيار · Spare Parts Request</b><small>Request parts for an assigned asset</small></span></a></section>';
+            $quickActions = '<section class="quick-actions"><a class="quick-action" href="'.$emergencyUrl.'"><span class="quick-icon">⚡</span><span><b>طلب صيانة طارئة · Emergency Maintenance</b><small>Open a high-priority maintenance request</small></span></a><a class="quick-action parts" href="'.$partsUrl.'"><span class="quick-icon">⚙</span><span><b>طلب قطع غيار · Spare Parts Request</b><small>Request parts for an assigned asset</small></span></a></section>';
             $html = str_replace('<section class="stats">', $quickActions.'<section class="stats">', $html);
         }
 
@@ -102,6 +128,8 @@ class CustomerPortalController extends Controller
             $html = str_replace('</body>', $script.'</body>', $html);
         }
 
-        return response($html);
+        return response($html)
+            ->header('X-UNIFCO-Customer-Portal-Release','customer-portal-20260821-2')
+            ->header('Cache-Control','no-cache, no-store, must-revalidate');
     }
 }
