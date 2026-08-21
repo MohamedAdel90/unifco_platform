@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CRM\CustomerPortalAdminController;
 use App\Http\Controllers\CRM\CustomerPortalServiceAdminController;
+use App\Http\Controllers\CustomerAssetReadController;
 use App\Http\Controllers\CustomerInboxController;
 use App\Http\Controllers\CustomerPortalController;
 use App\Http\Controllers\CustomerPortalOperationsController;
@@ -56,6 +57,9 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
+    Route::get('/customer/assets/{asset}', [CustomerAssetReadController::class,'asset'])->name('customer.asset.show');
+    Route::get('/customer/work-orders/{workOrder}', [CustomerAssetReadController::class,'workOrder'])->name('customer.work-orders.show');
+    Route::get('/customer/work-orders/{workOrder}/attachments/{attachment}', [CustomerAssetReadController::class,'attachment'])->name('customer.work-orders.attachments.download');
     Route::get('/customer/inbox', [CustomerInboxController::class,'customerIndex'])->name('customer.inbox');
     Route::post('/customer/inbox', [CustomerInboxController::class,'customerStart'])->name('customer.inbox.start');
     Route::post('/customer/inbox/{conversation}/reply', [CustomerInboxController::class,'customerReply'])->name('customer.inbox.reply');
