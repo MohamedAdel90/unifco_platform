@@ -2,14 +2,26 @@
 
 namespace App\Services\Dashboard;
 
+use App\Services\AuthorizationService;
 use Illuminate\Support\Collection;
 
 class ExecutiveAnalyticsService
 {
+    public function __construct(private AuthorizationService $authorization) {}
+
     public function build(Collection $assets, Collection $openWorkOrders, Collection $serviceRequests, Collection $slaBreaches, Collection $contracts, Collection $stockAlerts, array $capabilities=[]): array
     {
-        $assetMap=$assets->keyBy('id');
+        if(!$capabilities && auth()->check()){
+            $user=auth()->user();
+            $capabilities=[
+                'maintenance'=>$this->authorization->allows($user,'maintenance.work_order.read'),
+                'eam'=>$this->authorization->allows($user,'eam.asset.read'),
+                'crm_manage'=>$this->authorization->allows($user,'crm.customer.manage'),
+                'inventory'=>$this->authorization->allows($user,'inventory.stock.read'),
+            ];
+        }
 
+        $assetMap=$assets->keyBy('id');
         $backlogAging=['0-1 Days'=>0,'2-7 Days'=>0,'8-30 Days'=>0,'31+ Days'=>0];
         foreach($openWorkOrders as $wo){
             $age=max(0,(int)optional($wo->created_at)->diffInDays(now()));
