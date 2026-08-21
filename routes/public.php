@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CRM\CustomerPortalAdminController;
 use App\Http\Controllers\CRM\CustomerPortalServiceAdminController;
+use App\Http\Controllers\CustomerInboxController;
 use App\Http\Controllers\CustomerPortalController;
 use App\Http\Controllers\CustomerPortalOperationsController;
 use App\Http\Controllers\CustomerProfileController;
@@ -20,6 +21,9 @@ Route::get('/request-received/{reference}', [PublicSiteController::class, 'recei
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
+    Route::get('/customer/inbox', [CustomerInboxController::class,'customerIndex'])->name('customer.inbox');
+    Route::post('/customer/inbox', [CustomerInboxController::class,'customerStart'])->name('customer.inbox.start');
+    Route::post('/customer/inbox/{conversation}/reply', [CustomerInboxController::class,'customerReply'])->name('customer.inbox.reply');
     Route::get('/customer/profile', [CustomerProfileController::class,'edit'])->name('customer.profile.edit');
     Route::put('/customer/profile', [CustomerProfileController::class,'update'])->name('customer.profile.update');
     Route::post('/customer/profile/logo', [CustomerProfileController::class,'updateLogo'])->name('customer.profile.logo');
@@ -37,6 +41,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/customer/work-orders/{workOrder}/acceptance', [CustomerWorkAcceptanceController::class,'decide'])->name('customer.work-acceptance.decide');
 
     Route::middleware('permission:crm.customer.manage')->group(function () {
+        Route::get('/crm/customer-inbox', [CustomerInboxController::class,'adminIndex'])->name('crm.customer-inbox.index');
+        Route::post('/crm/customer-inbox/{conversation}/reply', [CustomerInboxController::class,'adminReply'])->name('crm.customer-inbox.reply');
         Route::get('/crm/customers/{customer}/portal', [CustomerPortalAdminController::class, 'show'])->name('crm.customers.portal');
         Route::post('/crm/customers/{customer}/portal/contacts', [CustomerPortalAdminController::class, 'storeContact'])->name('crm.customers.portal.contacts.store');
         Route::post('/crm/customers/{customer}/portal/sites', [CustomerPortalAdminController::class, 'storeSite'])->name('crm.customers.portal.sites.store');
