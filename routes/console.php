@@ -1,7 +1,8 @@
 <?php
 
 use App\Jobs\CreatePlatformNotification;
-use App\Models\{ApiToken,MaintenancePlan,ReportSubscription,User,WorkOrder};
+use App\Models\{ApiToken,Asset,MaintenancePlan,ReportSubscription,User,WorkOrder};
+use App\Services\EAM\AssetHealthService;
 use Illuminate\Support\Facades\{Artisan,Mail,Schedule,Schema};
 
 Artisan::command('unifco:status', function (): void { $this->info('UNIFCO Platform runtime is available.'); })->purpose('Show the UNIFCO runtime status');
@@ -92,7 +93,16 @@ Artisan::command('unifco:generate-pm-work-orders', function (): void {
     $this->info("PM generation complete. Created: {$created}; skipped/not due: {$skipped}.");
 })->purpose('Generate preventive maintenance work orders for date-based and meter-based plans');
 
+Artisan::command('unifco:recalculate-asset-health', function (AssetHealthService $health): void {
+    $count=0;
+    Asset::whereNotIn('lifecycle_status',['DISPOSED','RETIRED'])->orderBy('id')->chunkById(200,function($assets) use($health,&$count): void {
+        foreach($assets as $asset){$health->recalculate($asset);$count++;}
+    });
+    $this->info("Asset health recalculation complete. Assets processed: {$count}.");
+})->purpose('Recalculate lifecycle health score and replacement recommendation for active assets');
+
 Schedule::call(fn()=>ApiToken::whereNotNull('expires_at')->where('expires_at','<',now()->subDays(30))->delete())->dailyAt('02:10')->name('prune-expired-api-tokens')->withoutOverlapping();
 Schedule::command('queue:prune-failed --hours=168')->dailyAt('02:20');
 Schedule::command('unifco:deliver-reports')->hourly()->withoutOverlapping();
 Schedule::command('unifco:generate-pm-work-orders')->hourly()->withoutOverlapping();
+Schedule::command('unifco:recalculate-asset-health')->dailyAt('03:10')->withoutOverlapping();
