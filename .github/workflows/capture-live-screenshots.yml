@@ -87,6 +87,7 @@ jobs:
             await Promise.all([page.waitForLoadState('networkidle'),page.click('button[type="submit"]')]);
             if(page.url().includes('/login')) throw new Error('Admin login failed.');
             async function shot(path,name){await page.goto(base+path,{waitUntil:'networkidle',timeout:30000});await page.screenshot({path:'deploy/screenshots/'+name,fullPage:true});}
+            await shot('/','00-operations-dashboard.png');
             await shot('/eam/assets','01-asset-register.png');
             await shot('/eam/health','02-asset-health-dashboard.png');
             await shot('/maintenance/work-orders','03-work-orders.png');
