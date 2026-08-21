@@ -83,12 +83,6 @@ class CustomerPortalController extends Controller
         $locations = Asset::where('customer_id', $customer->id)->whereNotNull('location_code')->distinct()->orderBy('location_code')->pluck('location_code');
         $warrantyParts = Asset::whereIn('id', $allCustomerAssetIds)->orderBy('warranty_expiry')->get();
 
-        $html = view('customer.section', compact(
-            'section', 'customer', 'contracts', 'assets', 'plans', 'workOrders', 'invoices', 'payments', 'materials', 'requests', 'quotations', 'visitReports', 'attachments', 'alerts', 'locations', 'warrantyParts',
-            'openInvoiceAmount', 'openWorkOrders', 'inProgressCount', 'completedCount', 'overdueCount', 'recentWorkOrders', 'upcomingPlans', 'slaPerformance', 'preventiveCount', 'correctiveCount',
-            'contractFilter', 'assetFilter', 'locationFilter'
-        ))->render();
-
         $inboxReady = Schema::hasTable('customer_messages') && Schema::hasTable('customer_conversations');
         $unreadInbox = 0;
         if ($inboxReady) {
@@ -100,34 +94,18 @@ class CustomerPortalController extends Controller
                 ->count();
         }
 
-        $customerBrand = $customer->logo_path
-            ? '<img class="customer-sidebar-logo" src="'.e(asset('storage/'.$customer->logo_path)).'" alt="'.e($customer->name).'">'
-            : '<div class="customer-sidebar-fallback">'.e($customer->name).'</div>';
-
-        $portalUiCss = '<style id="customer-portal-branding">.customer-brand-wrap{height:112px;background:#fff;border-radius:14px;padding:12px;margin-bottom:15px;display:flex;align-items:center;justify-content:center}.customer-sidebar-logo{max-width:100%;max-height:86px;object-fit:contain}.customer-sidebar-fallback{color:#06275c;text-align:center;font-size:12px;font-weight:900}.portal-icons{display:flex;align-items:center;gap:8px}.portal-icon{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid #dce4ee;background:#fff;display:grid;place-items:center;color:#06275c;text-decoration:none;font-size:17px}.portal-icon:hover{background:#f2f6fb}.portal-badge{position:absolute;top:-5px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#e20b24;color:#fff;font-size:9px;display:grid;place-items:center;font-weight:900}.quick-actions{gap:10px!important;margin-bottom:14px!important}.quick-action{padding:13px 15px!important;border-radius:10px!important}.quick-icon{width:38px!important;height:38px!important;font-size:18px!important}.quick-action b{font-size:12px!important}.quick-action small{font-size:9px!important}</style>';
-        $html = str_replace('</head>', $portalUiCss.'</head>', $html);
-
-        $html = preg_replace('/<aside class="sidebar"><img class="logo"[^>]*>/', '<aside class="sidebar"><div class="customer-brand-wrap">'.$customerBrand.'</div>', $html, 1);
-
-        $notificationsUrl = route('customer.section','notifications');
-        $html = preg_replace('#<a[^>]+href="'.preg_quote($notificationsUrl,'#').'"[^>]*>.*?</a>#s', '', $html, 1);
-
-        $profileUrl = route('customer.profile.edit');
-        if ($inboxReady) {
-            $inboxLink = '<a href="'.route('customer.inbox').'"><span class="ico">✉</span><span>Inbox'.($unreadInbox ? ' ('.$unreadInbox.')' : '').'</span></a>';
-            $html = str_replace('<a href="'.$profileUrl.'">', $inboxLink.'<a href="'.$profileUrl.'">', $html);
-        }
-
-        $inboxTop = $inboxReady
-            ? '<a class="portal-icon" href="'.route('customer.inbox').'" aria-label="Inbox">✉'.($unreadInbox ? '<span class="portal-badge">'.$unreadInbox.'</span>' : '').'</a>'
-            : '';
-        $topIcons = '<div class="portal-icons"><a class="portal-icon" href="'.$notificationsUrl.'" aria-label="Notifications">♢'.($alerts->count() ? '<span class="portal-badge">'.$alerts->count().'</span>' : '').'</a>'.$inboxTop.'</div>';
-        $html = preg_replace('/<div class="avatar">.*?<\/div>/', $topIcons, $html, 1);
+        $html = view('customer.section', compact(
+            'section', 'customer', 'contracts', 'assets', 'plans', 'workOrders', 'invoices', 'payments', 'materials', 'requests', 'quotations', 'visitReports', 'attachments', 'alerts', 'locations', 'warrantyParts',
+            'openInvoiceAmount', 'openWorkOrders', 'inProgressCount', 'completedCount', 'overdueCount', 'recentWorkOrders', 'upcomingPlans', 'slaPerformance', 'preventiveCount', 'correctiveCount',
+            'contractFilter', 'assetFilter', 'locationFilter', 'unreadInbox', 'inboxReady'
+        ))->render();
 
         if ($section === 'dashboard') {
             $emergencyUrl = route('customer.section', 'work-orders').'?priority=EMERGENCY#request-service';
             $partsUrl = route('customer.section', 'work-orders').'?service_category=Spare%20Parts&priority=HIGH#request-service';
+            $quickCss = '<style>.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.quick-action{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:10px;background:linear-gradient(135deg,#e20b24,#b8071b);color:#fff;box-shadow:0 8px 18px rgba(226,11,36,.16)}.quick-action.parts{background:linear-gradient(135deg,#a8071a,#e20b24)}.quick-icon{width:38px;height:38px;border-radius:9px;background:#ffffff18;display:grid;place-items:center;font-size:18px}.quick-action b{display:block;font-size:12px}.quick-action small{display:block;margin-top:2px;color:#ffe5e9;font-size:9px}@media(max-width:760px){.quick-actions{grid-template-columns:1fr}}</style>';
             $quickActions = '<section class="quick-actions"><a class="quick-action" href="'.$emergencyUrl.'"><span class="quick-icon">⚡</span><span><b>طلب صيانة طارئة · Emergency Maintenance</b><small>Open a high-priority maintenance request</small></span></a><a class="quick-action parts" href="'.$partsUrl.'"><span class="quick-icon">⚙</span><span><b>طلب قطع غيار · Spare Parts Request</b><small>Request parts for an assigned asset</small></span></a></section>';
+            $html = str_replace('</head>', $quickCss.'</head>', $html);
             $html = str_replace('<section class="stats">', $quickActions.'<section class="stats">', $html);
         }
 
@@ -139,7 +117,7 @@ class CustomerPortalController extends Controller
         }
 
         return response($html)
-            ->header('X-UNIFCO-Customer-Portal-Release','customer-portal-20260821-3')
+            ->header('X-UNIFCO-Customer-Portal-Release','customer-portal-20260821-4')
             ->header('Cache-Control','no-cache, no-store, must-revalidate');
     }
 }
