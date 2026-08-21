@@ -5,12 +5,13 @@ namespace App\Http\Controllers\EAM;
 use App\Http\Controllers\Controller;
 use App\Models\{Asset,Customer,CustomerSite,ServiceContract};
 use App\Services\AuditService;
-use Illuminate\Http\{RedirectResponse,Request,Response};
+use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\{Auth,DB,Storage};
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AssetController extends Controller
 {
@@ -19,7 +20,7 @@ class AssetController extends Controller
         return view('eam.assets.index',[
             'assets'=>Asset::with(['customer','site','parent'])
                 ->when($request->integer('customer_id'),fn($q,$id)=>$q->where('customer_id',$id))
-                ->when($request->filled('operational_status'),fn($q)=>$q->where('operational_status',$request->string('operational_status')))
+                ->when($request->filled('operational_status'),fn($q)=>$q->where('operational_status',(string)$request->string('operational_status')))
                 ->orderBy('asset_code')->paginate(25)->withQueryString(),
             'customers'=>Customer::orderBy('name')->get(),
         ]);
@@ -159,7 +160,7 @@ class AssetController extends Controller
         return back()->with('status','Asset document uploaded.');
     }
 
-    public function downloadDocument(Asset $asset, int $document): Response
+    public function downloadDocument(Asset $asset, int $document): StreamedResponse
     {
         $doc=DB::table('asset_documents')->where('id',$document)->where('asset_id',$asset->id)->first();
         abort_unless($doc,404);
