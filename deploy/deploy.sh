@@ -19,7 +19,9 @@ test -s resources/views/public/request.blade.php || { echo "ERROR: emergency req
 test -s database/migrations/2026_08_21_000020_add_emergency_request_details.php || { echo "ERROR: emergency request migration missing"; exit 1; }
 test -s database/migrations/2026_08_21_000023_create_customer_messaging.php || { echo "ERROR: customer messaging migration missing"; exit 1; }
 grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
-grep -q 'customer-portal-20260821-3' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: repaired customer portal release missing"; exit 1; }
+grep -q 'customer-portal-20260821-4' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: customer portal v4 release missing"; exit 1; }
+grep -q 'customer-logo-plain' resources/views/customer/section.blade.php || { echo "ERROR: plain customer logo layout missing"; exit 1; }
+grep -q 'customer.inbox' resources/views/customer/section.blade.php || { echo "ERROR: inbox link missing from customer layout"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
