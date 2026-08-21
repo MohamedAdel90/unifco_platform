@@ -1,0 +1,1 @@
+Final verification trigger after fixing deploy CSRF syntax. Run full EAM preflight, migrations, health/reorder commands, restart, homepage verification and login CSRF verification. Brand materialization remains skipped by request.
