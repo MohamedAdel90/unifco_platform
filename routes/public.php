@@ -33,6 +33,9 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('permission:crm.customer.manage')->group(function () {
         Route::get('/crm/customers/{customer}/portal', [CustomerPortalAdminController::class, 'show'])->name('crm.customers.portal');
+        Route::post('/crm/customers/{customer}/portal/contacts', [CustomerPortalAdminController::class, 'storeContact'])->name('crm.customers.portal.contacts.store');
+        Route::post('/crm/customers/{customer}/portal/sites', [CustomerPortalAdminController::class, 'storeSite'])->name('crm.customers.portal.sites.store');
+        Route::post('/crm/customers/{customer}/portal/activate', [CustomerPortalAdminController::class, 'activate'])->name('crm.customers.portal.activate');
         Route::post('/crm/customers/{customer}/portal/users', [CustomerPortalAdminController::class, 'provisionUser'])->name('crm.customers.portal.users.store');
         Route::post('/crm/customers/{customer}/portal/contracts', [CustomerPortalAdminController::class, 'storeContract'])->name('crm.customers.portal.contracts.store');
         Route::post('/crm/customers/{customer}/portal/assets', [CustomerPortalAdminController::class, 'assignAsset'])->name('crm.customers.portal.assets.store');
