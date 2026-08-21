@@ -18,32 +18,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate hero v10 source
-        id: validate
+      - name: Validate electrical homepage release
         shell: bash
         run: |
           set -euo pipefail
-          test -s resources/hero/v10.part0
-          test -s resources/hero/v10.part1
-          test -s resources/hero/v10.part2
-          test -s resources/hero/v10.part3
-          test -s resources/hero/v10.part4
-          test -s resources/hero/v10.part5
-          cat resources/hero/v10.part0 \
-              resources/hero/v10.part1 \
-              resources/hero/v10.part2 \
-              resources/hero/v10.part3 \
-              resources/hero/v10.part4 \
-              resources/hero/v10.part5 \
-            | tr -d '\n\r ' \
-            | base64 -d > /tmp/unifco-hero-v10.jpg
-          test -s /tmp/unifco-hero-v10.jpg
-          test "$(head -c 2 /tmp/unifco-hero-v10.jpg | od -An -tx1 | tr -d ' \n')" = "ffd8"
-          test "$(tail -c 2 /tmp/unifco-hero-v10.jpg | od -An -tx1 | tr -d ' \n')" = "ffd9"
-          echo "Hero v10 validated: $(stat -c '%s bytes' /tmp/unifco-hero-v10.jpg)"
+          for asset in \
+            public/images/home/hero-electrical.svg \
+            public/images/home/facility-power.svg \
+            public/images/home/generator.svg \
+            public/images/home/ats.svg \
+            public/images/home/transformer.svg \
+            public/images/home/ups.svg \
+            public/images/home/mv-switchgear.svg \
+            public/images/home/sector-commercial.svg \
+            public/images/home/sector-industrial.svg \
+            public/images/home/sector-healthcare.svg \
+            public/images/home/sector-education.svg \
+            public/images/home/sector-government.svg \
+            public/images/home/sector-warehouse.svg \
+            public/images/home/sector-datacenter.svg; do
+            test -s "$asset"
+          done
+          grep -q '/images/home/hero-electrical.svg' resources/views/public/home.blade.php
+          grep -q 'Generator Maintenance' resources/views/public/home.blade.php
+          grep -q 'ATS Systems' resources/views/public/home.blade.php
+          grep -q 'Power Transformers' resources/views/public/home.blade.php
+          grep -q 'UPS & Critical Power' resources/views/public/home.blade.php
+          grep -q 'Medium Voltage Systems' resources/views/public/home.blade.php
+          ! grep -q 'الضيافة' resources/views/public/home.blade.php
+          grep -q 'home-electrical-20260821-11' app/Http/Controllers/PublicSiteController.php
 
       - name: Deploy via SSH
-        id: deploy
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
