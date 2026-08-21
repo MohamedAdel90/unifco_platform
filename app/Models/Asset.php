@@ -11,7 +11,7 @@ class Asset extends Model
     use BelongsToTenant;
 
     protected $fillable = [
-        'tenant_id','organization_id','customer_id','customer_site_id','parent_asset_id','asset_code','name','location_code','serial_no',
+        'tenant_id','organization_id','customer_id','customer_site_id','parent_asset_id','asset_category_template_id','asset_code','name','location_code','serial_no',
         'asset_category','asset_subcategory','manufacturer','model_no','criticality','lifecycle_status','operational_status','manufacture_date','installation_date',
         'warranty_expiry','acquisition_cost','replacement_value','salvage_value','useful_life_months','expected_replacement_date','accumulated_depreciation','net_book_value',
         'meter_value','commission_date','supplier_name','installer_name','qr_token','verification_status','disposed_at','status'
