@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Asset,Customer,Employee,FinancialDocument,Item,Journal,Project,PurchaseOrder,ProductionOrder,WorkOrder};
-use Illuminate\Http\Request;
+use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\View\View;
 
 class ModuleController extends Controller
@@ -20,9 +20,14 @@ class ModuleController extends Controller
         'eam' => [Asset::class,'Enterprise Assets','asset_code','acquisition_cost'],
     ];
 
-    public function index(Request $request, string $module): View
+    public function index(Request $request, string $module): View|RedirectResponse
     {
         abort_unless(isset(self::MODULES[$module]), 404);
+
+        if ($module === 'eam') {
+            return redirect()->route('eam.assets.index');
+        }
+
         [$model,$title,$key,$secondary] = self::MODULES[$module];
         $records = $model::query()->latest('id')->paginate(20)->withQueryString();
 
