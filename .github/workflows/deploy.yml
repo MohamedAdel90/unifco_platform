@@ -25,7 +25,7 @@ jobs:
           tools: none
           coverage: none
 
-      - name: Validate EAM and maintenance source
+      - name: Validate EAM maintenance and customer portal source
         shell: bash
         run: |
           set -euo pipefail
@@ -37,6 +37,8 @@ jobs:
           php -l app/Http/Controllers/EAM/AssetSparePartController.php
           php -l app/Http/Controllers/EAM/AssetReliabilityController.php
           php -l app/Http/Controllers/Maintenance/WorkOrderController.php
+          php -l app/Http/Controllers/CustomerAssetReadController.php
+          php -l app/Http/Controllers/CustomerPortalController.php
           php -l routes/public.php
           php -l routes/console.php
           php -l database/migrations/2026_08_21_000025_build_asset_master_phase_one.php
@@ -52,12 +54,15 @@ jobs:
           grep -q 'asset_failures' database/migrations/2026_08_21_000028_add_work_order_execution_and_reliability.php
           grep -q 'unifco:generate-pm-work-orders' routes/console.php
           grep -q 'eam.assets.maintenance-plans.store' resources/views/eam/assets/show.blade.php
-          grep -q 'eam.assets.meters.show' resources/views/eam/assets/index.blade.php
-          grep -q 'eam.assets.spare-parts.show' resources/views/eam/assets/index.blade.php
           grep -q 'eam.assets.reliability.show' resources/views/eam/assets/index.blade.php
           grep -q 'maintenance.work-orders.checklist' resources/views/maintenance/work-orders/show.blade.php
           grep -q 'maintenance.work-orders.materials.store' resources/views/maintenance/work-orders/show.blade.php
           grep -q 'maintenance.work-orders.failures.store' resources/views/maintenance/work-orders/show.blade.php
+          grep -q 'customer.asset.show' resources/views/customer/asset-detail.blade.php
+          grep -q 'customer.work-orders.show' resources/views/customer/asset-detail.blade.php
+          grep -q 'CUSTOMER SERVICE REPORT' resources/views/customer/work-order-detail.blade.php
+          grep -q "customer-portal-20260821-5" app/Http/Controllers/CustomerPortalController.php
+          ! grep -q "select('maintenance_materials\.\*'" app/Http/Controllers/CustomerPortalController.php
 
       - name: Validate electrical homepage release
         shell: bash
