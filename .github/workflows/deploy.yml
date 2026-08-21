@@ -30,6 +30,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          php -l app/Http/Controllers/DashboardController.php
           php -l app/Models/Asset.php
           php -l app/Models/MaintenancePlan.php
           php -l app/Models/WorkOrder.php
@@ -46,6 +47,10 @@ jobs:
           php -l routes/public.php
           php -l routes/console.php
           for migration in database/migrations/2026_08_21_00002{5,6,7,8,9}_*.php database/migrations/2026_08_21_000030_*.php; do php -l "$migration"; done
+          grep -q 'Operations Command Center' resources/views/dashboard.blade.php
+          grep -q 'Operational Health Score' resources/views/dashboard.blade.php
+          grep -q 'Action Required' resources/views/dashboard.blade.php
+          grep -q 'SPARE PART ALERTS' resources/views/dashboard.blade.php
           grep -q 'PLAN_REPLACEMENT' app/Services/EAM/AssetHealthService.php
           grep -q 'OUT_OF_STOCK' app/Services/EAM/AssetSparePartReorderService.php
           grep -q 'Auth::check' app/Services/EAM/AssetSparePartReorderService.php
@@ -79,6 +84,7 @@ jobs:
             touch database/database.sqlite
             php artisan key:generate --force
             php artisan migrate:fresh --force
+            php artisan route:list --name=dashboard >/dev/null
             php artisan route:list --name=eam.health.index | grep -q 'eam/health'
             php artisan route:list --name=customer.asset-health | grep -q 'customer/asset-health'
             php artisan route:list --name=maintenance.work-orders.show >/dev/null
@@ -86,6 +92,8 @@ jobs:
             php artisan list | grep -q 'unifco:check-spare-reorder-alerts'
             php artisan unifco:recalculate-asset-health
             php artisan unifco:check-spare-reorder-alerts
+            php artisan view:clear
+            php artisan view:cache
           ) > >(tee /tmp/unifco-eam-preflight.log) 2>&1
           rc=$?
           echo "rc=$rc" >> "$GITHUB_OUTPUT"
@@ -165,7 +173,7 @@ jobs:
           else
             result="failure"
           fi
-          printf 'release=eam-health-reorder-v2\nsource_sha=%s\nverified_at=%s\nresult=%s\nsource_validation=%s\nlaravel_preflight_rc=%s\nhomepage_validation=%s\ndeploy_rc=%s\n' \
+          printf 'release=operations-command-center-v1\nsource_sha=%s\nverified_at=%s\nresult=%s\nsource_validation=%s\nlaravel_preflight_rc=%s\nhomepage_validation=%s\ndeploy_rc=%s\n' \
             "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "$source_result" "${preflight_rc:-not-run}" "$homepage_result" "${deploy_rc:-not-run}" \
             > deploy/status/eam-lifecycle-latest.txt
           if [ -f /tmp/unifco-eam-preflight.log ]; then tail -n 200 /tmp/unifco-eam-preflight.log > deploy/status/eam-lifecycle-preflight.log; else printf 'Preflight step did not produce a log.\n' > deploy/status/eam-lifecycle-preflight.log; fi
@@ -173,7 +181,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add deploy/status/eam-lifecycle-latest.txt deploy/status/eam-lifecycle-preflight.log deploy/status/eam-lifecycle-deploy.log
-          git commit -m "Record EAM deployment verification [skip ci]" || true
+          git commit -m "Record dashboard deployment verification [skip ci]" || true
           git push origin HEAD:main
 
       - name: Fail workflow when verification failed
