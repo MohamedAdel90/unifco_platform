@@ -28,9 +28,10 @@ class AssetHealthDashboardController extends Controller
         $metrics=$this->portfolioMetrics($assets);
         $recommendations=$this->recommendations($assets);
         $reorderAlerts=$reorder->alerts($customerId,$siteId)->filter(fn($a)=>$a->computed_alert_status!=='OK')->values();
+        $consumption=$this->consumption($assets,true);
 
         return view('eam.health.index',[
-            'assets'=>$assets,'metrics'=>$metrics,'recommendations'=>$recommendations,'reorderAlerts'=>$reorderAlerts,
+            'assets'=>$assets,'metrics'=>$metrics,'recommendations'=>$recommendations,'reorderAlerts'=>$reorderAlerts,'consumption'=>$consumption,
             'customers'=>Customer::orderBy('name')->get(),
             'sites'=>CustomerSite::when($customerId,fn($q)=>$q->where('customer_id',$customerId))->orderBy('name')->get(),
             'contracts'=>ServiceContract::when($customerId,fn($q)=>$q->where('customer_id',$customerId))->orderByDesc('starts_on')->get(),
@@ -60,9 +61,10 @@ class AssetHealthDashboardController extends Controller
             unset($a->preferred_supplier,$a->suggested_order_quantity,$a->stock_quantity,$a->reserved_quantity);
             return $a;
         })->values();
+        $consumption=$this->consumption($assets,false);
 
         return view('customer.asset-health',[
-            'assets'=>$assets,'metrics'=>$metrics,'recommendations'=>$recommendations,'reorderAlerts'=>$reorderAlerts,
+            'assets'=>$assets,'metrics'=>$metrics,'recommendations'=>$recommendations,'reorderAlerts'=>$reorderAlerts,'consumption'=>$consumption,
             'sites'=>CustomerSite::where('customer_id',$customerId)->orderBy('name')->get(),
             'contracts'=>ServiceContract::where('customer_id',$customerId)->orderByDesc('starts_on')->get(),
             'siteId'=>$siteId,'contractId'=>$contractId,
@@ -88,6 +90,23 @@ class AssetHealthDashboardController extends Controller
             $result['maintenanceCost12m']=$assetIds->isEmpty()?0:(float)DB::table('work_orders')->whereIn('asset_id',$assetIds)->where('status','COMPLETED')->where('completed_at','>=',now()->subMonths(12))->sum('total_cost');
         }
         return $result;
+    }
+
+    private function consumption($assets,bool $internal=true)
+    {
+        $assetIds=$assets->pluck('id');
+        if($assetIds->isEmpty()) return collect();
+        $query=DB::table('maintenance_materials')
+            ->join('work_orders','work_orders.id','=','maintenance_materials.work_order_id')
+            ->join('items','items.id','=','maintenance_materials.item_id')
+            ->whereIn('work_orders.asset_id',$assetIds)
+            ->where('maintenance_materials.created_at','>=',now()->subMonths(12))
+            ->groupBy('maintenance_materials.item_id','items.item_code','items.name','items.uom')
+            ->select('maintenance_materials.item_id','items.item_code','items.name as item_name','items.uom')
+            ->selectRaw('SUM(maintenance_materials.quantity) as total_quantity')
+            ->selectRaw('COUNT(DISTINCT maintenance_materials.work_order_id) as work_order_count');
+        if($internal) $query->selectRaw('SUM(maintenance_materials.total_cost) as total_cost');
+        return $query->orderByDesc('total_quantity')->limit(20)->get();
     }
 
     private function recommendations($assets,bool $internal=true)
