@@ -18,16 +18,16 @@ class CustomerController extends Controller
 
     public function store(Request $request, AuditService $audit): RedirectResponse
     {
-        $customer=Customer::create([...$this->validated($request),'organization_id'=>Auth::user()->organization_id,'status'=>'ACTIVE']);
+        $customer=Customer::create([...$this->validated($request),'organization_id'=>Auth::user()->organization_id,'status'=>'ACTIVE','onboarding_status'=>'ONBOARDING']);
         $audit->record('crm.customer.created',$customer,[],$customer->toArray());
-        return redirect()->route('crm.customers.index')->with('status','Customer created.');
+        return redirect()->route('crm.customers.portal',$customer)->with('status','Customer created. Continue the onboarding checklist.');
     }
 
     public function update(Request $request, Customer $customer, AuditService $audit): RedirectResponse
     {
         $before=$customer->toArray(); $customer->update($this->validated($request,$customer));
         $audit->record('crm.customer.updated',$customer,$before,$customer->fresh()->toArray());
-        return redirect()->route('crm.customers.index')->with('status','Customer updated.');
+        return redirect()->route('crm.customers.portal',$customer)->with('status','Customer master data updated.');
     }
 
     public function block(Customer $customer, AuditService $audit): RedirectResponse
@@ -41,7 +41,9 @@ class CustomerController extends Controller
     {
         return $request->validate([
             'customer_code'=>['required','string','max:50',Rule::unique('customers')->where(fn($q)=>$q->where('tenant_id',Auth::user()->tenant_id))->ignore($customer?->id)],
-            'name'=>['required','string','max:180'],'email'=>['nullable','email','max:255'],
+            'name'=>['required','string','max:180'],'commercial_registration'=>['nullable','string','max:60'],'vat_number'=>['nullable','string','max:60'],
+            'industry'=>['nullable','string','max:120'],'email'=>['nullable','email','max:255'],'contact_name'=>['nullable','string','max:180'],
+            'phone'=>['nullable','string','max:40'],'city'=>['nullable','string','max:120'],'country'=>['nullable','string','max:120'],'address'=>['nullable','string','max:500'],
         ]);
     }
 }
