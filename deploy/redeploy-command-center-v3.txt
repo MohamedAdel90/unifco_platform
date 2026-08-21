@@ -1,0 +1,1 @@
+Final deployment trigger for Executive Analytics phase: backlog aging, asset health distribution, SLA priority analytics, top customer/site backlog, contract expiry timeline, executive exceptions, role-based access and scoped command center filters.
