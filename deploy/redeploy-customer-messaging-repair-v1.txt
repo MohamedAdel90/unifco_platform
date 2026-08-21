@@ -1,0 +1,2 @@
+Rerun deployment after customer messaging migration and deploy verification were repaired.
+Expected customer portal release: customer-portal-20260821-3
