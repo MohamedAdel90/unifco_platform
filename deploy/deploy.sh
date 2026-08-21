@@ -35,7 +35,7 @@ php artisan migrate --force
 
 echo "==> Verifying customer messaging tables"
 php -r '
-$db=new PDO("sqlite:".__DIR__."/../database/database.sqlite");
+$db=new PDO("sqlite:".getcwd()."/database/database.sqlite");
 $tables=$db->query("SELECT name FROM sqlite_master WHERE type=\"table\" AND name IN (\"customer_conversations\",\"customer_messages\")")->fetchAll(PDO::FETCH_COLUMN);
 if(count($tables)!==2){fwrite(STDERR,"ERROR: customer messaging tables are missing after migrate\n");exit(1);} echo "Customer messaging tables ready\n";
 '
@@ -64,7 +64,7 @@ if [ "$verified" -ne 1 ]; then
     exit 1
 fi
 
-echo "==> Verifying customer portal responds without database error"
+echo "==> Verifying application is responding"
 curl -fsSI http://127.0.0.1:8081/login >/dev/null
 
 echo "==> Deploy complete at $(git rev-parse HEAD)"
