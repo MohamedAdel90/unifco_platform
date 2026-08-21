@@ -1,9 +1,9 @@
 @extends('layouts.app')
+@section('title',($customer->exists?'Edit':'New').' Customer · UNIFCO')
+@section('heading',$customer->exists?'Edit Customer':'New Customer')
 @section('content')
-<h1>{{ $customer->exists?'Edit':'New' }} Customer</h1>
-@if($errors->any())<div class="error">{{ implode(' | ',$errors->all()) }}</div>@endif
-<form method="POST" action="{{ $customer->exists?route('crm.customers.update',$customer):route('crm.customers.store') }}">@csrf @if($customer->exists)@method('PUT')@endif
-<label>Customer Code <input name="customer_code" value="{{ old('customer_code',$customer->customer_code) }}" required></label>
-<label>Name <input name="name" value="{{ old('name',$customer->name) }}" required></label>
-<label>Email <input type="email" name="email" value="{{ old('email',$customer->email) }}"></label><button>Save</button></form>
+<div class="page-head"><div><h2 style="margin:0">{{ $customer->exists?'Customer Master Data':'Create Customer' }}</h2><p class="muted">Create the customer record first, then continue through the structured onboarding process.</p></div><a class="btn secondary" href="{{ route('crm.customers.index') }}">Back to customers</a></div>
+@if($errors->any())<div class="error" style="margin-top:14px">{{ implode(' | ',$errors->all()) }}</div>@endif
+<div class="card" style="margin-top:16px"><form method="POST" action="{{ $customer->exists?route('crm.customers.update',$customer):route('crm.customers.store') }}">@csrf @if($customer->exists)@method('PUT')@endif
+<div class="form-grid"><label>Customer Code<input name="customer_code" value="{{ old('customer_code',$customer->customer_code) }}" required></label><label>Company Name<input name="name" value="{{ old('name',$customer->name) }}" required></label><label>Industry<input name="industry" value="{{ old('industry',$customer->industry) }}" placeholder="Industrial, Healthcare, Commercial..."></label><label>Commercial Registration<input name="commercial_registration" value="{{ old('commercial_registration',$customer->commercial_registration) }}"></label><label>VAT Number<input name="vat_number" value="{{ old('vat_number',$customer->vat_number) }}"></label><label>Main Email<input type="email" name="email" value="{{ old('email',$customer->email) }}"></label><label>Main Contact<input name="contact_name" value="{{ old('contact_name',$customer->contact_name) }}"></label><label>Phone<input name="phone" value="{{ old('phone',$customer->phone) }}"></label><label>City<input name="city" value="{{ old('city',$customer->city) }}"></label><label>Country<input name="country" value="{{ old('country',$customer->country ?: 'Saudi Arabia') }}"></label><label style="grid-column:1/-1">Address<textarea name="address">{{ old('address',$customer->address) }}</textarea></label></div><button class="btn" style="margin-top:14px">{{ $customer->exists?'Save Customer':'Create & Start Onboarding' }}</button></form></div>
 @endsection
