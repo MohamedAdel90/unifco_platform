@@ -23,7 +23,8 @@ for migration in \
   database/migrations/2026_08_21_000026_asset_templates_and_pm_foundation.php \
   database/migrations/2026_08_21_000027_add_asset_spare_parts_compatibility.php \
   database/migrations/2026_08_21_000028_add_work_order_execution_and_reliability.php \
-  database/migrations/2026_08_21_000029_add_asset_health_and_replacement_intelligence.php; do
+  database/migrations/2026_08_21_000029_add_asset_health_and_replacement_intelligence.php \
+  database/migrations/2026_08_21_000030_add_asset_spare_part_reorder_tracking.php; do
   test -s "$migration" || { echo "ERROR: required EAM migration missing: $migration"; exit 1; }
 done
 grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
@@ -31,7 +32,9 @@ grep -q 'customer-portal-20260821-5' app/Http/Controllers/CustomerPortalControll
 grep -q 'customer-logo-plain' resources/views/customer/section.blade.php || { echo "ERROR: plain customer logo layout missing"; exit 1; }
 grep -q 'customer.inbox' resources/views/customer/section.blade.php || { echo "ERROR: inbox link missing from customer layout"; exit 1; }
 grep -q 'CustomerAssetReadController' routes/public.php || { echo "ERROR: customer asset read-only routes missing"; exit 1; }
+grep -q 'AssetHealthDashboardController' routes/public.php || { echo "ERROR: portfolio health dashboard routes missing"; exit 1; }
 grep -q 'unifco:recalculate-asset-health' routes/console.php || { echo "ERROR: asset health command missing"; exit 1; }
+grep -q 'unifco:check-spare-reorder-alerts' routes/console.php || { echo "ERROR: spare reorder command missing"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -67,20 +70,30 @@ php artisan migrate --force
 
 echo "==> Verifying EAM routes and commands"
 php artisan route:list --name=eam.assets.index >/dev/null
+php artisan route:list --name=eam.health.index >/dev/null
 php artisan route:list --name=maintenance.work-orders.show >/dev/null
 php artisan route:list --name=customer.asset.show >/dev/null
+php artisan route:list --name=customer.asset-health >/dev/null
 php artisan route:list --name=customer.work-orders.show >/dev/null
 php artisan list | grep -q 'unifco:generate-pm-work-orders'
 php artisan list | grep -q 'unifco:recalculate-asset-health'
+php artisan list | grep -q 'unifco:check-spare-reorder-alerts'
 
 echo "==> Calculating initial asset health intelligence"
 php artisan unifco:recalculate-asset-health
 
-echo "==> Verifying customer messaging tables"
+echo "==> Synchronizing spare part reorder states"
+php artisan unifco:check-spare-reorder-alerts
+
+echo "==> Verifying operational tables and reorder columns"
 php -r '
 $db=new PDO("sqlite:".getcwd()."/database/database.sqlite");
-$tables=$db->query("SELECT name FROM sqlite_master WHERE type=\"table\" AND name IN (\"customer_conversations\",\"customer_messages\",\"asset_failures\",\"work_order_checklist_results\",\"asset_spare_parts\")")->fetchAll(PDO::FETCH_COLUMN);
-if(count($tables)!==5){fwrite(STDERR,"ERROR: one or more required operational tables are missing after migrate\n");exit(1);} echo "Operational tables ready\n";
+$tables=$db->query("SELECT name FROM sqlite_master WHERE type=\"table\" AND name IN (\"customer_conversations\",\"customer_messages\",\"asset_failures\",\"work_order_checklist_results\",\"asset_spare_parts\",\"stock_balances\")")->fetchAll(PDO::FETCH_COLUMN);
+if(count($tables)!==6){fwrite(STDERR,"ERROR: one or more required operational tables are missing after migrate\n");exit(1);}
+$cols=$db->query("PRAGMA table_info(asset_spare_parts)")->fetchAll(PDO::FETCH_ASSOC);
+$names=array_column($cols,"name");
+foreach(["preferred_warehouse_code","last_reorder_notified_at","reorder_alert_status"] as $col){if(!in_array($col,$names,true)){fwrite(STDERR,"ERROR: reorder column missing: $col\n");exit(1);}}
+echo "Operational tables and reorder intelligence ready\n";
 '
 
 echo "==> Ensuring public upload storage link"
