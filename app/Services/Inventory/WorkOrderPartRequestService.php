@@ -43,6 +43,9 @@ class WorkOrderPartRequestService
     public function approve(WorkOrderPartRequest $request, ?string $note=null): WorkOrderPartRequest
     {
         if($request->status!=='REQUESTED') throw ValidationException::withMessages(['request'=>'Only requested part requests can be approved.']);
+        if(in_array($request->priority,['CRITICAL','EMERGENCY'],true) && !in_array(Auth::user()->role,['ADMIN','MANAGER','SUPERVISOR'],true)) {
+            throw ValidationException::withMessages(['approval'=>'Critical and emergency part requests require supervisor or manager approval.']);
+        }
         return DB::transaction(function() use($request,$note){
             $request->load(['lines.item','sourceWarehouse']);
             foreach($request->lines as $line){
