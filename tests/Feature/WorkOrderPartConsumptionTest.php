@@ -80,8 +80,8 @@ class WorkOrderPartConsumptionTest extends TestCase
         $c=$this->context();[$request,$line]=$this->receiveRequest($c,1);
         $this->actingAs($c['admin'])->post('/inventory/part-requests/'.$request->id.'/lines/'.$line->id.'/consume',['quantity'=>1,'notes'=>'Installed'])->assertSessionHasNoErrors();
 
-        $this->actingAs($c['admin'])->get('/eam/assets/'.$c['asset']->id)->assertOk()->assertSee('Installed Parts & Components')->assertSee('PART-CONSUME')->assertSee('Internal Cost');
-        $this->actingAs($c['customerUser'])->get('/customer/assets/'.$c['asset']->id)->assertOk()->assertSee('Installed Parts & Components')->assertSee('PART-CONSUME')->assertDontSee('Internal Cost');
+        $this->actingAs($c['admin'])->get('/eam/assets/'.$c['asset']->id)->assertOk()->assertSee('Installed Parts & Components', false)->assertSee('PART-CONSUME')->assertSee('Internal Cost');
+        $this->actingAs($c['customerUser'])->get('/customer/assets/'.$c['asset']->id)->assertOk()->assertSee('Installed Parts & Components', false)->assertSee('PART-CONSUME')->assertDontSee('Internal Cost');
         $this->actingAs($c['customerUser'])->get('/customer/work-orders/'.$c['workOrder']->id)->assertOk()->assertSee('Spare Parts Used')->assertSee('PART-CONSUME')->assertDontSee('unit_cost');
     }
 }
