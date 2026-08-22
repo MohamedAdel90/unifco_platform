@@ -1,8 +1,8 @@
-release=warehouse-field-inventory-v2-part-requests
-source_sha=9fc987a4c063f9ad025bb0fd1d6db6fd72b82aff
-verified_at=2026-08-22T09:04:06Z
-result=success
-source_validation=success
-laravel_preflight_rc=0
-homepage_validation=success
-deploy_rc=0
+release=warehouse-field-inventory-v3-consumption
+source_sha=4e02c75916c44f16dfabdf7cb9f0555a1cded8ba
+verified_at=2026-08-22T09:05:56Z
+result=failure
+source_validation=skipped
+laravel_preflight_rc=not-run
+homepage_validation=skipped
+deploy_rc=not-run
