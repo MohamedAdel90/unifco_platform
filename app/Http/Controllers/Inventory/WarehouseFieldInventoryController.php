@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer,CustomerSite,Employee,InventoryTransferOrder,Item,Warehouse,WarehouseBin};
+use App\Models\{Customer,CustomerSite,Employee,InventoryTransferOrder,Item,Warehouse,WarehouseBin,WorkOrderPartRequest};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -30,6 +30,10 @@ class WarehouseFieldInventoryController extends Controller
             ->when($restricted && $assignedIds->isNotEmpty(),fn($q)=>$q->where(fn($x)=>$x->whereIn('from_warehouse_id',$assignedIds)->orWhereIn('to_warehouse_id',$assignedIds)))
             ->when($restricted && $assignedIds->isEmpty(),fn($q)=>$q->whereRaw('1=0'))
             ->latest()->limit(25)->get();
+        $partRequests=WorkOrderPartRequest::with(['workOrder.asset','sourceWarehouse','destinationWarehouse','requestedBy','lines.item'])
+            ->when($restricted && $assignedIds->isNotEmpty(),fn($q)=>$q->where(fn($x)=>$x->whereIn('source_warehouse_id',$assignedIds)->orWhereIn('destination_warehouse_id',$assignedIds)))
+            ->when($restricted && $assignedIds->isEmpty(),fn($q)=>$q->whereRaw('1=0'))
+            ->latest()->limit(40)->get();
 
         $metrics=[
             'locations'=>$warehouses->count(),
@@ -39,11 +43,14 @@ class WarehouseFieldInventoryController extends Controller
             'reserved'=>(float)$balances->sum('reserved_quantity'),
             'in_transit'=>$transfers->where('status','IN_TRANSIT')->count(),
             'pending'=>$transfers->where('status','REQUESTED')->count(),
+            'part_requests_pending'=>$partRequests->where('status','REQUESTED')->count(),
+            'part_requests_ready'=>$partRequests->whereIn('status',['APPROVED','PICKED'])->count(),
+            'part_requests_issued'=>$partRequests->where('status','ISSUED')->count(),
         ];
 
         $customerIds=Customer::pluck('id');
         return view('inventory.warehouse.index',[
-            'warehouses'=>$warehouses,'balanceByWarehouse'=>$balanceByWarehouse,'transfers'=>$transfers,'metrics'=>$metrics,
+            'warehouses'=>$warehouses,'balanceByWarehouse'=>$balanceByWarehouse,'transfers'=>$transfers,'partRequests'=>$partRequests,'metrics'=>$metrics,
             'items'=>Item::where('status','ACTIVE')->orderBy('item_code')->get(),
             'employees'=>Employee::where('status','ACTIVE')->orderBy('name')->get(),
             'sites'=>CustomerSite::whereIn('customer_id',$customerIds)->orderBy('name')->get(),
