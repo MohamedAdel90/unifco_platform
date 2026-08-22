@@ -2,10 +2,9 @@
 
 namespace App\Services\Inventory;
 
-use App\Models\{InventoryTransferOrder,InventoryTransferOrderLine,Item,Warehouse};
+use App\Models\{InventoryTransferOrder,InventoryTransferOrderLine,Warehouse};
 use App\Services\AuditService;
 use Illuminate\Support\Facades\{Auth,DB};
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class InventoryTransferService
@@ -31,7 +30,7 @@ class InventoryTransferService
                 ]);
             }
             if(!$transfer->lines()->exists()) throw ValidationException::withMessages(['items'=>'At least one positive quantity is required.']);
-            $this->audit->record('inventory.transfer.request',$transfer,null,['status'=>'REQUESTED','from'=>$from->code,'to'=>$to->code]);
+            $this->audit->record('inventory.transfer.request',$transfer,[],['status'=>'REQUESTED','from'=>$from->code,'to'=>$to->code]);
             return $transfer->load(['lines.item','fromWarehouse','toWarehouse']);
         });
     }
