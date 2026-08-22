@@ -48,8 +48,11 @@ return new class extends Migration {
             $t->unique(['work_order_part_request_id','item_id']);
         });
 
+        foreach (['parts.request.create','parts.request.read','parts.request.receive'] as $permission) {
+            DB::table('role_permissions')->updateOrInsert(['tenant_id'=>null,'role_code'=>'TECHNICIAN','permission_code'=>$permission],['created_at'=>now(),'updated_at'=>now()]);
+        }
         foreach (['parts.request.create','parts.request.read'] as $permission) {
-            foreach (['TECHNICIAN','SUPERVISOR','MANAGER'] as $role) {
+            foreach (['SUPERVISOR','MANAGER'] as $role) {
                 DB::table('role_permissions')->updateOrInsert(['tenant_id'=>null,'role_code'=>$role,'permission_code'=>$permission],['created_at'=>now(),'updated_at'=>now()]);
             }
         }
