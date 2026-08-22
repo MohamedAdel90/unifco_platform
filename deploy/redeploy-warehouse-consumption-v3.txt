@@ -1,0 +1,1 @@
+Final deployment trigger for Warehouse & Field Inventory Phase 3: received part allocation, consume on asset, unused return to source, installed component history, work order closure control, internal Asset 360, customer-safe Asset 360 and service report integration.
