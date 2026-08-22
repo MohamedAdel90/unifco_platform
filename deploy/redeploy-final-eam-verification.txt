@@ -7,3 +7,5 @@ Sidebar production redeploy trigger: deploy main SHA 091638d9b7f3bff5e1e65764367
 Complete navigation verification: deploy the current main containing operational wave routes, dedicated workspace pages, complete sidebar/sub-tab coverage on every authenticated page, bilingual navigation, and SidebarNavigationTest coverage. Verify workspace/asset-360 and operational route registration before production restart.
 
 User administration production upgrade: replace /workspace/users placeholder with real tenant-scoped User Management including KPIs, search, role/status/organization filters, user table, permissions/audit links, admin-only access, and feature-test coverage. Deploy and verify /workspace/users on production.
+
+Full User Administration CRUD release: deploy current main after focused qualification success. Includes create/edit/profile, activate/deactivate/suspend, reset password, role/organization/employee assignment, tenant-scoped user permission overrides enforced by AuthorizationService, + New User UX, and security/tenant-isolation tests.
