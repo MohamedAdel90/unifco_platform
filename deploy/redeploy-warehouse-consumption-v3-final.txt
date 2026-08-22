@@ -1,0 +1,1 @@
+Stable final deployment trigger after prior cancelled verification run. Verify Warehouse & Field Inventory v3 consumption/return lifecycle end to end with no further source changes.
