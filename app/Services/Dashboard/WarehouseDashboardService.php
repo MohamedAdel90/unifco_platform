@@ -2,8 +2,7 @@
 
 namespace App\Services\Dashboard;
 
-use App\Models\InventoryTransferOrder;
-use App\Models\Warehouse;
+use App\Models\{InventoryTransferOrder,Warehouse,WorkOrderPartRequest};
 use App\Services\EAM\AssetSparePartReorderService;
 use Illuminate\Support\Facades\DB;
 
@@ -29,6 +28,9 @@ class WarehouseDashboardService
             'in_transit'=>InventoryTransferOrder::where('status','IN_TRANSIT')->count(),
             'critical_alerts'=>$alerts->count(),
             'out_of_stock'=>$alerts->where('computed_alert_status','OUT_OF_STOCK')->count(),
+            'part_requests_pending'=>WorkOrderPartRequest::where('status','REQUESTED')->count(),
+            'part_requests_reserved'=>WorkOrderPartRequest::whereIn('status',['APPROVED','PICKED'])->count(),
+            'part_requests_awaiting_receipt'=>WorkOrderPartRequest::where('status','ISSUED')->count(),
         ];
     }
 }
