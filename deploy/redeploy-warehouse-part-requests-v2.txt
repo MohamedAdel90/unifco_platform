@@ -1,0 +1,1 @@
+Final deployment trigger for Warehouse & Field Inventory Phase 2: technician work-order part requests, stock reservation on approval, critical approval control, warehouse pick and issue, technician receipt into vehicle/site stock, dashboard metrics, and feature tests.
