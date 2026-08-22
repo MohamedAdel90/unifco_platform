@@ -1,22 +1,3 @@
-  - Downloading symfony/css-selector (v8.1.0)
-  - Downloading tijsverkoyen/css-to-inline-styles (v2.4.0)
-  - Downloading symfony/var-dumper (v8.1.2)
-  - Downloading symfony/polyfill-uuid (v1.37.0)
-  - Downloading symfony/uid (v8.1.4)
-  - Downloading symfony/routing (v8.1.2)
-  - Downloading symfony/process (v8.1.0)
-  - Downloading symfony/polyfill-php86 (v1.41.0)
-  - Downloading symfony/polyfill-php84 (v1.38.1)
-  - Downloading symfony/polyfill-intl-idn (v1.38.1)
-  - Downloading symfony/mime (v8.1.4)
-  - Downloading psr/event-dispatcher (1.0.0)
-  - Downloading symfony/event-dispatcher-contracts (v3.7.1)
-  - Downloading symfony/event-dispatcher (v8.1.2)
-  - Downloading psr/log (3.0.2)
-  - Downloading egulias/email-validator (4.0.4)
-  - Downloading symfony/mailer (v8.1.2)
-  - Downloading symfony/error-handler (v8.1.2)
-  - Downloading symfony/http-kernel (v8.1.4)
   - Downloading symfony/finder (v8.1.1)
   - Downloading ramsey/collection (2.1.1)
   - Downloading brick/math (0.18.0)
@@ -213,40 +194,40 @@ cp: warning: behavior of -n is non-portable and may change in future; use --upda
 
    INFO  Preparing database.  
 
-  Creating migration table ..................................... 425.13ms DONE
+  Creating migration table ...................................... 13.84ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables ........................ 2s DONE
-  2026_08_14_000002_add_controls_and_transactions ............... 32.90ms DONE
-  2026_08_14_000003_add_operational_integration ................ 189.94ms DONE
-  2026_08_14_000005_create_platform_services_tables .............. 5.08ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ......... 8.74ms DONE
-  2026_08_15_000008_add_finance_core ........................... 206.58ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ........ 28.61ms DONE
-  2026_08_15_000010_add_hr_operations ........................... 18.73ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................. 14.63ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................. 23.70ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion ............... 37.69ms DONE
-  2026_08_18_000014_add_public_site_requests ..................... 3.22ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines .. 78.99ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ............ 49.66ms DONE
-  2026_08_18_000017_expand_customer_portal_operations ........... 43.12ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ........... 38.35ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  6.16ms DONE
-  2026_08_21_000020_add_emergency_request_details ............... 10.45ms DONE
-  2026_08_21_000021_add_customer_onboarding ..................... 12.29ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile ...... 5.36ms DONE
-  2026_08_21_000023_create_customer_messaging .................... 3.38ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 0.28ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ............... 152.67ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation ........... 84.02ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.19ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability .... 26.10ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  9.57ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 4.74ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 80.82ms DONE
-  2026_08_22_000032_add_work_order_part_requests ............... 177.49ms DONE
+  2026_08_14_000001_create_unifco_core_tables ................... 81.19ms DONE
+  2026_08_14_000002_add_controls_and_transactions ............... 43.67ms DONE
+  2026_08_14_000003_add_operational_integration .................. 6.87ms DONE
+  2026_08_14_000005_create_platform_services_tables .............. 7.24ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ......... 9.64ms DONE
+  2026_08_15_000008_add_finance_core ............................. 9.62ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ........ 34.98ms DONE
+  2026_08_15_000010_add_hr_operations ........................... 19.60ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................. 15.87ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................. 25.87ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion ............... 46.98ms DONE
+  2026_08_18_000014_add_public_site_requests ..................... 3.53ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines .. 75.54ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ............ 68.32ms DONE
+  2026_08_18_000017_expand_customer_portal_operations ........... 45.92ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps ........... 28.26ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  8.00ms DONE
+  2026_08_21_000020_add_emergency_request_details ............... 13.96ms DONE
+  2026_08_21_000021_add_customer_onboarding ..................... 15.14ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile ...... 7.15ms DONE
+  2026_08_21_000023_create_customer_messaging .................... 4.04ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 0.42ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ................ 52.67ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation ........... 89.74ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.60ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability .... 32.24ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  14.04ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 7.15ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 67.93ms DONE
+  2026_08_22_000032_add_work_order_part_requests ................ 21.74ms DONE
 
 UNIFCO tenant not found; warehouse access bootstrap skipped.
 Asset health recalculation complete. Assets processed: 0.
@@ -257,4 +238,23 @@ Spare reorder check complete. Active alerts: 0; notifications refreshed: 0.
 
 
    INFO  Blade templates cached successfully.  
+
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\WarehouseFieldInventoryTest[39m
+  [32;1m✓[39;22m[90m [39m[90madmin can open spare parts control center[39m[90m                           [39m [90m0.71s[39m  
+  [32;1m✓[39;22m[90m [39m[90mstock can move from main warehouse to technician vehicle with issue[39m[90m…[39m [90m0.27s[39m  
+  [32;1m✓[39;22m[90m [39m[90mbootstrap creates dedicated storekeeper and main warehouse access[39m[90m   [39m [90m0.48s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\OperationsCommandCenterTest[39m
+  [32;1m✓[39;22m[90m [39m[90madmin can render role aware command center[39m[90m                          [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90mdashboard accepts customer scope filter[39m[90m                             [39m [90m0.25s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcustomer role is redirected to customer portal[39m[90m                      [39m [90m0.47s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\FoundationTest[39m
+  [32;1m✓[39;22m[90m [39m[90mguest can open public homepage[39m[90m                                      [39m [90m0.01s[39m  
+  [32;1m✓[39;22m[90m [39m[90mauthenticated user can open dashboard[39m[90m                               [39m [90m0.25s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmodule workspace is available[39m[90m                                       [39m [90m0.24s[39m  
+
+  [90mTests:[39m    [32;1m9 passed[39;22m[90m (48 assertions)[39m
+  [90mDuration:[39m [39m3.04s[39m
 
