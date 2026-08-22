@@ -1,8 +1,8 @@
 release=warehouse-field-inventory-v1
-source_sha=ae86a7f5c313817ac0d63a14e77701a78d06a9b6
-verified_at=2026-08-22T08:50:05Z
-result=success
-source_validation=success
-laravel_preflight_rc=0
-homepage_validation=success
-deploy_rc=0
+source_sha=1e19281419b8928e4e7d64026ffd4f5b4162d50d
+verified_at=2026-08-22T08:50:28Z
+result=failure
+source_validation=skipped
+laravel_preflight_rc=not-run
+homepage_validation=skipped
+deploy_rc=not-run
