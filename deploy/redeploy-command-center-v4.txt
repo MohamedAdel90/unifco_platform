@@ -1,0 +1,1 @@
+Final deployment trigger for Predictive Operations phase: management targets, early warning, maintenance forecast, SLA risk radar, asset replacement pipeline, maintenance cost trend, and management scorecards. Existing command center feature tests must pass before deployment.
