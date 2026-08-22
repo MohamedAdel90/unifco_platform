@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\{Organization,User};
 use Illuminate\Http\Request;
 
 class NavigationWorkspaceController extends Controller
@@ -48,10 +49,36 @@ class NavigationWorkspaceController extends Controller
     public function show(Request $request, string $workspace)
     {
         abort_unless(isset(self::WORKSPACES[$workspace]), 404);
+        if ($workspace === 'users') return $this->users($request);
         $item = self::WORKSPACES[$workspace];
         $item['key'] = $workspace;
         $item['primary_url'] = route($item['primary']);
-
         return view('navigation.workspace', ['workspace' => $item]);
+    }
+
+    private function users(Request $request)
+    {
+        abort_unless($request->user()->role === 'ADMIN', 403);
+        $tenantId=$request->user()->tenant_id;
+        $base=User::query()->where('tenant_id',$tenantId);
+        $q=trim((string)$request->query('q'));
+        $role=trim((string)$request->query('role'));
+        $status=trim((string)$request->query('status'));
+        $organizationId=$request->query('organization_id');
+        $users=(clone $base)
+            ->when($q,fn($x)=>$x->where(fn($y)=>$y->where('name','like',"%{$q}%")->orWhere('email','like',"%{$q}%")))
+            ->when($role,fn($x)=>$x->where('role',$role))
+            ->when($status,fn($x)=>$x->where('status',$status))
+            ->when($organizationId,fn($x)=>$x->where('organization_id',$organizationId))
+            ->orderBy('name')->paginate(25)->withQueryString();
+        $organizationNames=Organization::where('tenant_id',$tenantId)->pluck('name','id');
+        $stats=[
+            'total'=>(clone $base)->count(),
+            'active'=>(clone $base)->where('status','ACTIVE')->count(),
+            'inactive'=>(clone $base)->where('status','!=','ACTIVE')->count(),
+            'admins'=>(clone $base)->where('role','ADMIN')->count(),
+        ];
+        $roles=(clone $base)->select('role')->distinct()->orderBy('role')->pluck('role');
+        return view('navigation.users',compact('users','stats','roles','organizationNames'));
     }
 }
