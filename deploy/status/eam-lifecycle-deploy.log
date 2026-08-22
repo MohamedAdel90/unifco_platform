@@ -3,10 +3,10 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   faf4065..ef456a0  main       -> origin/main
+   9ffc8b0..ae86a7f  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at ef456a0 Add work order part request controller
-==> Server checkout: ef456a0901935c37210c75365931304acdcd01c3
+HEAD is now at ae86a7f Allow technician receipt confirmation for part requests
+==> Server checkout: ae86a7f5c313817ac0d63a14e77701a78d06a9b6
 ==> Verifying required release files
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -58,12 +58,12 @@ Operational and warehouse foundation ready
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.05ms DONE
-  cache .......................................................... 2.74ms DONE
-  compiled ....................................................... 0.81ms DONE
-  events ......................................................... 0.44ms DONE
-  routes ......................................................... 0.40ms DONE
-  views .......................................................... 3.00ms DONE
+  config ......................................................... 1.47ms DONE
+  cache .......................................................... 4.07ms DONE
+  compiled ....................................................... 1.12ms DONE
+  events ......................................................... 1.05ms DONE
+  routes ......................................................... 0.58ms DONE
+  views .......................................................... 6.06ms DONE
 
 ==> Restarting unifco-app
 unifco-app: stopped
@@ -72,4 +72,4 @@ unifco-app: started
 ==> Verifying homepage release
 ==> Verifying login session and CSRF round trip
 Login CSRF/session round trip verified: HTTP 302
-==> Deploy complete at ef456a0901935c37210c75365931304acdcd01c3
+==> Deploy complete at ae86a7f5c313817ac0d63a14e77701a78d06a9b6
