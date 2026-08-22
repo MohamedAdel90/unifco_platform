@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class WorkOrder extends Model
 {
@@ -15,6 +17,19 @@ class WorkOrder extends Model
         'labor_hours','labor_cost','material_cost','external_cost','total_cost','downtime_minutes','started_at','completed_at','failure_code','execution_notes','completion_notes',
         'started_by','completed_by','customer_accepted_at','customer_rejected_at','customer_acceptance_notes'
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(function (WorkOrder $workOrder): void {
+            if($workOrder->isDirty('status') && $workOrder->status==='COMPLETED'){
+                $unresolved=DB::table('work_order_part_requests')
+                    ->where('work_order_id',$workOrder->id)
+                    ->whereNotIn('status',['REJECTED','CLOSED'])
+                    ->exists();
+                if($unresolved) throw ValidationException::withMessages(['parts'=>'Resolve all requested/issued parts by consuming them on the asset or returning them before closing the work order.']);
+            }
+        });
+    }
 
     protected function casts(): array
     {
