@@ -1,8 +1,8 @@
 release=warehouse-field-inventory-v2-part-requests
-source_sha=fc3c6d91c1a80713a1dd4b0f6575e40aac0c503f
-verified_at=2026-08-22T08:56:37Z
-result=success
-source_validation=success
-laravel_preflight_rc=0
-homepage_validation=success
-deploy_rc=0
+source_sha=3f83b4c93979c0c0587526f1d509642458d02a57
+verified_at=2026-08-22T08:58:05Z
+result=failure
+source_validation=skipped
+laravel_preflight_rc=not-run
+homepage_validation=skipped
+deploy_rc=not-run
