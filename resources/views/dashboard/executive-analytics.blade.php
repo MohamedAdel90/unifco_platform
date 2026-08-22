@@ -32,3 +32,5 @@
 <section class="analytics-box analytics-wide"><h3>Executive Exceptions · الاستثناءات التنفيذية</h3><small>The highest-impact conditions that deserve management attention now.</small><div class="exception-list">@foreach($analytics['exceptions'] as $item)<a class="exception {{ $item->severity }}" href="{{ $item->url }}"><i class="sev"></i><span><b>{{ $item->type }} · {{ $item->title }}</b><small>{{ $item->detail }}</small></span><span class="go">›</span></a>@endforeach</div></section>
 @endif
 </div>
+
+@include('dashboard.predictive-operations')
