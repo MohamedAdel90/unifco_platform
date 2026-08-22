@@ -1,8 +1,8 @@
 release=operations-command-center-v2
-source_sha=655a40a5705a0dc6d03a5d4e11d314679f47ebbd
-verified_at=2026-08-22T07:53:26Z
+source_sha=127356a0208c59397bfff4338176afbe1b101bbe
+verified_at=2026-08-22T07:54:03Z
 result=failure
 source_validation=success
-laravel_preflight_rc=0
-homepage_validation=success
+laravel_preflight_rc=not-run
+homepage_validation=skipped
 deploy_rc=not-run
