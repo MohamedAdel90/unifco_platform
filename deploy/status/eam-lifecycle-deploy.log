@@ -3,10 +3,10 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   4736dd3..36107b2  main       -> origin/main
+   36107b2..c9080cd  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at 36107b2 Complete sidebar module and sub-tab coverage
-==> Server checkout: 36107b27fb1a2918ba8adfa34c5c4e5b0068c0bb
+HEAD is now at c9080cd Add navigation workspace controller
+==> Server checkout: c9080cd75f76026d9ac69767a7f21c09895a9c5e
 ==> Verifying required release files
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -28,12 +28,12 @@ Generating optimized autoload files
   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
 
+78 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
 ==> Repairing Laravel session directories and permissions
 ==> Enforcing HTTP-safe session cookie settings
 ==> Skipping UNIFCO logo materialization by request
 ==> Repairing customer messaging schema first
-78 packages you are using are looking for funding.
-Use the `composer fund` command to find out more!
 
    INFO  Nothing to migrate.  
 
@@ -58,18 +58,11 @@ Operational warehouse, technician request, consume and return lifecycle ready
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.16ms DONE
-  cache .......................................................... 2.83ms DONE
-  compiled ....................................................... 2.57ms DONE
-  events ......................................................... 0.52ms DONE
-  routes ......................................................... 0.48ms DONE
-  views .......................................................... 5.43ms DONE
+  config ......................................................... 0.94ms DONE
+  cache .......................................................... 2.48ms DONE
+  compiled ....................................................... 0.74ms DONE
+  events ......................................................... 0.35ms DONE
+  routes ......................................................... 0.32ms DONE
+  views .......................................................... 2.84ms DONE
 
 ==> Restarting unifco-app
-unifco-app: stopped
-unifco-app: started
-==> Waiting for application
-==> Verifying homepage release
-==> Verifying login session and CSRF round trip
-Login CSRF/session round trip verified: HTTP 302
-==> Deploy complete at 36107b27fb1a2918ba8adfa34c5c4e5b0068c0bb
