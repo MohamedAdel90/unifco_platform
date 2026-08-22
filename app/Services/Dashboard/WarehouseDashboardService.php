@@ -13,9 +13,10 @@ class WarehouseDashboardService
 
     public function summary(): array
     {
+        $tenantId=auth()->user()->tenant_id;
         $warehouses=Warehouse::where('status','ACTIVE')->get();
         $codes=$warehouses->pluck('code');
-        $balances=DB::table('stock_balances')->whereIn('warehouse_code',$codes)->get();
+        $balances=DB::table('stock_balances')->where('tenant_id',$tenantId)->whereIn('warehouse_code',$codes)->get();
         $alerts=$this->reorder->alerts()->filter(fn($row)=>$row->computed_alert_status!=='OK');
 
         return [
