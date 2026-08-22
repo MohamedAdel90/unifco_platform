@@ -35,8 +35,10 @@ jobs:
           php -l app/Http/Controllers/Inventory/WarehouseFieldInventoryController.php
           php -l app/Http/Controllers/Inventory/InventoryTransferOrderController.php
           php -l app/Http/Controllers/Inventory/WorkOrderPartRequestController.php
+          php -l app/Http/Controllers/Inventory/WorkOrderPartConsumptionController.php
           php -l app/Services/Inventory/InventoryTransferService.php
           php -l app/Services/Inventory/WorkOrderPartRequestService.php
+          php -l app/Services/Inventory/WorkOrderPartConsumptionService.php
           php -l app/Services/Dashboard/WarehouseDashboardService.php
           php -l app/Console/Commands/BootstrapWarehouseAccess.php
           php -l app/Models/Warehouse.php
@@ -45,6 +47,7 @@ jobs:
           php -l app/Models/InventoryTransferOrderLine.php
           php -l app/Models/WorkOrderPartRequest.php
           php -l app/Models/WorkOrderPartRequestLine.php
+          php -l app/Models/AssetPartInstallation.php
           php -l app/Models/Asset.php
           php -l app/Models/MaintenancePlan.php
           php -l app/Models/WorkOrder.php
@@ -61,21 +64,24 @@ jobs:
           php -l tests/Feature/OperationsCommandCenterTest.php
           php -l tests/Feature/WarehouseFieldInventoryTest.php
           php -l tests/Feature/WorkOrderPartRequestTest.php
+          php -l tests/Feature/WorkOrderPartConsumptionTest.php
           php -l tests/Feature/FoundationTest.php
           php -l routes/web.php
           php -l routes/public.php
           php -l routes/parts.php
           php -l routes/console.php
-          for migration in database/migrations/2026_08_21_00002{5,6,7,8,9}_*.php database/migrations/2026_08_21_000030_*.php database/migrations/2026_08_22_000031_*.php database/migrations/2026_08_22_000032_*.php; do php -l "$migration"; done
+          for migration in database/migrations/2026_08_21_00002{5,6,7,8,9}_*.php database/migrations/2026_08_21_000030_*.php database/migrations/2026_08_22_000031_*.php database/migrations/2026_08_22_000032_*.php database/migrations/2026_08_22_000033_*.php; do php -l "$migration"; done
           grep -q 'Operations Command Center' resources/views/dashboard.blade.php
           grep -q 'Spare Parts Control Center' resources/views/inventory/warehouse/index.blade.php
-          grep -q 'Technician Part Request' resources/views/maintenance/work-orders/part-requests.blade.php
-          grep -q 'Technician Part Requests' resources/views/inventory/warehouse/part-requests.blade.php
-          grep -q 'Technician Requests' resources/views/dashboard/warehouse-inventory.blade.php
+          grep -q 'Consume on Asset' resources/views/maintenance/work-orders/part-requests.blade.php
+          grep -q 'Return to' resources/views/maintenance/work-orders/part-requests.blade.php
+          grep -q 'Installed Parts & Components' resources/views/eam/assets/part-history.blade.php
+          grep -q 'Installed Parts & Components' resources/views/customer/asset-part-history.blade.php
+          grep -q 'parts.consume' database/migrations/2026_08_22_000033_add_asset_part_consumption_and_returns.php
+          grep -q 'Resolve all requested/issued parts' app/Models/WorkOrder.php
+          grep -q 'asset_part_installations' tests/Feature/WorkOrderPartConsumptionTest.php
           grep -q 'parts.request.receive' database/migrations/2026_08_22_000032_add_work_order_part_requests.php
           grep -q 'Critical and emergency part requests require supervisor' app/Services/Inventory/WorkOrderPartRequestService.php
-          grep -q 'work_order_part_requests' tests/Feature/WorkOrderPartRequestTest.php
-          grep -q 'VAN-001' tests/Feature/WorkOrderPartRequestTest.php
           grep -q "STOREKEEPER" app/Http/Controllers/AuthController.php
           grep -q 'inventory_transfer_orders' database/migrations/2026_08_22_000031_build_warehouse_field_inventory_foundation.php
           grep -q 'PLAN_REPLACEMENT' app/Services/EAM/AssetHealthService.php
@@ -105,6 +111,8 @@ jobs:
             php artisan route:list --name=inventory.part-requests.pick >/dev/null
             php artisan route:list --name=inventory.part-requests.issue >/dev/null
             php artisan route:list --name=inventory.part-requests.receive >/dev/null
+            php artisan route:list --name=inventory.part-requests.consume >/dev/null
+            php artisan route:list --name=inventory.part-requests.return >/dev/null
             php artisan route:list --name=maintenance.work-orders.part-requests.store >/dev/null
             php artisan route:list --name=eam.health.index | grep -q 'eam/health'
             php artisan route:list --name=customer.asset-health | grep -q 'customer/asset-health'
@@ -117,7 +125,7 @@ jobs:
             php artisan unifco:check-spare-reorder-alerts
             php artisan view:clear
             php artisan view:cache
-            php artisan test tests/Feature/WorkOrderPartRequestTest.php tests/Feature/WarehouseFieldInventoryTest.php tests/Feature/OperationsCommandCenterTest.php tests/Feature/FoundationTest.php
+            php artisan test tests/Feature/WorkOrderPartConsumptionTest.php tests/Feature/WorkOrderPartRequestTest.php tests/Feature/WarehouseFieldInventoryTest.php tests/Feature/OperationsCommandCenterTest.php tests/Feature/FoundationTest.php
           ) > >(tee /tmp/unifco-eam-preflight.log) 2>&1
           rc=$?
           echo "rc=$rc" >> "$GITHUB_OUTPUT"
@@ -193,14 +201,14 @@ jobs:
           homepage_result="${{ steps.homepage.outcome }}"
           deploy_rc="${{ steps.deploy.outputs.rc }}"
           if [ "$source_result" = "success" ] && [ "${preflight_rc:-999}" = "0" ] && [ "$homepage_result" = "success" ] && [ "${deploy_rc:-999}" = "0" ]; then result="success"; else result="failure"; fi
-          printf 'release=warehouse-field-inventory-v2-part-requests\nsource_sha=%s\nverified_at=%s\nresult=%s\nsource_validation=%s\nlaravel_preflight_rc=%s\nhomepage_validation=%s\ndeploy_rc=%s\n' \
+          printf 'release=warehouse-field-inventory-v3-consumption\nsource_sha=%s\nverified_at=%s\nresult=%s\nsource_validation=%s\nlaravel_preflight_rc=%s\nhomepage_validation=%s\ndeploy_rc=%s\n' \
             "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "$source_result" "${preflight_rc:-not-run}" "$homepage_result" "${deploy_rc:-not-run}" > deploy/status/eam-lifecycle-latest.txt
-          if [ -f /tmp/unifco-eam-preflight.log ]; then tail -n 300 /tmp/unifco-eam-preflight.log > deploy/status/eam-lifecycle-preflight.log; else printf 'Preflight step did not produce a log.\n' > deploy/status/eam-lifecycle-preflight.log; fi
-          if [ -f /tmp/unifco-eam-deploy.log ]; then tail -n 220 /tmp/unifco-eam-deploy.log > deploy/status/eam-lifecycle-deploy.log; else printf 'Deployment step did not produce an SSH log.\n' > deploy/status/eam-lifecycle-deploy.log; fi
+          if [ -f /tmp/unifco-eam-preflight.log ]; then tail -n 340 /tmp/unifco-eam-preflight.log > deploy/status/eam-lifecycle-preflight.log; else printf 'Preflight step did not produce a log.\n' > deploy/status/eam-lifecycle-preflight.log; fi
+          if [ -f /tmp/unifco-eam-deploy.log ]; then tail -n 240 /tmp/unifco-eam-deploy.log > deploy/status/eam-lifecycle-deploy.log; else printf 'Deployment step did not produce an SSH log.\n' > deploy/status/eam-lifecycle-deploy.log; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add deploy/status/eam-lifecycle-latest.txt deploy/status/eam-lifecycle-preflight.log deploy/status/eam-lifecycle-deploy.log
-          git commit -m "Record technician part request deployment verification [skip ci]" || true
+          git commit -m "Record asset part consumption deployment verification [skip ci]" || true
           git pull --rebase origin main || true
           git push origin HEAD:main
 
