@@ -8,7 +8,7 @@ use App\Http\Controllers\EAM\AssetController;
 use App\Http\Controllers\Finance\{FinanceCoreController,JournalController};
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HR\EmployeeController;
-use App\Http\Controllers\Inventory\StockController;
+use App\Http\Controllers\Inventory\{InventoryTransferOrderController,StockController,WarehouseFieldInventoryController};
 use App\Http\Controllers\Maintenance\WorkOrderController;
 use App\Http\Controllers\Manufacturing\ProductionOrderController;
 use App\Http\Controllers\ModuleController;
@@ -50,6 +50,12 @@ Route::middleware('auth')->group(function () {
     Route::prefix('inventory')->name('inventory.')->group(function () {
         Route::get('/stock',[StockController::class,'index'])->middleware('permission:inventory.stock.read')->name('stock.index');
         Route::post('/stock/move',[StockController::class,'move'])->middleware('permission:inventory.stock.move')->name('stock.move');
+        Route::get('/warehouse-control',[WarehouseFieldInventoryController::class,'index'])->middleware('permission:inventory.warehouse.read')->name('warehouse.index');
+        Route::post('/warehouses',[WarehouseFieldInventoryController::class,'storeWarehouse'])->middleware('permission:inventory.warehouse.manage')->name('warehouses.store');
+        Route::post('/warehouses/{warehouse}/bins',[WarehouseFieldInventoryController::class,'storeBin'])->middleware('permission:inventory.warehouse.manage')->name('warehouses.bins.store');
+        Route::post('/transfers',[InventoryTransferOrderController::class,'store'])->middleware('permission:inventory.transfer.request')->name('transfers.store');
+        Route::post('/transfers/{transfer}/issue',[InventoryTransferOrderController::class,'issue'])->middleware('permission:inventory.transfer.issue')->name('transfers.issue');
+        Route::post('/transfers/{transfer}/receive',[InventoryTransferOrderController::class,'receive'])->middleware('permission:inventory.transfer.receive')->name('transfers.receive');
     });
 
     Route::prefix('procurement')->name('procurement.')->group(function () {
