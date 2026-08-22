@@ -1,6 +1,6 @@
 release=warehouse-field-inventory-v1
-source_sha=15d40f2ea0b87ccc5ec0c37fb662feefaea2acd6
-verified_at=2026-08-22T07:59:49Z
+source_sha=d2e497d7603505aff64006afc5db5b730ac8d358
+verified_at=2026-08-22T08:01:42Z
 result=failure
 source_validation=success
 laravel_preflight_rc=2
