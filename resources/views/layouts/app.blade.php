@@ -76,6 +76,7 @@ $isLeadership=in_array($u->role,['ADMIN','MANAGER','SUPERVISOR']);
   @if(request()->routeIs('dashboard'))@include('dashboard.executive-analytics')@endif
 </main>
 </div>
+@include('dashboard.language-switcher')
 <script>
 (function(){
   var menu=document.getElementById('side-menu'),ov=document.getElementById('side-overlay');
