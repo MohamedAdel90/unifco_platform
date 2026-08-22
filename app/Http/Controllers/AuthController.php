@@ -23,6 +23,9 @@ class AuthController extends Controller
         if (Auth::user()->role === 'CUSTOMER') {
             return redirect()->intended(route('customer.portal'));
         }
+        if (Auth::user()->role === 'STOREKEEPER') {
+            return redirect()->intended(route('inventory.warehouse.index'));
+        }
 
         return redirect()->intended(route('dashboard'));
     }
