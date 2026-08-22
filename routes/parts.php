@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Inventory\WorkOrderPartRequestController;
+use App\Http\Controllers\Inventory\{WorkOrderPartConsumptionController,WorkOrderPartRequestController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
@@ -17,4 +17,9 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:parts.request.issue')->name('inventory.part-requests.issue');
     Route::post('/inventory/part-requests/{partRequest}/receive',[WorkOrderPartRequestController::class,'receive'])
         ->middleware('permission:parts.request.receive')->name('inventory.part-requests.receive');
+
+    Route::post('/inventory/part-requests/{partRequest}/lines/{line}/consume',[WorkOrderPartConsumptionController::class,'consume'])
+        ->middleware('permission:parts.consume')->name('inventory.part-requests.consume');
+    Route::post('/inventory/part-requests/{partRequest}/lines/{line}/return',[WorkOrderPartConsumptionController::class,'returnUnused'])
+        ->middleware('permission:parts.return')->name('inventory.part-requests.return');
 });
