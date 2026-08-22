@@ -26,7 +26,8 @@ for migration in \
   database/migrations/2026_08_21_000029_add_asset_health_and_replacement_intelligence.php \
   database/migrations/2026_08_21_000030_add_asset_spare_part_reorder_tracking.php \
   database/migrations/2026_08_22_000031_build_warehouse_field_inventory_foundation.php \
-  database/migrations/2026_08_22_000032_add_work_order_part_requests.php; do
+  database/migrations/2026_08_22_000032_add_work_order_part_requests.php \
+  database/migrations/2026_08_22_000033_add_asset_part_consumption_and_returns.php; do
   test -s "$migration" || { echo "ERROR: required migration missing: $migration"; exit 1; }
 done
 grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
@@ -36,9 +37,11 @@ grep -q 'AssetHealthDashboardController' routes/public.php || { echo "ERROR: por
 grep -q 'WarehouseFieldInventoryController' routes/web.php || { echo "ERROR: warehouse control routes missing"; exit 1; }
 grep -q 'InventoryTransferOrderController' routes/web.php || { echo "ERROR: inventory transfer routes missing"; exit 1; }
 grep -q 'WorkOrderPartRequestController' routes/parts.php || { echo "ERROR: work order part request routes missing"; exit 1; }
+grep -q 'WorkOrderPartConsumptionController' routes/parts.php || { echo "ERROR: part consumption routes missing"; exit 1; }
 grep -q 'parts.php' bootstrap/app.php || { echo "ERROR: part request route file is not registered"; exit 1; }
-grep -q 'Technician Part Request' resources/views/maintenance/work-orders/part-requests.blade.php || { echo "ERROR: technician part request workspace missing"; exit 1; }
-grep -q 'Technician Part Requests' resources/views/inventory/warehouse/part-requests.blade.php || { echo "ERROR: warehouse request queue missing"; exit 1; }
+grep -q 'Consume on Asset' resources/views/maintenance/work-orders/part-requests.blade.php || { echo "ERROR: consume on asset workspace missing"; exit 1; }
+grep -q 'Installed Parts & Components' resources/views/eam/assets/part-history.blade.php || { echo "ERROR: internal asset part history missing"; exit 1; }
+grep -q 'Installed Parts & Components' resources/views/customer/asset-part-history.blade.php || { echo "ERROR: customer asset part history missing"; exit 1; }
 grep -q 'unifco:recalculate-asset-health' routes/console.php || { echo "ERROR: asset health command missing"; exit 1; }
 grep -q 'unifco:check-spare-reorder-alerts' routes/console.php || { echo "ERROR: spare reorder command missing"; exit 1; }
 
@@ -76,7 +79,7 @@ php artisan migrate --force
 echo "==> Bootstrapping warehouse access"
 php artisan unifco:bootstrap-warehouse-access
 
-echo "==> Verifying EAM, warehouse and part request routes"
+echo "==> Verifying EAM, warehouse and part lifecycle routes"
 php artisan route:list --name=eam.assets.index >/dev/null
 php artisan route:list --name=eam.health.index >/dev/null
 php artisan route:list --name=maintenance.work-orders.show >/dev/null
@@ -92,6 +95,8 @@ php artisan route:list --name=inventory.part-requests.approve >/dev/null
 php artisan route:list --name=inventory.part-requests.pick >/dev/null
 php artisan route:list --name=inventory.part-requests.issue >/dev/null
 php artisan route:list --name=inventory.part-requests.receive >/dev/null
+php artisan route:list --name=inventory.part-requests.consume >/dev/null
+php artisan route:list --name=inventory.part-requests.return >/dev/null
 php artisan list | grep -q 'unifco:generate-pm-work-orders'
 php artisan list | grep -q 'unifco:recalculate-asset-health'
 php artisan list | grep -q 'unifco:check-spare-reorder-alerts'
@@ -103,23 +108,28 @@ php artisan unifco:recalculate-asset-health
 echo "==> Synchronizing spare part reorder states"
 php artisan unifco:check-spare-reorder-alerts
 
-echo "==> Verifying operational, warehouse and request tables"
+echo "==> Verifying operational, warehouse and part lifecycle tables"
 php -r '
 $db=new PDO("sqlite:".getcwd()."/database/database.sqlite");
-$required=["customer_conversations","customer_messages","asset_failures","work_order_checklist_results","asset_spare_parts","stock_balances","warehouses","warehouse_bins","inventory_transfer_orders","inventory_transfer_order_lines","warehouse_user_assignments","work_order_part_requests","work_order_part_request_lines"];
+$required=["customer_conversations","customer_messages","asset_failures","work_order_checklist_results","asset_spare_parts","stock_balances","warehouses","warehouse_bins","inventory_transfer_orders","inventory_transfer_order_lines","warehouse_user_assignments","work_order_part_requests","work_order_part_request_lines","asset_part_installations","work_order_part_returns"];
 $quoted=implode(",",array_map(fn($x)=>"\"$x\"",$required));
 $tables=$db->query("SELECT name FROM sqlite_master WHERE type=\"table\" AND name IN ($quoted)")->fetchAll(PDO::FETCH_COLUMN);
-if(count($tables)!==count($required)){fwrite(STDERR,"ERROR: one or more required operational/warehouse/request tables are missing after migrate\n");exit(1);}
+if(count($tables)!==count($required)){fwrite(STDERR,"ERROR: one or more required operational/warehouse/part lifecycle tables are missing after migrate\n");exit(1);}
 $cols=$db->query("PRAGMA table_info(asset_spare_parts)")->fetchAll(PDO::FETCH_ASSOC);
 $names=array_column($cols,"name");
 foreach(["preferred_warehouse_code","last_reorder_notified_at","reorder_alert_status"] as $col){if(!in_array($col,$names,true)){fwrite(STDERR,"ERROR: reorder column missing: $col\n");exit(1);}}
+$partCols=$db->query("PRAGMA table_info(work_order_part_request_lines)")->fetchAll(PDO::FETCH_ASSOC);
+$partNames=array_column($partCols,"name");
+foreach(["consumed_quantity","returned_quantity"] as $col){if(!in_array($col,$partNames,true)){fwrite(STDERR,"ERROR: part lifecycle column missing: $col\n");exit(1);}}
 $wh=$db->query("SELECT code,location_type FROM warehouses WHERE code=\"MAIN-WH\" LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 if(!$wh || $wh["location_type"]!=="CENTRAL"){fwrite(STDERR,"ERROR: MAIN-WH bootstrap missing\n");exit(1);}
 $user=$db->query("SELECT role FROM users WHERE email=\"storekeeper@unifco.local\" LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 if(!$user || $user["role"]!=="STOREKEEPER"){fwrite(STDERR,"ERROR: storekeeper bootstrap missing\n");exit(1);}
-$permission=$db->query("SELECT COUNT(*) FROM role_permissions WHERE role_code=\"STOREKEEPER\" AND permission_code=\"parts.request.issue\"")->fetchColumn();
-if((int)$permission<1){fwrite(STDERR,"ERROR: storekeeper part request permission missing\n");exit(1);}
-echo "Operational, warehouse and technician request foundation ready\n";
+$issuePermission=$db->query("SELECT COUNT(*) FROM role_permissions WHERE role_code=\"STOREKEEPER\" AND permission_code=\"parts.request.issue\"")->fetchColumn();
+if((int)$issuePermission<1){fwrite(STDERR,"ERROR: storekeeper part request permission missing\n");exit(1);}
+$consumePermission=$db->query("SELECT COUNT(*) FROM role_permissions WHERE role_code=\"TECHNICIAN\" AND permission_code=\"parts.consume\"")->fetchColumn();
+if((int)$consumePermission<1){fwrite(STDERR,"ERROR: technician part consume permission missing\n");exit(1);}
+echo "Operational warehouse, technician request, consume and return lifecycle ready\n";
 '
 
 echo "==> Ensuring public upload storage link"
