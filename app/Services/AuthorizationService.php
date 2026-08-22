@@ -12,6 +12,13 @@ class AuthorizationService
         if ($user->status !== 'ACTIVE') return false;
         if ($user->role === 'ADMIN') return true;
 
+        $override=DB::table('user_permission_overrides')
+            ->where('tenant_id',$user->tenant_id)
+            ->where('user_id',$user->id)
+            ->where('permission_code',$permission)
+            ->value('allowed');
+        if ($override !== null) return (bool)$override;
+
         return DB::table('role_permissions')
             ->where(fn ($q) => $q->whereNull('tenant_id')->orWhere('tenant_id', $user->tenant_id))
             ->where('role_code', $user->role)
