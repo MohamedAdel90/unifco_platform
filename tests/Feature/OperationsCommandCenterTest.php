@@ -35,7 +35,14 @@ class OperationsCommandCenterTest extends TestCase
             ->assertSee('Executive Analytics')
             ->assertSee('Backlog Aging')
             ->assertSee('Asset Health Distribution')
-            ->assertSee('Contract Expiry Timeline');
+            ->assertSee('Contract Expiry Timeline')
+            ->assertSee('Predictive Operations')
+            ->assertSee('Management Targets')
+            ->assertSee('Maintenance Forecast')
+            ->assertSee('Early Warning')
+            ->assertSee('SLA Risk Radar')
+            ->assertSee('Asset Replacement Pipeline')
+            ->assertSee('Management Scorecards');
     }
 
     public function test_dashboard_accepts_customer_scope_filter(): void
@@ -51,7 +58,8 @@ class OperationsCommandCenterTest extends TestCase
             ->assertSee('Scoped Customer')
             ->assertSee('FILTERED SCOPE')
             ->assertSee('60 days')
-            ->assertSee('Executive Analytics');
+            ->assertSee('Executive Analytics')
+            ->assertSee('Predictive Operations');
     }
 
     public function test_customer_role_is_redirected_to_customer_portal(): void
