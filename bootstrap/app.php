@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__.'/../routes/brand.php',
             __DIR__.'/../routes/field.php',
             __DIR__.'/../routes/reporting.php',
+            __DIR__.'/../routes/parts.php',
         ],
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
