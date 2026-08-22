@@ -1,1 +1,8 @@
-Deployment step did not produce an SSH log.
+SSH deploy attempt 1/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 2/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 3/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 4/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
