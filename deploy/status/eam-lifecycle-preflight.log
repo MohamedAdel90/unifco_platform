@@ -1,3 +1,37 @@
+  - Downloading guzzlehttp/promises (3.0.1)
+  - Downloading guzzlehttp/guzzle (8.0.2)
+  - Downloading guzzlehttp/uri-template (v2.0.0)
+  - Downloading symfony/polyfill-intl-normalizer (v1.38.0)
+  - Downloading symfony/polyfill-intl-grapheme (v1.41.0)
+  - Downloading symfony/polyfill-ctype (v1.37.0)
+  - Downloading symfony/string (v8.1.2)
+  - Downloading symfony/service-contracts (v3.7.1)
+  - Downloading symfony/polyfill-php85 (v1.41.0)
+  - Downloading symfony/console (v8.1.4)
+  - Downloading nunomaduro/termwind (v2.4.0)
+  - Downloading voku/portable-ascii (2.1.1)
+  - Downloading phpoption/phpoption (1.9.5)
+  - Downloading graham-campbell/result-type (v1.1.4)
+  - Downloading vlucas/phpdotenv (v5.6.4)
+  - Downloading symfony/css-selector (v8.1.0)
+  - Downloading tijsverkoyen/css-to-inline-styles (v2.4.0)
+  - Downloading symfony/var-dumper (v8.1.2)
+  - Downloading symfony/polyfill-uuid (v1.37.0)
+  - Downloading symfony/uid (v8.1.4)
+  - Downloading symfony/routing (v8.1.2)
+  - Downloading symfony/process (v8.1.0)
+  - Downloading symfony/polyfill-php86 (v1.41.0)
+  - Downloading symfony/polyfill-php84 (v1.38.1)
+  - Downloading symfony/polyfill-intl-idn (v1.38.1)
+  - Downloading symfony/mime (v8.1.4)
+  - Downloading psr/event-dispatcher (1.0.0)
+  - Downloading symfony/event-dispatcher-contracts (v3.7.1)
+  - Downloading symfony/event-dispatcher (v8.1.2)
+  - Downloading psr/log (3.0.2)
+  - Downloading egulias/email-validator (4.0.4)
+  - Downloading symfony/mailer (v8.1.2)
+  - Downloading symfony/error-handler (v8.1.2)
+  - Downloading symfony/http-kernel (v8.1.4)
   - Downloading symfony/finder (v8.1.1)
   - Downloading ramsey/collection (2.1.1)
   - Downloading brick/math (0.18.0)
@@ -194,40 +228,40 @@ cp: warning: behavior of -n is non-portable and may change in future; use --upda
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 15.54ms DONE
+  Creating migration table ..................................... 240.61ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables ................... 44.39ms DONE
-  2026_08_14_000002_add_controls_and_transactions ............... 45.56ms DONE
-  2026_08_14_000003_add_operational_integration .................. 6.03ms DONE
-  2026_08_14_000005_create_platform_services_tables .............. 6.61ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ......... 9.71ms DONE
-  2026_08_15_000008_add_finance_core ............................. 9.64ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ........ 32.82ms DONE
-  2026_08_15_000010_add_hr_operations ........................... 19.81ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................. 17.40ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................. 24.77ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion ............... 45.35ms DONE
-  2026_08_18_000014_add_public_site_requests ..................... 3.66ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines .. 78.70ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ............ 67.36ms DONE
-  2026_08_18_000017_expand_customer_portal_operations ........... 47.19ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ........... 27.33ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  8.22ms DONE
-  2026_08_21_000020_add_emergency_request_details ............... 15.49ms DONE
-  2026_08_21_000021_add_customer_onboarding ..................... 15.41ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile ...... 7.47ms DONE
-  2026_08_21_000023_create_customer_messaging .................... 4.31ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 0.46ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ................ 49.26ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation ........... 92.99ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.65ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability .... 33.31ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  14.04ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 6.94ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 64.57ms DONE
-  2026_08_22_000032_add_work_order_part_requests ................ 21.66ms DONE
+  2026_08_14_000001_create_unifco_core_tables .................. 219.55ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 251.78ms DONE
+  2026_08_14_000003_add_operational_integration .................. 6.54ms DONE
+  2026_08_14_000005_create_platform_services_tables .............. 6.12ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ....... 207.46ms DONE
+  2026_08_15_000008_add_finance_core ........................... 176.04ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ........ 32.51ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 189.25ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................. 55.68ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 229.97ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion ............... 40.34ms DONE
+  2026_08_18_000014_add_public_site_requests ..................... 4.36ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines .. 87.55ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ............ 56.79ms DONE
+  2026_08_18_000017_expand_customer_portal_operations ........... 65.08ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps ........... 24.26ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  7.22ms DONE
+  2026_08_21_000020_add_emergency_request_details ............... 12.36ms DONE
+  2026_08_21_000021_add_customer_onboarding ..................... 13.08ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile ...... 6.38ms DONE
+  2026_08_21_000023_create_customer_messaging .................... 3.64ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 0.35ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ................ 58.48ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 108.06ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.68ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 150.02ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  11.93ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 5.98ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 77.67ms DONE
+  2026_08_22_000032_add_work_order_part_requests ................ 39.60ms DONE
 
 UNIFCO tenant not found; warehouse access bootstrap skipped.
 Asset health recalculation complete. Assets processed: 0.
@@ -240,21 +274,27 @@ Spare reorder check complete. Active alerts: 0; notifications refreshed: 0.
    INFO  Blade templates cached successfully.  
 
 
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\WorkOrderPartRequestTest[39m
+  [32;1m✓[39;22m[90m [39m[90mrequest reserve pick issue and receive moves stock to vehicle[39m[90m       [39m [90m0.58s[39m  
+  [32;1m✓[39;22m[90m [39m[90mapproval fails when available stock is insufficient[39m[90m                 [39m [90m0.22s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcritical request requires supervisor or manager approval[39m[90m            [39m [90m0.62s[39m  
+  [32;1m✓[39;22m[90m [39m[90mwork order page renders part request workspace[39m[90m                      [39m [90m0.22s[39m  
+
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\WarehouseFieldInventoryTest[39m
-  [32;1m✓[39;22m[90m [39m[90madmin can open spare parts control center[39m[90m                           [39m [90m0.71s[39m  
-  [32;1m✓[39;22m[90m [39m[90mstock can move from main warehouse to technician vehicle with issue[39m[90m…[39m [90m0.27s[39m  
-  [32;1m✓[39;22m[90m [39m[90mbootstrap creates dedicated storekeeper and main warehouse access[39m[90m   [39m [90m0.48s[39m  
+  [32;1m✓[39;22m[90m [39m[90madmin can open spare parts control center[39m[90m                           [39m [90m0.22s[39m  
+  [32;1m✓[39;22m[90m [39m[90mstock can move from main warehouse to technician vehicle with issue[39m[90m…[39m [90m0.22s[39m  
+  [32;1m✓[39;22m[90m [39m[90mbootstrap creates dedicated storekeeper and main warehouse access[39m[90m   [39m [90m0.42s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\OperationsCommandCenterTest[39m
-  [32;1m✓[39;22m[90m [39m[90madmin can render role aware command center[39m[90m                          [39m [90m0.26s[39m  
-  [32;1m✓[39;22m[90m [39m[90mdashboard accepts customer scope filter[39m[90m                             [39m [90m0.25s[39m  
-  [32;1m✓[39;22m[90m [39m[90mcustomer role is redirected to customer portal[39m[90m                      [39m [90m0.47s[39m  
+  [32;1m✓[39;22m[90m [39m[90madmin can render role aware command center[39m[90m                          [39m [90m0.22s[39m  
+  [32;1m✓[39;22m[90m [39m[90mdashboard accepts customer scope filter[39m[90m                             [39m [90m0.22s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcustomer role is redirected to customer portal[39m[90m                      [39m [90m0.41s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\FoundationTest[39m
   [32;1m✓[39;22m[90m [39m[90mguest can open public homepage[39m[90m                                      [39m [90m0.01s[39m  
-  [32;1m✓[39;22m[90m [39m[90mauthenticated user can open dashboard[39m[90m                               [39m [90m0.25s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmodule workspace is available[39m[90m                                       [39m [90m0.25s[39m  
+  [32;1m✓[39;22m[90m [39m[90mauthenticated user can open dashboard[39m[90m                               [39m [90m0.22s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmodule workspace is available[39m[90m                                       [39m [90m0.21s[39m  
 
-  [90mTests:[39m    [32;1m9 passed[39;22m[90m (48 assertions)[39m
-  [90mDuration:[39m [39m3.05s[39m
+  [90mTests:[39m    [32;1m13 passed[39;22m[90m (78 assertions)[39m
+  [90mDuration:[39m [39m3.91s[39m
 
