@@ -1,8 +1,8 @@
-release=operations-command-center-v2
-source_sha=f9cb69ce7134307643b0be6e2c9338aae6ac045e
-verified_at=2026-08-22T07:58:38Z
-result=success
+release=warehouse-field-inventory-v1
+source_sha=15d40f2ea0b87ccc5ec0c37fb662feefaea2acd6
+verified_at=2026-08-22T07:59:49Z
+result=failure
 source_validation=success
-laravel_preflight_rc=0
-homepage_validation=success
-deploy_rc=0
+laravel_preflight_rc=2
+homepage_validation=skipped
+deploy_rc=not-run
