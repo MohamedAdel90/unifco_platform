@@ -3,10 +3,10 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   4bcaaba..da7ded7  main       -> origin/main
+   da7ded7..4736dd3  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at da7ded7 Polish dashboard sidebar and complete bilingual navigation
-==> Server checkout: da7ded736bb7fdec0fb279ec54e2e338b821e5de
+HEAD is now at 4736dd3 Polish top bar language and user controls
+==> Server checkout: 4736dd3db1dcf5a17aba4c306e5952115d775f12
 ==> Verifying required release files
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -28,9 +28,9 @@ Generating optimized autoload files
   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
 
-==> Repairing Laravel session directories and permissions
 78 packages you are using are looking for funding.
 Use the `composer fund` command to find out more!
+==> Repairing Laravel session directories and permissions
 ==> Enforcing HTTP-safe session cookie settings
 ==> Skipping UNIFCO logo materialization by request
 ==> Repairing customer messaging schema first
@@ -58,12 +58,12 @@ Operational warehouse, technician request, consume and return lifecycle ready
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 0.88ms DONE
-  cache .......................................................... 2.86ms DONE
-  compiled ....................................................... 0.88ms DONE
-  events ......................................................... 0.42ms DONE
-  routes ......................................................... 0.45ms DONE
-  views .......................................................... 4.19ms DONE
+  config ......................................................... 1.38ms DONE
+  cache .......................................................... 3.16ms DONE
+  compiled ....................................................... 0.93ms DONE
+  events ......................................................... 0.54ms DONE
+  routes ......................................................... 0.51ms DONE
+  views .......................................................... 4.16ms DONE
 
 ==> Restarting unifco-app
 unifco-app: stopped
@@ -72,4 +72,4 @@ unifco-app: started
 ==> Verifying homepage release
 ==> Verifying login session and CSRF round trip
 Login CSRF/session round trip verified: HTTP 302
-==> Deploy complete at da7ded736bb7fdec0fb279ec54e2e338b821e5de
+==> Deploy complete at 4736dd3db1dcf5a17aba4c306e5952115d775f12
