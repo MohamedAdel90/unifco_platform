@@ -1,0 +1,32 @@
+@php
+$partAuthz=app(\App\Services\AuthorizationService::class);
+$canCreatePartRequest=$partAuthz->allows(auth()->user(),'parts.request.create');
+$canReadPartRequest=$partAuthz->allows(auth()->user(),'parts.request.read') || auth()->user()->role==='ADMIN';
+$partWarehouses=\App\Models\Warehouse::where('status','ACTIVE')->orderByRaw("CASE location_type WHEN 'CENTRAL' THEN 1 WHEN 'SITE' THEN 2 WHEN 'VEHICLE' THEN 3 ELSE 4 END")->orderBy('code')->get();
+$sourceWarehouses=$partWarehouses->whereIn('location_type',['CENTRAL','SITE','WORKSHOP']);
+$destinationWarehouses=$partWarehouses->whereIn('location_type',['VEHICLE','SITE']);
+$workOrderPartRequests=$canReadPartRequest ? \App\Models\WorkOrderPartRequest::with(['lines.item','sourceWarehouse','destinationWarehouse','requestedBy'])->where('work_order_id',$workOrder->id)->latest()->get() : collect();
+@endphp
+@if($canCreatePartRequest || $canReadPartRequest)
+<style>
+.part-request-panel{margin-top:14px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:17px}.part-request-panel h3{margin:0 0 5px;color:#071f4d;font-size:14px}.part-request-panel>p{font-size:9px;color:#738198}.pr-form{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.pr-form label{font-size:8px;font-weight:700}.pr-lines{grid-column:1/-1}.pr-line{display:grid;grid-template-columns:1fr 140px;gap:8px;margin-top:6px}.pr-history{display:grid;gap:8px;margin-top:12px}.pr-card{border:1px solid #e5eaf1;border-radius:10px;padding:11px}.pr-head{display:flex;justify-content:space-between;gap:10px}.pr-head b{font-size:10px;color:#071f4d}.pr-meta{font-size:8px;color:#718096}.pr-status{font-size:7px;font-weight:900;padding:4px 7px;border-radius:999px;background:#edf2f7;height:max-content}.pr-status.APPROVED{background:#e5f5eb;color:#176a43}.pr-status.PICKED{background:#e9f2fd;color:#1d5e9e}.pr-status.ISSUED{background:#fff0df;color:#965b00}.pr-status.RECEIVED{background:#daf4e5;color:#12643e}.pr-status.REJECTED{background:#fdebed;color:#b42239}.pr-items{font-size:8px;color:#334155;margin-top:7px}.pr-receive{margin-top:8px}.pr-priority{font-weight:900}.pr-priority.CRITICAL,.pr-priority.EMERGENCY{color:#c51b34}@media(max-width:900px){.pr-form{grid-template-columns:1fr 1fr}}@media(max-width:600px){.pr-form,.pr-line{grid-template-columns:1fr}}
+</style>
+<section class="part-request-panel">
+<h3>Technician Part Request · طلب قطع الغيار</h3>
+<p>Request from central/site stock, reserve after approval, then warehouse pick & issue and technician receipt into vehicle/site stock.</p>
+@if($canCreatePartRequest && $workOrder->status!=='COMPLETED')
+<form method="POST" action="{{ route('maintenance.work-orders.part-requests.store',$workOrder) }}">@csrf
+<div class="pr-form">
+<label>Source Warehouse<select name="source_warehouse_id" required><option value="">Select source</option>@foreach($sourceWarehouses as $warehouse)<option value="{{ $warehouse->id }}">{{ $warehouse->code }} · {{ $warehouse->name }}</option>@endforeach</select></label>
+<label>Deliver To<select name="destination_warehouse_id" required><option value="">Vehicle / site stock</option>@foreach($destinationWarehouses as $warehouse)<option value="{{ $warehouse->id }}">{{ $warehouse->code }} · {{ $warehouse->name }} @if($warehouse->assignedEmployee)· {{ $warehouse->assignedEmployee?->name }}@endif</option>@endforeach</select></label>
+<label>Priority<select name="priority" required><option>NORMAL</option><option>HIGH</option><option>CRITICAL</option><option>EMERGENCY</option></select></label>
+<label>Reason<input name="reason" placeholder="Required to complete work / failure replacement"></label>
+<div class="pr-lines" id="wo-part-request-lines"><div class="pr-line"><select name="item_id[]" required><option value="">Select part</option>@if($compatibleParts->count())<optgroup label="Compatible with {{ $workOrder->asset?->asset_code }}">@foreach($compatibleParts as $part)<option value="{{ $part->id }}">{{ $part->critical_spare?'★ ':'' }}{{ $part->item_code }} · {{ $part->name }}</option>@endforeach</optgroup>@endif<optgroup label="All active items">@foreach($allItems as $item)<option value="{{ $item->id }}">{{ $item->item_code }} · {{ $item->name }}</option>@endforeach</optgroup></select><input type="number" name="quantity[]" min="0.0001" step="0.0001" value="1" required></div></div>
+</div>
+<div class="actions"><button type="button" class="btn secondary" onclick="addWoPartRequestLine()">+ Add Part</button><button class="btn">Submit Part Request</button></div>
+</form>
+@endif
+@if($canReadPartRequest)<div class="pr-history">@forelse($workOrderPartRequests as $partRequest)<div class="pr-card"><div class="pr-head"><span><b>{{ $partRequest->request_no }}</b><div class="pr-meta"><span class="pr-priority {{ $partRequest->priority }}">{{ $partRequest->priority }}</span> · {{ $partRequest->sourceWarehouse?->code }} → {{ $partRequest->destinationWarehouse?->code }} · {{ $partRequest->requestedBy?->name }} · {{ optional($partRequest->created_at)->diffForHumans() }}</div></span><i class="pr-status {{ $partRequest->status }}">{{ str_replace('_',' ',$partRequest->status) }}</i></div><div class="pr-items">@foreach($partRequest->lines as $line){{ $line->item?->item_code }} · Req {{ (float)$line->requested_quantity }} / Reserved {{ (float)$line->reserved_quantity }} / Issued {{ (float)$line->issued_quantity }} / Received {{ (float)$line->received_quantity }}@if(!$loop->last)<br>@endif @endforeach</div>@if($partRequest->decision_note)<div class="pr-meta" style="margin-top:5px">Decision: {{ $partRequest->decision_note }}</div>@endif @if($partRequest->status==='ISSUED' && $partAuthz->allows(auth()->user(),'parts.request.receive'))<form class="pr-receive" method="POST" action="{{ route('inventory.part-requests.receive',$partRequest) }}">@csrf<button class="btn">Confirm Technician Receipt</button></form>@endif</div>@empty<div class="muted">No part requests for this work order yet.</div>@endforelse</div>@endif
+</section>
+<script>function addWoPartRequestLine(){var host=document.getElementById('wo-part-request-lines');var row=host.firstElementChild.cloneNode(true);row.querySelector('select').selectedIndex=0;row.querySelector('input').value='1';host.appendChild(row)}</script>
+@endif
