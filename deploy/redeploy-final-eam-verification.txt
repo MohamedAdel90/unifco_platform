@@ -3,3 +3,5 @@ Final verification trigger after fixing deploy CSRF syntax. Run full EAM preflig
 Phase 3 final verification retry after transient SSH timeout on 2026-08-22. Re-run full preflight and production deployment, then capture fresh live screenshots if deploy succeeds.
 
 Sidebar production redeploy trigger: deploy main SHA 091638d9b7f3bff5e1e65764367ffac99f135090 and verify the redesigned grouped navigation is live.
+
+Complete navigation verification: deploy the current main containing operational wave routes, dedicated workspace pages, complete sidebar/sub-tab coverage on every authenticated page, bilingual navigation, and SidebarNavigationTest coverage. Verify workspace/asset-360 and operational route registration before production restart.
