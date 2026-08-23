@@ -10,6 +10,7 @@ Route::middleware('auth')->group(function () {
     });
     Route::prefix('admin/users')->name('admin.users.')->group(function () {
         Route::get('/export/csv',[UserAdministrationController::class,'export'])->name('export');
+        Route::post('/import',[UserAdministrationController::class,'import'])->name('import');
         Route::post('/bulk',[UserAdministrationController::class,'bulk'])->name('bulk');
         Route::get('/create',[UserAdministrationController::class,'create'])->name('create');
         Route::post('/',[UserAdministrationController::class,'store'])->name('store');
@@ -20,5 +21,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/{user}/security',[UserAdministrationController::class,'security'])->name('security');
         Route::post('/{user}/reset-password',[UserAdministrationController::class,'resetPassword'])->name('reset-password');
         Route::post('/{user}/permission',[UserAdministrationController::class,'permission'])->name('permission');
+        Route::post('/{user}/api-tokens/{token}/revoke',[UserAdministrationController::class,'revokeToken'])->name('api-tokens.revoke');
     });
 });
