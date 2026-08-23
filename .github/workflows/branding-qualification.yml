@@ -6,7 +6,9 @@ on:
     paths:
       - 'app/Http/Controllers/Admin/BrandingController.php'
       - 'app/Http/Controllers/BrandAssetController.php'
+      - 'app/Http/Middleware/BrandingPresentation.php'
       - 'app/Models/BrandingSetting.php'
+      - 'bootstrap/app.php'
       - 'resources/views/admin/branding/**'
       - 'routes/navigation.php'
       - 'routes/brand.php'
@@ -42,7 +44,9 @@ jobs:
             php artisan key:generate --force
             php -l app/Http/Controllers/Admin/BrandingController.php
             php -l app/Http/Controllers/BrandAssetController.php
+            php -l app/Http/Middleware/BrandingPresentation.php
             php -l app/Models/BrandingSetting.php
+            php -l bootstrap/app.php
             php -l database/migrations/2026_08_23_000047_create_branding_settings.php
             php artisan migrate:fresh --force
             php artisan route:list --name=admin.branding.index >/dev/null
