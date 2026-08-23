@@ -13,7 +13,10 @@ class EnsureUserSessionValid
     {
         if (Auth::check()) {
             $user=Auth::user();
-            $sessionVersion=(int)$request->session()->get('account_session_version',0);
+            if (! $request->session()->has('account_session_version')) {
+                $request->session()->put('account_session_version',(int)$user->session_version);
+            }
+            $sessionVersion=(int)$request->session()->get('account_session_version');
             $invalid=$user->status!=='ACTIVE' || $user->locked_at || $sessionVersion!==(int)$user->session_version;
             if ($invalid) {
                 Auth::logout();
