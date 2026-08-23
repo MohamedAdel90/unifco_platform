@@ -12,7 +12,7 @@ class Employee extends Model
 
     protected $fillable = [
         'tenant_id','organization_id','job_position_id','manager_employee_id','work_schedule_id','employee_no','name','email','mobile','hire_date','status',
-        'nationality','gender','date_of_birth','marital_status','national_id','iqama_no','iqama_expiry','passport_no','passport_expiry','gosi_no',
+        'nationality','gender','date_of_birth','marital_status','national_id','iqama_no','iqama_expiry','passport_no','passport_expiry','gosi_no','gosi_status','gosi_registered_on',
         'bank_name','iban','emergency_contact_name','emergency_contact_mobile','address_line','city','country','employment_type','contract_type',
         'probation_end_date','contract_end_date','basic_salary','housing_allowance','transport_allowance','other_allowances','work_location','notes',
     ];
@@ -20,7 +20,7 @@ class Employee extends Model
     protected function casts(): array
     {
         return [
-            'hire_date'=>'date','date_of_birth'=>'date','iqama_expiry'=>'date','passport_expiry'=>'date','probation_end_date'=>'date','contract_end_date'=>'date',
+            'hire_date'=>'date','date_of_birth'=>'date','iqama_expiry'=>'date','passport_expiry'=>'date','gosi_registered_on'=>'date','probation_end_date'=>'date','contract_end_date'=>'date',
             'basic_salary'=>'decimal:2','housing_allowance'=>'decimal:2','transport_allowance'=>'decimal:2','other_allowances'=>'decimal:2',
         ];
     }
