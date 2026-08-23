@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BrandingController;
 use App\Http\Controllers\Admin\UserAdministrationController;
 use App\Http\Controllers\NavigationWorkspaceController;
 use Illuminate\Support\Facades\Route;
@@ -7,7 +8,13 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->group(function () {
     Route::prefix('workspace')->name('workspace.')->group(function () {
         Route::get('/skills-certifications',fn()=>redirect()->route('hr.performance.index'))->name('skills-certifications');
+        Route::get('/system-settings',fn()=>redirect()->route('admin.branding.index'))->name('system-settings');
         Route::get('/{workspace}',[NavigationWorkspaceController::class,'show'])->name('show');
+    });
+    Route::prefix('admin/branding')->name('admin.branding.')->group(function () {
+        Route::get('/',[BrandingController::class,'index'])->name('index');
+        Route::post('/logo',[BrandingController::class,'update'])->name('update');
+        Route::post('/reset',[BrandingController::class,'reset'])->name('reset');
     });
     Route::prefix('admin/users')->name('admin.users.')->group(function () {
         Route::get('/export/csv',[UserAdministrationController::class,'export'])->name('export');
