@@ -3,10 +3,10 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   49ae75f..fff0432  main       -> origin/main
+   494253f..3f03b47  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at fff0432 Record HR Phase 2 qualification [skip ci]
-==> Server checkout: fff0432a8c1e5c2c619ba7b3cf3ca9e7063ee89a
+HEAD is now at 3f03b47 Record production recovery verification [skip ci]
+==> Server checkout: 3f03b477c94b1800c55a37437eb728cb2c835276
 ==> Verifying required release files
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -30,10 +30,10 @@ Generating optimized autoload files
 
 ==> Repairing Laravel session directories and permissions
 ==> Enforcing HTTP-safe session cookie settings
-==> Skipping UNIFCO logo materialization by request
-==> Repairing customer messaging schema first
 78 packages you are using are looking for funding.
 Use the `composer fund` command to find out more!
+==> Skipping UNIFCO logo materialization by request
+==> Repairing customer messaging schema first
 
    INFO  Nothing to migrate.  
 
@@ -58,12 +58,12 @@ Operational warehouse, technician request, consume and return lifecycle ready
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.25ms DONE
-  cache .......................................................... 3.02ms DONE
-  compiled ....................................................... 0.93ms DONE
-  events ......................................................... 0.56ms DONE
-  routes ......................................................... 0.56ms DONE
-  views .......................................................... 4.24ms DONE
+  config ......................................................... 1.16ms DONE
+  cache .......................................................... 3.28ms DONE
+  compiled ....................................................... 0.91ms DONE
+  events ......................................................... 0.38ms DONE
+  routes ......................................................... 0.42ms DONE
+  views .......................................................... 3.79ms DONE
 
 ==> Restarting unifco-app
 unifco-app: stopped
@@ -72,4 +72,4 @@ unifco-app: started
 ==> Verifying homepage release
 ==> Verifying login session and CSRF round trip
 Login CSRF/session round trip verified: HTTP 302
-==> Deploy complete at fff0432a8c1e5c2c619ba7b3cf3ca9e7063ee89a
+==> Deploy complete at 3f03b477c94b1800c55a37437eb728cb2c835276
