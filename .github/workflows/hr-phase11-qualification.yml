@@ -7,6 +7,7 @@ on:
       - 'app/Http/Controllers/HR/HrAnalyticsController.php'
       - 'app/Models/HrWorkforcePlan.php'
       - 'resources/views/hr/analytics/**'
+      - 'resources/views/hr/dashboard.blade.php'
       - 'routes/wave18.php'
       - 'bootstrap/app.php'
       - 'database/migrations/2026_08_23_000046_build_hr_analytics_phase11.php'
