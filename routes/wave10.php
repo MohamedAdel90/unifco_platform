@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\HR\{AttendanceController,BusinessTripController,EmployeeController,HrDashboardController,HrOperationsController,LeaveController,PayrollController};
+use App\Http\Controllers\HR\{AttendanceController,BusinessTripController,EmployeeController,FinalSettlementController,HrDashboardController,HrOperationsController,LeaveController,PayrollController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('hr')->name('hr.')->group(function () {
@@ -38,6 +38,14 @@ Route::middleware('auth')->prefix('hr')->name('hr.')->group(function () {
     Route::post('/missions/{mission}/expenses/{expense}/decide',[BusinessTripController::class,'decideExpense'])->middleware('permission:workflow.approval.decide')->name('missions.expenses.decide');
     Route::post('/missions/{mission}/complete',[BusinessTripController::class,'complete'])->middleware('permission:hr.employee.manage')->name('missions.complete');
     Route::post('/missions/{mission}/settle',[BusinessTripController::class,'settle'])->middleware('permission:hr.employee.manage')->name('missions.settle');
+
+    Route::get('/settlements',[FinalSettlementController::class,'index'])->middleware('permission:hr.employee.read')->name('settlements.index');
+    Route::post('/settlements',[FinalSettlementController::class,'store'])->middleware('permission:hr.employee.manage')->name('settlements.store');
+    Route::get('/settlements/{settlement}',[FinalSettlementController::class,'show'])->middleware('permission:hr.employee.read')->name('settlements.show');
+    Route::post('/settlements/{settlement}/recalculate',[FinalSettlementController::class,'recalculate'])->middleware('permission:hr.employee.manage')->name('settlements.recalculate');
+    Route::post('/settlements/{settlement}/submit',[FinalSettlementController::class,'submit'])->middleware('permission:hr.employee.manage')->name('settlements.submit');
+    Route::post('/settlements/{settlement}/decide',[FinalSettlementController::class,'decide'])->middleware('permission:workflow.approval.decide')->name('settlements.decide');
+    Route::post('/settlements/{settlement}/paid',[FinalSettlementController::class,'markPaid'])->middleware('permission:finance.journal.post')->name('settlements.paid');
 });
 
 Route::middleware('auth')->prefix('hr/operations')->name('hr.operations.')->group(function () {
