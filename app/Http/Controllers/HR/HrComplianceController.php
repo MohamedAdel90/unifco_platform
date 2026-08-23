@@ -83,7 +83,8 @@ class HrComplianceController extends Controller
         if($profile->wps_status!=='COMPLIANT' || !$profile->last_wps_period) $created+=$this->upsertCase($request,'WPS','HIGH','Mudad/WPS reconciliation requires review','Record the latest wage protection reconciliation period and evidence/reference from Mudad.',null,'wps-review',$today->copy()->addDays(7),$seen);
         HrComplianceCase::whereIn('status',['OPEN','IN_PROGRESS'])->whereNotNull('source_key')->whereNotIn('source_key',$seen)->update(['status'=>'RESOLVED','resolved_by'=>$request->user()->id,'resolved_at'=>now(),'remediation_notes'=>'Automatically cleared by subsequent compliance scan.']);
         $summary=['active_employees'=>$employees->count(),'saudi_employees'=>$employees->filter(fn($e)=>$this->isSaudi($e))->count(),'active_contracts'=>$contracts->count(),'qiwa_documented_pct'=>$qiwaPct,'new_or_existing_findings'=>count($seen),'new_cases'=>$created,'open_cases'=>HrComplianceCase::whereIn('status',['OPEN','IN_PROGRESS'])->count()];
-        $scan=HrComplianceScanRun::create(['organization_id'=>$orgId,'scan_no'=>'HRC-'.now()->format('Ymd-His'),'summary'=>$summary,'run_by'=>$request->user()->id,'completed_at'=>now()]);
+        $nextScan=(int)HrComplianceScanRun::withoutGlobalScopes()->where('tenant_id',$tenantId)->max('id')+1;
+        $scan=HrComplianceScanRun::create(['organization_id'=>$orgId,'scan_no'=>'HRC-SCAN-'.now()->format('Ymd').'-'.str_pad((string)$nextScan,6,'0',STR_PAD_LEFT),'summary'=>$summary,'run_by'=>$request->user()->id,'completed_at'=>now()]);
         $audit->record('hr.compliance.scan.completed',$scan,[],$summary);
         return back()->with('status','Saudi HR compliance scan completed: '.$summary['open_cases'].' open findings.');
     }
