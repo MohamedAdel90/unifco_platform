@@ -79,14 +79,21 @@ jobs:
           php artisan migrate:status | grep -q '000035_add_user_security_metadata'
           php artisan migrate:status | grep -q '000036_add_user_session_version'
           php artisan migrate:status | grep -q '000037_expand_hr_employee_core'
+          php artisan migrate:status | grep -q '000038_build_hr_attendance_leave_phase2'
           php artisan route:list --name=admin.users.import >/dev/null
           php artisan route:list --name=admin.users.security >/dev/null
           php artisan route:list --name=hr.dashboard >/dev/null
           php artisan route:list --name=hr.employees.show >/dev/null
-          php artisan route:list --name=hr.employees.contracts.store >/dev/null
+          php artisan route:list --name=hr.attendance.index >/dev/null
+          php artisan route:list --name=hr.attendance.schedules.store >/dev/null
+          php artisan route:list --name=hr.leave.index >/dev/null
+          php artisan route:list --name=hr.leave.policies.store >/dev/null
+          php artisan route:list --name=hr.leave.balances.accrue >/dev/null
           echo "==> Verify HR authenticated pages resolve to auth gate"
           curl -fsSI http://127.0.0.1:8081/hr/dashboard | grep -Eq 'HTTP/.* (200|302)'
           curl -fsSI http://127.0.0.1:8081/hr/employees | grep -Eq 'HTTP/.* (200|302)'
+          curl -fsSI http://127.0.0.1:8081/hr/attendance | grep -Eq 'HTTP/.* (200|302)'
+          curl -fsSI http://127.0.0.1:8081/hr/leave | grep -Eq 'HTTP/.* (200|302)'
           echo "recovery_result=success"
           REMOTE
           rc=$?
@@ -102,7 +109,7 @@ jobs:
           rc='${{ steps.recover.outputs.rc }}'
           if [ "${rc:-999}" = '0' ]; then result=success; else result=failure; fi
           printf 'source_sha=%s\nverified_at=%s\nresult=%s\nrecovery_rc=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "${rc:-not-run}" > deploy/status/user-admin-production-latest.txt
-          tail -n 240 /tmp/unifco-recovery.log > deploy/status/user-admin-production.log || true
+          tail -n 260 /tmp/unifco-recovery.log > deploy/status/user-admin-production.log || true
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add deploy/status/user-admin-production-latest.txt deploy/status/user-admin-production.log
