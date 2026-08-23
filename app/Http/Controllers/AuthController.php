@@ -26,6 +26,7 @@ class AuthController extends Controller
             abort(403,'User account is unavailable.');
         }
         $user->forceFill(['last_login_at'=>now()])->save();
+        $request->session()->put('account_session_version',(int)$user->session_version);
 
         if ($user->role === 'CUSTOMER') return redirect()->intended(route('customer.portal'));
         if ($user->role === 'STOREKEEPER') return redirect()->intended(route('inventory.warehouse.index'));
