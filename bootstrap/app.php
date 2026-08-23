@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__.'/../routes/wave15.php',
             __DIR__.'/../routes/wave16.php',
             __DIR__.'/../routes/wave17.php',
+            __DIR__.'/../routes/wave18.php',
             __DIR__.'/../routes/navigation.php',
         ],
         api: __DIR__.'/../routes/api.php',
