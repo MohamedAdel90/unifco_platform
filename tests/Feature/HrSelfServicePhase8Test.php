@@ -26,7 +26,7 @@ class HrSelfServicePhase8Test extends TestCase
     public function test_employee_portal_is_scoped_to_linked_employee_and_own_payroll(): void
     {
         $c=$this->core();
-        $run=PayrollRun::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'payroll_no'=>'PAY-ESS-1','period_start'=>'2026-08-01','period_end'=>'2026-08-31','posting_date'=>'2026-08-31','currency'=>'SAR','status'=>'CALCULATED']);
+        $run=PayrollRun::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'payroll_no'=>'PAY-ESS-1','period_start'=>'2026-08-01','period_end'=>'2026-08-31','posting_date'=>'2026-08-31','currency'=>'SAR','status'=>'CALCULATED','created_by'=>$c['manager']->id]);
         PayrollLine::create(['payroll_run_id'=>$run->id,'employee_id'=>$c['employee']->id,'basic_pay'=>8000,'allowances'=>1000,'deductions'=>500,'net_pay'=>8500,'calculation_status'=>'CALCULATED']);
         PayrollLine::create(['payroll_run_id'=>$run->id,'employee_id'=>$c['outsider']->id,'basic_pay'=>30000,'allowances'=>5000,'deductions'=>1000,'net_pay'=>34000,'calculation_status'=>'CALCULATED']);
         $this->actingAs($c['user'])->get('/hr/self-service')->assertOk()->assertSee('My HR',false)->assertSee('8,500 SAR',false)->assertDontSee('34,000 SAR',false)->assertDontSee('Outside Team',false);
