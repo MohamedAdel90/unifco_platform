@@ -1,0 +1,4 @@
+source_sha=23dc3c35d19609d8c8f485815abe89b69ed03364
+verified_at=2026-08-23T10:45:58Z
+result=success
+recovery_rc=0
