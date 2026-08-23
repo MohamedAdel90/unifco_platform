@@ -35,7 +35,7 @@ body.sidebar-collapsed .brand-logo-wrap{min-height:66px!important;padding:6px!im
 body.sidebar-collapsed .brand-logo-wrap .brand-logo{width:50px!important;max-width:50px!important;height:50px!important;max-height:50px!important;flex:0 0 50px!important}
 
 /* Public website header/footer: larger, cleaner brand footprint. */
-.top .logo{width:clamp(150px,14vw,205px)!important;height:68px!important;max-width:205px!important;object-fit:contain!important;object-position:left center!important;padding:4px 0!important}
+.top .logo{width:clamp(190px,18vw,260px)!important;height:84px!important;max-width:260px!important;object-fit:contain!important;object-position:left center!important;padding:2px 0!important}
 html[dir="rtl"] .top .logo{object-position:right center!important}
 .foot-logo{width:clamp(150px,16vw,190px)!important;height:72px!important;max-width:190px!important;object-fit:contain!important;padding:7px 10px!important;background:#fff!important;border-radius:10px!important}
 
@@ -51,12 +51,12 @@ html[dir="rtl"] .top .logo{object-position:right center!important}
 @media(max-width:850px){
   .brand-logo-wrap{min-height:104px!important;padding:7px 9px!important}
   .brand-logo-wrap .brand-logo{width:min(238px,96%)!important;max-width:238px!important;height:88px!important;max-height:88px!important}
-  .top .logo{width:145px!important;height:60px!important}
+  .top .logo{width:170px!important;height:70px!important;max-width:170px!important}
 }
 @media(max-width:600px){
   .hero-logo{width:min(300px,80%)!important;height:120px!important}
   .card-logo{width:min(240px,86%)!important;height:100px!important}
-  .top .logo{width:132px!important;height:54px!important}
+  .top .logo{width:150px!important;height:62px!important;max-width:150px!important}
   .foot-logo{width:150px!important;height:64px!important}
 }
 </style>
