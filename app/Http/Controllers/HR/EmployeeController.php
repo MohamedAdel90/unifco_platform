@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AttendanceEntry,Employee,EmployeeDocument,EmploymentContract,JobPosition,LeaveRequest,PayrollLine};
+use App\Models\{AttendanceEntry,Employee,EmployeeDocument,EmploymentContract,FinalSettlement,JobPosition,LeaveRequest,PayrollLine};
 use App\Services\AuditService;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\Auth;
@@ -30,9 +30,10 @@ class EmployeeController extends Controller
         $attendance=AttendanceEntry::where('employee_id',$employee->id)->latest('work_date')->limit(20)->get();
         $leaves=LeaveRequest::where('employee_id',$employee->id)->latest()->limit(20)->get();
         $payroll=PayrollLine::where('employee_id',$employee->id)->latest()->limit(12)->get();
+        $finalSettlements=FinalSettlement::where('employee_id',$employee->id)->latest()->limit(8)->get();
         $serviceYears=$employee->hire_date ? $employee->hire_date->floatDiffInYears(now()) : 0;
         $expiring=$employee->documents->filter(fn($d)=>$d->expires_on && $d->expires_on->isBetween(today(),today()->addDays(90)));
-        return view('hr.employees.show',compact('employee','attendance','leaves','payroll','serviceYears','expiring'));
+        return view('hr.employees.show',compact('employee','attendance','leaves','payroll','finalSettlements','serviceYears','expiring'));
     }
 
     public function create(): View { return view('hr.employees.form',['employee'=>new Employee(),...$this->lookups()]); }
