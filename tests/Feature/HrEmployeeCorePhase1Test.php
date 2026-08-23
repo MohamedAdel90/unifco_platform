@@ -23,7 +23,7 @@ class HrEmployeeCorePhase1Test extends TestCase
     {
         [$tenant,$org,$admin,$position]=$this->admin();
         Employee::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'job_position_id'=>$position->id,'employee_no'=>'EMP-100','name'=>'Alice Johnson','email'=>'alice@example.test','hire_date'=>'2021-01-10','status'=>'ACTIVE','basic_salary'=>9000,'housing_allowance'=>2250,'transport_allowance'=>800]);
-        $this->actingAs($admin)->get('/hr/dashboard')->assertOk()->assertSee('HR Command Center',false)->assertSee('Monthly Compensation',false)->assertSee('/hr/attendance',false)->assertSee('/hr/leave',false)->assertSee('/hr/operations#payroll',false);
+        $this->actingAs($admin)->get('/hr/dashboard')->assertOk()->assertSee('HR Command Center',false)->assertSee('Monthly Compensation',false)->assertSee('/hr/attendance',false)->assertSee('/hr/leave',false)->assertSee('/hr/payroll',false)->assertSee('/hr/missions',false);
         $this->actingAs($admin)->get('/hr/employees')->assertOk()->assertSee('Employee Directory',false)->assertSee('Employee 360',false)->assertSee('12,050.00 SAR',false);
     }
 
