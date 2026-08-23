@@ -70,6 +70,14 @@ class HrDocumentsPhase9Test extends TestCase
         $this->actingAs($c['other'])->get('/hr/documents/'.$r->id)->assertForbidden();
     }
 
+    public function test_hr_reader_does_not_require_an_employee_link_to_open_requests(): void
+    {
+        $c=$this->core();
+        $unlinkedAdmin=User::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'name'=>'Unlinked HR Admin','email'=>'unlinked-hr-docs@example.test','password'=>'password','role'=>'ADMIN','status'=>'ACTIVE']);
+        $r=HrServiceRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'request_no'=>'HRR-TEST-2','employee_id'=>$c['employee']->id,'request_type'=>'GENERAL','language'=>'EN','status'=>'PENDING','requested_by'=>$c['user']->id]);
+        $this->actingAs($unlinkedAdmin)->get('/hr/documents/'.$r->id)->assertOk()->assertSee('HRR-TEST-2',false);
+    }
+
     public function test_unlinked_user_cannot_open_employee_document_self_service(): void
     {
         $c=$this->core();
