@@ -62,7 +62,7 @@ html[dir="rtl"] .top .logo{object-position:right center!important}
 </style>
 HTML;
 
-        $response->setContent(str_replace('</head>', $style.'\n</head>', $html));
+        $response->setContent(str_replace('</head>', $style."\n</head>", $html));
 
         return $response;
     }

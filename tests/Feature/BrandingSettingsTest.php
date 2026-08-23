@@ -65,6 +65,7 @@ class BrandingSettingsTest extends TestCase
         $this->get('/')->assertOk()
             ->assertSee('dynamic-brand-logo-presentation',false)
             ->assertSee('.top .logo',false)
-            ->assertSee('.foot-logo',false);
+            ->assertSee('.foot-logo',false)
+            ->assertDontSee('\\n</head>',false);
     }
 }
