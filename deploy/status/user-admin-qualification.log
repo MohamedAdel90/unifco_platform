@@ -1,22 +1,3 @@
-  - Downloading sebastian/exporter (7.0.3)
-  - Downloading sebastian/environment (8.1.2)
-  - Downloading sebastian/diff (7.0.0)
-  - Downloading sebastian/comparator (7.1.8)
-  - Downloading sebastian/cli-parser (4.2.1)
-  - Downloading phpunit/php-timer (8.0.0)
-  - Downloading phpunit/php-text-template (5.0.0)
-  - Downloading phpunit/php-invoker (6.0.0)
-  - Downloading phpunit/php-file-iterator (6.0.1)
-  - Downloading theseer/tokenizer (2.0.1)
-  - Downloading sebastian/lines-of-code (4.0.1)
-  - Downloading sebastian/complexity (5.0.0)
-  - Downloading phpunit/php-code-coverage (12.5.7)
-  - Downloading phar-io/version (3.2.1)
-  - Downloading phar-io/manifest (2.0.4)
-  - Downloading myclabs/deep-copy (1.14.0)
-  - Downloading phpunit/phpunit (12.5.33)
-  - Installing doctrine/inflector (2.1.0): Extracting archive
-  - Installing doctrine/lexer (3.0.1): Extracting archive
   - Installing dragonmantank/cron-expression (v3.6.0): Extracting archive
   - Installing symfony/deprecation-contracts (v3.7.1): Extracting archive
   - Installing psr/container (2.0.2): Extracting archive
@@ -154,44 +135,44 @@ No syntax errors detected in database/migrations/2026_08_22_000034_add_user_perm
 
    INFO  Preparing database.  
 
-  Creating migration table ..................................... 452.70ms DONE
+  Creating migration table ...................................... 44.08ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables .................. 882.90ms DONE
-  2026_08_14_000002_add_controls_and_transactions .............. 680.46ms DONE
-  2026_08_14_000003_add_operational_integration ................ 116.35ms DONE
-  2026_08_14_000005_create_platform_services_tables ............ 122.80ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ....... 239.77ms DONE
-  2026_08_15_000008_add_finance_core ............................ 19.31ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ....... 141.57ms DONE
-  2026_08_15_000010_add_hr_operations .......................... 168.55ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................. 47.47ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................. 35.77ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion ............... 77.05ms DONE
-  2026_08_18_000014_add_public_site_requests ..................... 5.76ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines . 646.05ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ........... 698.56ms DONE
-  2026_08_18_000017_expand_customer_portal_operations .......... 604.50ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ........... 40.12ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  264.51ms DONE
-  2026_08_21_000020_add_emergency_request_details ............... 16.83ms DONE
-  2026_08_21_000021_add_customer_onboarding ..................... 26.51ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile ...... 8.70ms DONE
-  2026_08_21_000023_create_customer_messaging .................... 6.04ms DONE
+  2026_08_14_000001_create_unifco_core_tables ................... 44.26ms DONE
+  2026_08_14_000002_add_controls_and_transactions ............... 44.85ms DONE
+  2026_08_14_000003_add_operational_integration .................. 7.31ms DONE
+  2026_08_14_000005_create_platform_services_tables ............. 18.32ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 11.27ms DONE
+  2026_08_15_000008_add_finance_core ............................ 10.31ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ........ 32.93ms DONE
+  2026_08_15_000010_add_hr_operations ........................... 19.29ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................. 16.76ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................. 24.91ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion ............... 44.11ms DONE
+  2026_08_18_000014_add_public_site_requests ..................... 5.18ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines .. 75.30ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ............ 59.41ms DONE
+  2026_08_18_000017_expand_customer_portal_operations ........... 43.18ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps ........... 31.16ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  8.93ms DONE
+  2026_08_21_000020_add_emergency_request_details ............... 13.31ms DONE
+  2026_08_21_000021_add_customer_onboarding ..................... 13.98ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile ...... 6.77ms DONE
+  2026_08_21_000023_create_customer_messaging .................... 3.85ms DONE
   2026_08_21_000024_provision_witco_portal_admin ................. 0.31ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ............... 770.01ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 149.55ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 4.05ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability ... 458.73ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  42.93ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 7.33ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation . 216.16ms DONE
-  2026_08_22_000032_add_work_order_part_requests ................ 33.33ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 684.51ms DONE
-  2026_08_22_000034_add_user_permission_overrides ................ 5.94ms DONE
-  2026_08_22_000035_add_user_security_metadata .................. 10.32ms DONE
-  2026_08_22_000036_add_user_session_version ..................... 2.57ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ................ 44.77ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation ........... 90.40ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 3.30ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability .... 30.33ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  12.56ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 6.41ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 65.24ms DONE
+  2026_08_22_000032_add_work_order_part_requests ................ 31.81ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ...... 17.38ms DONE
+  2026_08_22_000034_add_user_permission_overrides ................ 3.62ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 127.21ms DONE
+  2026_08_22_000036_add_user_session_version ..................... 2.18ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -201,20 +182,39 @@ No syntax errors detected in database/migrations/2026_08_22_000034_add_user_perm
    INFO  Blade templates cached successfully.  
 
 
-  [30;42;1m PASS [39;49;22m[39m Tests\Feature\UserAdministrationTest[39m
-  [32;1m✓[39;22m[90m [39m[90madmin can create edit suspend reset and open profile[39m[90m                [39m [90m1.07s[39m  
-  [32;1m✓[39;22m[90m [39m[90mpermission override changes effective access[39m[90m                        [39m [90m0.38s[39m  
-  [32;1m✓[39;22m[90m [39m[90muser admin is tenant scoped and non admin is blocked[39m[90m                [39m [90m0.75s[39m  
-  [32;1m✓[39;22m[90m [39m[90madmin cannot suspend own active session[39m[90m                             [39m [90m0.19s[39m  
+  [39;41;1m FAIL [39;49;22m[39m Tests\Feature\UserAdministrationTest[39m
+  [32;1m✓[39;22m[90m [39m[90madmin can create edit suspend reset and open profile[39m[90m                [39m [90m1.23s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpermission override changes effective access[39m[90m                        [39m [90m0.43s[39m  
+  [32;1m✓[39;22m[90m [39m[90muser admin is tenant scoped and non admin is blocked[39m[90m                [39m [90m0.85s[39m  
+  [32;1m✓[39;22m[90m [39m[90madmin cannot suspend lock or revoke own active session[39m[90m              [39m [90m0.22s[39m  
+  [31;1m⨯[39;22m[90m [39m[90msession revocation invalidates existing authenticated session[39m[90m       [39m [90m0.44s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcsv import and export are tenant scoped[39m[90m                             [39m [90m0.44s[39m  
+  [32;1m✓[39;22m[90m [39m[90msuccessful login records last login and session version[39m[90m             [39m [90m0.43s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\SidebarNavigationTest[39m
-  [32;1m✓[39;22m[90m [39m[90madmin sidebar renders grouped platform navigation[39m[90m                   [39m [90m0.21s[39m  
-  [32;1m✓[39;22m[90m [39m[90msidebar enhancer is available outside dashboard[39m[90m                     [39m [90m0.19s[39m  
-  [32;1m✓[39;22m[90m [39m[90musers workspace is real administration screen[39m[90m                       [39m [90m0.38s[39m  
-  [32;1m✓[39;22m[90m [39m[90mnon admin cannot open users workspace[39m[90m                               [39m [90m0.38s[39m  
+  [32;1m✓[39;22m[90m [39m[90madmin sidebar renders grouped platform navigation[39m[90m                   [39m [90m0.24s[39m  
+  [32;1m✓[39;22m[90m [39m[90msidebar enhancer is available outside dashboard[39m[90m                     [39m [90m0.22s[39m  
+  [32;1m✓[39;22m[90m [39m[90musers workspace is real administration screen[39m[90m                       [39m [90m0.43s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnon admin cannot open users workspace[39m[90m                               [39m [90m0.43s[39m  
   [32;1m✓[39;22m[90m [39m[90moperational wave routes are registered[39m[90m                              [39m [90m0.01s[39m  
-  [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.20s[39m  
+  [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.23s[39m  
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\UserAdministrationTest[22m [90m>[39m session revocation invalid…   
+[39;1m  Expected response status code [201, 301, 302, 303, 307, 308] but received 200.
+Failed asserting that false is true.[39;22m
 
-  [90mTests:[39m    [32;1m10 passed[39;22m[90m (64 assertions)[39m
-  [90mDuration:[39m [39m3.82s[39m
+  at [32mtests/Feature/UserAdministrationTest.php[39m:[32m79[39m
+     75▕         [$tenant,$org,$admin]=$this->admin('SESS');
+     76▕         $user=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Session User','email'=>'session@example.test','password'=>'password','role'=>'TECHNICIAN','status'=>'ACTIVE','session_version'=>1]);
+     77▕         $this->actingAs($admin)->post('/admin/users/'.$user->id.'/security',['action'=>'REVOKE_SESSIONS'])->assertRedirect();
+     78▕         $this->assertSame(2,User::find($user->id)->session_version);
+  ➜  79▕         $this->actingAs($user)->withSession(['account_session_version'=>1])->get('/dashboard')->assertRedirect('/login');
+     80▕     }
+     81▕ 
+     82▕     public function test_csv_import_and_export_are_tenant_scoped(): void
+     83▕     {
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m12 passed[39;22m[90m (83 assertions)[39m
+  [90mDuration:[39m [39m5.65s[39m
 
