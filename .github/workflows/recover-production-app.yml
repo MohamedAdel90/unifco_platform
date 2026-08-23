@@ -66,6 +66,7 @@ jobs:
           php artisan migrate:status | grep -q '000043_build_hr_performance_phase7'
           php artisan migrate:status | grep -q '000044_build_hr_documents_phase9'
           php artisan migrate:status | grep -q '000045_build_hr_compliance_phase10'
+          php artisan migrate:status | grep -q '000046_build_hr_analytics_phase11'
           php artisan route:list --name=hr.dashboard >/dev/null
           php artisan route:list --name=hr.employees.show >/dev/null
           php artisan route:list --name=hr.attendance.index >/dev/null
@@ -81,12 +82,10 @@ jobs:
           php artisan route:list --name=hr.documents.index >/dev/null
           php artisan route:list --name=hr.compliance.index >/dev/null
           php artisan route:list --name=hr.compliance.scan >/dev/null
-          php artisan route:list --name=hr.compliance.profile.update >/dev/null
-          php artisan route:list --name=hr.compliance.employees.gosi >/dev/null
-          php artisan route:list --name=hr.compliance.contracts.qiwa >/dev/null
-          php artisan route:list --name=hr.compliance.cases.update >/dev/null
+          php artisan route:list --name=hr.analytics.index >/dev/null
+          php artisan route:list --name=hr.analytics.plans.store >/dev/null
           echo "==> Verify HR authenticated pages resolve to auth gate"
-          for path in dashboard attendance leave payroll missions settlements recruitment performance self-service manager-self-service documents self-service/documents compliance; do
+          for path in dashboard attendance leave payroll missions settlements recruitment performance self-service manager-self-service documents self-service/documents compliance analytics; do
             curl -fsSI "http://127.0.0.1:8081/hr/$path" | grep -Eq 'HTTP/.* (200|302)'
           done
           echo "recovery_result=success"
@@ -104,7 +103,7 @@ jobs:
           rc='${{ steps.recover.outputs.rc }}'
           if [ "${rc:-999}" = '0' ]; then result=success; else result=failure; fi
           printf 'source_sha=%s\nverified_at=%s\nresult=%s\nrecovery_rc=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "${rc:-not-run}" > deploy/status/user-admin-production-latest.txt
-          tail -n 460 /tmp/unifco-recovery.log > deploy/status/user-admin-production.log || true
+          tail -n 480 /tmp/unifco-recovery.log > deploy/status/user-admin-production.log || true
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add deploy/status/user-admin-production-latest.txt deploy/status/user-admin-production.log
