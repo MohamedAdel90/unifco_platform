@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
     Route::prefix('workspace')->name('workspace.')->group(function () {
+        Route::get('/skills-certifications',fn()=>redirect()->route('hr.performance.index'))->name('skills-certifications');
         Route::get('/{workspace}',[NavigationWorkspaceController::class,'show'])->name('show');
     });
     Route::prefix('admin/users')->name('admin.users.')->group(function () {
