@@ -1,3 +1,52 @@
+No composer.lock file present. Updating dependencies to latest instead of installing from lock file. See https://getcomposer.org/install for more information.
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 109 installs, 0 updates, 0 removals
+  - Locking brick/math (0.18.0)
+  - Locking carbonphp/carbon-doctrine-types (3.2.0)
+  - Locking dflydev/dot-access-data (v3.0.3)
+  - Locking doctrine/inflector (2.1.0)
+  - Locking doctrine/lexer (3.0.1)
+  - Locking dragonmantank/cron-expression (v3.6.0)
+  - Locking egulias/email-validator (4.0.4)
+  - Locking fakerphp/faker (v1.24.1)
+  - Locking filp/whoops (2.18.4)
+  - Locking fruitcake/php-cors (v1.4.0)
+  - Locking graham-campbell/result-type (v1.1.4)
+  - Locking guzzlehttp/guzzle (8.0.2)
+  - Locking guzzlehttp/promises (3.0.1)
+  - Locking guzzlehttp/psr7 (3.0.0)
+  - Locking guzzlehttp/uri-template (v2.0.0)
+  - Locking hamcrest/hamcrest-php (v3.0.0)
+  - Locking laravel/agent-detector (v2.0.2)
+  - Locking laravel/framework (v13.26.1)
+  - Locking laravel/pail (v1.2.7)
+  - Locking laravel/pao (v1.1.4)
+  - Locking laravel/pint (v1.30.5)
+  - Locking laravel/prompts (v0.3.23)
+  - Locking laravel/serializable-closure (v2.0.15)
+  - Locking laravel/tinker (v3.0.2)
+  - Locking league/commonmark (2.10.0)
+  - Locking league/config (v1.2.0)
+  - Locking league/flysystem (3.35.3)
+  - Locking league/flysystem-local (3.35.3)
+  - Locking league/mime-type-detection (1.17.0)
+  - Locking league/uri (7.8.1)
+  - Locking league/uri-interfaces (7.8.1)
+  - Locking mockery/mockery (1.6.15)
+  - Locking monolog/monolog (3.10.0)
+  - Locking myclabs/deep-copy (1.14.0)
+  - Locking nesbot/carbon (3.13.2)
+  - Locking nette/schema (v1.3.6)
+  - Locking nette/utils (v4.1.5)
+  - Locking nikic/php-parser (v5.8.0)
+  - Locking nunomaduro/collision (v8.9.5)
+  - Locking nunomaduro/termwind (v2.4.0)
+  - Locking phar-io/manifest (2.0.4)
+  - Locking phar-io/version (3.2.1)
+  - Locking phpoption/phpoption (1.9.5)
+  - Locking phpunit/php-code-coverage (12.5.7)
+  - Locking phpunit/php-file-iterator (6.0.1)
   - Locking phpunit/php-invoker (6.0.0)
   - Locking phpunit/php-text-template (5.0.0)
   - Locking phpunit/php-timer (8.0.0)
@@ -314,52 +363,52 @@ No syntax errors detected in database/migrations/2026_08_23_000044_build_hr_docu
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 62.29ms DONE
+  Creating migration table ...................................... 11.34ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables ................... 56.54ms DONE
-  2026_08_14_000002_add_controls_and_transactions ............... 53.84ms DONE
-  2026_08_14_000003_add_operational_integration .................. 8.58ms DONE
-  2026_08_14_000005_create_platform_services_tables .............. 8.68ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ........ 17.80ms DONE
-  2026_08_15_000008_add_finance_core ............................ 15.46ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ........ 47.73ms DONE
-  2026_08_15_000010_add_hr_operations ........................... 22.76ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................. 20.37ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................. 28.44ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .............. 182.88ms DONE
-  2026_08_18_000014_add_public_site_requests ..................... 4.59ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines .. 93.08ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ............ 74.72ms DONE
-  2026_08_18_000017_expand_customer_portal_operations ........... 59.96ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ........... 40.20ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  9.26ms DONE
-  2026_08_21_000020_add_emergency_request_details ............... 28.09ms DONE
-  2026_08_21_000021_add_customer_onboarding ..................... 16.29ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile ...... 7.98ms DONE
-  2026_08_21_000023_create_customer_messaging .................... 4.62ms DONE
+  2026_08_14_000001_create_unifco_core_tables ................... 67.04ms DONE
+  2026_08_14_000002_add_controls_and_transactions ............... 65.37ms DONE
+  2026_08_14_000003_add_operational_integration .................. 9.69ms DONE
+  2026_08_14_000005_create_platform_services_tables ............. 10.95ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 17.11ms DONE
+  2026_08_15_000008_add_finance_core ............................ 15.77ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ........ 50.79ms DONE
+  2026_08_15_000010_add_hr_operations ........................... 30.45ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................. 29.50ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................. 40.64ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion ............... 61.14ms DONE
+  2026_08_18_000014_add_public_site_requests ..................... 4.43ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 105.26ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ............ 76.30ms DONE
+  2026_08_18_000017_expand_customer_portal_operations ........... 56.23ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps ........... 41.03ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  12.39ms DONE
+  2026_08_21_000020_add_emergency_request_details ............... 18.47ms DONE
+  2026_08_21_000021_add_customer_onboarding ..................... 21.30ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile ...... 9.49ms DONE
+  2026_08_21_000023_create_customer_messaging .................... 5.68ms DONE
   2026_08_21_000024_provision_witco_portal_admin ................. 0.41ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ............... 125.67ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 134.36ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 3.29ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability .... 37.16ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  15.16ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 7.42ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 75.43ms DONE
-  2026_08_22_000032_add_work_order_part_requests ................ 33.16ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ...... 61.50ms DONE
-  2026_08_22_000034_add_user_permission_overrides ................ 5.08ms DONE
-  2026_08_22_000035_add_user_security_metadata .................. 10.03ms DONE
-  2026_08_22_000036_add_user_session_version ..................... 2.52ms DONE
-  2026_08_23_000037_expand_hr_employee_core .................... 263.51ms DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ............ 70.60ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 ..................... 64.99ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ............... 8.87ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............... 8.11ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................. 18.47ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................. 18.78ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 ................... 13.33ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ................ 66.65ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 135.71ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 4.41ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability .... 49.41ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  17.05ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 8.45ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 98.43ms DONE
+  2026_08_22_000032_add_work_order_part_requests ................ 41.03ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ...... 30.03ms DONE
+  2026_08_22_000034_add_user_permission_overrides ................ 5.63ms DONE
+  2026_08_22_000035_add_user_security_metadata .................. 11.31ms DONE
+  2026_08_22_000036_add_user_session_version ..................... 3.05ms DONE
+  2026_08_23_000037_expand_hr_employee_core .................... 137.09ms DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ............ 81.41ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 ..................... 78.70ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 .............. 12.31ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 .............. 11.52ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................. 24.10ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................. 25.98ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 ................... 68.33ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -369,252 +418,78 @@ No syntax errors detected in database/migrations/2026_08_23_000044_build_hr_docu
    INFO  Blade templates cached successfully.  
 
 
-  [39;41;1m FAIL [39;49;22m[39m Tests\Feature\HrDocumentsPhase9Test[39m
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrDocumentsPhase9Test[39m
   [32;1m✓[39;22m[90m [39m[90memployee can submit own salary certificate request[39m[90m                  [39m [90m1.30s[39m  
-  [32;1m✓[39;22m[90m [39m[90mprofile update is applied only after independent approval[39m[90m           [39m [90m0.75s[39m  
-  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own request[39m[90m                                [39m [90m0.75s[39m  
-  [31;1m⨯[39;22m[90m [39m[90mapproved letter can be issued as immutable snapshot and opened by o[39m[90m…[39m [90m0.96s[39m  
-  [32;1m✓[39;22m[90m [39m[90munlinked user cannot open employee document self service[39m[90m            [39m [90m0.99s[39m  
+  [32;1m✓[39;22m[90m [39m[90mprofile update is applied only after independent approval[39m[90m           [39m [90m0.71s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own request[39m[90m                                [39m [90m0.70s[39m  
+  [32;1m✓[39;22m[90m [39m[90mapproved letter can be issued as immutable snapshot and opened by o[39m[90m…[39m [90m0.74s[39m  
+  [32;1m✓[39;22m[90m [39m[90munlinked user cannot open employee document self service[39m[90m            [39m [90m0.93s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase9 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrSelfServicePhase8Test[39m
-  [32;1m✓[39;22m[90m [39m[90memployee portal is scoped to linked employee and own payroll[39m[90m        [39m [90m0.76s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee can submit leave against own balance only[39m[90m                  [39m [90m0.76s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee can submit mission and update only own goal[39m[90m                [39m [90m0.75s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmanager portal exposes direct reports but not outside team or payro[39m[90m…[39m [90m0.75s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmanager can decide direct report leave but cannot touch outside tea[39m[90m…[39m [90m0.75s[39m  
-  [32;1m✓[39;22m[90m [39m[90munlinked user cannot open employee self service[39m[90m                     [39m [90m0.99s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee portal is scoped to linked employee and own payroll[39m[90m        [39m [90m0.72s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee can submit leave against own balance only[39m[90m                  [39m [90m0.70s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee can submit mission and update only own goal[39m[90m                [39m [90m0.71s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmanager portal exposes direct reports but not outside team or payro[39m[90m…[39m [90m0.71s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmanager can decide direct report leave but cannot touch outside tea[39m[90m…[39m [90m0.71s[39m  
+  [32;1m✓[39;22m[90m [39m[90munlinked user cannot open employee self service[39m[90m                     [39m [90m0.93s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase8 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrPerformancePhase7Test[39m
-  [32;1m✓[39;22m[90m [39m[90mgoals reviews and independent approval work[39m[90m                         [39m [90m0.52s[39m  
-  [32;1m✓[39;22m[90m [39m[90mprobation skill and development records are employee scoped[39m[90m         [39m [90m0.52s[39m  
-  [32;1m✓[39;22m[90m [39m[90mcareer action requires independent approval and effective date befo[39m[90m…[39m [90m0.51s[39m  
-  [32;1m✓[39;22m[90m [39m[90mperformance records are tenant scoped[39m[90m                               [39m [90m0.99s[39m  
+  [32;1m✓[39;22m[90m [39m[90mgoals reviews and independent approval work[39m[90m                         [39m [90m0.49s[39m  
+  [32;1m✓[39;22m[90m [39m[90mprobation skill and development records are employee scoped[39m[90m         [39m [90m0.49s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcareer action requires independent approval and effective date befo[39m[90m…[39m [90m0.48s[39m  
+  [32;1m✓[39;22m[90m [39m[90mperformance records are tenant scoped[39m[90m                               [39m [90m0.94s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase7 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrRecruitmentPhase6Test[39m
-  [32;1m✓[39;22m[90m [39m[90mrequisition requires independent approval then opens vacancy[39m[90m        [39m [90m0.52s[39m  
-  [32;1m✓[39;22m[90m [39m[90mcandidate interview offer hire creates employee contract and onboar[39m[90m…[39m [90m0.53s[39m  
-  [32;1m✓[39;22m[90m [39m[90mrecruitment is tenant scoped[39m[90m                                        [39m [90m0.99s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequisition requires independent approval then opens vacancy[39m[90m        [39m [90m0.49s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcandidate interview offer hire creates employee contract and onboar[39m[90m…[39m [90m0.51s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrecruitment is tenant scoped[39m[90m                                        [39m [90m0.93s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase6 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEndOfServicePhase5Test[39m
-  [32;1m✓[39;22m[90m [39m[90mstandard termination calculates full saudi eos and snapshot[39m[90m         [39m [90m0.52s[39m  
-  [32;1m✓[39;22m[90m [39m[90mresignation tiers and article 80 are enforced[39m[90m                       [39m [90m0.51s[39m  
-  [32;1m✓[39;22m[90m [39m[90mfinal settlement requires independent approval and can be marked pa[39m[90m…[39m [90m0.52s[39m  
-  [32;1m✓[39;22m[90m [39m[90mfinal settlements are tenant scoped[39m[90m                                 [39m [90m0.99s[39m  
+  [32;1m✓[39;22m[90m [39m[90mstandard termination calculates full saudi eos and snapshot[39m[90m         [39m [90m0.48s[39m  
+  [32;1m✓[39;22m[90m [39m[90mresignation tiers and article 80 are enforced[39m[90m                       [39m [90m0.48s[39m  
+  [32;1m✓[39;22m[90m [39m[90mfinal settlement requires independent approval and can be marked pa[39m[90m…[39m [90m0.49s[39m  
+  [32;1m✓[39;22m[90m [39m[90mfinal settlements are tenant scoped[39m[90m                                 [39m [90m0.94s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase5 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrBusinessTripsPhase4Test[39m
   [32;1m✓[39;22m[90m [39m[90mphase4 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmission request calculates per diem and links business context[39m[90m      [39m [90m0.50s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmission 360 renders business context[39m[90m                                [39m [90m0.51s[39m  
-  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own mission and full settlement is auditab[39m[90m…[39m [90m0.53s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmissions are tenant scoped[39m[90m                                          [39m [90m0.99s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmission request calculates per diem and links business context[39m[90m      [39m [90m0.48s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmission 360 renders business context[39m[90m                                [39m [90m0.49s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own mission and full settlement is auditab[39m[90m…[39m [90m0.50s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmissions are tenant scoped[39m[90m                                          [39m [90m0.93s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrPayrollPhase3Test[39m
-  [32;1m✓[39;22m[90m [39m[90mpayroll policy and run calculate saudi gosi and overtime[39m[90m            [39m [90m0.28s[39m  
-  [32;1m✓[39;22m[90m [39m[90mpayroll workspace and routes render[39m[90m                                 [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll policy and run calculate saudi gosi and overtime[39m[90m            [39m [90m0.27s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll workspace and routes render[39m[90m                                 [39m [90m0.25s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrAttendanceLeavePhase2Test[39m
-  [32;1m✓[39;22m[90m [39m[90mattendance workspace calculates late minutes and overtime[39m[90m           [39m [90m0.27s[39m  
-  [32;1m✓[39;22m[90m [39m[90mramadan schedule uses reduced daily target[39m[90m                          [39m [90m0.26s[39m  
-  [32;1m✓[39;22m[90m [39m[90mleave policy balance accrual request and approval[39m[90m                   [39m [90m0.28s[39m  
+  [32;1m✓[39;22m[90m [39m[90mattendance workspace calculates late minutes and overtime[39m[90m           [39m [90m0.25s[39m  
+  [32;1m✓[39;22m[90m [39m[90mramadan schedule uses reduced daily target[39m[90m                          [39m [90m0.25s[39m  
+  [32;1m✓[39;22m[90m [39m[90mleave policy balance accrual request and approval[39m[90m                   [39m [90m0.26s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase2 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEmployeeCorePhase1Test[39m
-  [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render new ui[39m[90m                   [39m [90m0.27s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee master can store saudi hr fields and render employee 360[39m[90m   [39m [90m0.27s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.27s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render new ui[39m[90m                   [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee master can store saudi hr fields and render employee 360[39m[90m   [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.26s[39m  
   [32;1m✓[39;22m[90m [39m[90mhr phase1 routes are registered[39m[90m                                     [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\Wave10HrOperationsTest[39m
-  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.52s[39m  
-  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.52s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.49s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.49s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\SidebarNavigationTest[39m
-  [32;1m✓[39;22m[90m [39m[90madmin sidebar renders grouped platform navigation[39m[90m                   [39m [90m0.27s[39m  
-  [32;1m✓[39;22m[90m [39m[90msidebar enhancer is available outside dashboard[39m[90m                     [39m [90m0.27s[39m  
-  [32;1m✓[39;22m[90m [39m[90musers workspace is real administration screen[39m[90m                       [39m [90m0.50s[39m  
-  [32;1m✓[39;22m[90m [39m[90mnon admin cannot open users workspace[39m[90m                               [39m [90m0.50s[39m  
+  [32;1m✓[39;22m[90m [39m[90madmin sidebar renders grouped platform navigation[39m[90m                   [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90msidebar enhancer is available outside dashboard[39m[90m                     [39m [90m0.25s[39m  
+  [32;1m✓[39;22m[90m [39m[90musers workspace is real administration screen[39m[90m                       [39m [90m0.47s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnon admin cannot open users workspace[39m[90m                               [39m [90m0.47s[39m  
   [32;1m✓[39;22m[90m [39m[90moperational wave routes are registered[39m[90m                              [39m [90m0.01s[39m  
-  [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.27s[39m  
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrDocumentsPhase9Test[22m [90m>[39m approved letter can be issu…   
-[39;1m  Expected response status code [200] but received 500.
-Failed asserting that 500 is identical to 200.
+  [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.26s[39m  
 
-The following exception occurred during the last request:
-
-Error: Undefined constant "employee_name" in /home/runner/work/unifco_platform/unifco_platform/storage/framework/views/4d0b85039cd2938a02b9e25467a0d7f8.php:11
-Stack trace:
-#0 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(123): require()
-#1 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(124): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():120}()
-#2 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
-#3 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
-#4 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
-#5 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
-#6 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
-#7 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Response.php(82): Illuminate\View\View->render()
-#8 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Response.php(40): Illuminate\Http\Response->setContent()
-#9 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(939): Illuminate\Http\Response->__construct()
-#10 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(906): Illuminate\Routing\Router::toResponse()
-#11 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate\Routing\Router->prepareResponse()
-#12 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():821}()
-#13 /home/runner/work/unifco_platform/unifco_platform/app/Http/Middleware/RequirePermission.php(19): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
-#14 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\RequirePermission->handle()
-#15 /home/runner/work/unifco_platform/unifco_platform/app/Http/Middleware/EnsureUserSessionValid.php(29): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#16 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\EnsureUserSessionValid->handle()
-#17 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(52): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#18 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
-#19 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(63): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#20 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Auth\Middleware\Authenticate->handle()
-#21 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestForgery.php(104): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#22 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestForgery->handle()
-#23 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#24 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\View\Middleware\ShareErrorsFromSession->handle()
-#25 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#26 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate\Session\Middleware\StartSession->handleStatefulRequest()
-#27 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Session\Middleware\StartSession->handle()
-#28 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#29 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse->handle()
-#30 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#31 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\EncryptCookies->handle()
-#32 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#33 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate\Pipeline\Pipeline->then()
-#34 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(800): Illuminate\Routing\Router->runRouteWithinStack()
-#35 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(764): Illuminate\Routing\Router->runRoute()
-#36 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(753): Illuminate\Routing\Router->dispatchToRoute()
-#37 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
-#38 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
-#39 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
-#40 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
-#41 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
-#42 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#43 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
-#44 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
-#45 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#46 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
-#47 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#48 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
-#49 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#50 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
-#51 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#52 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
-#53 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#54 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks->handle()
-#55 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(28): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#56 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePathEncoding->handle()
-#57 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#58 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
-#59 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
-#60 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
-#61 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
-#62 /home/runner/work/unifco_platform/unifco_platform/tests/Feature/HrDocumentsPhase9Test.php(60): Illuminate\Foundation\Testing\TestCase->get()
-#63 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(1318): Tests\Feature\HrDocumentsPhase9Test->test_approved_letter_can_be_issued_as_immutable_snapshot_and_opened_by_owner()
-#64 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(1355): PHPUnit\Framework\TestCase->invokeTestMethod()
-#65 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
-#66 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(99): PHPUnit\Framework\TestCase->runBare()
-#67 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
-#68 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestSuite.php(374): PHPUnit\Framework\TestCase->run()
-#69 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestSuite.php(374): PHPUnit\Framework\TestSuite->run()
-#70 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
-#71 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/TextUI/Application.php(229): PHPUnit\TextUI\TestRunner->run()
-#72 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
-#73 {main}
-
-Next Illuminate\View\ViewException: Undefined constant "employee_name" (View: /home/runner/work/unifco_platform/unifco_platform/resources/views/hr/documents/index.blade.php) in /home/runner/work/unifco_platform/unifco_platform/storage/framework/views/4d0b85039cd2938a02b9e25467a0d7f8.php:11
-Stack trace:
-#0 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(59): Illuminate\View\Engines\CompilerEngine->handleViewException()
-#1 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
-#2 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/View.php(208): Illuminate\View\Engines\CompilerEngine->get()
-#3 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/View.php(191): Illuminate\View\View->getContents()
-#4 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/View.php(160): Illuminate\View\View->renderContents()
-#5 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Response.php(82): Illuminate\View\View->render()
-#6 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Response.php(40): Illuminate\Http\Response->setContent()
-#7 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(939): Illuminate\Http\Response->__construct()
-#8 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(906): Illuminate\Routing\Router::toResponse()
-#9 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate\Routing\Router->prepareResponse()
-#10 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():821}()
-#11 /home/runner/work/unifco_platform/unifco_platform/app/Http/Middleware/RequirePermission.php(19): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
-#12 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\RequirePermission->handle()
-#13 /home/runner/work/unifco_platform/unifco_platform/app/Http/Middleware/EnsureUserSessionValid.php(29): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#14 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\EnsureUserSessionValid->handle()
-#15 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(52): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#16 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
-#17 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(63): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#18 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Auth\Middleware\Authenticate->handle()
-#19 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestForgery.php(104): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#20 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestForgery->handle()
-#21 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#22 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\View\Middleware\ShareErrorsFromSession->handle()
-#23 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#24 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate\Session\Middleware\StartSession->handleStatefulRequest()
-#25 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Session\Middleware\StartSession->handle()
-#26 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#27 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse->handle()
-#28 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#29 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\EncryptCookies->handle()
-#30 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#31 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate\Pipeline\Pipeline->then()
-#32 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(800): Illuminate\Routing\Router->runRouteWithinStack()
-#33 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(764): Illuminate\Routing\Router->runRoute()
-#34 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(753): Illuminate\Routing\Router->dispatchToRoute()
-#35 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
-#36 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
-#37 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
-#38 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
-#39 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
-#40 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#41 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
-#42 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
-#43 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#44 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
-#45 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#46 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
-#47 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#48 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
-#49 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#50 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
-#51 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#52 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks->handle()
-#53 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(28): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#54 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePathEncoding->handle()
-#55 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#56 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
-#57 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
-#58 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
-#59 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(368): Illuminate\Foundation\Testing\TestCase->call()
-#60 /home/runner/work/unifco_platform/unifco_platform/tests/Feature/HrDocumentsPhase9Test.php(60): Illuminate\Foundation\Testing\TestCase->get()
-#61 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(1318): Tests\Feature\HrDocumentsPhase9Test->test_approved_letter_can_be_issued_as_immutable_snapshot_and_opened_by_owner()
-#62 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(1355): PHPUnit\Framework\TestCase->invokeTestMethod()
-#63 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
-#64 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(99): PHPUnit\Framework\TestCase->runBare()
-#65 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
-#66 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestSuite.php(374): PHPUnit\Framework\TestCase->run()
-#67 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestSuite.php(374): PHPUnit\Framework\TestSuite->run()
-#68 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
-#69 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/TextUI/Application.php(229): PHPUnit\TextUI\TestRunner->run()
-#70 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
-#71 {main}
-
-----------------------------------------------------------------------------------
-
-Undefined constant "employee_name" (View: /home/runner/work/unifco_platform/unifco_platform/resources/views/hr/documents/index.blade.php)[39;22m
-
-  at [32mtests/Feature/HrDocumentsPhase9Test.php[39m:[32m60[39m
-     56▕     {
-     57▕         $c=$this->core();
-     58▕         $this->actingAs($c['user'])->post('/hr/self-service/documents',['request_type'=>'SALARY_CERTIFICATE','language'=>'AR','recipient_name'=>'بنك الاختبار','purpose'=>'فتح حساب'])->assertRedirect();
-     59▕         $r=HrServiceRequest::firstOrFail();
-  ➜  60▕         $this->actingAs($c['hr'])->get('/hr/documents')->assertOk();
-     61▕         $this->actingAs($c['hr'])->post('/hr/documents/'.$r->id.'/decide',['decision'=>'APPROVED'])->assertRedirect();
-     62▕         $this->actingAs($c['hr'])->post('/hr/documents/'.$r->id.'/issue')->assertRedirect();
-     63▕         $r->refresh();
-     64▕         $this->assertSame('ISSUED',$r->status);
-
-
-  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m49 passed[39;22m[90m (324 assertions)[39m
-  [90mDuration:[39m [39m24.36s[39m
+  [90mTests:[39m    [32;1m50 passed[39;22m[90m (335 assertions)[39m
+  [90mDuration:[39m [39m22.93s[39m
 
