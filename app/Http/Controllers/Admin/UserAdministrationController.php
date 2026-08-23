@@ -14,82 +14,19 @@ class UserAdministrationController extends Controller
 {
     private const ROLES=['ADMIN','MANAGER','SUPERVISOR','TECHNICIAN','STOREKEEPER','CUSTOMER'];
     private const STATUSES=['ACTIVE','INACTIVE','SUSPENDED'];
+    private function admin(Request $r): void { abort_unless($r->user()->role==='ADMIN',403); }
+    private function scoped(Request $r,int $id): User { return User::where('tenant_id',$r->user()->tenant_id)->findOrFail($id); }
+    private function lookups(Request $r): array { $t=$r->user()->tenant_id; return ['organizations'=>Organization::where('tenant_id',$t)->orderBy('name')->get(),'employees'=>Employee::where('tenant_id',$t)->orderBy('name')->get(),'roles'=>self::ROLES,'statuses'=>self::STATUSES]; }
 
-    private function admin(Request $request): void { abort_unless($request->user()->role==='ADMIN',403); }
-    private function scoped(Request $request,int $id): User { return User::where('tenant_id',$request->user()->tenant_id)->findOrFail($id); }
-    private function lookups(Request $request): array {
-        $tenant=$request->user()->tenant_id;
-        return [
-            'organizations'=>Organization::where('tenant_id',$tenant)->orderBy('name')->get(),
-            'employees'=>Employee::where('tenant_id',$tenant)->orderBy('name')->get(),
-            'roles'=>self::ROLES,
-            'statuses'=>self::STATUSES,
-        ];
-    }
-
-    public function create(Request $request): View { $this->admin($request); return view('navigation.users-form',array_merge($this->lookups($request),['managedUser'=>new User(),'mode'=>'create'])); }
-
-    public function store(Request $request,AuditService $audit): RedirectResponse
-    {
-        $this->admin($request); $tenant=$request->user()->tenant_id;
-        $data=$request->validate([
-            'name'=>['required','string','max:120'],'email'=>['required','email','max:190',Rule::unique('users','email')],
-            'password'=>['required','string','min:8','confirmed'],'role'=>['required',Rule::in(self::ROLES)],
-            'status'=>['required',Rule::in(self::STATUSES)],'organization_id'=>['nullable','integer'],'employee_id'=>['nullable','integer'],
-        ]);
-        $organizationId=$data['organization_id']??null; $employeeId=$data['employee_id']??null;
-        if($organizationId) abort_unless(Organization::where('tenant_id',$tenant)->whereKey($organizationId)->exists(),422);
-        if($employeeId) abort_unless(Employee::where('tenant_id',$tenant)->whereKey($employeeId)->exists(),422);
-        $user=User::create(['tenant_id'=>$tenant,'organization_id'=>$organizationId,'employee_id'=>$employeeId,'name'=>$data['name'],'email'=>$data['email'],'password'=>$data['password'],'role'=>$data['role'],'status'=>$data['status']]);
-        $audit->record('security.user.created',$user,[],$user->toArray());
-        return redirect()->route('admin.users.show',$user)->with('status','User created.');
-    }
-
-    public function show(Request $request,int $user): View
-    {
-        $this->admin($request); $managedUser=$this->scoped($request,$user); $lookups=$this->lookups($request);
-        $permissions=DB::table('role_permissions')->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$managedUser->tenant_id))->where('role_code',$managedUser->role)->orderBy('permission_code')->pluck('permission_code');
-        $overrides=DB::table('user_permission_overrides')->where('tenant_id',$managedUser->tenant_id)->where('user_id',$managedUser->id)->orderBy('permission_code')->get();
-        return view('navigation.users-show',array_merge($lookups,compact('managedUser','permissions','overrides')));
-    }
-
-    public function edit(Request $request,int $user): View { $this->admin($request); return view('navigation.users-form',array_merge($this->lookups($request),['managedUser'=>$this->scoped($request,$user),'mode'=>'edit'])); }
-
-    public function update(Request $request,int $user,AuditService $audit): RedirectResponse
-    {
-        $this->admin($request); $managed=$this->scoped($request,$user); $before=$managed->toArray(); $tenant=$request->user()->tenant_id;
-        $data=$request->validate(['name'=>['required','string','max:120'],'email'=>['required','email','max:190',Rule::unique('users','email')->ignore($managed->id)],'role'=>['required',Rule::in(self::ROLES)],'status'=>['required',Rule::in(self::STATUSES)],'organization_id'=>['nullable','integer'],'employee_id'=>['nullable','integer']]);
-        if($managed->id===$request->user()->id && ($data['role']!=='ADMIN'||$data['status']!=='ACTIVE')) return back()->withErrors(['status'=>'You cannot remove your own administrator access or deactivate your current account.']);
-        $organizationId=$data['organization_id']??null; $employeeId=$data['employee_id']??null;
-        if($organizationId) abort_unless(Organization::where('tenant_id',$tenant)->whereKey($organizationId)->exists(),422);
-        if($employeeId) abort_unless(Employee::where('tenant_id',$tenant)->whereKey($employeeId)->exists(),422);
-        $managed->update(['name'=>$data['name'],'email'=>$data['email'],'role'=>$data['role'],'status'=>$data['status'],'organization_id'=>$organizationId,'employee_id'=>$employeeId]);
-        $audit->record('security.user.updated',$managed,$before,$managed->fresh()->toArray());
-        return redirect()->route('admin.users.show',$managed)->with('status','User updated.');
-    }
-
-    public function status(Request $request,int $user,AuditService $audit): RedirectResponse
-    {
-        $this->admin($request); $managed=$this->scoped($request,$user); $data=$request->validate(['status'=>['required',Rule::in(self::STATUSES)]]);
-        if($managed->id===$request->user()->id && $data['status']!=='ACTIVE') return back()->withErrors(['status'=>'You cannot deactivate or suspend your current account.']);
-        $before=['status'=>$managed->status]; $managed->update(['status'=>$data['status']]); $audit->record('security.user.status_changed',$managed,$before,['status'=>$managed->status]);
-        return back()->with('status','User status updated.');
-    }
-
-    public function resetPassword(Request $request,int $user,AuditService $audit): RedirectResponse
-    {
-        $this->admin($request); $managed=$this->scoped($request,$user); $data=$request->validate(['password'=>['required','string','min:8','confirmed']]);
-        $managed->update(['password'=>$data['password']]); $audit->record('security.user.password_reset',$managed,[],['reset_by'=>$request->user()->id]);
-        return back()->with('status','Password reset successfully.');
-    }
-
-    public function permission(Request $request,int $user,AuditService $audit): RedirectResponse
-    {
-        $this->admin($request); $managed=$this->scoped($request,$user); abort_if($managed->role==='ADMIN',422,'Administrator permissions are implicit.');
-        $data=$request->validate(['permission_code'=>['required','string','max:120'],'effect'=>['required',Rule::in(['ALLOW','DENY','INHERIT'])]]);
-        $key=['tenant_id'=>$managed->tenant_id,'user_id'=>$managed->id,'permission_code'=>$data['permission_code']];
-        if($data['effect']==='INHERIT') DB::table('user_permission_overrides')->where($key)->delete(); else DB::table('user_permission_overrides')->updateOrInsert($key,['allowed'=>$data['effect']==='ALLOW','updated_by'=>$request->user()->id,'created_at'=>now(),'updated_at'=>now()]);
-        $audit->record('security.user.permission_override',$managed,[],['permission_code'=>$data['permission_code'],'effect'=>$data['effect']]);
-        return back()->with('status','User permission updated.');
-    }
+    public function create(Request $r): View { $this->admin($r); return view('navigation.users-form',array_merge($this->lookups($r),['managedUser'=>new User(),'mode'=>'create'])); }
+    public function store(Request $r,AuditService $audit): RedirectResponse { $this->admin($r); $t=$r->user()->tenant_id; $d=$r->validate(['name'=>['required','string','max:120'],'email'=>['required','email','max:190',Rule::unique('users','email')],'password'=>['required','string','min:8','confirmed'],'role'=>['required',Rule::in(self::ROLES)],'status'=>['required',Rule::in(self::STATUSES)],'organization_id'=>['nullable','integer'],'employee_id'=>['nullable','integer']]); $oid=$d['organization_id']??null;$eid=$d['employee_id']??null; if($oid)abort_unless(Organization::where('tenant_id',$t)->whereKey($oid)->exists(),422);if($eid)abort_unless(Employee::where('tenant_id',$t)->whereKey($eid)->exists(),422);$u=User::create(['tenant_id'=>$t,'organization_id'=>$oid,'employee_id'=>$eid,'name'=>$d['name'],'email'=>$d['email'],'password'=>$d['password'],'role'=>$d['role'],'status'=>$d['status'],'force_password_change'=>true]);$audit->record('security.user.created',$u,[],$u->toArray());return redirect()->route('admin.users.show',$u)->with('status','User created.'); }
+    public function show(Request $r,int $user): View { $this->admin($r);$managedUser=$this->scoped($r,$user);$lookups=$this->lookups($r);$permissions=DB::table('role_permissions')->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$managedUser->tenant_id))->where('role_code',$managedUser->role)->orderBy('permission_code')->pluck('permission_code');$overrides=DB::table('user_permission_overrides')->where('tenant_id',$managedUser->tenant_id)->where('user_id',$managedUser->id)->orderBy('permission_code')->get();$auditTimeline=DB::table('audit_logs')->where('tenant_id',$managedUser->tenant_id)->where('entity_type',User::class)->where('entity_id',$managedUser->id)->latest()->limit(25)->get();return view('navigation.users-show',array_merge($lookups,compact('managedUser','permissions','overrides','auditTimeline'))); }
+    public function edit(Request $r,int $user): View { $this->admin($r);return view('navigation.users-form',array_merge($this->lookups($r),['managedUser'=>$this->scoped($r,$user),'mode'=>'edit'])); }
+    public function update(Request $r,int $user,AuditService $audit): RedirectResponse { $this->admin($r);$u=$this->scoped($r,$user);$before=$u->toArray();$t=$r->user()->tenant_id;$d=$r->validate(['name'=>['required','string','max:120'],'email'=>['required','email','max:190',Rule::unique('users','email')->ignore($u->id)],'role'=>['required',Rule::in(self::ROLES)],'status'=>['required',Rule::in(self::STATUSES)],'organization_id'=>['nullable','integer'],'employee_id'=>['nullable','integer']]);if($u->id===$r->user()->id&&($d['role']!=='ADMIN'||$d['status']!=='ACTIVE'))return back()->withErrors(['status'=>'You cannot remove your own administrator access or deactivate your current account.']);$oid=$d['organization_id']??null;$eid=$d['employee_id']??null;if($oid)abort_unless(Organization::where('tenant_id',$t)->whereKey($oid)->exists(),422);if($eid)abort_unless(Employee::where('tenant_id',$t)->whereKey($eid)->exists(),422);$u->update(['name'=>$d['name'],'email'=>$d['email'],'role'=>$d['role'],'status'=>$d['status'],'organization_id'=>$oid,'employee_id'=>$eid]);$audit->record('security.user.updated',$u,$before,$u->fresh()->toArray());return redirect()->route('admin.users.show',$u)->with('status','User updated.'); }
+    public function status(Request $r,int $user,AuditService $audit): RedirectResponse { $this->admin($r);$u=$this->scoped($r,$user);$d=$r->validate(['status'=>['required',Rule::in(self::STATUSES)]]);if($u->id===$r->user()->id&&$d['status']!=='ACTIVE')return back()->withErrors(['status'=>'You cannot deactivate or suspend your current account.']);$before=['status'=>$u->status];$u->update(['status'=>$d['status']]);$audit->record('security.user.status_changed',$u,$before,['status'=>$u->status]);return back()->with('status','User status updated.'); }
+    public function resetPassword(Request $r,int $user,AuditService $audit): RedirectResponse { $this->admin($r);$u=$this->scoped($r,$user);$d=$r->validate(['password'=>['required','string','min:8','confirmed']]);$u->update(['password'=>$d['password'],'force_password_change'=>true]);$audit->record('security.user.password_reset',$u,[],['reset_by'=>$r->user()->id,'force_password_change'=>true]);return back()->with('status','Password reset. User must change it on next password workflow.'); }
+    public function permission(Request $r,int $user,AuditService $audit): RedirectResponse { $this->admin($r);$u=$this->scoped($r,$user);abort_if($u->role==='ADMIN',422,'Administrator permissions are implicit.');$d=$r->validate(['permission_code'=>['required','string','max:120'],'effect'=>['required',Rule::in(['ALLOW','DENY','INHERIT'])]]);$key=['tenant_id'=>$u->tenant_id,'user_id'=>$u->id,'permission_code'=>$d['permission_code']];if($d['effect']==='INHERIT')DB::table('user_permission_overrides')->where($key)->delete();else DB::table('user_permission_overrides')->updateOrInsert($key,['allowed'=>$d['effect']==='ALLOW','updated_by'=>$r->user()->id,'created_at'=>now(),'updated_at'=>now()]);$audit->record('security.user.permission_override',$u,[],['permission_code'=>$d['permission_code'],'effect'=>$d['effect']]);return back()->with('status','User permission updated.'); }
+    public function security(Request $r,int $user,AuditService $audit): RedirectResponse { $this->admin($r);$u=$this->scoped($r,$user);$d=$r->validate(['action'=>['required',Rule::in(['LOCK','UNLOCK','REQUIRE_PASSWORD_CHANGE','CLEAR_PASSWORD_CHANGE'])]]);if($u->id===$r->user()->id&&$d['action']==='LOCK')return back()->withErrors(['security'=>'You cannot lock your current account.']);$before=['locked_at'=>$u->locked_at,'force_password_change'=>$u->force_password_change];if($d['action']==='LOCK')$u->locked_at=now();if($d['action']==='UNLOCK')$u->locked_at=null;if($d['action']==='REQUIRE_PASSWORD_CHANGE')$u->force_password_change=true;if($d['action']==='CLEAR_PASSWORD_CHANGE')$u->force_password_change=false;$u->save();$audit->record('security.user.security_action',$u,$before,['action'=>$d['action'],'locked_at'=>$u->locked_at,'force_password_change'=>$u->force_password_change]);return back()->with('status','Security action applied.'); }
+    public function bulk(Request $r,AuditService $audit): RedirectResponse { $this->admin($r);$d=$r->validate(['user_ids'=>['required','array','min:1'],'user_ids.*'=>['integer'],'action'=>['required',Rule::in(['ACTIVATE','DEACTIVATE','SUSPEND'])]]);$users=User::where('tenant_id',$r->user()->tenant_id)->whereIn('id',$d['user_ids'])->get();foreach($users as $u){if($u->id===$r->user()->id&&$d['action']!=='ACTIVATE')continue;$before=['status'=>$u->status];$u->status=$d['action']==='ACTIVATE'?'ACTIVE':($d['action']==='SUSPEND'?'SUSPENDED':'INACTIVE');$u->save();$audit->record('security.user.bulk_status',$u,$before,['status'=>$u->status]);}return back()->with('status','Bulk action completed.'); }
+    public function export(Request $r) { $this->admin($r);$users=User::where('tenant_id',$r->user()->tenant_id)->orderBy('name')->get();return response()->streamDownload(function()use($users){$h=fopen('php://output','w');fputcsv($h,['name','email','role','status','organization_id','employee_id','last_login_at','mfa_status','locked']);foreach($users as $u)fputcsv($h,[$u->name,$u->email,$u->role,$u->status,$u->organization_id,$u->employee_id,optional($u->last_login_at)->toIso8601String(),$u->mfa_status,$u->locked_at?'yes':'no']);fclose($h);},'unifco-users.csv',['Content-Type'=>'text/csv']); }
 }
