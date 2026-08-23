@@ -1,3 +1,23 @@
+  - Downloading laravel/agent-detector (v2.0.2)
+  - Downloading laravel/pao (v1.1.4)
+  - Downloading laravel/pint (v1.30.5)
+  - Downloading nikic/php-parser (v5.8.0)
+  - Downloading psy/psysh (v0.12.24)
+  - Downloading laravel/tinker (v3.0.2)
+  - Downloading hamcrest/hamcrest-php (v3.0.0)
+  - Downloading mockery/mockery (1.6.15)
+  - Downloading filp/whoops (2.18.4)
+  - Downloading nunomaduro/collision (v8.9.5)
+  - Downloading staabm/side-effects-detector (1.0.5)
+  - Downloading sebastian/version (6.0.0)
+  - Downloading sebastian/type (6.0.4)
+  - Downloading sebastian/recursion-context (7.0.1)
+  - Downloading sebastian/object-reflector (5.0.0)
+  - Downloading sebastian/object-enumerator (7.0.0)
+  - Downloading sebastian/global-state (8.0.3)
+  - Downloading sebastian/exporter (7.0.3)
+  - Downloading sebastian/environment (8.1.2)
+  - Downloading sebastian/diff (7.0.0)
   - Downloading sebastian/comparator (7.1.8)
   - Downloading sebastian/cli-parser (4.2.1)
   - Downloading phpunit/php-timer (8.0.0)
@@ -154,48 +174,48 @@ No syntax errors detected in database/migrations/2026_08_23_000037_expand_hr_emp
 
    INFO  Preparing database.  
 
-  Creating migration table ....................................... 9.99ms DONE
+  Creating migration table ...................................... 10.55ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables ................... 34.10ms DONE
-  2026_08_14_000002_add_controls_and_transactions ............... 34.48ms DONE
-  2026_08_14_000003_add_operational_integration .................. 5.39ms DONE
-  2026_08_14_000005_create_platform_services_tables .............. 5.51ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ......... 8.50ms DONE
-  2026_08_15_000008_add_finance_core ............................. 8.49ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ........ 28.43ms DONE
-  2026_08_15_000010_add_hr_operations ........................... 16.27ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................. 13.89ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................. 20.62ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion ............... 39.66ms DONE
-  2026_08_18_000014_add_public_site_requests ..................... 3.02ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines .. 67.85ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ............ 58.63ms DONE
-  2026_08_18_000017_expand_customer_portal_operations ........... 40.39ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ........... 23.05ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  7.89ms DONE
-  2026_08_21_000020_add_emergency_request_details ............... 13.97ms DONE
-  2026_08_21_000021_add_customer_onboarding ..................... 13.30ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile ...... 6.75ms DONE
-  2026_08_21_000023_create_customer_messaging .................... 3.15ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 0.39ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ................ 44.02ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation ........... 77.68ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.33ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability .... 29.68ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  13.46ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 6.43ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 58.59ms DONE
-  2026_08_22_000032_add_work_order_part_requests ................ 18.18ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ...... 17.54ms DONE
-  2026_08_22_000034_add_user_permission_overrides ................ 2.92ms DONE
-  2026_08_22_000035_add_user_security_metadata ................... 8.11ms DONE
-  2026_08_22_000036_add_user_session_version ..................... 2.05ms DONE
-  2026_08_23_000037_expand_hr_employee_core .................... 108.24ms DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ............ 58.40ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 ..................... 56.70ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ............... 6.20ms DONE
+  2026_08_14_000001_create_unifco_core_tables ................... 37.39ms DONE
+  2026_08_14_000002_add_controls_and_transactions ............... 36.02ms DONE
+  2026_08_14_000003_add_operational_integration .................. 6.34ms DONE
+  2026_08_14_000005_create_platform_services_tables .............. 6.00ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ......... 8.98ms DONE
+  2026_08_15_000008_add_finance_core ............................. 8.86ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ........ 29.91ms DONE
+  2026_08_15_000010_add_hr_operations ........................... 16.76ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................. 13.64ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................. 21.26ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion ............... 41.41ms DONE
+  2026_08_18_000014_add_public_site_requests ..................... 3.04ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines .. 68.51ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ............ 57.82ms DONE
+  2026_08_18_000017_expand_customer_portal_operations ........... 42.06ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps ........... 28.66ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  6.99ms DONE
+  2026_08_21_000020_add_emergency_request_details ............... 12.74ms DONE
+  2026_08_21_000021_add_customer_onboarding ..................... 13.22ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile ...... 6.96ms DONE
+  2026_08_21_000023_create_customer_messaging .................... 3.40ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 0.41ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ................ 44.47ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation ........... 80.50ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.18ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability .... 30.53ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  13.15ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 7.72ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 60.44ms DONE
+  2026_08_22_000032_add_work_order_part_requests ................ 18.17ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ...... 19.53ms DONE
+  2026_08_22_000034_add_user_permission_overrides ................ 3.10ms DONE
+  2026_08_22_000035_add_user_security_metadata ................... 8.44ms DONE
+  2026_08_22_000036_add_user_session_version ..................... 2.08ms DONE
+  2026_08_23_000037_expand_hr_employee_core .................... 137.86ms DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ............ 59.36ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 ..................... 53.94ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............... 6.50ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -205,36 +225,16 @@ No syntax errors detected in database/migrations/2026_08_23_000037_expand_hr_emp
    INFO  Blade templates cached successfully.  
 
 
-  [39;41;1m FAIL [39;49;22m[39m Tests\Feature\HrEmployeeCorePhase1Test[39m
-  [31;1m⨯[39;22m[90m [39m[90mhr dashboard and employee directory render new ui[39m[90m                   [39m [90m0.85s[39m  
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEmployeeCorePhase1Test[39m
+  [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render new ui[39m[90m                   [39m [90m0.87s[39m  
   [32;1m✓[39;22m[90m [39m[90memployee master can store saudi hr fields and render employee 360[39m[90m   [39m [90m0.29s[39m  
   [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.29s[39m  
   [32;1m✓[39;22m[90m [39m[90mhr phase1 routes are registered[39m[90m                                     [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\Wave10HrOperationsTest[39m
-  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.55s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.56s[39m  
   [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.55s[39m  
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrEmployeeCorePhase1Test[22m [90m>[39m hr dashboard and employe…   
-[39;1m  Expected: [39;22m[31m<!doctype html>\n[39m[39;1m
-  [39;22m[31m<html lang="en">[39m[31m\n[39m[39;1m
-  [39;22m[31m<head>[39m[31m\n[39m[39;1m
-  [39;22m[90m... (105 more lines)[39m[39;1m
 
-  To contain: [39;22m[32m/hr/operations#payroll[39m
-
-  at [32mtests/Feature/HrEmployeeCorePhase1Test.php[39m:[32m26[39m
-     22▕     public function test_hr_dashboard_and_employee_directory_render_new_ui(): void
-     23▕     {
-     24▕         [$tenant,$org,$admin,$position]=$this->admin();
-     25▕         Employee::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'job_position_id'=>$position->id,'employee_no'=>'EMP-100','name'=>'Alice Johnson','email'=>'alice@example.test','hire_date'=>'2021-01-10','status'=>'ACTIVE','basic_salary'=>9000,'housing_allowance'=>2250,'transport_allowance'=>800]);
-  ➜  26▕         $this->actingAs($admin)->get('/hr/dashboard')->assertOk()->assertSee('HR Command Center',false)->assertSee('Monthly Compensation',false)->assertSee('/hr/attendance',false)->assertSee('/hr/leave',false)->assertSee('/hr/operations#payroll',false);
-     27▕         $this->actingAs($admin)->get('/hr/employees')->assertOk()->assertSee('Employee Directory',false)->assertSee('Employee 360',false)->assertSee('12,050.00 SAR',false);
-     28▕     }
-     29▕ 
-     30▕     public function test_employee_master_can_store_saudi_hr_fields_and_render_employee_360(): void
-
-
-  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m5 passed[39;22m[90m (42 assertions)[39m
-  [90mDuration:[39m [39m2.62s[39m
+  [90mTests:[39m    [32;1m6 passed[39;22m[90m (47 assertions)[39m
+  [90mDuration:[39m [39m2.66s[39m
 
