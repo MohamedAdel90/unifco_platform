@@ -1,17 +1,93 @@
-<!doctype html>
-<html lang="en" dir="ltr">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#132137"><title>UNIFCO | One Facility Shop</title>
-<style>
-:root{font-family:Inter,Arial,sans-serif;--navy:#1e315b;--dark:#132137;--red:#ce122d;--light:#f7f9fc;--muted:#68758a;--line:#e4e9f1;--surface:#fff;--shadow:0 18px 45px rgba(19,33,55,.09)}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--dark);background:#fff}a{text-decoration:none;color:inherit}img{max-width:100%}.wrap{width:min(1240px,92%);margin:auto}.top{background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}.nav{display:flex;align-items:center;gap:18px;min-height:82px}.logo{width:122px;height:64px;object-fit:contain;margin-right:auto}.nav-links{display:flex;align-items:center;gap:18px}.nav-link{font-size:14px;font-weight:700;color:#47566d}.nav-link:hover{color:var(--red)}.nav-actions{display:flex;align-items:center;gap:8px}.btn{display:inline-flex;justify-content:center;align-items:center;min-height:44px;padding:11px 17px;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;border:1px solid transparent}.btn.red{background:var(--red)}.btn.light{background:#fff;color:var(--navy);border-color:#dce3ec}.lang{font-size:13px;font-weight:900;color:var(--navy);border:1px solid var(--line);padding:10px 12px;border-radius:9px;background:#fff}.menu-toggle{display:none;border:0;background:var(--navy);color:#fff;width:44px;height:44px;border-radius:10px;font-size:22px}.mobile-menu{display:none;padding:0 0 14px}.mobile-menu.open{display:grid;gap:8px}.mobile-menu a{padding:12px 14px;background:#f7f9fc;border-radius:9px;font-weight:700;color:var(--navy)}.hero{position:relative;overflow:hidden;padding:86px 0 64px;background:linear-gradient(90deg,rgba(7,26,52,.96),rgba(10,40,80,.8) 48%,rgba(10,40,80,.16)),url('/images/unifco-facility-hero.jpg') center/cover no-repeat;color:#fff}.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:58px;align-items:center}.eyebrow{display:inline-flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:900;letter-spacing:.05em}.eyebrow:before{content:"";width:34px;height:3px;border-radius:999px;background:var(--red)}.hero h1{font-size:clamp(38px,4.8vw,62px);line-height:1.12;color:#fff;margin:16px 0 18px}.hero p,.lead{color:#e7edf6;line-height:1.9}.hero p{font-size:18px;max-width:720px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}.hero-visual{min-height:330px}.trust-strip{margin-top:-18px}.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 16px 35px rgba(19,33,55,.08)}.trust-item{padding:14px 16px;border-right:1px solid #edf1f6}.trust-item:last-child{border-right:0}.trust-item strong{display:block;color:var(--navy);font-size:17px;margin-bottom:5px}.trust-item span{color:var(--muted);font-size:12px;line-height:1.6}.section{padding:74px 0}.section-head{margin-bottom:28px;max-width:800px}.kicker{color:var(--red);font-size:13px;font-weight:900;margin-bottom:8px}h2{color:var(--navy);font-size:clamp(28px,3vw,38px);margin:0 0 12px}.alt{background:var(--light)}.about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:30px}.about-panel{background:linear-gradient(145deg,var(--dark),var(--navy));color:#fff;border-radius:20px;padding:26px}.about-panel p{color:#d8e0eb;line-height:1.8}.about-points{display:grid;grid-template-columns:1fr 1fr;gap:12px}.point,.card,.step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}.point b,.card b,.step b{display:block;color:var(--navy);margin-bottom:7px}.point span,.card p,.step p{color:var(--muted);line-height:1.7;margin:0}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.service-no{display:inline-flex;width:38px;height:38px;align-items:center;justify-content:center;border-radius:10px;background:#eef3fa;color:var(--navy);font-weight:900;margin-bottom:14px}.process{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.step-num{display:inline-flex;width:34px;height:34px;border-radius:50%;align-items:center;justify-content:center;background:var(--red);color:#fff;font-weight:900;margin-bottom:12px}.cta{padding:38px;border-radius:22px;background:linear-gradient(135deg,var(--dark),var(--navy));color:#fff;display:flex;justify-content:space-between;align-items:center;gap:26px}.cta h2{color:#fff}.cta p{color:#d6dfeb;max-width:720px;line-height:1.8}.footer{background:#0f1a2b;color:#cbd5e1;padding:32px 0}.foot{display:flex;justify-content:space-between;gap:18px;align-items:center}.foot-logo{width:82px;height:48px;object-fit:contain;background:#fff;border-radius:8px;padding:5px}@media(max-width:1050px){.nav-links{display:none}.menu-toggle{display:inline-flex;align-items:center;justify-content:center}.hero-grid,.about-grid{grid-template-columns:1fr}.trust-grid{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(2,1fr)}.process{grid-template-columns:repeat(2,1fr)}}@media(max-width:720px){.nav{min-height:70px}.logo{width:100px;height:52px}.nav-actions .btn:not(.red){display:none}.hero{padding:54px 0 44px;background-position:60% center}.hero h1{font-size:36px}.hero-visual{min-height:200px}.trust-strip{margin-top:0;padding-top:14px}.section{padding:54px 0}.about-points,.cards,.process{grid-template-columns:1fr}.cta{flex-direction:column;align-items:flex-start}.foot{flex-direction:column;align-items:flex-start}}@media(max-width:460px){.nav-actions .btn.red{display:none}.hero h1{font-size:31px}.actions{display:grid}.actions .btn{width:100%}.trust-grid{grid-template-columns:1fr}.hero-visual{min-height:140px}}
-</style></head><body>
-<header class="top"><div class="wrap nav"><img class="logo" src="{{ route('brand.logo') }}" alt="UNIFCO"><nav class="nav-links"><a class="nav-link" href="#about">About</a><a class="nav-link" href="#services">Services</a><a class="nav-link" href="#process">How we work</a></nav><div class="nav-actions"><a class="lang" href="{{ route('public.home',['lang'=>'ar']) }}">العربية</a><a class="btn red" href="{{ route('public.quote') }}">Request a Quote</a><a class="btn" href="{{ route('public.emergency') }}">Emergency Maintenance</a><a class="btn light" href="{{ route('login') }}">Sign in</a></div><button class="menu-toggle" id="menu-toggle">☰</button></div><div class="wrap mobile-menu" id="mobile-menu"><a href="{{ route('public.home',['lang'=>'ar']) }}">العربية</a><a href="#about">About</a><a href="#services">Services</a><a href="#process">How we work</a><a href="{{ route('public.quote') }}">Request a Quote</a><a href="{{ route('public.emergency') }}">Emergency Maintenance</a><a href="{{ route('login') }}">Sign in</a></div></header>
-<main><section class="hero"><div class="wrap hero-grid"><div><div class="eyebrow">UNIFCO · ONE FACILITY SHOP</div><h1>Integrated Facility, Projects, Operations & Maintenance Solutions</h1><p>UNIFCO delivers integrated facility management, electrical and mechanical projects, operations and maintenance, generator and ATS solutions, testing and commissioning—all through one connected service experience.</p><div class="actions"><a class="btn red" href="{{ route('public.quote') }}">Request a Quote</a><a class="btn" href="{{ route('public.emergency') }}">Emergency Maintenance</a><a class="btn light" href="#services">Explore Services</a></div></div><div class="hero-visual"></div></div></section>
-<section class="trust-strip"><div class="wrap"><div class="trust-grid"><div class="trust-item"><strong>Integrated FM</strong><span>Operations and maintenance under one service model.</span></div><div class="trust-item"><strong>MEP Projects</strong><span>Electrical, mechanical, testing and commissioning works.</span></div><div class="trust-item"><strong>Generators & ATS</strong><span>Backup power systems, maintenance and support.</span></div><div class="trust-item"><strong>Emergency Response</strong><span>Direct intake for urgent maintenance requests.</span></div></div></div></section>
-<section id="about" class="section"><div class="wrap"><div class="section-head"><div class="kicker">ABOUT UNIFCO</div><h2>Your operational and engineering facility partner</h2><p class="lead">We support organizations with facility operations, electrical and mechanical works, preventive and corrective maintenance, testing and commissioning with a focus on reliability, response and service visibility.</p></div><div class="about-grid"><div class="about-panel"><h2 style="color:#fff">One Facility Shop</h2><p>A unified entry point for facility services, maintenance and technical projects—from request intake to execution and follow-up.</p><p>Our platform connects commercial, technical and operational workflows so customers can see the full service lifecycle.</p></div><div class="about-points"><div class="point"><b>Preventive Maintenance</b><span>Planned service schedules to reduce failures and improve readiness.</span></div><div class="point"><b>Corrective Maintenance</b><span>Structured fault resolution and restoration of service.</span></div><div class="point"><b>Testing & Commissioning</b><span>Technical verification and commissioning support.</span></div><div class="point"><b>Customer Visibility</b><span>Contracts, assets, work orders, invoices and service history through the client portal.</span></div></div></div></div></section>
-<section id="services" class="section alt"><div class="wrap"><div class="section-head"><div class="kicker">SERVICES</div><h2>Built around the full facility lifecycle</h2></div><div class="cards"><div class="card"><span class="service-no">01</span><b>Facility Management</b><p>Integrated operations, service coordination and facility performance.</p></div><div class="card"><span class="service-no">02</span><b>Maintenance Services</b><p>Preventive, corrective and emergency maintenance workflows.</p></div><div class="card"><span class="service-no">03</span><b>MEP Projects</b><p>Electrical and mechanical projects, upgrades and technical works.</p></div><div class="card"><span class="service-no">04</span><b>Power Systems</b><p>Generators, ATS panels, backup power and related maintenance.</p></div><div class="card"><span class="service-no">05</span><b>Testing & Commissioning</b><p>Verification, commissioning and readiness support.</p></div><div class="card"><span class="service-no">06</span><b>Customer Portal</b><p>Contract, asset, SLA, work order and financial visibility for every customer.</p></div></div></div></section>
-<section id="process" class="section"><div class="wrap"><div class="section-head"><div class="kicker">HOW WE WORK</div><h2>From request to measurable service delivery</h2></div><div class="process"><div class="step"><span class="step-num">1</span><b>Request</b><p>Submit a quote or maintenance request online.</p></div><div class="step"><span class="step-num">2</span><b>Qualify</b><p>Commercial or technical teams validate the request and scope.</p></div><div class="step"><span class="step-num">3</span><b>Execute</b><p>Work orders, technicians, materials and SLA are tracked.</p></div><div class="step"><span class="step-num">4</span><b>Follow up</b><p>Customers monitor results, reports, invoices and history.</p></div></div></div></section>
-<section class="section alt"><div class="wrap"><div class="cta"><div><h2>Need a quote or urgent maintenance support?</h2><p>Send your request without creating an account. We will collect your company details, email and mobile number and route the request into the appropriate commercial or service workflow.</p></div><div class="actions"><a class="btn red" href="{{ route('public.quote') }}">Request a Quote</a><a class="btn light" href="{{ route('public.emergency') }}">Emergency Maintenance</a></div></div></div></section></main>
-<footer class="footer"><div class="wrap foot"><div><strong>UNIFCO · One Facility Shop</strong><div>Integrated facilities, projects, maintenance and customer service platform.</div></div><img class="foot-logo" src="{{ route('brand.logo') }}" alt="UNIFCO"></div></footer>
-<script>const toggle=document.getElementById('menu-toggle'),menu=document.getElementById('mobile-menu');toggle?.addEventListener('click',()=>menu.classList.toggle('open'));</script></body></html>
+@php
+$home = [
+    'lang' => 'en',
+    'dir' => 'ltr',
+    'nav' => ['Home', 'About', 'Services', 'Industries', 'How We Work', 'Projects', 'Contact'],
+    'language' => 'AR',
+    'login' => 'Client Login',
+    'request' => 'Request Service',
+    'hero_eyebrow' => 'ONE FACILITY SHOP',
+    'hero_title' => 'One partner for every facility need',
+    'hero_text' => 'Integrated facility operations, maintenance and technical services with specialist teams and digital visibility that keep your business running efficiently.',
+    'explore' => 'Explore Our Services',
+    'hero_proofs' => [['◴', 'Operations Support', '24/7'], ['▣', 'Preventive', '& Corrective'], ['↗', 'Digital Tracking', '& Clear Reports']],
+    'capabilities' => [
+        ['▥', 'Facility Management', 'Integrated facility operations'],
+        ['⚙', 'MEP & Technical Services', 'Mechanical and electrical works'],
+        ['◇', 'Preventive Maintenance', 'Planned maintenance programs'],
+        ['▤', 'Digital Client Portal', 'A connected service platform'],
+    ],
+    'about_kicker' => 'ABOUT US',
+    'about_title' => 'Your integrated facility management partner',
+    'about_text' => 'UNIFCO delivers integrated facility operations, maintenance and asset management through specialist teams, structured processes and digital visibility that improve readiness, reduce failures and strengthen performance.',
+    'about_points' => [
+        ['◎', 'Central Management', 'For assets and maintenance'], ['♙', 'One Team', 'For multiple services'],
+        ['↗', 'Routine Tracking', 'With transparent reports'], ['◈', 'Tailored Solutions', 'For every facility'],
+    ],
+    'about_button' => 'Discover UNIFCO',
+    'stats' => [['+','Sites Served'], ['+','Assets Managed'], ['98%','SLA Compliance'], ['24/7','Operations Support']],
+    'services_kicker' => 'OUR SERVICES',
+    'services_title' => 'Integrated solutions under one roof',
+    'services_text' => 'From daily facility management to specialized technical operations',
+    'services' => [
+        ['01', '/images/home/facility-power.svg?v=20260823-13', 'Facility Management', 'Daily facility operations, asset oversight and coordinated support services.'],
+        ['02', '/images/unifco-hero-workers-v7.jpg?v=20260823-13', 'Preventive & Corrective Maintenance', 'Planned programs and responsive repairs that sustain operations.'],
+        ['03', '/images/home/hero-electrical.svg?v=20260823-13', 'MEP Services', 'Mechanical, electrical and plumbing systems maintenance and operations.'],
+        ['04', '/images/home/ats.svg?v=20260823-13', 'HVAC Systems', 'Inspection and maintenance for efficient cooling and ventilation.'],
+        ['05', '/images/home/generator.svg?v=20260823-13', 'Electrical & Power Systems', 'Electrical infrastructure, generators and backup power solutions.'],
+        ['06', '/images/home/ups.svg?v=20260823-13', 'Asset Management', 'Complete asset lifecycle, maintenance, warranty and technical history.'],
+    ],
+    'more' => 'Learn more',
+    'all_services' => 'View All Services',
+    'process_kicker' => 'HOW WE WORK',
+    'process_title' => 'A clear process from start to finish',
+    'process' => [
+        ['01', 'Assessment', 'Understand the site, assets, risks and service requirements.'],
+        ['02', 'Planning', 'Build the work plan, schedule, resources and service levels.'],
+        ['03', 'Execution', 'Deliver the work and document readings, results and findings.'],
+        ['04', 'Follow-up & Improvement', 'Report performance and continuously improve operations.'],
+    ],
+    'industries_title' => 'Industries we serve',
+    'industries' => [
+        ['/images/home/sector-commercial.svg?v=20260823-13', 'Commercial Buildings'],
+        ['/images/home/sector-warehouse.svg?v=20260823-13', 'Offices'],
+        ['/images/home/sector-healthcare.svg?v=20260823-13', 'Residential Communities'],
+        ['/images/home/sector-industrial.svg?v=20260823-13', 'Warehouses & Factories'],
+        ['/images/home/sector-datacenter.svg?v=20260823-13', 'Critical Facilities'],
+        ['/images/home/sector-education.svg?v=20260823-13', 'Hospitality'],
+        ['/images/home/sector-government.svg?v=20260823-13', 'Government'],
+    ],
+    'all_industries' => 'View All Industries',
+    'maintenance_title' => 'From reactive maintenance to planned operations',
+    'maintenance_text' => 'UNIFCO reduces emergency failures by planning, documenting and improving maintenance before problems interrupt your operation.',
+    'maintenance_checks' => ['Preventive plans', 'Routine inspections', 'History and spare parts', 'Efficiency programs', 'Work order documentation', 'Continuous improvement'],
+    'maintenance_button' => 'Explore Maintenance Services',
+    'portal_title' => 'Manage every service in one place',
+    'portal_text' => 'A connected client portal that makes every facility service easy to monitor.',
+    'portal_checks' => ['Contract tracking', 'Asset management', 'Maintenance requests', 'Reports and payments', 'Upcoming maintenance', 'SLA performance'],
+    'portal_button' => 'Client Portal Login',
+    'why_title' => 'Why UNIFCO?',
+    'why' => [
+        ['◎', 'Integrated Solutions', 'All services and assets in one platform'],
+        ['▤', 'Clear Reporting', 'Accurate reports that build visibility and trust'],
+        ['◴', 'Fast Response', 'Structured handling for failures and emergencies'],
+        ['♙', 'Qualified Teams', 'Experienced engineers and skilled technicians'],
+        ['⚙', 'Smart Prevention', 'Maintenance plans focused on avoiding failures'],
+        ['◉', 'One Experience', 'A complete solution from one accountable partner'],
+    ],
+    'projects_title' => 'Our work in action',
+    'projects_button' => 'View All Projects',
+    'emergency_title' => 'Need urgent support?',
+    'emergency_text' => 'If a failure is affecting operations, send an emergency maintenance request for immediate routing.',
+    'emergency_button' => 'Emergency Maintenance',
+    'final_title' => 'Your facility deserves better management',
+    'final_text' => 'Let UNIFCO manage operations and maintenance while you focus on your business.',
+    'quote' => 'Request a Quote',
+    'contact' => 'Talk to Us',
+    'footer_about' => 'Integrated facility management, operations and technical maintenance through one connected service experience.',
+    'company' => 'Company',
+    'services_label' => 'Services',
+    'contact_label' => 'Contact',
+];
+@endphp
+@include('public.partials.home-reference-layout', ['home' => $home])
