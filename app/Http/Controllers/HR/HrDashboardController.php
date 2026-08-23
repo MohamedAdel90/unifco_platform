@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AttendanceEntry,BusinessTrip,Employee,EmployeeDocument,EmploymentContract,LeaveRequest,PayrollRun};
+use App\Models\{AttendanceEntry,BusinessTrip,Employee,EmployeeDocument,EmploymentContract,FinalSettlement,LeaveRequest,PayrollRun};
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -21,7 +21,9 @@ class HrDashboardController extends Controller
         $latestPayroll=PayrollRun::with('lines')->latest('period_end')->first();
         $pendingMissions=BusinessTrip::with('employee')->where('status','PENDING')->latest()->limit(5)->get();
         $activeMissions=BusinessTrip::whereIn('status',['APPROVED','IN_PROGRESS'])->count();
-        $settlementPending=BusinessTrip::where('status','SETTLEMENT_PENDING')->count();
+        $missionSettlementPending=BusinessTrip::where('status','SETTLEMENT_PENDING')->count();
+        $pendingFinalSettlements=FinalSettlement::with('employee')->where('status','PENDING_APPROVAL')->latest()->limit(5)->get();
+        $finalSettlementLiability=(float)FinalSettlement::whereIn('status',['PENDING_APPROVAL','APPROVED'])->sum('net_settlement');
         $expiringContracts=EmploymentContract::where('status','ACTIVE')->whereNotNull('ends_on')->whereBetween('ends_on',[$today,$today->copy()->addDays(90)])->with('employee')->orderBy('ends_on')->limit(8)->get();
         $expiringDocuments=EmployeeDocument::whereNotNull('expires_on')->whereBetween('expires_on',[$today,$today->copy()->addDays(90)])->with('employee')->orderBy('expires_on')->limit(8)->get();
         $departments=$employees->groupBy(fn($e)=>$e->position?->department ?: 'Unassigned')->map->count()->sortDesc();
@@ -31,9 +33,10 @@ class HrDashboardController extends Controller
             'stats'=>[
                 'total'=>$employees->count(),'active'=>$active->count(),'on_leave'=>$onLeaveIds->count(),
                 'present_today'=>$attendanceToday->pluck('employee_id')->unique()->count(),'pending_leave'=>$pendingLeaves->count(),
-                'monthly_compensation'=>$payrollLiability,'active_missions'=>$activeMissions,'mission_settlements'=>$settlementPending,
+                'monthly_compensation'=>$payrollLiability,'active_missions'=>$activeMissions,'mission_settlements'=>$missionSettlementPending,
+                'pending_final_settlements'=>$pendingFinalSettlements->count(),'final_settlement_liability'=>$finalSettlementLiability,
             ],
-            'pendingLeaves'=>$pendingLeaves,'latestPayroll'=>$latestPayroll,'pendingMissions'=>$pendingMissions,
+            'pendingLeaves'=>$pendingLeaves,'latestPayroll'=>$latestPayroll,'pendingMissions'=>$pendingMissions,'pendingFinalSettlements'=>$pendingFinalSettlements,
             'expiringContracts'=>$expiringContracts,'expiringDocuments'=>$expiringDocuments,'departments'=>$departments,'today'=>$today,
         ]);
     }
