@@ -1,4 +1,5 @@
 name: HR Phase 4 Qualification
+# retry after mission numbering isolation and People navigation update
 
 on:
   push:
@@ -10,6 +11,7 @@ on:
       - 'app/Models/Employee.php'
       - 'resources/views/hr/missions/**'
       - 'resources/views/hr/dashboard.blade.php'
+      - 'resources/views/dashboard/language-switcher.blade.php'
       - 'routes/wave10.php'
       - 'database/migrations/2026_08_23_000040_build_hr_business_trips_phase4.php'
       - 'tests/Feature/HrBusinessTripsPhase4Test.php'
