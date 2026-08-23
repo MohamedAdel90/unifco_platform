@@ -1,4 +1,5 @@
 name: HR Phase 3 Qualification
+# qualification trigger after initial workflow registration
 
 on:
   push:
