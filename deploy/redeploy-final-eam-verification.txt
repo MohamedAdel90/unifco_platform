@@ -9,3 +9,5 @@ Complete navigation verification: deploy the current main containing operational
 User administration production upgrade: replace /workspace/users placeholder with real tenant-scoped User Management including KPIs, search, role/status/organization filters, user table, permissions/audit links, admin-only access, and feature-test coverage. Deploy and verify /workspace/users on production.
 
 Full User Administration CRUD release: deploy current main after focused qualification success. Includes create/edit/profile, activate/deactivate/suspend, reset password, role/organization/employee assignment, tenant-scoped user permission overrides enforced by AuthorizationService, + New User UX, and security/tenant-isolation tests.
+
+Enterprise User Administration security release: deploy the qualified main containing Last Login tracking, real lock state, password-change flags, revocable sessions, unified row Actions menu, bulk status actions, CSV import/export, user audit timeline, per-user API token revocation, and truthful MFA status. Qualification result must be success before production restart.
