@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\HR\{AttendanceController,EmployeeController,HrDashboardController,HrOperationsController,LeaveController};
+use App\Http\Controllers\HR\{AttendanceController,EmployeeController,HrDashboardController,HrOperationsController,LeaveController,PayrollController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('hr')->name('hr.')->group(function () {
@@ -21,6 +21,13 @@ Route::middleware('auth')->prefix('hr')->name('hr.')->group(function () {
     Route::post('/leave/balances',[LeaveController::class,'seedBalance'])->middleware('permission:hr.employee.manage')->name('leave.balances.store');
     Route::post('/leave/balances/{balance}/accrue',[LeaveController::class,'accrue'])->middleware('permission:hr.employee.manage')->name('leave.balances.accrue');
     Route::post('/leave/{leave}/decide',[LeaveController::class,'decide'])->middleware('permission:workflow.approval.decide')->name('leave.decide');
+
+    Route::get('/payroll',[PayrollController::class,'index'])->middleware('permission:hr.employee.read')->name('payroll.index');
+    Route::post('/payroll/policies',[PayrollController::class,'storePolicy'])->middleware('permission:hr.employee.manage')->name('payroll.policies.store');
+    Route::post('/payroll/runs',[PayrollController::class,'createRun'])->middleware('permission:hr.employee.manage')->name('payroll.runs.store');
+    Route::get('/payroll/{payroll}',[PayrollController::class,'show'])->middleware('permission:hr.employee.read')->name('payroll.show');
+    Route::post('/payroll/{payroll}/recalculate',[PayrollController::class,'recalculate'])->middleware('permission:hr.employee.manage')->name('payroll.recalculate');
+    Route::post('/payroll/{payroll}/post',[PayrollController::class,'post'])->middleware('permission:finance.journal.post')->name('payroll.post');
 });
 
 Route::middleware('auth')->prefix('hr/operations')->name('hr.operations.')->group(function () {
