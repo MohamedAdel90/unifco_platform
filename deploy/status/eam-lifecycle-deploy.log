@@ -3,10 +3,10 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   626cd9b..35015b2  main       -> origin/main
+   35015b2..a83df12  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at 35015b2 Record HR Phase 2 qualification [skip ci]
-==> Server checkout: 35015b204bf4132ee8b1108ba72521e8ef06b473
+HEAD is now at a83df12 Add HR Phase 11 qualification workflow
+==> Server checkout: a83df12cbe708e0168ef9f447c567455b08a1cba
 ==> Verifying required release files
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -28,20 +28,18 @@ Generating optimized autoload files
   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
 
+78 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
 ==> Repairing Laravel session directories and permissions
 ==> Enforcing HTTP-safe session cookie settings
 ==> Skipping UNIFCO logo materialization by request
 ==> Repairing customer messaging schema first
-78 packages you are using are looking for funding.
-Use the `composer fund` command to find out more!
 
    INFO  Nothing to migrate.  
 
 ==> Applying all remaining migrations
 
-   INFO  Running migrations.  
-
-  2026_08_23_000046_build_hr_analytics_phase11 .................. 17.13ms DONE
+   INFO  Nothing to migrate.  
 
 ==> Bootstrapping warehouse access
 Warehouse access ready: MAIN-WH / storekeeper@unifco.local
@@ -60,12 +58,12 @@ Operational warehouse, technician request, consume and return lifecycle ready
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 0.98ms DONE
-  cache .......................................................... 3.00ms DONE
-  compiled ....................................................... 0.88ms DONE
-  events ......................................................... 0.49ms DONE
-  routes ......................................................... 0.44ms DONE
-  views .......................................................... 3.83ms DONE
+  config ......................................................... 1.01ms DONE
+  cache .......................................................... 2.83ms DONE
+  compiled ....................................................... 0.83ms DONE
+  events ......................................................... 0.47ms DONE
+  routes ......................................................... 0.45ms DONE
+  views .......................................................... 3.43ms DONE
 
 ==> Restarting unifco-app
 unifco-app: stopped
@@ -74,4 +72,4 @@ unifco-app: started
 ==> Verifying homepage release
 ==> Verifying login session and CSRF round trip
 Login CSRF/session round trip verified: HTTP 302
-==> Deploy complete at 35015b204bf4132ee8b1108ba72521e8ef06b473
+==> Deploy complete at a83df12cbe708e0168ef9f447c567455b08a1cba
