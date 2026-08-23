@@ -24,6 +24,8 @@ class BrandingSettingsTest extends TestCase
     public function test_admin_can_open_branding_settings_and_system_settings_redirects_there(): void
     {
         $u=$this->users();
+        $this->assertTrue(\Route::has('admin.branding.index'));
+        $this->assertTrue(\Route::has('brand.logo'));
         $this->actingAs($u['admin'])->get('/workspace/system-settings')->assertRedirect('/admin/branding');
         $this->actingAs($u['admin'])->get('/admin/branding')->assertOk()->assertSee('Upload & Apply Everywhere',false);
     }
