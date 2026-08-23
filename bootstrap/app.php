@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\{AuthenticateApiToken,AuthenticateJwt,RequirePermission};
+use App\Http\Middleware\{AuthenticateApiToken,AuthenticateJwt,EnsureUserSessionValid,RequirePermission};
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['permission'=>RequirePermission::class,'api.token'=>AuthenticateApiToken::class,'jwt'=>AuthenticateJwt::class]);
+        $middleware->web(append: [EnsureUserSessionValid::class]);
         // Temporary narrow exception for the login POST only. The production server is currently
         // serving over plain HTTP on an IP address and is returning 419 before credentials are checked.
         // All authenticated and business forms remain CSRF protected.
