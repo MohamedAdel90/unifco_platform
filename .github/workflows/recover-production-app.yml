@@ -76,6 +76,7 @@ jobs:
           php artisan route:list --name=hr.self-service.index >/dev/null
           php artisan route:list --name=hr.self-service.leave.store >/dev/null
           php artisan route:list --name=hr.self-service.missions.store >/dev/null
+          php artisan route:list --name=hr.self-service.goals.update >/dev/null
           php artisan route:list --name=hr.manager-self-service.index >/dev/null
           php artisan route:list --name=hr.manager-self-service.leave.decide >/dev/null
           php artisan route:list --name=hr.manager-self-service.missions.decide >/dev/null
