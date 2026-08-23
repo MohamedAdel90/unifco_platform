@@ -8,6 +8,8 @@ on:
       - 'app/Models/HrComplianceProfile.php'
       - 'app/Models/HrComplianceCase.php'
       - 'app/Models/HrComplianceScanRun.php'
+      - 'app/Models/Employee.php'
+      - 'app/Models/EmploymentContract.php'
       - 'resources/views/hr/compliance/**'
       - 'routes/wave17.php'
       - 'bootstrap/app.php'
@@ -45,6 +47,8 @@ jobs:
             php -l app/Models/HrComplianceProfile.php
             php -l app/Models/HrComplianceCase.php
             php -l app/Models/HrComplianceScanRun.php
+            php -l app/Models/Employee.php
+            php -l app/Models/EmploymentContract.php
             php -l routes/wave17.php
             php -l database/migrations/2026_08_23_000045_build_hr_compliance_phase10.php
             php artisan migrate:fresh --force
