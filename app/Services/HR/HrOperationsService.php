@@ -30,25 +30,23 @@ class HrOperationsService
         $run->load('lines');
         if ($run->lines->isEmpty()) throw ValidationException::withMessages(['payroll'=>'Payroll run requires at least one line.']);
         foreach ([$expenseAccount,$payableAccount,$deductionsAccount] as $code) {
-            if (!ChartAccount::where('code',$code)->where('status','ACTIVE')->where('posting_allowed',true)->exists())
-                throw ValidationException::withMessages(['accounts'=>"Posting account {$code} is invalid."]);
+            if (!ChartAccount::where('code',$code)->where('status','ACTIVE')->where('posting_allowed',true)->exists()) throw ValidationException::withMessages(['accounts'=>"Posting account {$code} is invalid."]);
         }
 
         return DB::transaction(function () use ($run,$expenseAccount,$payableAccount,$deductionsAccount) {
-            $gross=(float)$run->lines->sum(fn($l)=>(float)$l->basic_pay+(float)$l->allowances);
-            $deductions=(float)$run->lines->sum('deductions');
-            $net=round($gross-$deductions,2);
+            $gross=(float)$run->lines->sum(fn($l)=>(float)$l->basic_pay+(float)$l->allowances+(float)($l->overtime_pay??0));
+            $employeeDeductions=(float)$run->lines->sum('deductions');
+            $employerContributions=(float)$run->lines->sum('employer_contributions_total');
+            $net=round($gross-$employeeDeductions,2);
             if ($gross <= 0 || $net < 0) throw ValidationException::withMessages(['payroll'=>'Payroll totals are invalid.']);
 
-            $journal=Journal::create([
-                'organization_id'=>$run->organization_id,'created_by'=>$run->created_by,'journal_no'=>'PAYROLL-'.$run->payroll_no,
-                'journal_date'=>$run->posting_date,'description'=>'Payroll '.$run->payroll_no,'status'=>'DRAFT',
-            ]);
+            $journal=Journal::create(['organization_id'=>$run->organization_id,'created_by'=>$run->created_by,'journal_no'=>'PAYROLL-'.$run->payroll_no,'journal_date'=>$run->posting_date,'description'=>'Payroll '.$run->payroll_no,'status'=>'DRAFT']);
             $lines=[
-                ['line_no'=>1,'account_code'=>$expenseAccount,'debit'=>$gross,'credit'=>0,'description'=>'Payroll gross expense'],
+                ['line_no'=>1,'account_code'=>$expenseAccount,'debit'=>round($gross+$employerContributions,2),'credit'=>0,'description'=>'Payroll gross and employer statutory expense'],
                 ['line_no'=>2,'account_code'=>$payableAccount,'debit'=>0,'credit'=>$net,'description'=>'Net payroll payable'],
             ];
-            if ($deductions > 0) $lines[]=['line_no'=>3,'account_code'=>$deductionsAccount,'debit'=>0,'credit'=>$deductions,'description'=>'Payroll deductions payable'];
+            $liabilities=round($employeeDeductions+$employerContributions,2);
+            if ($liabilities > 0) $lines[]=['line_no'=>3,'account_code'=>$deductionsAccount,'debit'=>0,'credit'=>$liabilities,'description'=>'Payroll statutory deductions and employer contributions payable'];
             $journal->lines()->createMany($lines);
             $this->posting->post($journal);
             $before=$run->toArray();
