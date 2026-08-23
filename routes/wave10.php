@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\HR\{AttendanceController,EmployeeController,HrDashboardController,HrOperationsController,LeaveController,PayrollController};
+use App\Http\Controllers\HR\{AttendanceController,BusinessTripController,EmployeeController,HrDashboardController,HrOperationsController,LeaveController,PayrollController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('hr')->name('hr.')->group(function () {
@@ -28,6 +28,16 @@ Route::middleware('auth')->prefix('hr')->name('hr.')->group(function () {
     Route::get('/payroll/{payroll}',[PayrollController::class,'show'])->middleware('permission:hr.employee.read')->name('payroll.show');
     Route::post('/payroll/{payroll}/recalculate',[PayrollController::class,'recalculate'])->middleware('permission:hr.employee.manage')->name('payroll.recalculate');
     Route::post('/payroll/{payroll}/post',[PayrollController::class,'post'])->middleware('permission:finance.journal.post')->name('payroll.post');
+
+    Route::get('/missions',[BusinessTripController::class,'index'])->middleware('permission:hr.employee.read')->name('missions.index');
+    Route::post('/missions',[BusinessTripController::class,'store'])->middleware('permission:hr.employee.manage')->name('missions.store');
+    Route::get('/missions/{mission}',[BusinessTripController::class,'show'])->middleware('permission:hr.employee.read')->name('missions.show');
+    Route::post('/missions/{mission}/decide',[BusinessTripController::class,'decide'])->middleware('permission:workflow.approval.decide')->name('missions.decide');
+    Route::post('/missions/{mission}/advance',[BusinessTripController::class,'advance'])->middleware('permission:hr.employee.manage')->name('missions.advance');
+    Route::post('/missions/{mission}/expenses',[BusinessTripController::class,'storeExpense'])->middleware('permission:hr.employee.manage')->name('missions.expenses.store');
+    Route::post('/missions/{mission}/expenses/{expense}/decide',[BusinessTripController::class,'decideExpense'])->middleware('permission:workflow.approval.decide')->name('missions.expenses.decide');
+    Route::post('/missions/{mission}/complete',[BusinessTripController::class,'complete'])->middleware('permission:hr.employee.manage')->name('missions.complete');
+    Route::post('/missions/{mission}/settle',[BusinessTripController::class,'settle'])->middleware('permission:hr.employee.manage')->name('missions.settle');
 });
 
 Route::middleware('auth')->prefix('hr/operations')->name('hr.operations.')->group(function () {
