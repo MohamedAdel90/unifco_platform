@@ -2,9 +2,9 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Recovery fetch main
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   98bf3dc..4dd8ea2  main       -> origin/main
-HEAD is now at 4dd8ea2 Verify HR Phase 3 payroll in production recovery
-server_sha=4dd8ea2fab610c9a7cc557737646ad39667df58f
+   f418085..4f615fe  main       -> origin/main
+HEAD is now at 4f615fe Verify HR Phase 4 missions in production recovery
+server_sha=4f615feab5fd3037790eaf8c752d05e875f13f1c
 Composer plugins have been disabled for safety in this non-interactive session.
 Set COMPOSER_ALLOW_SUPERUSER=1 if you want to allow plugins to run as root/super user.
 Do not run Composer as root/super user! See https://getcomposer.org/root for details
@@ -32,17 +32,17 @@ Use the `composer fund` command to find out more!
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.15ms DONE
-  cache .......................................................... 2.85ms DONE
+  config ......................................................... 0.91ms DONE
+  cache .......................................................... 2.56ms DONE
   compiled ....................................................... 0.77ms DONE
-  events ......................................................... 0.49ms DONE
-  routes ......................................................... 0.48ms DONE
-  views .......................................................... 4.07ms DONE
+  events ......................................................... 0.42ms DONE
+  routes ......................................................... 0.39ms DONE
+  views .......................................................... 3.01ms DONE
 
 unifco-app: stopped
 No config updates to processes
 unifco-app: started
-unifco-app                       RUNNING   pid 4180584, uptime 0:00:02
+unifco-app                       RUNNING   pid 4185335, uptime 0:00:02
 ==> Verify HR release migrations and routes
 ==> Verify HR authenticated pages resolve to auth gate
 recovery_result=success
