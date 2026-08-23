@@ -1,1 +1,1 @@
-Recover production application service and deploy the qualified HR Phase 4 Business Trips / Missions release. Verify migration 000040, mission routes, /hr/missions auth response, Supervisor state, and port 8081 readiness.
+Recover production application service and deploy the qualified HR Phase 6 Recruitment, Hiring & Employee Onboarding release. Verify migration 000042, recruitment routes, /hr/recruitment auth response, Supervisor state, and port 8081 readiness.
