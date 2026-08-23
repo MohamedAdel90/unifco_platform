@@ -27,12 +27,12 @@ class BrandingPresentation
 /* Shared presentation rules for the dynamic logo asset. */
 img[src*="/brand/unifco-logo-v3.webp"]{object-fit:contain!important;image-rendering:auto}
 
-/* Authenticated application shell: use the sidebar width and give square/vertical logos more height. */
-.brand-logo-wrap{justify-content:center!important;align-items:center!important;min-height:108px!important;padding:8px 12px!important;overflow:hidden!important}
-.brand-logo-wrap .brand-logo{display:block!important;width:min(232px,94%)!important;max-width:232px!important;height:88px!important;max-height:88px!important;flex:0 1 232px!important;object-fit:contain!important;object-position:center!important;margin:auto!important}
+/* Authenticated application shell: make the sidebar logo more prominent without distortion. */
+.brand-logo-wrap{justify-content:center!important;align-items:center!important;min-height:118px!important;padding:7px 10px!important;overflow:hidden!important}
+.brand-logo-wrap .brand-logo{display:block!important;width:min(252px,96%)!important;max-width:252px!important;height:100px!important;max-height:100px!important;flex:0 1 252px!important;object-fit:contain!important;object-position:center!important;margin:auto!important}
 .brand-logo-wrap .brand-wordmark{display:none!important}
-body.sidebar-collapsed .brand-logo-wrap{min-height:64px!important;padding:7px!important}
-body.sidebar-collapsed .brand-logo-wrap .brand-logo{width:48px!important;max-width:48px!important;height:48px!important;max-height:48px!important;flex:0 0 48px!important}
+body.sidebar-collapsed .brand-logo-wrap{min-height:66px!important;padding:6px!important}
+body.sidebar-collapsed .brand-logo-wrap .brand-logo{width:50px!important;max-width:50px!important;height:50px!important;max-height:50px!important;flex:0 0 50px!important}
 
 /* Public website header/footer: larger, cleaner brand footprint. */
 .top .logo{width:clamp(150px,14vw,205px)!important;height:68px!important;max-width:205px!important;object-fit:contain!important;object-position:left center!important;padding:4px 0!important}
@@ -49,8 +49,8 @@ html[dir="rtl"] .top .logo{object-position:right center!important}
 .logo-preview img{width:min(520px,92%)!important;max-width:520px!important;height:180px!important;max-height:180px!important;object-fit:contain!important;background:rgba(255,255,255,.94)!important;border:1px solid #e4e9f1!important;border-radius:14px!important;padding:18px!important;box-shadow:0 10px 28px rgba(19,33,55,.08)!important}
 
 @media(max-width:850px){
-  .brand-logo-wrap{min-height:96px!important;padding:7px 10px!important}
-  .brand-logo-wrap .brand-logo{width:min(218px,94%)!important;max-width:218px!important;height:78px!important;max-height:78px!important}
+  .brand-logo-wrap{min-height:104px!important;padding:7px 9px!important}
+  .brand-logo-wrap .brand-logo{width:min(238px,96%)!important;max-width:238px!important;height:88px!important;max-height:88px!important}
   .top .logo{width:145px!important;height:60px!important}
 }
 @media(max-width:600px){
