@@ -1,5 +1,5 @@
 name: HR Phase 2 Qualification
-# qualification retry after date assertion normalization
+# qualification retry after dashboard and regression alignment
 
 on:
   push:
@@ -15,6 +15,7 @@ on:
       - 'routes/wave10.php'
       - 'database/migrations/2026_08_23_000038_build_hr_attendance_leave_phase2.php'
       - 'tests/Feature/HrAttendanceLeavePhase2Test.php'
+      - 'tests/Feature/HrEmployeeCorePhase1Test.php'
       - '.github/workflows/hr-phase2-qualification.yml'
   workflow_dispatch:
 
