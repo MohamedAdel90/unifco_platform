@@ -1,0 +1,78 @@
+name: HR Phase 9 Qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/Http/Controllers/HR/HrDocumentsController.php'
+      - 'app/Models/HrDocumentTemplate.php'
+      - 'app/Models/HrServiceRequest.php'
+      - 'resources/views/hr/documents/**'
+      - 'routes/wave16.php'
+      - 'bootstrap/app.php'
+      - 'database/migrations/2026_08_23_000044_build_hr_documents_phase9.php'
+      - 'tests/Feature/HrDocumentsPhase9Test.php'
+      - '.github/workflows/hr-phase9-qualification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - name: Qualify HR Phase 9
+        id: test
+        shell: bash
+        run: |
+          set +e
+          (
+            set -euo pipefail
+            mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs database
+            composer install --no-interaction --prefer-dist --no-progress
+            cp .env.example .env
+            rm -f database/database.sqlite
+            touch database/database.sqlite
+            php artisan key:generate --force
+            php -l app/Http/Controllers/HR/HrDocumentsController.php
+            php -l app/Models/HrDocumentTemplate.php
+            php -l app/Models/HrServiceRequest.php
+            php -l routes/wave16.php
+            php -l database/migrations/2026_08_23_000044_build_hr_documents_phase9.php
+            php artisan migrate:fresh --force
+            php artisan route:list --name=hr.self-service.documents.index >/dev/null
+            php artisan route:list --name=hr.documents.index >/dev/null
+            php artisan route:list --name=hr.documents.issue >/dev/null
+            php artisan route:list --name=hr.documents.print >/dev/null
+            php artisan view:clear
+            php artisan view:cache
+            php artisan test tests/Feature/HrDocumentsPhase9Test.php tests/Feature/HrSelfServicePhase8Test.php tests/Feature/HrPerformancePhase7Test.php tests/Feature/HrRecruitmentPhase6Test.php tests/Feature/HrEndOfServicePhase5Test.php tests/Feature/HrBusinessTripsPhase4Test.php tests/Feature/HrPayrollPhase3Test.php tests/Feature/HrAttendanceLeavePhase2Test.php tests/Feature/HrEmployeeCorePhase1Test.php tests/Feature/Wave10HrOperationsTest.php tests/Feature/SidebarNavigationTest.php
+          ) > >(tee /tmp/hr-phase9.log) 2>&1
+          rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Record qualification
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p deploy/status
+          rc='${{ steps.test.outputs.rc }}'
+          if [ "${rc:-999}" = '0' ]; then result=success; else result=failure; fi
+          printf 'source_sha=%s\nverified_at=%s\nresult=%s\ntest_rc=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "${rc:-not-run}" > deploy/status/hr-phase9-latest.txt
+          tail -n 620 /tmp/hr-phase9.log > deploy/status/hr-phase9-qualification.log || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add deploy/status/hr-phase9-latest.txt deploy/status/hr-phase9-qualification.log
+          git commit -m 'Record HR Phase 9 qualification [skip ci]' || true
+          git pull --rebase origin main || true
+          git push origin HEAD:main
+      - name: Fail when qualification failed
+        if: always() && steps.test.outputs.rc != '0'
+        run: exit 1
