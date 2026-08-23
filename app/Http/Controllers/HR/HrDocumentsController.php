@@ -4,7 +4,7 @@ namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Employee,HrDocumentTemplate,HrServiceRequest};
-use App\Services\AuditService;
+use App\Services\{AuditService,AuthorizationService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -21,6 +21,11 @@ class HrDocumentsController extends Controller
     {
         abort_unless($request->user()->employee_id,403,'Your user account is not linked to an employee profile.');
         return Employee::where('tenant_id',$request->user()->tenant_id)->findOrFail($request->user()->employee_id);
+    }
+
+    private function mayReadHr(Request $request): bool
+    {
+        return app(AuthorizationService::class)->allows($request->user(),'hr.employee.read');
     }
 
     public function employeeIndex(Request $request): View
@@ -106,9 +111,8 @@ class HrDocumentsController extends Controller
 
     public function show(Request $request,HrServiceRequest $service): View
     {
-        $employee=$this->currentEmployee($request);
-        $isHr=in_array($request->user()->role,['ADMIN','MANAGER','SUPERVISOR'],true);
-        abort_unless($isHr || (int)$service->employee_id===(int)$employee->id,403);
+        $isHr=$this->mayReadHr($request);
+        if(!$isHr){ $employee=$this->currentEmployee($request); abort_unless((int)$service->employee_id===(int)$employee->id,403); }
         $service->load('employee');
         return view('hr.documents.show',compact('service','isHr'));
     }
@@ -116,8 +120,8 @@ class HrDocumentsController extends Controller
     public function printable(Request $request,HrServiceRequest $service): View
     {
         abort_unless($service->status==='ISSUED' && $service->snapshot,404);
-        $employee=$this->currentEmployee($request); $isHr=in_array($request->user()->role,['ADMIN','MANAGER','SUPERVISOR'],true);
-        abort_unless($isHr || (int)$service->employee_id===(int)$employee->id,403);
+        $isHr=$this->mayReadHr($request);
+        if(!$isHr){ $employee=$this->currentEmployee($request); abort_unless((int)$service->employee_id===(int)$employee->id,403); }
         return view('hr.documents.print',['service'=>$service,'snapshot'=>$service->snapshot]);
     }
 
