@@ -1,4 +1,5 @@
 name: HR Phase 2 Qualification
+# qualification retry after date assertion normalization
 
 on:
   push:
