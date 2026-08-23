@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Employee,EmployeeLeaveBalance,LeavePolicy,Organization,Tenant,User,WorkSchedule};
+use App\Models\{AttendanceEntry,Employee,EmployeeLeaveBalance,LeavePolicy,Organization,Tenant,User,WorkSchedule};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -30,8 +30,11 @@ class HrAttendanceLeavePhase2Test extends TestCase
             'employee_id'=>$employee->id,'work_date'=>'2026-08-23','attendance_type'=>'PRESENT','check_in_at'=>'08:25','check_out_at'=>'18:00','source'=>'DEVICE','notes'=>'Device import',
         ])->assertRedirect();
 
-        $this->assertDatabaseHas('attendance_entries',['tenant_id'=>$tenant->id,'employee_id'=>$employee->id,'work_date'=>'2026-08-23','late_minutes'=>15,'attendance_type'=>'PRESENT','source'=>'DEVICE']);
-        $entry=DB::table('attendance_entries')->where('employee_id',$employee->id)->first();
+        $entry=AttendanceEntry::where('employee_id',$employee->id)->firstOrFail();
+        $this->assertSame('2026-08-23',$entry->work_date->toDateString());
+        $this->assertSame(15,(int)$entry->late_minutes);
+        $this->assertSame('PRESENT',$entry->attendance_type);
+        $this->assertSame('DEVICE',$entry->source);
         $this->assertGreaterThan(0,(float)$entry->overtime_hours);
         $this->actingAs($admin)->get('/hr/attendance?date=2026-08-23')->assertOk()->assertSee('Attendance & Time',false)->assertSee('15m',false);
     }
@@ -42,7 +45,10 @@ class HrAttendanceLeavePhase2Test extends TestCase
         $schedule=WorkSchedule::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'code'=>'RAM','name'=>'Ramadan','starts_at'=>'09:00:00','ends_at'=>'15:00:00','break_minutes'=>0,'grace_minutes'=>0,'daily_hours'=>8,'working_days'=>[0,1,2,3,4],'ramadan_mode'=>true,'ramadan_daily_hours'=>6,'status'=>'ACTIVE']);
         DB::table('employees')->where('id',$employee->id)->update(['work_schedule_id'=>$schedule->id]);
         $this->actingAs($admin)->post('/hr/attendance',['employee_id'=>$employee->id,'work_date'=>'2026-03-01','attendance_type'=>'PRESENT','check_in_at'=>'09:00','check_out_at'=>'16:00','source'=>'MANUAL'])->assertRedirect();
-        $this->assertDatabaseHas('attendance_entries',['employee_id'=>$employee->id,'work_date'=>'2026-03-01','worked_hours'=>7,'overtime_hours'=>1]);
+        $entry=AttendanceEntry::where('employee_id',$employee->id)->firstOrFail();
+        $this->assertSame('2026-03-01',$entry->work_date->toDateString());
+        $this->assertSame(7.0,(float)$entry->worked_hours);
+        $this->assertSame(1.0,(float)$entry->overtime_hours);
     }
 
     public function test_leave_policy_balance_accrual_request_and_approval(): void
