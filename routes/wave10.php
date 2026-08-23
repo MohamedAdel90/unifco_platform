@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\HR\{AttendanceController,BusinessTripController,EmployeeController,FinalSettlementController,HrDashboardController,HrOperationsController,LeaveController,PayrollController};
+use App\Http\Controllers\HR\{AttendanceController,BusinessTripController,EmployeeController,FinalSettlementController,HrDashboardController,HrOperationsController,LeaveController,PayrollController,RecruitmentController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('hr')->name('hr.')->group(function () {
@@ -46,6 +46,20 @@ Route::middleware('auth')->prefix('hr')->name('hr.')->group(function () {
     Route::post('/settlements/{settlement}/submit',[FinalSettlementController::class,'submit'])->middleware('permission:hr.employee.manage')->name('settlements.submit');
     Route::post('/settlements/{settlement}/decide',[FinalSettlementController::class,'decide'])->middleware('permission:workflow.approval.decide')->name('settlements.decide');
     Route::post('/settlements/{settlement}/paid',[FinalSettlementController::class,'markPaid'])->middleware('permission:finance.journal.post')->name('settlements.paid');
+
+    Route::get('/recruitment',[RecruitmentController::class,'index'])->middleware('permission:hr.employee.read')->name('recruitment.index');
+    Route::post('/recruitment/requisitions',[RecruitmentController::class,'storeRequisition'])->middleware('permission:hr.employee.manage')->name('recruitment.requisitions.store');
+    Route::post('/recruitment/requisitions/{requisition}/decide',[RecruitmentController::class,'decideRequisition'])->middleware('permission:workflow.approval.decide')->name('recruitment.requisitions.decide');
+    Route::post('/recruitment/requisitions/{requisition}/vacancies',[RecruitmentController::class,'openVacancy'])->middleware('permission:hr.employee.manage')->name('recruitment.vacancies.store');
+    Route::post('/recruitment/candidates',[RecruitmentController::class,'storeCandidate'])->middleware('permission:hr.employee.manage')->name('recruitment.candidates.store');
+    Route::get('/recruitment/candidates/{candidate}',[RecruitmentController::class,'showCandidate'])->middleware('permission:hr.employee.read')->name('recruitment.candidates.show');
+    Route::post('/recruitment/candidates/{candidate}/stage',[RecruitmentController::class,'updateStage'])->middleware('permission:hr.employee.manage')->name('recruitment.candidates.stage');
+    Route::post('/recruitment/candidates/{candidate}/interviews',[RecruitmentController::class,'scheduleInterview'])->middleware('permission:hr.employee.manage')->name('recruitment.interviews.store');
+    Route::post('/recruitment/candidates/{candidate}/interviews/{interview}/decide',[RecruitmentController::class,'decideInterview'])->middleware('permission:hr.employee.manage')->name('recruitment.interviews.decide');
+    Route::post('/recruitment/candidates/{candidate}/offer',[RecruitmentController::class,'createOffer'])->middleware('permission:hr.employee.manage')->name('recruitment.offers.store');
+    Route::post('/recruitment/candidates/{candidate}/offer/decide',[RecruitmentController::class,'decideOffer'])->middleware('permission:hr.employee.manage')->name('recruitment.offers.decide');
+    Route::post('/recruitment/candidates/{candidate}/hire',[RecruitmentController::class,'hire'])->middleware('permission:hr.employee.manage')->name('recruitment.hire');
+    Route::post('/recruitment/onboarding/{task}/complete',[RecruitmentController::class,'completeOnboardingTask'])->middleware('permission:hr.employee.manage')->name('recruitment.onboarding.complete');
 });
 
 Route::middleware('auth')->prefix('hr/operations')->name('hr.operations.')->group(function () {
