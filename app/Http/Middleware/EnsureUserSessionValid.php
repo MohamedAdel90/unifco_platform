@@ -13,6 +13,7 @@ class EnsureUserSessionValid
     {
         if (Auth::check()) {
             $user=Auth::user();
+            if ($user->exists) $user->refresh();
             if (! $request->session()->has('account_session_version')) {
                 $request->session()->put('account_session_version',(int)$user->session_version);
             }
