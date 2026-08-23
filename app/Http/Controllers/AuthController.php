@@ -18,15 +18,17 @@ class AuthController extends Controller
             return back()->withErrors(['email'=>'Invalid credentials.'])->onlyInput('email');
         }
         $request->session()->regenerate();
-        abort_unless(Auth::user()->status === 'ACTIVE', 403, 'User is inactive.');
-
-        if (Auth::user()->role === 'CUSTOMER') {
-            return redirect()->intended(route('customer.portal'));
+        $user=Auth::user();
+        if ($user->status !== 'ACTIVE' || $user->locked_at) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            abort(403,'User account is unavailable.');
         }
-        if (Auth::user()->role === 'STOREKEEPER') {
-            return redirect()->intended(route('inventory.warehouse.index'));
-        }
+        $user->forceFill(['last_login_at'=>now()])->save();
 
+        if ($user->role === 'CUSTOMER') return redirect()->intended(route('customer.portal'));
+        if ($user->role === 'STOREKEEPER') return redirect()->intended(route('inventory.warehouse.index'));
         return redirect()->intended(route('dashboard'));
     }
 
