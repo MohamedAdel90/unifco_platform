@@ -49,8 +49,22 @@ class BrandingSettingsTest extends TestCase
         $response=$this->get('/brand/unifco-logo-v3.webp');
         $response->assertOk();
         $this->assertStringStartsWith('image/',(string)$response->headers->get('Content-Type'));
+        $response->assertDontSee('dynamic-brand-logo-presentation',false);
 
         $this->actingAs($u['admin'])->post('/admin/branding/reset')->assertRedirect();
         $this->assertDatabaseCount('branding_settings',0);
+    }
+
+    public function test_logo_presentation_rules_are_injected_into_login_and_public_html(): void
+    {
+        $this->get('/login')->assertOk()
+            ->assertSee('dynamic-brand-logo-presentation',false)
+            ->assertSee('.card-logo',false)
+            ->assertSee('.hero-logo',false);
+
+        $this->get('/')->assertOk()
+            ->assertSee('dynamic-brand-logo-presentation',false)
+            ->assertSee('.top .logo',false)
+            ->assertSee('.foot-logo',false);
     }
 }
