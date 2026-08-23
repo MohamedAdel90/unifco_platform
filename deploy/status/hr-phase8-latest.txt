@@ -1,0 +1,4 @@
+source_sha=38635e2e0bdcb588f0be8032d2ef40cc542e394f
+verified_at=2026-08-23T13:05:58Z
+result=failure
+test_rc=2
