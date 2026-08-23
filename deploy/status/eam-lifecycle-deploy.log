@@ -3,10 +3,10 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   51a6d49..98bf3dc  main       -> origin/main
+   4dd8ea2..6cdf1ff  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at 98bf3dc Record HR Phase 3 qualification [skip ci]
-==> Server checkout: 98bf3dcb4f8afd18e963404e325ca18da8b512da
+HEAD is now at 6cdf1ff Record production recovery verification [skip ci]
+==> Server checkout: 6cdf1ffaa87aef20af7ad8df56c774d6a5d37b25
 ==> Verifying required release files
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -58,11 +58,18 @@ Operational warehouse, technician request, consume and return lifecycle ready
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.45ms DONE
-  cache .......................................................... 3.63ms DONE
-  compiled ....................................................... 1.05ms DONE
-  events ......................................................... 0.69ms DONE
-  routes ......................................................... 0.60ms DONE
-  views .......................................................... 4.80ms DONE
+  config ......................................................... 1.15ms DONE
+  cache .......................................................... 3.04ms DONE
+  compiled ....................................................... 0.89ms DONE
+  events ......................................................... 0.45ms DONE
+  routes ......................................................... 0.38ms DONE
+  views .......................................................... 3.60ms DONE
 
 ==> Restarting unifco-app
+unifco-app: stopped
+unifco-app: started
+==> Waiting for application
+==> Verifying homepage release
+==> Verifying login session and CSRF round trip
+Login CSRF/session round trip verified: HTTP 302
+==> Deploy complete at 6cdf1ffaa87aef20af7ad8df56c774d6a5d37b25
