@@ -1,1 +1,1 @@
-Recover production application service after supervisor spawn error and deploy the qualified enterprise User Administration release.
+Recover production application service and deploy the qualified HR Phase 4 Business Trips / Missions release. Verify migration 000040, mission routes, /hr/missions auth response, Supervisor state, and port 8081 readiness.
