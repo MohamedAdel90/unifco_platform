@@ -3,10 +3,10 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Fetching latest main from origin
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   aae028a..afad07a  main       -> origin/main
+   a9eece5..b997b0f  main       -> origin/main
 ==> Checking out origin/main
-HEAD is now at afad07a Cover unlinked HR document reader scope
-==> Server checkout: afad07a712dde778448cc9f43a2b85aa7da8796b
+HEAD is now at b997b0f Record production recovery verification [skip ci]
+==> Server checkout: b997b0f8236e74c9597569e9e813ca6fef91507d
 ==> Verifying required release files
 ==> Installing dependencies
 Composer plugins have been disabled for safety in this non-interactive session.
@@ -58,12 +58,12 @@ Operational warehouse, technician request, consume and return lifecycle ready
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.13ms DONE
-  cache .......................................................... 2.70ms DONE
-  compiled ....................................................... 0.80ms DONE
-  events ......................................................... 0.59ms DONE
+  config ......................................................... 1.00ms DONE
+  cache .......................................................... 2.84ms DONE
+  compiled ....................................................... 0.82ms DONE
+  events ......................................................... 0.48ms DONE
   routes ......................................................... 0.51ms DONE
-  views .......................................................... 3.22ms DONE
+  views .......................................................... 4.15ms DONE
 
 ==> Restarting unifco-app
 unifco-app: stopped
@@ -72,4 +72,4 @@ unifco-app: started
 ==> Verifying homepage release
 ==> Verifying login session and CSRF round trip
 Login CSRF/session round trip verified: HTTP 302
-==> Deploy complete at afad07a712dde778448cc9f43a2b85aa7da8796b
+==> Deploy complete at b997b0f8236e74c9597569e9e813ca6fef91507d
