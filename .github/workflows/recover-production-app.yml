@@ -1,0 +1,107 @@
+name: Recover Production App
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/recover-production.trigger'
+      - '.github/workflows/recover-production-app.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: recover-production-app
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover application service
+        id: recover
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          set +e
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_recover_key"
+          chmod 600 "$HOME/.ssh/unifco_recover_key"
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 -i "$HOME/.ssh/unifco_recover_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" 'bash -s' <<'REMOTE' > /tmp/unifco-recovery.log 2>&1
+          set -euo pipefail
+          cd /var/www/unifco_platform
+          echo "==> Recovery fetch main"
+          git fetch origin main
+          git reset --hard origin/main
+          echo "server_sha=$(git rev-parse HEAD)"
+          mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
+          chmod -R ug+rwX storage bootstrap/cache || true
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+          php artisan migrate --force
+          php artisan optimize:clear
+          echo "==> Supervisor state before recovery"
+          supervisorctl status unifco-app || true
+          echo "==> Stop supervisor program"
+          supervisorctl stop unifco-app || true
+          sleep 2
+          echo "==> Remove orphan listener on 8081 if present"
+          if command -v fuser >/dev/null 2>&1; then
+            fuser -k 8081/tcp || true
+          else
+            pkill -f 'php.*artisan serve.*8081' || true
+            pkill -f 'php -S .*8081' || true
+          fi
+          sleep 2
+          supervisorctl reread || true
+          supervisorctl update || true
+          echo "==> Start supervisor program"
+          supervisorctl start unifco-app
+          echo "==> Wait for login endpoint"
+          ready=0
+          for attempt in $(seq 1 30); do
+            if curl -fsSI http://127.0.0.1:8081/login >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          supervisorctl status unifco-app || true
+          if [ "$ready" -ne 1 ]; then
+            echo "ERROR: port 8081 did not become ready"
+            supervisorctl tail -100 unifco-app stderr || true
+            supervisorctl tail -100 unifco-app stdout || true
+            exit 1
+          fi
+          echo "==> Verify user admin migrations"
+          php artisan migrate:status | grep -q '000035_add_user_security_metadata'
+          php artisan migrate:status | grep -q '000036_add_user_session_version'
+          php artisan route:list --name=admin.users.import >/dev/null
+          php artisan route:list --name=admin.users.security >/dev/null
+          echo "recovery_result=success"
+          REMOTE
+          rc=$?
+          cat /tmp/unifco-recovery.log
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Record recovery result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p deploy/status
+          rc='${{ steps.recover.outputs.rc }}'
+          if [ "${rc:-999}" = '0' ]; then result=success; else result=failure; fi
+          printf 'source_sha=%s\nverified_at=%s\nresult=%s\nrecovery_rc=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "${rc:-not-run}" > deploy/status/user-admin-production-latest.txt
+          tail -n 220 /tmp/unifco-recovery.log > deploy/status/user-admin-production.log || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add deploy/status/user-admin-production-latest.txt deploy/status/user-admin-production.log
+          git commit -m 'Record user administration production recovery [skip ci]' || true
+          git pull --rebase origin main || true
+          git push origin HEAD:main
+      - name: Fail if recovery failed
+        if: always() && steps.recover.outputs.rc != '0'
+        run: exit 1
