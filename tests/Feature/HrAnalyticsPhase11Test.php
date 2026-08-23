@@ -41,8 +41,8 @@ class HrAnalyticsPhase11Test extends TestCase
         $this->actingAs($c['admin'])->post('/hr/analytics/workforce-plan',[
             'plan_year'=>now()->year,'department'=>'Operations','target_headcount'=>4,'budgeted_monthly_cost'=>30000,'target_saudi_pct'=>60,'notes'=>'Growth plan',
         ])->assertRedirect();
-        $this->assertDatabaseHas('hr_workforce_plans',['department'=>'Operations','target_headcount'=>4]);
-        $this->actingAs($c['admin'])->get('/hr/analytics')->assertOk()->assertSee('Growth plan',false)->assertSee('60.00%',false);
+        $this->assertDatabaseHas('hr_workforce_plans',['department'=>'Operations','target_headcount'=>4,'notes'=>'Growth plan']);
+        $this->actingAs($c['admin'])->get('/hr/analytics')->assertOk()->assertSee('Operations',false)->assertSee('60.00%',false)->assertSee('30,000',false);
     }
 
     public function test_phase11_routes_are_registered(): void
