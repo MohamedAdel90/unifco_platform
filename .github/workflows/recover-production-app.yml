@@ -56,7 +56,7 @@ jobs:
           for attempt in $(seq 1 30); do if curl -fsSI http://127.0.0.1:8081/login >/dev/null; then ready=1; break; fi; sleep 2; done
           supervisorctl status unifco-app || true
           if [ "$ready" -ne 1 ]; then supervisorctl tail -100 unifco-app stderr || true; exit 1; fi
-          echo "==> Verify HR release migrations and routes"
+          echo "==> Verify release migrations and routes"
           php artisan migrate:status | grep -q '000037_expand_hr_employee_core'
           php artisan migrate:status | grep -q '000038_build_hr_attendance_leave_phase2'
           php artisan migrate:status | grep -q '000039_build_hr_payroll_phase3'
@@ -67,6 +67,10 @@ jobs:
           php artisan migrate:status | grep -q '000044_build_hr_documents_phase9'
           php artisan migrate:status | grep -q '000045_build_hr_compliance_phase10'
           php artisan migrate:status | grep -q '000046_build_hr_analytics_phase11'
+          php artisan migrate:status | grep -q '000048_upgrade_public_request_experience'
+          php artisan route:list --name=public.request-service >/dev/null
+          php artisan route:list --name=public.request.store >/dev/null
+          php artisan route:list --name=public.request.received >/dev/null
           php artisan route:list --name=hr.dashboard >/dev/null
           php artisan route:list --name=hr.employees.show >/dev/null
           php artisan route:list --name=hr.attendance.index >/dev/null
@@ -84,7 +88,9 @@ jobs:
           php artisan route:list --name=hr.compliance.scan >/dev/null
           php artisan route:list --name=hr.analytics.index >/dev/null
           php artisan route:list --name=hr.analytics.plans.store >/dev/null
-          echo "==> Verify HR authenticated pages resolve to auth gate"
+          echo "==> Verify public request wizard and HR authenticated pages"
+          curl -fsS http://127.0.0.1:8081/request-service | grep -q 'requestWizard'
+          curl -fsS http://127.0.0.1:8081/request-service | grep -q 'مراجعة وإرسال'
           for path in dashboard attendance leave payroll missions settlements recruitment performance self-service manager-self-service documents self-service/documents compliance analytics; do
             curl -fsSI "http://127.0.0.1:8081/hr/$path" | grep -Eq 'HTTP/.* (200|302)'
           done
@@ -103,7 +109,7 @@ jobs:
           rc='${{ steps.recover.outputs.rc }}'
           if [ "${rc:-999}" = '0' ]; then result=success; else result=failure; fi
           printf 'source_sha=%s\nverified_at=%s\nresult=%s\nrecovery_rc=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "${rc:-not-run}" > deploy/status/user-admin-production-latest.txt
-          tail -n 480 /tmp/unifco-recovery.log > deploy/status/user-admin-production.log || true
+          tail -n 520 /tmp/unifco-recovery.log > deploy/status/user-admin-production.log || true
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add deploy/status/user-admin-production-latest.txt deploy/status/user-admin-production.log
