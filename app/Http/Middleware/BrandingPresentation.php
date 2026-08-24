@@ -39,6 +39,15 @@ body.sidebar-collapsed .brand-logo-wrap .brand-logo{width:50px!important;max-wid
 html[dir="rtl"] .top .logo{object-position:right center!important}
 .foot-logo{width:clamp(150px,16vw,190px)!important;height:72px!important;max-width:190px!important;object-fit:contain!important;padding:7px 10px!important;background:#fff!important;border-radius:10px!important}
 
+/* Public top bar ordering only: keep existing styling, dimensions, and colors. */
+.top .nav .brand-link{order:1!important;margin-right:0!important}
+.top .nav .nav-actions{order:2!important}
+.top .nav .nav-actions .lang{order:1!important}
+.top .nav .nav-actions .btn:not(.red){order:2!important}
+.top .nav .nav-actions .btn.red{order:3!important}
+.top .nav .nav-links{order:3!important;margin-left:auto!important}
+.top .nav .menu-toggle{order:4!important}
+
 /* Login page: preserve a premium wide-logo treatment. */
 .hero-logo{width:min(430px,78%)!important;height:165px!important;object-fit:contain!important;object-position:left center!important}
 .card-logo{width:min(290px,88%)!important;height:118px!important;object-fit:contain!important;padding:4px 8px!important}
