@@ -62,40 +62,26 @@ class BrandingSettingsTest extends TestCase
             ->assertSee('.card-logo',false)
             ->assertSee('.hero-logo',false);
 
-        $this->get('/')->assertOk()
+        $arabic = $this->get('/')->assertOk();
+        $arabic
             ->assertSee('dynamic-brand-logo-presentation',false)
             ->assertSee('.top .logo',false)
             ->assertSee('.foot-logo',false)
             ->assertSee('.top .nav .nav-actions .lang{order:1!important}',false)
             ->assertSee('.top .nav .nav-actions .btn:not(.red){order:2!important}',false)
             ->assertSee('.top .nav .nav-actions .btn.red{order:3!important}',false)
-            ->assertSee('public-primary-nav',false)
-            ->assertSee('الرئيسية',false)
-            ->assertSee('من نحن',false)
-            ->assertSee('الخدمات',false)
-            ->assertSee('عملاؤنا',false)
-            ->assertSee('المشاريع',false)
-            ->assertSee('الوظائف',false)
-            ->assertSee('تواصل معنا',false)
+            ->assertSee('<nav class="nav-links public-primary-nav"><a href="#home">الرئيسية</a><a href="#about">من نحن</a><a href="#services">الخدمات</a><a href="#industries">عملاؤنا</a><a href="#projects">المشاريع</a><a href="#careers">الوظائف</a><a href="#contact">تواصل معنا</a></nav>',false)
             ->assertDontSee('nav-dropdown-menu',false)
-            ->assertDontSee('القطاعات',false)
-            ->assertDontSee('المرافق',false)
             ->assertSee('تسجيل الدخول',false)
             ->assertSee('طلب خدمة',false)
             ->assertDontSee('دخول العملاء',false)
             ->assertDontSee('اطلب خدمة',false)
             ->assertDontSee('\\n</head>',false);
 
-        $this->get('/?lang=en')->assertOk()
-            ->assertSee('Home',false)
-            ->assertSee('About Us',false)
-            ->assertSee('Services',false)
-            ->assertSee('Our Clients',false)
-            ->assertSee('Projects',false)
-            ->assertSee('Careers',false)
-            ->assertSee('Contact us',false)
-            ->assertDontSee('Industries',false)
-            ->assertDontSee('Facilities',false)
+        $english = $this->get('/?lang=en')->assertOk();
+        $english
+            ->assertSee('<nav class="nav-links public-primary-nav"><a href="#home">Home</a><a href="#about">About Us</a><a href="#services">Services</a><a href="#industries">Our Clients</a><a href="#projects">Projects</a><a href="#careers">Careers</a><a href="#contact">Contact us</a></nav>',false)
+            ->assertDontSee('nav-dropdown-menu',false)
             ->assertSee('Sign In',false)
             ->assertSee('Request Service',false)
             ->assertDontSee('Client Login',false);
