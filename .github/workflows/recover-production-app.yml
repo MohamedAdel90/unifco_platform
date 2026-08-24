@@ -89,8 +89,9 @@ jobs:
           php artisan route:list --name=hr.analytics.index >/dev/null
           php artisan route:list --name=hr.analytics.plans.store >/dev/null
           echo "==> Verify public request wizard and HR authenticated pages"
-          curl -fsS http://127.0.0.1:8081/request-service | grep -q 'requestWizard'
-          curl -fsS http://127.0.0.1:8081/request-service | grep -q 'مراجعة وإرسال'
+          request_html="$(curl -fsS http://127.0.0.1:8081/request-service)"
+          grep -q 'requestWizard' <<< "$request_html"
+          grep -q 'مراجعة وإرسال' <<< "$request_html"
           for path in dashboard attendance leave payroll missions settlements recruitment performance self-service manager-self-service documents self-service/documents compliance analytics; do
             curl -fsSI "http://127.0.0.1:8081/hr/$path" | grep -Eq 'HTTP/.* (200|302)'
           done
