@@ -44,30 +44,49 @@ class PublicSiteController extends Controller
 
     public function store(Request $request, PublicRequestPipelineService $pipeline): RedirectResponse
     {
-        $isEmergency = $request->input('request_type') === 'EMERGENCY_MAINTENANCE';
+        $intent = $request->input('request_intent', 'QUOTATION');
+        $requestType = $request->input('request_type', 'QUOTATION');
+        $isEmergency = $requestType === 'EMERGENCY_MAINTENANCE';
 
         $data = $request->validate([
-            'request_type' => ['required','in:QUOTATION,EMERGENCY_MAINTENANCE'],
+            'request_type' => ['required','in:QUOTATION,SERVICE_REQUEST,CONSULTATION,EMERGENCY_MAINTENANCE'],
+            'request_intent' => ['required','in:QUOTATION,SERVICE_REQUEST,CONSULTATION'],
+            'service_family' => ['required','string','max:80'],
             'service_category' => ['required','string','max:120'],
+            'asset_type' => ['nullable','string','max:120'],
             'subject' => ['required','string','max:180'],
             'details' => ['required','string','max:5000'],
-            'site_city' => [$isEmergency ? 'required' : 'nullable','string','max:120'],
-            'site_address' => [$isEmergency ? 'required' : 'nullable','string','max:500'],
-            'latitude' => [$isEmergency ? 'required' : 'nullable','numeric','between:-90,90'],
-            'longitude' => [$isEmergency ? 'required' : 'nullable','numeric','between:-180,180'],
-            'requested_date' => [$isEmergency ? 'required' : 'nullable','date','after_or_equal:today'],
-            'requested_time' => [$isEmergency ? 'required' : 'nullable','date_format:H:i'],
-            'equipment_image' => [$isEmergency ? 'required' : 'nullable','image','mimes:jpg,jpeg,png,webp','max:8192'],
+            'urgency' => ['required','in:NORMAL,PRIORITY,URGENT,EMERGENCY'],
+            'site_city' => ['required','string','max:120'],
+            'site_address' => ['nullable','string','max:500'],
+            'latitude' => ['nullable','numeric','between:-90,90'],
+            'longitude' => ['nullable','numeric','between:-180,180'],
+            'requested_date' => ['nullable','date','after_or_equal:today'],
+            'requested_time' => ['nullable','date_format:H:i'],
+            'equipment_image' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:8192'],
             'supporting_images' => ['nullable','array','max:6'],
             'supporting_images.*' => ['image','mimes:jpg,jpeg,png,webp','max:8192'],
+            'supporting_documents' => ['nullable','array','max:5'],
+            'supporting_documents.*' => ['file','mimes:pdf,xlsx,xls,doc,docx','max:12288'],
             'company_name' => ['required','string','max:180'],
-            'responsible_person' => [$isEmergency ? 'required' : 'nullable','string','max:180'],
-            'commercial_registration' => ['required','string','max:60'],
+            'responsible_person' => ['required','string','max:180'],
+            'contact_role' => ['nullable','string','max:120'],
+            'commercial_registration' => ['nullable','string','max:60'],
             'email' => ['required','email','max:180'],
             'mobile' => ['required','string','max:32'],
         ]);
 
-        unset($data['equipment_image'], $data['supporting_images']);
+        if ($data['urgency'] === 'EMERGENCY') {
+            $data['request_type'] = 'EMERGENCY_MAINTENANCE';
+        } elseif ($intent === 'SERVICE_REQUEST') {
+            $data['request_type'] = 'SERVICE_REQUEST';
+        } elseif ($intent === 'CONSULTATION') {
+            $data['request_type'] = 'CONSULTATION';
+        } else {
+            $data['request_type'] = 'QUOTATION';
+        }
+
+        unset($data['equipment_image'], $data['supporting_images'], $data['supporting_documents']);
 
         if ($request->hasFile('equipment_image')) {
             $data['equipment_image_path'] = $request->file('equipment_image')->store('public-requests/equipment', 'public');
@@ -76,12 +95,22 @@ class PublicSiteController extends Controller
         if ($request->hasFile('supporting_images')) {
             $data['supporting_image_paths'] = collect($request->file('supporting_images'))
                 ->map(fn ($image) => $image->store('public-requests/supporting', 'public'))
-                ->values()
-                ->all();
+                ->values()->all();
         }
 
-        $data['reference_no'] = ($data['request_type'] === 'QUOTATION' ? 'RFQ-' : 'EMR-').now()->format('Ymd').'-'.strtoupper(Str::random(6));
-        $data['urgency'] = $data['request_type'] === 'EMERGENCY_MAINTENANCE' ? 'EMERGENCY' : 'NORMAL';
+        if ($request->hasFile('supporting_documents')) {
+            $data['supporting_document_paths'] = collect($request->file('supporting_documents'))
+                ->map(fn ($document) => $document->store('public-requests/documents', 'public'))
+                ->values()->all();
+        }
+
+        $prefix = match ($data['request_type']) {
+            'QUOTATION' => 'RFQ-',
+            'CONSULTATION' => 'CON-',
+            'SERVICE_REQUEST' => 'SRQ-',
+            default => 'EMR-',
+        };
+        $data['reference_no'] = $prefix.now()->format('Ymd').'-'.strtoupper(Str::random(6));
         $data['submitted_at'] = now();
         $data['status'] = 'NEW';
 
