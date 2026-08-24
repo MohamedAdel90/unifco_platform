@@ -53,6 +53,15 @@ class PublicServiceLinks
                 return $card;
             }
 
+            if ($slug === 'generators') {
+                $card = preg_replace(
+                    '/(<div class="service-image"><img src=")[^"]+(" alt=")/',
+                    '$1/images/home/generator-maintenance-card.svg$2',
+                    $card,
+                    1
+                ) ?? $card;
+            }
+
             $url = route('public.services.show', ['slug' => $slug, 'lang' => $locale]);
             return preg_replace('/<a class="more" href="[^"]*">/', '<a class="more" href="'.e($url).'">', $card, 1) ?? $card;
         }, $html) ?? $html;
