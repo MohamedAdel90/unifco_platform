@@ -1,4 +1,4 @@
-source_sha=9ba94f16b6e9d3bc66349650639a17e2b72cbf40
-verified_at=2026-08-24T10:03:10Z
-result=failure
-recovery_rc=23
+source_sha=932292ca49229850fd413c2b3148b0123fdfd1c5
+verified_at=2026-08-24T10:05:20Z
+result=success
+recovery_rc=0

@@ -2,9 +2,9 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Recovery fetch main
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   c84e60a..9ba94f1  main       -> origin/main
-HEAD is now at 9ba94f1 Verify public request wizard in production recovery
-server_sha=9ba94f16b6e9d3bc66349650639a17e2b72cbf40
+   4b1fc02..932292c  main       -> origin/main
+HEAD is now at 932292c Fix public wizard recovery verification pipe handling
+server_sha=932292ca49229850fd413c2b3148b0123fdfd1c5
 Composer plugins have been disabled for safety in this non-interactive session.
 Set COMPOSER_ALLOW_SUPERUSER=1 if you want to allow plugins to run as root/super user.
 Do not run Composer as root/super user! See https://getcomposer.org/root for details
@@ -27,24 +27,22 @@ Generating optimized autoload files
 78 packages you are using are looking for funding.
 Use the `composer fund` command to find out more!
 
-   INFO  Running migrations.  
-
-  2026_08_24_000048_upgrade_public_request_experience ........... 60.57ms DONE
+   INFO  Nothing to migrate.  
 
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.11ms DONE
-  cache .......................................................... 4.81ms DONE
-  compiled ....................................................... 1.00ms DONE
-  events ......................................................... 0.53ms DONE
-  routes ......................................................... 0.40ms DONE
-  views .......................................................... 8.02ms DONE
+  config ......................................................... 2.70ms DONE
+  cache .......................................................... 7.41ms DONE
+  compiled ....................................................... 7.41ms DONE
+  events ........................................................ 16.86ms DONE
+  routes ......................................................... 2.45ms DONE
+  views .......................................................... 6.65ms DONE
 
 unifco-app: stopped
 No config updates to processes
 unifco-app: started
-unifco-app                       RUNNING   pid 230217, uptime 0:00:02
+unifco-app                       RUNNING   pid 231168, uptime 0:00:03
 ==> Verify release migrations and routes
 ==> Verify public request wizard and HR authenticated pages
-curl: (23) Failure writing output to destination
+recovery_result=success
