@@ -1,3 +1,165 @@
+No composer.lock file present. Updating dependencies to latest instead of installing from lock file. See https://getcomposer.org/install for more information.
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 109 installs, 0 updates, 0 removals
+  - Locking brick/math (0.18.0)
+  - Locking carbonphp/carbon-doctrine-types (3.2.0)
+  - Locking dflydev/dot-access-data (v3.0.3)
+  - Locking doctrine/inflector (2.1.0)
+  - Locking doctrine/lexer (3.0.1)
+  - Locking dragonmantank/cron-expression (v3.6.0)
+  - Locking egulias/email-validator (4.0.4)
+  - Locking fakerphp/faker (v1.24.1)
+  - Locking filp/whoops (2.18.4)
+  - Locking fruitcake/php-cors (v1.4.0)
+  - Locking graham-campbell/result-type (v1.2.0)
+  - Locking guzzlehttp/guzzle (8.0.2)
+  - Locking guzzlehttp/promises (3.0.2)
+  - Locking guzzlehttp/psr7 (3.0.0)
+  - Locking guzzlehttp/uri-template (v2.0.0)
+  - Locking hamcrest/hamcrest-php (v3.0.0)
+  - Locking laravel/agent-detector (v2.0.2)
+  - Locking laravel/framework (v13.26.1)
+  - Locking laravel/pail (v1.2.7)
+  - Locking laravel/pao (v1.1.4)
+  - Locking laravel/pint (v1.30.5)
+  - Locking laravel/prompts (v0.3.23)
+  - Locking laravel/serializable-closure (v2.0.15)
+  - Locking laravel/tinker (v3.0.2)
+  - Locking league/commonmark (2.10.0)
+  - Locking league/config (v1.2.0)
+  - Locking league/flysystem (3.35.3)
+  - Locking league/flysystem-local (3.35.3)
+  - Locking league/mime-type-detection (1.17.0)
+  - Locking league/uri (7.8.1)
+  - Locking league/uri-interfaces (7.8.1)
+  - Locking mockery/mockery (1.6.15)
+  - Locking monolog/monolog (3.10.0)
+  - Locking myclabs/deep-copy (1.14.0)
+  - Locking nesbot/carbon (3.13.2)
+  - Locking nette/schema (v1.3.6)
+  - Locking nette/utils (v4.1.5)
+  - Locking nikic/php-parser (v5.8.0)
+  - Locking nunomaduro/collision (v8.9.5)
+  - Locking nunomaduro/termwind (v2.4.0)
+  - Locking phar-io/manifest (2.0.4)
+  - Locking phar-io/version (3.2.1)
+  - Locking phpoption/phpoption (1.10.0)
+  - Locking phpunit/php-code-coverage (12.5.7)
+  - Locking phpunit/php-file-iterator (6.0.1)
+  - Locking phpunit/php-invoker (6.0.0)
+  - Locking phpunit/php-text-template (5.0.0)
+  - Locking phpunit/php-timer (8.0.0)
+  - Locking phpunit/phpunit (12.5.33)
+  - Locking psr/clock (1.0.0)
+  - Locking psr/container (2.0.2)
+  - Locking psr/event-dispatcher (1.0.0)
+  - Locking psr/http-client (1.0.3)
+  - Locking psr/http-factory (1.1.0)
+  - Locking psr/http-message (2.0)
+  - Locking psr/log (3.0.2)
+  - Locking psr/simple-cache (3.0.0)
+  - Locking psy/psysh (v0.12.24)
+  - Locking ramsey/collection (2.1.1)
+  - Locking ramsey/uuid (4.9.3)
+  - Locking sebastian/cli-parser (4.2.1)
+  - Locking sebastian/comparator (7.1.8)
+  - Locking sebastian/complexity (5.0.0)
+  - Locking sebastian/diff (7.0.0)
+  - Locking sebastian/environment (8.1.2)
+  - Locking sebastian/exporter (7.0.3)
+  - Locking sebastian/global-state (8.0.3)
+  - Locking sebastian/lines-of-code (4.0.1)
+  - Locking sebastian/object-enumerator (7.0.0)
+  - Locking sebastian/object-reflector (5.0.0)
+  - Locking sebastian/recursion-context (7.0.1)
+  - Locking sebastian/type (6.0.4)
+  - Locking sebastian/version (6.0.0)
+  - Locking staabm/side-effects-detector (1.0.5)
+  - Locking symfony/clock (v8.1.0)
+  - Locking symfony/console (v8.1.5)
+  - Locking symfony/css-selector (v8.1.5)
+  - Locking symfony/deprecation-contracts (v3.7.1)
+  - Locking symfony/error-handler (v8.1.5)
+  - Locking symfony/event-dispatcher (v8.1.5)
+  - Locking symfony/event-dispatcher-contracts (v3.7.1)
+  - Locking symfony/finder (v8.1.5)
+  - Locking symfony/http-foundation (v8.1.5)
+  - Locking symfony/http-kernel (v8.1.5)
+  - Locking symfony/mailer (v8.1.5)
+  - Locking symfony/mime (v8.1.5)
+  - Locking symfony/polyfill-ctype (v1.37.0)
+  - Locking symfony/polyfill-intl-grapheme (v1.41.0)
+  - Locking symfony/polyfill-intl-idn (v1.38.1)
+  - Locking symfony/polyfill-intl-normalizer (v1.38.0)
+  - Locking symfony/polyfill-mbstring (v1.38.2)
+  - Locking symfony/polyfill-php80 (v1.37.0)
+  - Locking symfony/polyfill-php82 (v1.38.1)
+  - Locking symfony/polyfill-php84 (v1.38.1)
+  - Locking symfony/polyfill-php85 (v1.41.0)
+  - Locking symfony/polyfill-php86 (v1.41.0)
+  - Locking symfony/polyfill-uuid (v1.37.0)
+  - Locking symfony/process (v8.1.5)
+  - Locking symfony/routing (v8.1.5)
+  - Locking symfony/service-contracts (v3.7.1)
+  - Locking symfony/string (v8.1.2)
+  - Locking symfony/translation (v8.1.5)
+  - Locking symfony/translation-contracts (v3.7.1)
+  - Locking symfony/uid (v8.1.5)
+  - Locking symfony/var-dumper (v8.1.5)
+  - Locking theseer/tokenizer (2.0.1)
+  - Locking tijsverkoyen/css-to-inline-styles (v2.4.0)
+  - Locking vlucas/phpdotenv (v5.6.4)
+  - Locking voku/portable-ascii (2.1.1)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 109 installs, 0 updates, 0 removals
+  - Downloading doctrine/inflector (2.1.0)
+  - Downloading doctrine/lexer (3.0.1)
+  - Downloading dragonmantank/cron-expression (v3.6.0)
+  - Downloading symfony/deprecation-contracts (v3.7.1)
+  - Downloading psr/container (2.0.2)
+  - Downloading fakerphp/faker (v1.24.1)
+  - Downloading symfony/polyfill-mbstring (v1.38.2)
+  - Downloading symfony/http-foundation (v8.1.5)
+  - Downloading fruitcake/php-cors (v1.4.0)
+  - Downloading symfony/polyfill-php82 (v1.38.1)
+  - Downloading symfony/polyfill-php80 (v1.37.0)
+  - Downloading psr/http-message (2.0)
+  - Downloading psr/http-factory (1.1.0)
+  - Downloading psr/http-client (1.0.3)
+  - Downloading guzzlehttp/psr7 (3.0.0)
+  - Downloading guzzlehttp/promises (3.0.2)
+  - Downloading guzzlehttp/guzzle (8.0.2)
+  - Downloading guzzlehttp/uri-template (v2.0.0)
+  - Downloading symfony/polyfill-intl-normalizer (v1.38.0)
+  - Downloading symfony/polyfill-intl-grapheme (v1.41.0)
+  - Downloading symfony/polyfill-ctype (v1.37.0)
+  - Downloading symfony/string (v8.1.2)
+  - Downloading symfony/service-contracts (v3.7.1)
+  - Downloading symfony/polyfill-php85 (v1.41.0)
+  - Downloading symfony/console (v8.1.5)
+  - Downloading nunomaduro/termwind (v2.4.0)
+  - Downloading voku/portable-ascii (2.1.1)
+  - Downloading phpoption/phpoption (1.10.0)
+  - Downloading graham-campbell/result-type (v1.2.0)
+  - Downloading vlucas/phpdotenv (v5.6.4)
+  - Downloading symfony/css-selector (v8.1.5)
+  - Downloading tijsverkoyen/css-to-inline-styles (v2.4.0)
+  - Downloading symfony/var-dumper (v8.1.5)
+  - Downloading symfony/polyfill-uuid (v1.37.0)
+  - Downloading symfony/uid (v8.1.5)
+  - Downloading symfony/routing (v8.1.5)
+  - Downloading symfony/process (v8.1.5)
+  - Downloading symfony/polyfill-php86 (v1.41.0)
+  - Downloading symfony/polyfill-php84 (v1.38.1)
+  - Downloading symfony/polyfill-intl-idn (v1.38.1)
+  - Downloading symfony/mime (v8.1.5)
+  - Downloading psr/event-dispatcher (1.0.0)
+  - Downloading symfony/event-dispatcher-contracts (v3.7.1)
+  - Downloading symfony/event-dispatcher (v8.1.5)
+  - Downloading psr/log (3.0.2)
+  - Downloading egulias/email-validator (4.0.4)
   - Downloading symfony/mailer (v8.1.5)
   - Downloading symfony/error-handler (v8.1.5)
   - Downloading symfony/http-kernel (v8.1.5)
@@ -76,7 +238,7 @@
   - Installing psr/http-factory (1.1.0): Extracting archive
   - Installing psr/http-client (1.0.3): Extracting archive
   - Installing guzzlehttp/psr7 (3.0.0): Extracting archive
-  - Installing guzzlehttp/promises (3.0.1): Extracting archive
+  - Installing guzzlehttp/promises (3.0.2): Extracting archive
   - Installing guzzlehttp/guzzle (8.0.2): Extracting archive
   - Installing guzzlehttp/uri-template (v2.0.0): Extracting archive
   - Installing symfony/polyfill-intl-normalizer (v1.38.0): Extracting archive
@@ -200,56 +362,56 @@ No syntax errors detected in database/migrations/2026_08_24_000048_upgrade_publi
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 39.49ms DONE
+  Creating migration table ...................................... 63.36ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables .................. 105.74ms DONE
-  2026_08_14_000002_add_controls_and_transactions .............. 122.71ms DONE
-  2026_08_14_000003_add_operational_integration ................. 23.55ms DONE
-  2026_08_14_000005_create_platform_services_tables .............. 7.87ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ........ 83.84ms DONE
-  2026_08_15_000008_add_finance_core ........................... 198.73ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ....... 146.77ms DONE
-  2026_08_15_000010_add_hr_operations .......................... 207.76ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................ 331.73ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................ 343.13ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .............. 126.40ms DONE
-  2026_08_18_000014_add_public_site_requests ..................... 4.11ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines . 609.67ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ........... 448.53ms DONE
-  2026_08_18_000017_expand_customer_portal_operations ........... 62.39ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ........... 40.43ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  188.54ms DONE
-  2026_08_21_000020_add_emergency_request_details ............... 24.33ms DONE
-  2026_08_21_000021_add_customer_onboarding ..................... 15.75ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile ...... 7.32ms DONE
-  2026_08_21_000023_create_customer_messaging .................... 4.32ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 0.34ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ............... 115.12ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 656.07ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 13.80ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability .... 61.17ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  19.41ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 6.48ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation . 279.20ms DONE
-  2026_08_22_000032_add_work_order_part_requests ................ 80.88ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ...... 42.20ms DONE
-  2026_08_22_000034_add_user_permission_overrides ................ 9.99ms DONE
-  2026_08_22_000035_add_user_security_metadata ................... 8.95ms DONE
-  2026_08_22_000036_add_user_session_version ..................... 8.44ms DONE
-  2026_08_23_000037_expand_hr_employee_core .................... 205.64ms DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 224.38ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 .................... 126.36ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 .............. 16.13ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............... 7.09ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................. 68.31ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................. 16.98ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 .................. 128.72ms DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ................. 81.18ms DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................... 2.71ms DONE
-  2026_08_23_000047_create_branding_settings ..................... 1.34ms DONE
-  2026_08_24_000048_upgrade_public_request_experience ........... 20.80ms DONE
+  2026_08_14_000001_create_unifco_core_tables ................... 53.46ms DONE
+  2026_08_14_000002_add_controls_and_transactions ............... 43.48ms DONE
+  2026_08_14_000003_add_operational_integration .................. 8.03ms DONE
+  2026_08_14_000005_create_platform_services_tables .............. 6.00ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 10.82ms DONE
+  2026_08_15_000008_add_finance_core ............................ 11.16ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ........ 32.56ms DONE
+  2026_08_15_000010_add_hr_operations ........................... 20.45ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................. 17.30ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................. 24.79ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion ............... 50.75ms DONE
+  2026_08_18_000014_add_public_site_requests ..................... 3.83ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines .. 80.59ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ............ 60.83ms DONE
+  2026_08_18_000017_expand_customer_portal_operations ........... 47.85ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps ........... 27.89ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  7.63ms DONE
+  2026_08_21_000020_add_emergency_request_details ............... 14.47ms DONE
+  2026_08_21_000021_add_customer_onboarding ..................... 17.17ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile ...... 7.04ms DONE
+  2026_08_21_000023_create_customer_messaging ........................ 1s DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 0.38ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ................ 55.63ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation ........... 92.47ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.55ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability .... 31.34ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  130.83ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 7.37ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 66.01ms DONE
+  2026_08_22_000032_add_work_order_part_requests ................ 29.76ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ...... 17.39ms DONE
+  2026_08_22_000034_add_user_permission_overrides ................ 4.62ms DONE
+  2026_08_22_000035_add_user_security_metadata ................... 8.16ms DONE
+  2026_08_22_000036_add_user_session_version ..................... 2.04ms DONE
+  2026_08_23_000037_expand_hr_employee_core ..................... 74.57ms DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ............ 63.01ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 262.30ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 .............. 17.54ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............... 7.98ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................. 15.80ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................. 22.44ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................... 8.66ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................. 30.66ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................... 3.12ms DONE
+  2026_08_23_000047_create_branding_settings ..................... 1.44ms DONE
+  2026_08_24_000048_upgrade_public_request_experience ........... 25.72ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -259,242 +421,12 @@ No syntax errors detected in database/migrations/2026_08_24_000048_upgrade_publi
    INFO  Blade templates cached successfully.  
 
 
-  [39;41;1m FAIL [39;49;22m[39m Tests\Feature\PublicRequestWizardTest[39m
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\PublicRequestWizardTest[39m
   [32;1m✓[39;22m[90m [39m[90mpublic request page renders four step wizard[39m[90m                        [39m [90m0.50s[39m  
-  [31;1m⨯[39;22m[90m [39m[90mquotation can be submitted without commercial registration[39m[90m          [39m [90m0.30s[39m  
-  [31;1m⨯[39;22m[90m [39m[90mservice request uses selected priority and operations pipeline[39m[90m      [39m [90m0.26s[39m  
-  [31;1m⨯[39;22m[90m [39m[90msuccess page contains reference and next step copy[39m[90m                  [39m [90m0.01s[39m  
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\PublicRequestWizardTest[22m [90m>[39m q… [41;1m ModelNotFoundException [49;22m  
-[39;1m  No query results for model [App\Models\PublicServiceRequest].[39;22m
+  [32;1m✓[39;22m[90m [39m[90mquotation can be submitted without commercial registration[39m[90m          [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mservice request uses selected priority and operations pipeline[39m[90m      [39m [90m0.01s[39m  
+  [32;1m✓[39;22m[90m [39m[90msuccess page contains reference and next step copy[39m[90m                  [39m [90m0.01s[39m  
 
-  at [32mvendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php[39m:[32m786[39m
-    782▕         if (! is_null($model = $this->first($columns))) {
-    783▕             return $model;
-    784▕         }
-    785▕ 
-  ➜ 786▕         throw (new ModelNotFoundException)->setModel(get_class($this->model));
-    787▕     }
-    788▕ 
-    789▕     /**
-    790▕      * Execute the query and get the first result or call a callback.
-
-      [2m+4 vendor frames [22m
-  [33m5   [39m[39;1mtests/Feature/PublicRequestWizardTest.php[39;22m:[39;1m44[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\PublicRequestWizardTest[22m [90m>[39m service request uses sele…   
-[39;1m  Expected response status code [201, 301, 302, 303, 307, 308] but received 500.
-Failed asserting that false is true.
-
-The following exception occurred during the last request:
-
-PDOException: SQLSTATE[23000]: Integrity constraint violation: 19 NOT NULL constraint failed: public_service_requests.commercial_registration in /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Connection.php:601
-Stack trace:
-#0 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Connection.php(601): PDOStatement->execute()
-#1 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Connection.php(846): Illuminate\Database\Connection->{closure:Illuminate\Database\Connection::statement():590}()
-#2 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Connection.php(813): Illuminate\Database\Connection->runQueryCallback()
-#3 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Connection.php(590): Illuminate\Database\Connection->run()
-#4 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Connection.php(554): Illuminate\Database\Connection->statement()
-#5 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/Processor.php(32): Illuminate\Database\Connection->insert()
-#6 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(4257): Illuminate\Database\Query\Processors\Processor->processInsertGetId()
-#7 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(2281): Illuminate\Database\Query\Builder->insertGetId()
-#8 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1687): Illuminate\Database\Eloquent\Builder->__call()
-#9 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1603): Illuminate\Database\Eloquent\Model->insertAndSetId()
-#10 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1407): Illuminate\Database\Eloquent\Model->performInsert()
-#11 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1235): Illuminate\Database\Eloquent\Model->save()
-#12 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Support/helpers.php(393): Illuminate\Database\Eloquent\Builder->{closure:Illuminate\Database\Eloquent\Builder::create():1234}()
-#13 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1234): tap()
-#14 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php(23): Illuminate\Database\Eloquent\Builder->create()
-#15 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2844): Illuminate\Database\Eloquent\Model->forwardCallTo()
-#16 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2860): Illuminate\Database\Eloquent\Model->__call()
-#17 /home/runner/work/unifco_platform/unifco_platform/app/Http/Controllers/PublicSiteController.php(117): Illuminate\Database\Eloquent\Model::__callStatic()
-#18 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(46): App\Http\Controllers\PublicSiteController->store()
-#19 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Route.php(276): Illuminate\Routing\ControllerDispatcher->dispatch()
-#20 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Route.php(216): Illuminate\Routing\Route->runController()
-#21 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(822): Illuminate\Routing\Route->run()
-#22 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():821}()
-#23 /home/runner/work/unifco_platform/unifco_platform/app/Http/Middleware/BrandingPresentation.php(13): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
-#24 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\BrandingPresentation->handle()
-#25 /home/runner/work/unifco_platform/unifco_platform/app/Http/Middleware/EnsureUserSessionValid.php(29): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#26 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\EnsureUserSessionValid->handle()
-#27 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(52): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#28 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
-#29 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(168): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#30 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(93): Illuminate\Routing\Middleware\ThrottleRequests->handleRequest()
-#31 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\ThrottleRequests->handle()
-#32 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestForgery.php(104): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#33 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestForgery->handle()
-#34 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#35 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\View\Middleware\ShareErrorsFromSession->handle()
-#36 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#37 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate\Session\Middleware\StartSession->handleStatefulRequest()
-#38 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Session\Middleware\StartSession->handle()
-#39 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#40 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse->handle()
-#41 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#42 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\EncryptCookies->handle()
-#43 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#44 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate\Pipeline\Pipeline->then()
-#45 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(800): Illuminate\Routing\Router->runRouteWithinStack()
-#46 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(764): Illuminate\Routing\Router->runRoute()
-#47 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(753): Illuminate\Routing\Router->dispatchToRoute()
-#48 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
-#49 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
-#50 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
-#51 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
-#52 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
-#53 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#54 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
-#55 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
-#56 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#57 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
-#58 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#59 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
-#60 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#61 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
-#62 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#63 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
-#64 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#65 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks->handle()
-#66 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(28): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#67 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePathEncoding->handle()
-#68 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#69 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
-#70 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
-#71 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
-#72 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(397): Illuminate\Foundation\Testing\TestCase->call()
-#73 /home/runner/work/unifco_platform/unifco_platform/tests/Feature/PublicRequestWizardTest.php(55): Illuminate\Foundation\Testing\TestCase->post()
-#74 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(1318): Tests\Feature\PublicRequestWizardTest->test_service_request_uses_selected_priority_and_operations_pipeline()
-#75 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(1355): PHPUnit\Framework\TestCase->invokeTestMethod()
-#76 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
-#77 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(99): PHPUnit\Framework\TestCase->runBare()
-#78 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
-#79 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestSuite.php(374): PHPUnit\Framework\TestCase->run()
-#80 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
-#81 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/TextUI/Application.php(229): PHPUnit\TextUI\TestRunner->run()
-#82 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
-#83 {main}
-
-Next Illuminate\Database\QueryException: SQLSTATE[23000]: Integrity constraint violation: 19 NOT NULL constraint failed: public_service_requests.commercial_registration (Connection: sqlite, Database: :memory:, SQL: insert into "public_service_requests" ("request_type", "request_intent", "service_family", "service_category", "subject", "details", "urgency", "site_city", "company_name", "responsible_person", "email", "mobile", "reference_no", "submitted_at", "status", "updated_at", "created_at") values (SERVICE_REQUEST, SERVICE_REQUEST, MAINTENANCE, Corrective Maintenance, Pump abnormal vibration, Pump vibration increased during operation., URGENT, Dammam, Plant Client, Site Engineer, site@example.test, 0550000000, SRQ-20260824-9RN2F3, 2026-08-24 10:00:04, NEW, 2026-08-24 10:00:04, 2026-08-24 10:00:04)) in /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Connection.php:857
-Stack trace:
-#0 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Connection.php(813): Illuminate\Database\Connection->runQueryCallback()
-#1 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Connection.php(590): Illuminate\Database\Connection->run()
-#2 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Connection.php(554): Illuminate\Database\Connection->statement()
-#3 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/Processor.php(32): Illuminate\Database\Connection->insert()
-#4 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(4257): Illuminate\Database\Query\Processors\Processor->processInsertGetId()
-#5 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(2281): Illuminate\Database\Query\Builder->insertGetId()
-#6 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1687): Illuminate\Database\Eloquent\Builder->__call()
-#7 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1603): Illuminate\Database\Eloquent\Model->insertAndSetId()
-#8 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1407): Illuminate\Database\Eloquent\Model->performInsert()
-#9 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1235): Illuminate\Database\Eloquent\Model->save()
-#10 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Support/helpers.php(393): Illuminate\Database\Eloquent\Builder->{closure:Illuminate\Database\Eloquent\Builder::create():1234}()
-#11 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1234): tap()
-#12 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php(23): Illuminate\Database\Eloquent\Builder->create()
-#13 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2844): Illuminate\Database\Eloquent\Model->forwardCallTo()
-#14 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2860): Illuminate\Database\Eloquent\Model->__call()
-#15 /home/runner/work/unifco_platform/unifco_platform/app/Http/Controllers/PublicSiteController.php(117): Illuminate\Database\Eloquent\Model::__callStatic()
-#16 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(46): App\Http\Controllers\PublicSiteController->store()
-#17 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Route.php(276): Illuminate\Routing\ControllerDispatcher->dispatch()
-#18 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Route.php(216): Illuminate\Routing\Route->runController()
-#19 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(822): Illuminate\Routing\Route->run()
-#20 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():821}()
-#21 /home/runner/work/unifco_platform/unifco_platform/app/Http/Middleware/BrandingPresentation.php(13): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
-#22 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\BrandingPresentation->handle()
-#23 /home/runner/work/unifco_platform/unifco_platform/app/Http/Middleware/EnsureUserSessionValid.php(29): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#24 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\EnsureUserSessionValid->handle()
-#25 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(52): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#26 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
-#27 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(168): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#28 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(93): Illuminate\Routing\Middleware\ThrottleRequests->handleRequest()
-#29 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\ThrottleRequests->handle()
-#30 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestForgery.php(104): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#31 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestForgery->handle()
-#32 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#33 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\View\Middleware\ShareErrorsFromSession->handle()
-#34 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#35 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate\Session\Middleware\StartSession->handleStatefulRequest()
-#36 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Session\Middleware\StartSession->handle()
-#37 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#38 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse->handle()
-#39 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#40 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Cookie\Middleware\EncryptCookies->handle()
-#41 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#42 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate\Pipeline\Pipeline->then()
-#43 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(800): Illuminate\Routing\Router->runRouteWithinStack()
-#44 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(764): Illuminate\Routing\Router->runRoute()
-#45 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Routing/Router.php(753): Illuminate\Routing\Router->dispatchToRoute()
-#46 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
-#47 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
-#48 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
-#49 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
-#50 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
-#51 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#52 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
-#53 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
-#54 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#55 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
-#56 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#57 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
-#58 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#59 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
-#60 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#61 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
-#62 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#63 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks->handle()
-#64 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(28): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#65 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePathEncoding->handle()
-#66 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
-#67 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
-#68 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
-#69 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle()
-#70 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(397): Illuminate\Foundation\Testing\TestCase->call()
-#71 /home/runner/work/unifco_platform/unifco_platform/tests/Feature/PublicRequestWizardTest.php(55): Illuminate\Foundation\Testing\TestCase->post()
-#72 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(1318): Tests\Feature\PublicRequestWizardTest->test_service_request_uses_selected_priority_and_operations_pipeline()
-#73 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(1355): PHPUnit\Framework\TestCase->invokeTestMethod()
-#74 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
-#75 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(99): PHPUnit\Framework\TestCase->runBare()
-#76 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
-#77 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/Framework/TestSuite.php(374): PHPUnit\Framework\TestCase->run()
-#78 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
-#79 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/src/TextUI/Application.php(229): PHPUnit\TextUI\TestRunner->run()
-#80 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
-#81 {main}
-
-----------------------------------------------------------------------------------
-
-SQLSTATE[23000]: Integrity constraint violation: 19 NOT NULL constraint failed: public_service_requests.commercial_registration (Connection: sqlite, Database: :memory:, SQL: insert into "public_service_requests" ("request_type", "request_intent", "service_family", "service_category", "subject", "details", "urgency", "site_city", "company_name", "responsible_person", "email", "mobile", "reference_no", "submitted_at", "status", "updated_at", "created_at") values (SERVICE_REQUEST, SERVICE_REQUEST, MAINTENANCE, Corrective Maintenance, Pump abnormal vibration, Pump vibration increased during operation., URGENT, Dammam, Plant Client, Site Engineer, site@example.test, 0550000000, SRQ-20260824-9RN2F3, 2026-08-24 10:00:04, NEW, 2026-08-24 10:00:04, 2026-08-24 10:00:04))[39;22m
-
-  at [32mtests/Feature/PublicRequestWizardTest.php[39m:[32m68[39m
-     64▕             'company_name' => 'Plant Client',
-     65▕             'responsible_person' => 'Site Engineer',
-     66▕             'email' => 'site@example.test',
-     67▕             'mobile' => '0550000000',
-  ➜  68▕         ])->assertRedirect();
-     69▕ 
-     70▕         $record = PublicServiceRequest::firstOrFail();
-     71▕         $this->assertSame('SERVICE_REQUEST', $record->request_type);
-     72▕         $this->assertSame('URGENT', $record->urgency);
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\PublicRequestWizardTest[22m [90m>[39m success p… [41;1m QueryException [49;22m  
-[39;1m  SQLSTATE[23000]: Integrity constraint violation: 19 NOT NULL constraint failed: public_service_requests.commercial_registration (Connection: sqlite, Database: :memory:, SQL: insert into "public_service_requests" ("reference_no", "request_type", "request_intent", "service_family", "service_category", "subject", "details", "urgency", "site_city", "company_name", "responsible_person", "email", "mobile", "status", "submitted_at", "updated_at", "created_at") values (RFQ-TEST-001, QUOTATION, QUOTATION, FACILITY, Integrated Facility Management, FM proposal, Scope review, NORMAL, Riyadh, Client Co, Client Contact, client@example.test, 0500000000, NEW, 2026-08-24 10:00:04, 2026-08-24 10:00:04, 2026-08-24 10:00:04))[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Database/Connection.php[39m:[32m857[39m
-    853▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
-    854▕                 ? UniqueConstraintViolationException::class
-    855▕                 : QueryException::class;
-    856▕ 
-  ➜ 857▕             $exception = new $exceptionType(
-    858▕                 $this->getNameWithReadWriteType(),
-    859▕                 $query,
-    860▕                 $this->prepareBindings($bindings),
-    861▕                 $e,
-
-      [2m+19 vendor frames [22m
-  [33m20  [39m[39;1mtests/Feature/PublicRequestWizardTest.php[39;22m:[39;1m79[39;22m
-
-
-  [90mTests:[39m    [31;1m3 failed[39;22m[90m,[39m[39m [39m[32;1m1 passed[39;22m[90m (7 assertions)[39m
-  [90mDuration:[39m [39m1.16s[39m
+  [90mTests:[39m    [32;1m4 passed[39;22m[90m (21 assertions)[39m
+  [90mDuration:[39m [39m0.61s[39m
 
