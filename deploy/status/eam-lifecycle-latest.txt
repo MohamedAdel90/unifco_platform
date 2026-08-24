@@ -1,8 +1,8 @@
 release=warehouse-field-inventory-v3-consumption
-source_sha=630e28bde814f0a1977a9ada0bb76a82eac4351a
-verified_at=2026-08-24T12:44:42Z
+source_sha=f40980252e57d19573121897ca2e799f9bb2f8c7
+verified_at=2026-08-24T12:48:41Z
 result=failure
 source_validation=success
-laravel_preflight_rc=0
+laravel_preflight_rc=not-run
 homepage_validation=skipped
 deploy_rc=not-run
