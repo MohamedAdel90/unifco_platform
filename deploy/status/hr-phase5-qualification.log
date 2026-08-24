@@ -1,5 +1,3 @@
-  - Locking symfony/css-selector (v8.1.5)
-  - Locking symfony/deprecation-contracts (v3.7.1)
   - Locking symfony/error-handler (v8.1.5)
   - Locking symfony/event-dispatcher (v8.1.5)
   - Locking symfony/event-dispatcher-contracts (v3.7.1)
@@ -10,8 +8,8 @@
   - Locking symfony/mime (v8.1.5)
   - Locking symfony/polyfill-ctype (v1.37.0)
   - Locking symfony/polyfill-intl-grapheme (v1.41.0)
-  - Locking symfony/polyfill-intl-idn (v1.38.1)
-  - Locking symfony/polyfill-intl-normalizer (v1.38.0)
+  - Locking symfony/polyfill-intl-idn (v1.42.0)
+  - Locking symfony/polyfill-intl-normalizer (v1.42.0)
   - Locking symfony/polyfill-mbstring (v1.38.2)
   - Locking symfony/polyfill-php80 (v1.37.0)
   - Locking symfony/polyfill-php82 (v1.38.1)
@@ -29,7 +27,7 @@
   - Locking symfony/var-dumper (v8.1.5)
   - Locking theseer/tokenizer (2.0.1)
   - Locking tijsverkoyen/css-to-inline-styles (v2.4.0)
-  - Locking vlucas/phpdotenv (v5.6.4)
+  - Locking vlucas/phpdotenv (v5.7.0)
   - Locking voku/portable-ascii (2.1.1)
 Writing lock file
 Installing dependencies from lock file (including require-dev)
@@ -48,11 +46,11 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Downloading psr/http-message (2.0)
   - Downloading psr/http-factory (1.1.0)
   - Downloading psr/http-client (1.0.3)
-  - Downloading guzzlehttp/psr7 (3.0.0)
-  - Downloading guzzlehttp/promises (3.0.1)
-  - Downloading guzzlehttp/guzzle (8.0.2)
-  - Downloading guzzlehttp/uri-template (v2.0.0)
-  - Downloading symfony/polyfill-intl-normalizer (v1.38.0)
+  - Downloading guzzlehttp/psr7 (3.1.0)
+  - Downloading guzzlehttp/promises (3.0.2)
+  - Downloading guzzlehttp/guzzle (8.1.0)
+  - Downloading guzzlehttp/uri-template (v2.0.1)
+  - Downloading symfony/polyfill-intl-normalizer (v1.42.0)
   - Downloading symfony/polyfill-intl-grapheme (v1.41.0)
   - Downloading symfony/polyfill-ctype (v1.37.0)
   - Downloading symfony/string (v8.1.2)
@@ -61,9 +59,9 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Downloading symfony/console (v8.1.5)
   - Downloading nunomaduro/termwind (v2.4.0)
   - Downloading voku/portable-ascii (2.1.1)
-  - Downloading phpoption/phpoption (1.9.5)
-  - Downloading graham-campbell/result-type (v1.1.4)
-  - Downloading vlucas/phpdotenv (v5.6.4)
+  - Downloading phpoption/phpoption (1.10.0)
+  - Downloading graham-campbell/result-type (v1.2.0)
+  - Downloading vlucas/phpdotenv (v5.7.0)
   - Downloading symfony/css-selector (v8.1.5)
   - Downloading tijsverkoyen/css-to-inline-styles (v2.4.0)
   - Downloading symfony/var-dumper (v8.1.5)
@@ -73,7 +71,7 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Downloading symfony/process (v8.1.5)
   - Downloading symfony/polyfill-php86 (v1.41.0)
   - Downloading symfony/polyfill-php84 (v1.38.1)
-  - Downloading symfony/polyfill-intl-idn (v1.38.1)
+  - Downloading symfony/polyfill-intl-idn (v1.42.0)
   - Downloading symfony/mime (v8.1.5)
   - Downloading psr/event-dispatcher (1.0.0)
   - Downloading symfony/event-dispatcher-contracts (v3.7.1)
@@ -157,11 +155,11 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Installing psr/http-message (2.0): Extracting archive
   - Installing psr/http-factory (1.1.0): Extracting archive
   - Installing psr/http-client (1.0.3): Extracting archive
-  - Installing guzzlehttp/psr7 (3.0.0): Extracting archive
-  - Installing guzzlehttp/promises (3.0.1): Extracting archive
-  - Installing guzzlehttp/guzzle (8.0.2): Extracting archive
-  - Installing guzzlehttp/uri-template (v2.0.0): Extracting archive
-  - Installing symfony/polyfill-intl-normalizer (v1.38.0): Extracting archive
+  - Installing guzzlehttp/psr7 (3.1.0): Extracting archive
+  - Installing guzzlehttp/promises (3.0.2): Extracting archive
+  - Installing guzzlehttp/guzzle (8.1.0): Extracting archive
+  - Installing guzzlehttp/uri-template (v2.0.1): Extracting archive
+  - Installing symfony/polyfill-intl-normalizer (v1.42.0): Extracting archive
   - Installing symfony/polyfill-intl-grapheme (v1.41.0): Extracting archive
   - Installing symfony/polyfill-ctype (v1.37.0): Extracting archive
   - Installing symfony/string (v8.1.2): Extracting archive
@@ -170,9 +168,9 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Installing symfony/console (v8.1.5): Extracting archive
   - Installing nunomaduro/termwind (v2.4.0): Extracting archive
   - Installing voku/portable-ascii (2.1.1): Extracting archive
-  - Installing phpoption/phpoption (1.9.5): Extracting archive
-  - Installing graham-campbell/result-type (v1.1.4): Extracting archive
-  - Installing vlucas/phpdotenv (v5.6.4): Extracting archive
+  - Installing phpoption/phpoption (1.10.0): Extracting archive
+  - Installing graham-campbell/result-type (v1.2.0): Extracting archive
+  - Installing vlucas/phpdotenv (v5.7.0): Extracting archive
   - Installing symfony/css-selector (v8.1.5): Extracting archive
   - Installing tijsverkoyen/css-to-inline-styles (v2.4.0): Extracting archive
   - Installing symfony/var-dumper (v8.1.5): Extracting archive
@@ -182,7 +180,7 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Installing symfony/process (v8.1.5): Extracting archive
   - Installing symfony/polyfill-php86 (v1.41.0): Extracting archive
   - Installing symfony/polyfill-php84 (v1.38.1): Extracting archive
-  - Installing symfony/polyfill-intl-idn (v1.38.1): Extracting archive
+  - Installing symfony/polyfill-intl-idn (v1.42.0): Extracting archive
   - Installing symfony/mime (v8.1.5): Extracting archive
   - Installing psr/event-dispatcher (1.0.0): Extracting archive
   - Installing symfony/event-dispatcher-contracts (v3.7.1): Extracting archive
@@ -284,54 +282,56 @@ No syntax errors detected in database/migrations/2026_08_23_000041_build_hr_end_
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 10.47ms DONE
+  Creating migration table ...................................... 20.37ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables ................... 38.21ms DONE
-  2026_08_14_000002_add_controls_and_transactions ............... 37.10ms DONE
-  2026_08_14_000003_add_operational_integration .................. 5.74ms DONE
-  2026_08_14_000005_create_platform_services_tables .............. 5.59ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ......... 7.78ms DONE
-  2026_08_15_000008_add_finance_core ............................. 8.14ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ........ 29.03ms DONE
-  2026_08_15_000010_add_hr_operations ........................... 17.80ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................. 14.10ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................. 21.18ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion ............... 41.14ms DONE
-  2026_08_18_000014_add_public_site_requests ..................... 3.04ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines .. 68.00ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ............ 57.07ms DONE
-  2026_08_18_000017_expand_customer_portal_operations ........... 40.78ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ........... 22.74ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  7.05ms DONE
-  2026_08_21_000020_add_emergency_request_details ............... 13.96ms DONE
-  2026_08_21_000021_add_customer_onboarding ..................... 12.97ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile ...... 7.12ms DONE
-  2026_08_21_000023_create_customer_messaging .................... 3.43ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 0.43ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ................ 43.24ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation ........... 77.01ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.63ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability .... 30.03ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  13.06ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 6.40ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 57.21ms DONE
-  2026_08_22_000032_add_work_order_part_requests ................ 21.29ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ...... 15.68ms DONE
-  2026_08_22_000034_add_user_permission_overrides ................ 3.35ms DONE
-  2026_08_22_000035_add_user_security_metadata ................... 8.55ms DONE
-  2026_08_22_000036_add_user_session_version ..................... 2.17ms DONE
-  2026_08_23_000037_expand_hr_employee_core .................... 124.05ms DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ............ 56.62ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 ..................... 53.65ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ............... 6.28ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............... 5.74ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................. 12.34ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................. 13.61ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 .................... 7.86ms DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ................. 93.72ms DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................... 2.24ms DONE
+  2026_08_14_000001_create_unifco_core_tables .................. 653.10ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 450.87ms DONE
+  2026_08_14_000003_add_operational_integration ................ 306.27ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 136.21ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 90.88ms DONE
+  2026_08_15_000008_add_finance_core ........................... 417.81ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 648.60ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 431.34ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 218.72ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 244.03ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 502.49ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 21.26ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 436.61ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 495.29ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 646.20ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 613.34ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  149.79ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 174.76ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 290.97ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 147.41ms DONE
+  2026_08_21_000023_create_customer_messaging ................... 76.52ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.39ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 859.51ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 407.15ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 58.23ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 554.18ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  309.83ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 43.22ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 787.14ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 504.82ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 509.28ms DONE
+  2026_08_22_000034_add_user_permission_overrides ............... 95.16ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 361.31ms DONE
+  2026_08_22_000036_add_user_session_version .................... 87.17ms DONE
+  2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 575.36ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 444.04ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 448.53ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 350.17ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 655.88ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 772.67ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 334.10ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 504.99ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 113.06ms DONE
+  2026_08_23_000047_create_branding_settings .................... 25.79ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 172.48ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -342,39 +342,39 @@ No syntax errors detected in database/migrations/2026_08_23_000041_build_hr_end_
 
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEndOfServicePhase5Test[39m
-  [32;1m✓[39;22m[90m [39m[90mstandard termination calculates full saudi eos and snapshot[39m[90m         [39m [90m1.15s[39m  
-  [32;1m✓[39;22m[90m [39m[90mresignation tiers and article 80 are enforced[39m[90m                       [39m [90m0.54s[39m  
-  [32;1m✓[39;22m[90m [39m[90mfinal settlement requires independent approval and can be marked pa[39m[90m…[39m [90m0.55s[39m  
-  [32;1m✓[39;22m[90m [39m[90mfinal settlements are tenant scoped[39m[90m                                 [39m [90m1.05s[39m  
+  [32;1m✓[39;22m[90m [39m[90mstandard termination calculates full saudi eos and snapshot[39m[90m        [39m [90m19.67s[39m  
+  [32;1m✓[39;22m[90m [39m[90mresignation tiers and article 80 are enforced[39m[90m                       [39m [90m0.57s[39m  
+  [32;1m✓[39;22m[90m [39m[90mfinal settlement requires independent approval and can be marked pa[39m[90m…[39m [90m0.58s[39m  
+  [32;1m✓[39;22m[90m [39m[90mfinal settlements are tenant scoped[39m[90m                                 [39m [90m1.08s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase5 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrBusinessTripsPhase4Test[39m
   [32;1m✓[39;22m[90m [39m[90mphase4 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmission request calculates per diem and links business context[39m[90m      [39m [90m0.54s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmission 360 renders business context[39m[90m                                [39m [90m0.55s[39m  
-  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own mission and full settlement is auditab[39m[90m…[39m [90m0.56s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmissions are tenant scoped[39m[90m                                          [39m [90m1.05s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmission request calculates per diem and links business context[39m[90m      [39m [90m0.55s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmission 360 renders business context[39m[90m                                [39m [90m0.57s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own mission and full settlement is auditab[39m[90m…[39m [90m0.60s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmissions are tenant scoped[39m[90m                                          [39m [90m1.08s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrPayrollPhase3Test[39m
-  [32;1m✓[39;22m[90m [39m[90mpayroll policy and run calculate saudi gosi and overtime[39m[90m            [39m [90m0.29s[39m  
-  [32;1m✓[39;22m[90m [39m[90mpayroll workspace and routes render[39m[90m                                 [39m [90m0.28s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll policy and run calculate saudi gosi and overtime[39m[90m            [39m [90m0.32s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll workspace and routes render[39m[90m                                 [39m [90m0.29s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrAttendanceLeavePhase2Test[39m
-  [32;1m✓[39;22m[90m [39m[90mattendance workspace calculates late minutes and overtime[39m[90m           [39m [90m0.28s[39m  
-  [32;1m✓[39;22m[90m [39m[90mramadan schedule uses reduced daily target[39m[90m                          [39m [90m0.28s[39m  
-  [32;1m✓[39;22m[90m [39m[90mleave policy balance accrual request and approval[39m[90m                   [39m [90m0.30s[39m  
-  [32;1m✓[39;22m[90m [39m[90mphase2 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
+  [32;1m✓[39;22m[90m [39m[90mattendance workspace calculates late minutes and overtime[39m[90m           [39m [90m0.30s[39m  
+  [32;1m✓[39;22m[90m [39m[90mramadan schedule uses reduced daily target[39m[90m                          [39m [90m0.30s[39m  
+  [32;1m✓[39;22m[90m [39m[90mleave policy balance accrual request and approval[39m[90m                   [39m [90m0.33s[39m  
+  [32;1m✓[39;22m[90m [39m[90mphase2 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEmployeeCorePhase1Test[39m
-  [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render new ui[39m[90m                   [39m [90m0.29s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee master can store saudi hr fields and render employee 360[39m[90m   [39m [90m0.29s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.29s[39m  
-  [32;1m✓[39;22m[90m [39m[90mhr phase1 routes are registered[39m[90m                                     [39m [90m0.01s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render new ui[39m[90m                   [39m [90m0.32s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee master can store saudi hr fields and render employee 360[39m[90m   [39m [90m0.31s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.31s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr phase1 routes are registered[39m[90m                                     [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\Wave10HrOperationsTest[39m
-  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.55s[39m  
-  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.55s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.58s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.59s[39m  
 
   [90mTests:[39m    [32;1m22 passed[39;22m[90m (163 assertions)[39m
-  [90mDuration:[39m [39m9.52s[39m
+  [90mDuration:[39m [39m28.48s[39m
 
