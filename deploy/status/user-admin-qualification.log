@@ -51,7 +51,7 @@
   - Installing guzzlehttp/psr7 (3.1.0): Extracting archive
   - Installing guzzlehttp/promises (3.0.2): Extracting archive
   - Installing guzzlehttp/guzzle (8.1.0): Extracting archive
-  - Installing guzzlehttp/uri-template (v2.0.0): Extracting archive
+  - Installing guzzlehttp/uri-template (v2.0.1): Extracting archive
   - Installing symfony/polyfill-intl-normalizer (v1.42.0): Extracting archive
   - Installing symfony/polyfill-intl-grapheme (v1.41.0): Extracting archive
   - Installing symfony/polyfill-ctype (v1.37.0): Extracting archive
@@ -63,7 +63,7 @@
   - Installing voku/portable-ascii (2.1.1): Extracting archive
   - Installing phpoption/phpoption (1.10.0): Extracting archive
   - Installing graham-campbell/result-type (v1.2.0): Extracting archive
-  - Installing vlucas/phpdotenv (v5.6.4): Extracting archive
+  - Installing vlucas/phpdotenv (v5.7.0): Extracting archive
   - Installing symfony/css-selector (v8.1.5): Extracting archive
   - Installing tijsverkoyen/css-to-inline-styles (v2.4.0): Extracting archive
   - Installing symfony/var-dumper (v8.1.5): Extracting archive
@@ -179,56 +179,56 @@ No syntax errors detected in database/migrations/2026_08_22_000036_add_user_sess
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 66.93ms DONE
+  Creating migration table ....................................... 9.13ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables .................. 102.60ms DONE
-  2026_08_14_000002_add_controls_and_transactions ............... 39.89ms DONE
-  2026_08_14_000003_add_operational_integration .................. 6.26ms DONE
-  2026_08_14_000005_create_platform_services_tables ............. 52.56ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ........ 10.36ms DONE
-  2026_08_15_000008_add_finance_core ............................ 13.85ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ........ 48.87ms DONE
-  2026_08_15_000010_add_hr_operations ........................... 18.72ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................. 15.29ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................. 22.25ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion ............... 60.88ms DONE
-  2026_08_18_000014_add_public_site_requests .................... 17.48ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines .. 68.96ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ............ 59.30ms DONE
-  2026_08_18_000017_expand_customer_portal_operations ........... 62.94ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ........... 23.61ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  6.69ms DONE
-  2026_08_21_000020_add_emergency_request_details ............... 11.97ms DONE
-  2026_08_21_000021_add_customer_onboarding ..................... 12.95ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile ...... 7.00ms DONE
-  2026_08_21_000023_create_customer_messaging .................... 3.68ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 0.33ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ................ 57.44ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 103.28ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.47ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability .... 28.51ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  11.75ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 44.12ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation . 132.01ms DONE
-  2026_08_22_000032_add_work_order_part_requests ............... 299.00ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ...... 15.82ms DONE
-  2026_08_22_000034_add_user_permission_overrides ................ 3.21ms DONE
-  2026_08_22_000035_add_user_security_metadata ................... 7.43ms DONE
-  2026_08_22_000036_add_user_session_version ..................... 1.86ms DONE
-  2026_08_23_000037_expand_hr_employee_core .................... 290.45ms DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ............ 56.71ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 ..................... 58.20ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ............... 6.86ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............... 6.11ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................. 14.09ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................. 14.32ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 .................. 518.68ms DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ................ 263.79ms DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................... 2.20ms DONE
-  2026_08_23_000047_create_branding_settings ..................... 1.12ms DONE
-  2026_08_24_000048_upgrade_public_request_experience ........... 22.38ms DONE
+  2026_08_14_000001_create_unifco_core_tables .................. 611.06ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 416.54ms DONE
+  2026_08_14_000003_add_operational_integration ................ 253.30ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 118.63ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 81.07ms DONE
+  2026_08_15_000008_add_finance_core ........................... 344.59ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 567.58ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 377.20ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 209.16ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 212.46ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 468.58ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 19.31ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 411.66ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 462.55ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 557.95ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 595.49ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  140.99ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 171.70ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 261.98ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 139.63ms DONE
+  2026_08_21_000023_create_customer_messaging ................... 68.01ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.35ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 820.42ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 406.07ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 56.88ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 528.97ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  279.10ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 39.76ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 749.08ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 418.32ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 413.73ms DONE
+  2026_08_22_000034_add_user_permission_overrides ............... 80.77ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 333.40ms DONE
+  2026_08_22_000036_add_user_session_version .................... 81.10ms DONE
+  2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 494.16ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 364.16ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 380.34ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 358.28ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 589.98ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 647.33ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 303.72ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 498.18ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 106.71ms DONE
+  2026_08_23_000047_create_branding_settings .................... 26.66ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 161.30ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -239,22 +239,22 @@ No syntax errors detected in database/migrations/2026_08_22_000036_add_user_sess
 
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\UserAdministrationTest[39m
-  [32;1m✓[39;22m[90m [39m[90madmin can create edit suspend reset and open profile[39m[90m                [39m [90m1.31s[39m  
-  [32;1m✓[39;22m[90m [39m[90mpermission override changes effective access[39m[90m                        [39m [90m0.42s[39m  
-  [32;1m✓[39;22m[90m [39m[90muser admin is tenant scoped and non admin is blocked[39m[90m                [39m [90m0.82s[39m  
-  [32;1m✓[39;22m[90m [39m[90madmin cannot suspend lock or revoke own active session[39m[90m              [39m [90m0.23s[39m  
-  [32;1m✓[39;22m[90m [39m[90msession revocation invalidates existing authenticated session[39m[90m       [39m [90m0.42s[39m  
-  [32;1m✓[39;22m[90m [39m[90mcsv import and export are tenant scoped[39m[90m                             [39m [90m0.42s[39m  
-  [32;1m✓[39;22m[90m [39m[90msuccessful login records last login and session version[39m[90m             [39m [90m0.41s[39m  
+  [32;1m✓[39;22m[90m [39m[90madmin can create edit suspend reset and open profile[39m[90m               [39m [90m17.05s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpermission override changes effective access[39m[90m                        [39m [90m0.47s[39m  
+  [32;1m✓[39;22m[90m [39m[90muser admin is tenant scoped and non admin is blocked[39m[90m                [39m [90m0.91s[39m  
+  [32;1m✓[39;22m[90m [39m[90madmin cannot suspend lock or revoke own active session[39m[90m              [39m [90m0.25s[39m  
+  [32;1m✓[39;22m[90m [39m[90msession revocation invalidates existing authenticated session[39m[90m       [39m [90m0.47s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcsv import and export are tenant scoped[39m[90m                             [39m [90m0.47s[39m  
+  [32;1m✓[39;22m[90m [39m[90msuccessful login records last login and session version[39m[90m             [39m [90m0.47s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\SidebarNavigationTest[39m
-  [32;1m✓[39;22m[90m [39m[90madmin sidebar renders grouped platform navigation[39m[90m                   [39m [90m0.23s[39m  
-  [32;1m✓[39;22m[90m [39m[90msidebar enhancer is available outside dashboard[39m[90m                     [39m [90m0.21s[39m  
-  [32;1m✓[39;22m[90m [39m[90musers workspace is real administration screen[39m[90m                       [39m [90m0.42s[39m  
-  [32;1m✓[39;22m[90m [39m[90mnon admin cannot open users workspace[39m[90m                               [39m [90m0.42s[39m  
+  [32;1m✓[39;22m[90m [39m[90madmin sidebar renders grouped platform navigation[39m[90m                   [39m [90m0.28s[39m  
+  [32;1m✓[39;22m[90m [39m[90msidebar enhancer is available outside dashboard[39m[90m                     [39m [90m0.24s[39m  
+  [32;1m✓[39;22m[90m [39m[90musers workspace is real administration screen[39m[90m                       [39m [90m0.47s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnon admin cannot open users workspace[39m[90m                               [39m [90m0.46s[39m  
   [32;1m✓[39;22m[90m [39m[90moperational wave routes are registered[39m[90m                              [39m [90m0.01s[39m  
-  [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.22s[39m  
+  [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.27s[39m  
 
   [90mTests:[39m    [32;1m13 passed[39;22m[90m (90 assertions)[39m
-  [90mDuration:[39m [39m5.61s[39m
+  [90mDuration:[39m [39m21.90s[39m
 
