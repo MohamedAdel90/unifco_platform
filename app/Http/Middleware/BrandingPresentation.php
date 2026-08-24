@@ -48,6 +48,13 @@ html[dir="rtl"] .top .logo{object-position:right center!important}
 .top .nav .nav-links{order:3!important;margin-left:auto!important}
 .top .nav .menu-toggle{order:4!important}
 
+/* Expanded homepage services: keep card language, but make 13 services balance across rows. */
+.service-grid{grid-template-columns:repeat(auto-fit,minmax(205px,1fr))!important;gap:14px!important}
+.service-card{min-width:0!important}
+.service-image{height:150px!important}
+.service-body b{min-height:42px!important;font-size:11px!important}
+.service-body p{min-height:72px!important;font-size:9.5px!important}
+
 /* Login page: preserve a premium wide-logo treatment. */
 .hero-logo{width:min(430px,78%)!important;height:165px!important;object-fit:contain!important;object-position:left center!important}
 .card-logo{width:min(290px,88%)!important;height:118px!important;object-fit:contain!important;padding:4px 8px!important}
@@ -61,12 +68,14 @@ html[dir="rtl"] .top .logo{object-position:right center!important}
   .brand-logo-wrap{min-height:104px!important;padding:7px 9px!important}
   .brand-logo-wrap .brand-logo{width:min(238px,96%)!important;max-width:238px!important;height:88px!important;max-height:88px!important}
   .top .logo{width:170px!important;height:70px!important;max-width:170px!important}
+  .service-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 @media(max-width:600px){
   .hero-logo{width:min(300px,80%)!important;height:120px!important}
   .card-logo{width:min(240px,86%)!important;height:100px!important}
   .top .logo{width:150px!important;height:62px!important;max-width:150px!important}
   .foot-logo{width:150px!important;height:64px!important}
+  .service-grid{grid-template-columns:1fr!important}
 }
 </style>
 HTML;
