@@ -66,6 +66,18 @@ class BrandingSettingsTest extends TestCase
             ->assertSee('dynamic-brand-logo-presentation',false)
             ->assertSee('.top .logo',false)
             ->assertSee('.foot-logo',false)
+            ->assertSee('.top .nav .nav-actions .lang{order:1!important}',false)
+            ->assertSee('.top .nav .nav-actions .btn:not(.red){order:2!important}',false)
+            ->assertSee('.top .nav .nav-actions .btn.red{order:3!important}',false)
+            ->assertSee('تسجيل الدخول',false)
+            ->assertSee('طلب خدمة',false)
+            ->assertDontSee('دخول العملاء',false)
+            ->assertDontSee('اطلب خدمة',false)
             ->assertDontSee('\\n</head>',false);
+
+        $this->get('/?lang=en')->assertOk()
+            ->assertSee('Sign In',false)
+            ->assertSee('Request Service',false)
+            ->assertDontSee('Client Login',false);
     }
 }
