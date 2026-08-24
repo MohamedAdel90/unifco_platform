@@ -13,12 +13,14 @@ return new class extends Migration {
             $table->string('asset_type', 120)->nullable()->after('service_family');
             $table->string('contact_role', 120)->nullable()->after('responsible_person');
             $table->json('supporting_document_paths')->nullable()->after('supporting_image_paths');
+            $table->string('commercial_registration', 60)->nullable()->change();
         });
     }
 
     public function down(): void
     {
         Schema::table('public_service_requests', function (Blueprint $table) {
+            $table->string('commercial_registration', 60)->nullable(false)->change();
             $table->dropColumn(['request_intent','service_family','asset_type','contact_role','supporting_document_paths']);
         });
     }
