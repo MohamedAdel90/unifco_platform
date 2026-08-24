@@ -30,6 +30,12 @@ class PublicSiteController extends Controller
                 'تغطي خدماتنا القطاعات التي تعتمد على جاهزية المرافق واستمرارية الطاقة الكهربائية.',
                 $html
             );
+
+            $html = str_replace(
+                '<div class="kicker">خدماتنا</div><h2>خدمات كهربائية وصيانة وإدارة مرافق متكاملة</h2><p>من أنظمة الطاقة الحرجة والصيانة المتخصصة إلى إدارة الأصول والمرافق</p>',
+                '<h2>خدماتنا</h2><p>من أنظمة الطاقة الحرجة والصيانة المتخصصة إلى إدارة الأصول والمرافق</p>',
+                $html
+            );
         }
 
         $cairo = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><style id="unifco-cairo-font">html,body,button,input,select,textarea{font-family:"Cairo",Tahoma,Arial,sans-serif}</style>';
