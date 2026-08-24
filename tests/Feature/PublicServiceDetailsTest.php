@@ -35,11 +35,16 @@ class PublicServiceDetailsTest extends TestCase
             ->assertSee('Emergency Support', false);
     }
 
-    public function test_home_service_cards_link_to_detail_pages(): void
+    public function test_home_service_cards_link_to_detail_pages_and_use_supplied_generator_photo(): void
     {
         $this->get('/?lang=en')->assertOk()
             ->assertSee('/services/transformer-maintenance?lang=en', false)
             ->assertSee('/services/ups-systems?lang=en', false)
-            ->assertSee('/services/facility-management?lang=en', false);
+            ->assertSee('/services/facility-management?lang=en', false)
+            ->assertSee('/images/home/generator-maintenance-card.svg', false);
+
+        $this->get('/?lang=ar')->assertOk()
+            ->assertSee('/services/generators?lang=ar', false)
+            ->assertSee('/images/home/generator-maintenance-card.svg', false);
     }
 }
