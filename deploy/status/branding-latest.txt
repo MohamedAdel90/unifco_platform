@@ -1,4 +1,4 @@
-source_sha=a420b0279f4e5d5c7be08ed79f2d3ebd228e54e0
-verified_at=2026-08-24T11:25:25Z
-result=success
-test_rc=0
+source_sha=517ad79b73716aade78393403fcdeca51e4e6c64
+verified_at=2026-08-24T11:43:22Z
+result=failure
+test_rc=1
