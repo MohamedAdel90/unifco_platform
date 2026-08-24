@@ -45,7 +45,7 @@ return new class extends Migration {
             $t->decimal('issued_quantity',19,4)->default(0);
             $t->decimal('received_quantity',19,4)->default(0);
             $t->timestamps();
-            $t->unique(['work_order_part_request_id','item_id']);
+            $t->unique(['work_order_part_request_id','item_id'],'part_request_lines_request_item_uq');
         });
 
         foreach (['parts.request.create','parts.request.read','parts.request.receive'] as $permission) {

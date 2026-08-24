@@ -70,6 +70,29 @@ upsert_env SESSION_DOMAIN ""
 
 echo "==> Skipping UNIFCO logo materialization by request"
 
+echo "==> Clearing cached configuration"
+php artisan optimize:clear
+
+echo "==> Waiting for the database"
+database_ready=0
+for attempt in $(seq 1 20); do
+    if php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); Illuminate\Support\Facades\DB::select("SELECT 1");' >/dev/null 2>&1; then
+        database_ready=1
+        break
+    fi
+    sleep 2
+done
+if [ "$database_ready" -ne 1 ]; then
+    echo "ERROR: database did not become ready"
+    exit 1
+fi
+
+database_driver=$(php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo Illuminate\Support\Facades\DB::connection()->getDriverName();')
+if [ "$database_driver" != "mysql" ]; then
+    echo "ERROR: deployment requires MySQL; configured driver is $database_driver"
+    exit 1
+fi
+
 echo "==> Repairing customer messaging schema first"
 php artisan migrate --force --path=database/migrations/2026_08_21_000023_create_customer_messaging.php
 
@@ -110,32 +133,28 @@ php artisan unifco:check-spare-reorder-alerts
 
 echo "==> Verifying operational, warehouse and part lifecycle tables"
 php -r '
-$db=new PDO("sqlite:".getcwd()."/database/database.sqlite");
+require "vendor/autoload.php";
+$app=require "bootstrap/app.php";
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 $required=["customer_conversations","customer_messages","asset_failures","work_order_checklist_results","asset_spare_parts","stock_balances","warehouses","warehouse_bins","inventory_transfer_orders","inventory_transfer_order_lines","warehouse_user_assignments","work_order_part_requests","work_order_part_request_lines","asset_part_installations","work_order_part_returns"];
-$quoted=implode(",",array_map(fn($x)=>"\"$x\"",$required));
-$tables=$db->query("SELECT name FROM sqlite_master WHERE type=\"table\" AND name IN ($quoted)")->fetchAll(PDO::FETCH_COLUMN);
-if(count($tables)!==count($required)){fwrite(STDERR,"ERROR: one or more required operational/warehouse/part lifecycle tables are missing after migrate\n");exit(1);}
-$cols=$db->query("PRAGMA table_info(asset_spare_parts)")->fetchAll(PDO::FETCH_ASSOC);
-$names=array_column($cols,"name");
-foreach(["preferred_warehouse_code","last_reorder_notified_at","reorder_alert_status"] as $col){if(!in_array($col,$names,true)){fwrite(STDERR,"ERROR: reorder column missing: $col\n");exit(1);}}
-$partCols=$db->query("PRAGMA table_info(work_order_part_request_lines)")->fetchAll(PDO::FETCH_ASSOC);
-$partNames=array_column($partCols,"name");
-foreach(["consumed_quantity","returned_quantity"] as $col){if(!in_array($col,$partNames,true)){fwrite(STDERR,"ERROR: part lifecycle column missing: $col\n");exit(1);}}
-$wh=$db->query("SELECT code,location_type FROM warehouses WHERE code=\"MAIN-WH\" LIMIT 1")->fetch(PDO::FETCH_ASSOC);
-if(!$wh || $wh["location_type"]!=="CENTRAL"){fwrite(STDERR,"ERROR: MAIN-WH bootstrap missing\n");exit(1);}
-$user=$db->query("SELECT role FROM users WHERE email=\"storekeeper@unifco.local\" LIMIT 1")->fetch(PDO::FETCH_ASSOC);
-if(!$user || $user["role"]!=="STOREKEEPER"){fwrite(STDERR,"ERROR: storekeeper bootstrap missing\n");exit(1);}
-$issuePermission=$db->query("SELECT COUNT(*) FROM role_permissions WHERE role_code=\"STOREKEEPER\" AND permission_code=\"parts.request.issue\"")->fetchColumn();
-if((int)$issuePermission<1){fwrite(STDERR,"ERROR: storekeeper part request permission missing\n");exit(1);}
-$consumePermission=$db->query("SELECT COUNT(*) FROM role_permissions WHERE role_code=\"TECHNICIAN\" AND permission_code=\"parts.consume\"")->fetchColumn();
-if((int)$consumePermission<1){fwrite(STDERR,"ERROR: technician part consume permission missing\n");exit(1);}
+foreach($required as $table){if(!Illuminate\Support\Facades\Schema::hasTable($table)){fwrite(STDERR,"ERROR: required table missing: $table\n");exit(1);}}
+foreach(["preferred_warehouse_code","last_reorder_notified_at","reorder_alert_status"] as $col){if(!Illuminate\Support\Facades\Schema::hasColumn("asset_spare_parts",$col)){fwrite(STDERR,"ERROR: reorder column missing: $col\n");exit(1);}}
+foreach(["consumed_quantity","returned_quantity"] as $col){if(!Illuminate\Support\Facades\Schema::hasColumn("work_order_part_request_lines",$col)){fwrite(STDERR,"ERROR: part lifecycle column missing: $col\n");exit(1);}}
+$wh=Illuminate\Support\Facades\DB::table("warehouses")->where("code","MAIN-WH")->first();
+if(!$wh || $wh->location_type!=="CENTRAL"){fwrite(STDERR,"ERROR: MAIN-WH bootstrap missing\n");exit(1);}
+$user=Illuminate\Support\Facades\DB::table("users")->where("email","storekeeper@unifco.local")->first();
+if(!$user || $user->role!=="STOREKEEPER"){fwrite(STDERR,"ERROR: storekeeper bootstrap missing\n");exit(1);}
+$issuePermission=Illuminate\Support\Facades\DB::table("role_permissions")->where("role_code","STOREKEEPER")->where("permission_code","parts.request.issue")->count();
+if($issuePermission<1){fwrite(STDERR,"ERROR: storekeeper part request permission missing\n");exit(1);}
+$consumePermission=Illuminate\Support\Facades\DB::table("role_permissions")->where("role_code","TECHNICIAN")->where("permission_code","parts.consume")->count();
+if($consumePermission<1){fwrite(STDERR,"ERROR: technician part consume permission missing\n");exit(1);}
 echo "Operational warehouse, technician request, consume and return lifecycle ready\n";
 '
 
 echo "==> Ensuring public upload storage link"
 php artisan storage:link || true
 
-echo "==> Clearing caches after environment repair"
+echo "==> Clearing caches after deployment"
 php artisan optimize:clear
 
 echo "==> Restarting $APP_NAME"

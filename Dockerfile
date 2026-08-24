@@ -1,6 +1,6 @@
 FROM php:8.3-fpm-alpine
-RUN apk add --no-cache icu-dev libzip-dev oniguruma-dev postgresql-dev nginx supervisor \
-    && docker-php-ext-install pdo_pgsql intl mbstring opcache zip
+RUN apk add --no-cache icu-dev libzip-dev oniguruma-dev sqlite-dev nginx supervisor \
+    && docker-php-ext-install pdo_mysql pdo_sqlite intl mbstring opcache zip
 WORKDIR /var/www/html
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY . .

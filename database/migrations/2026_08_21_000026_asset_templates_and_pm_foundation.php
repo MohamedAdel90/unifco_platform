@@ -23,7 +23,7 @@ return new class extends Migration {
 
         Schema::create('asset_category_template_fields', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('asset_category_template_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('asset_category_template_id')->constrained(indexName: 'asset_tpl_fields_template_fk')->cascadeOnDelete();
             $table->string('field_key',100);
             $table->string('label',160);
             $table->string('data_type',20)->default('TEXT');
@@ -32,7 +32,7 @@ return new class extends Migration {
             $table->unsignedInteger('sort_order')->default(100);
             $table->text('help_text')->nullable();
             $table->timestamps();
-            $table->unique(['asset_category_template_id','field_key']);
+            $table->unique(['asset_category_template_id','field_key'],'asset_tpl_fields_template_key_uq');
         });
 
         if (! Schema::hasColumn('assets','asset_category_template_id')) {

@@ -25,7 +25,7 @@ return new class extends Migration {
         Schema::create('purchase_requisition_lines', function (Blueprint $t) {
             $t->id(); $t->foreignId('purchase_requisition_id')->constrained()->cascadeOnDelete(); $t->unsignedInteger('line_no');
             $t->foreignId('item_id')->constrained()->restrictOnDelete(); $t->decimal('quantity',19,4); $t->decimal('estimated_unit_price',19,2)->default(0);
-            $t->timestamps(); $t->unique(['purchase_requisition_id','line_no']);
+            $t->timestamps(); $t->unique(['purchase_requisition_id','line_no'],'pr_lines_requisition_line_uq');
         });
         Schema::create('warehouses', function (Blueprint $t) {
             $t->id(); $t->foreignId('tenant_id')->constrained()->cascadeOnDelete(); $t->foreignId('organization_id')->nullable()->constrained()->nullOnDelete();

@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->foreignId('completed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
-            $table->unique(['work_order_id','maintenance_plan_task_id']);
+            $table->unique(['work_order_id','maintenance_plan_task_id'],'wo_checklist_work_order_task_uq');
         });
 
         Schema::create('work_order_attachments', function (Blueprint $table) {

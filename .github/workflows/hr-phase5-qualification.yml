@@ -23,11 +23,27 @@ permissions:
 jobs:
   qualify:
     runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: unifco_testing
+      DB_USERNAME: unifco_test
+      DB_PASSWORD: Unifco_Test!2026
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_DATABASE: unifco_testing, MYSQL_USER: unifco_test, MYSQL_PASSWORD: 'Unifco_Test!2026', MYSQL_ROOT_PASSWORD: 'Unifco_Root!2026'}
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uunifco_test -pUnifco_Test!2026 --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
+          extensions: pdo_mysql
           coverage: none
       - name: Qualify HR Phase 5
         id: test
@@ -39,8 +55,6 @@ jobs:
             mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs database
             composer install --no-interaction --prefer-dist --no-progress
             cp .env.example .env
-            rm -f database/database.sqlite
-            touch database/database.sqlite
             php artisan key:generate --force
             php -l app/Http/Controllers/HR/FinalSettlementController.php
             php -l app/Models/EndOfServicePolicy.php

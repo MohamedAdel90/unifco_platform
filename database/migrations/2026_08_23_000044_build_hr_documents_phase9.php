@@ -14,7 +14,7 @@ return new class extends Migration {
             $t->string('code',80); $t->string('name',160); $t->string('document_type',40); $t->string('language',5)->default('EN');
             $t->string('subject',220); $t->text('body_template'); $t->boolean('include_salary')->default(false); $t->string('status',20)->default('ACTIVE');
             $t->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete(); $t->timestamps();
-            $t->unique(['tenant_id','code']); $t->index(['tenant_id','document_type','language','status']);
+            $t->unique(['tenant_id','code']); $t->index(['tenant_id','document_type','language','status'],'hr_doc_tpl_tenant_type_lang_status_idx');
         });
 
         Schema::create('hr_service_requests', function (Blueprint $t) {

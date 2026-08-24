@@ -56,13 +56,13 @@ return new class extends Migration {
 
         Schema::create('inventory_transfer_order_lines', function (Blueprint $t) {
             $t->id();
-            $t->foreignId('inventory_transfer_order_id')->constrained()->cascadeOnDelete();
+            $t->foreignId('inventory_transfer_order_id')->constrained(indexName: 'transfer_lines_order_fk')->cascadeOnDelete();
             $t->foreignId('item_id')->constrained()->restrictOnDelete();
             $t->decimal('requested_quantity',19,4);
             $t->decimal('issued_quantity',19,4)->default(0);
             $t->decimal('received_quantity',19,4)->default(0);
             $t->timestamps();
-            $t->unique(['inventory_transfer_order_id','item_id']);
+            $t->unique(['inventory_transfer_order_id','item_id'],'transfer_lines_order_item_uq');
         });
 
         Schema::create('warehouse_user_assignments', function (Blueprint $t) {
