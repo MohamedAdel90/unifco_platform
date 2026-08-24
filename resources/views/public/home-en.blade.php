@@ -26,9 +26,9 @@ $home = [
     ],
     'about_button' => 'Discover UNIFCO',
     'stats' => [['+','Sites Served'], ['+','Assets Managed'], ['98%','SLA Compliance'], ['24/7','Operations Support']],
-    'services_kicker' => 'OUR SERVICES',
-    'services_title' => 'Electrical, maintenance and facility services under one roof',
-    'services_text' => 'From critical power and specialist maintenance to facility and asset management',
+    'services_kicker' => '',
+    'services_title' => 'Our Services',
+    'services_text' => 'From critical power systems and specialist maintenance to asset and facility management',
     'services' => [
         ['01', '/images/home/service-photo-v14-04.webp', 'Transformers', 'Inspection, maintenance and operation of electrical transformers to improve reliability and performance.'],
         ['02', '/images/home/service-photo-v14-04.webp', 'UPS Systems', 'Supply, inspection and maintenance of UPS and uninterrupted power systems for critical loads.'],
