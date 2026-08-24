@@ -21,6 +21,18 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('مراجعة وإرسال', false);
     }
 
+    public function test_service_dropdown_has_server_rendered_fallback_and_step_validation_logic(): void
+    {
+        $this->get('/request-service')
+            ->assertOk()
+            ->assertSee('data-family="FACILITY"', false)
+            ->assertSee('إدارة مرافق متكاملة', false)
+            ->assertSee('data-family="ELECTRICAL"', false)
+            ->assertSee('مولدات كهربائية', false)
+            ->assertSee('function filterServices', false)
+            ->assertSee('function validatePanel', false);
+    }
+
     public function test_quotation_can_be_submitted_without_commercial_registration(): void
     {
         $response = $this->post('/service-requests', [
