@@ -2,9 +2,9 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Recovery fetch main
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   6c53853..73a1136  main       -> origin/main
-HEAD is now at 73a1136 Deploy resilient public ticket issuance
-server_sha=73a11367b71593f41e7ff26e14ac27509ed7415b
+   73a1136..f986c9e  main       -> origin/main
+HEAD is now at f986c9e Deploy final ticket issuance fix
+server_sha=f986c9e521ab4a84f5aa5f6ec0a3d21f8a92edf9
 Composer plugins have been disabled for safety in this non-interactive session.
 Set COMPOSER_ALLOW_SUPERUSER=1 if you want to allow plugins to run as root/super user.
 Do not run Composer as root/super user! See https://getcomposer.org/root for details
@@ -32,15 +32,16 @@ Use the `composer fund` command to find out more!
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.24ms DONE
-  cache .......................................................... 2.66ms DONE
-  compiled ....................................................... 0.80ms DONE
-  events ......................................................... 0.47ms DONE
+  config ......................................................... 1.08ms DONE
+  cache .......................................................... 2.57ms DONE
+  compiled ....................................................... 0.95ms DONE
+  events ......................................................... 0.44ms DONE
   routes ......................................................... 0.50ms DONE
-  views .......................................................... 3.60ms DONE
+  views .......................................................... 3.90ms DONE
 
 unifco-app: stopped
 No config updates to processes
 unifco-app: started
-unifco-app                       RUNNING   pid 540700, uptime 0:00:02
+unifco-app                       RUNNING   pid 541229, uptime 0:00:02
 ==> Verify request page reuses homepage header except login
+recovery_result=success
