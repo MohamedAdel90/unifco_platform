@@ -19,12 +19,12 @@ Lock file operations: 109 installs, 0 updates, 0 removals
   - Locking guzzlehttp/uri-template (v2.0.1)
   - Locking hamcrest/hamcrest-php (v3.0.0)
   - Locking laravel/agent-detector (v2.0.2)
-  - Locking laravel/framework (v13.26.1)
+  - Locking laravel/framework (v13.27.0)
   - Locking laravel/pail (v1.2.7)
   - Locking laravel/pao (v1.1.4)
   - Locking laravel/pint (v1.30.5)
-  - Locking laravel/prompts (v0.3.23)
-  - Locking laravel/serializable-closure (v2.0.15)
+  - Locking laravel/prompts (v0.3.24)
+  - Locking laravel/serializable-closure (v2.0.16)
   - Locking laravel/tinker (v3.0.2)
   - Locking league/commonmark (2.10.0)
   - Locking league/config (v1.2.0)
@@ -46,7 +46,7 @@ Lock file operations: 109 installs, 0 updates, 0 removals
   - Locking phar-io/version (3.2.1)
   - Locking phpoption/phpoption (1.10.0)
   - Locking phpunit/php-code-coverage (12.5.7)
-  - Locking phpunit/php-file-iterator (6.0.1)
+  - Locking phpunit/php-file-iterator (6.0.2)
   - Locking phpunit/php-invoker (6.0.0)
   - Locking phpunit/php-text-template (5.0.0)
   - Locking phpunit/php-timer (8.0.0)
@@ -65,7 +65,7 @@ Lock file operations: 109 installs, 0 updates, 0 removals
   - Locking sebastian/cli-parser (4.2.1)
   - Locking sebastian/comparator (7.1.8)
   - Locking sebastian/complexity (5.0.0)
-  - Locking sebastian/diff (7.0.0)
+  - Locking sebastian/diff (7.0.1)
   - Locking sebastian/environment (8.1.2)
   - Locking sebastian/exporter (7.0.3)
   - Locking sebastian/global-state (8.0.3)
@@ -185,9 +185,9 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Downloading dflydev/dot-access-data (v3.0.3)
   - Downloading league/config (v1.2.0)
   - Downloading league/commonmark (2.10.0)
-  - Downloading laravel/serializable-closure (v2.0.15)
-  - Downloading laravel/prompts (v0.3.23)
-  - Downloading laravel/framework (v13.26.1)
+  - Downloading laravel/serializable-closure (v2.0.16)
+  - Downloading laravel/prompts (v0.3.24)
+  - Downloading laravel/framework (v13.27.0)
   - Downloading laravel/pail (v1.2.7)
   - Downloading laravel/agent-detector (v2.0.2)
   - Downloading laravel/pao (v1.1.4)
@@ -208,13 +208,13 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Downloading sebastian/global-state (8.0.3)
   - Downloading sebastian/exporter (7.0.3)
   - Downloading sebastian/environment (8.1.2)
-  - Downloading sebastian/diff (7.0.0)
+  - Downloading sebastian/diff (7.0.1)
   - Downloading sebastian/comparator (7.1.8)
   - Downloading sebastian/cli-parser (4.2.1)
   - Downloading phpunit/php-timer (8.0.0)
   - Downloading phpunit/php-text-template (5.0.0)
   - Downloading phpunit/php-invoker (6.0.0)
-  - Downloading phpunit/php-file-iterator (6.0.1)
+  - Downloading phpunit/php-file-iterator (6.0.2)
   - Downloading theseer/tokenizer (2.0.1)
   - Downloading sebastian/lines-of-code (4.0.1)
   - Downloading sebastian/complexity (5.0.0)
@@ -294,9 +294,9 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Installing dflydev/dot-access-data (v3.0.3): Extracting archive
   - Installing league/config (v1.2.0): Extracting archive
   - Installing league/commonmark (2.10.0): Extracting archive
-  - Installing laravel/serializable-closure (v2.0.15): Extracting archive
-  - Installing laravel/prompts (v0.3.23): Extracting archive
-  - Installing laravel/framework (v13.26.1): Extracting archive
+  - Installing laravel/serializable-closure (v2.0.16): Extracting archive
+  - Installing laravel/prompts (v0.3.24): Extracting archive
+  - Installing laravel/framework (v13.27.0): Extracting archive
   - Installing laravel/pail (v1.2.7): Extracting archive
   - Installing laravel/agent-detector (v2.0.2): Extracting archive
   - Installing laravel/pao (v1.1.4): Extracting archive
@@ -317,13 +317,13 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Installing sebastian/global-state (8.0.3): Extracting archive
   - Installing sebastian/exporter (7.0.3): Extracting archive
   - Installing sebastian/environment (8.1.2): Extracting archive
-  - Installing sebastian/diff (7.0.0): Extracting archive
+  - Installing sebastian/diff (7.0.1): Extracting archive
   - Installing sebastian/comparator (7.1.8): Extracting archive
   - Installing sebastian/cli-parser (4.2.1): Extracting archive
   - Installing phpunit/php-timer (8.0.0): Extracting archive
   - Installing phpunit/php-text-template (5.0.0): Extracting archive
   - Installing phpunit/php-invoker (6.0.0): Extracting archive
-  - Installing phpunit/php-file-iterator (6.0.1): Extracting archive
+  - Installing phpunit/php-file-iterator (6.0.2): Extracting archive
   - Installing theseer/tokenizer (2.0.1): Extracting archive
   - Installing sebastian/lines-of-code (4.0.1): Extracting archive
   - Installing sebastian/complexity (5.0.0): Extracting archive
@@ -362,56 +362,57 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 10.52ms DONE
+  Creating migration table ...................................... 20.35ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables .................. 701.66ms DONE
-  2026_08_14_000002_add_controls_and_transactions .............. 425.64ms DONE
-  2026_08_14_000003_add_operational_integration ................ 299.92ms DONE
-  2026_08_14_000005_create_platform_services_tables ............ 135.84ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ........ 94.85ms DONE
-  2026_08_15_000008_add_finance_core ........................... 388.61ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ....... 652.95ms DONE
-  2026_08_15_000010_add_hr_operations .......................... 429.16ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................ 231.35ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................ 255.11ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .............. 540.76ms DONE
-  2026_08_18_000014_add_public_site_requests .................... 29.21ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines . 466.56ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ........... 493.78ms DONE
-  2026_08_18_000017_expand_customer_portal_operations .......... 617.60ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps .......... 651.31ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  149.75ms DONE
-  2026_08_21_000020_add_emergency_request_details .............. 179.65ms DONE
-  2026_08_21_000021_add_customer_onboarding .................... 280.67ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile .... 146.54ms DONE
-  2026_08_21_000023_create_customer_messaging ................... 76.34ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 2.09ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ............... 852.43ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 449.11ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 56.76ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability ... 567.87ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  318.91ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 48.69ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation . 769.56ms DONE
-  2026_08_22_000032_add_work_order_part_requests ............... 512.14ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 488.33ms DONE
-  2026_08_22_000034_add_user_permission_overrides .............. 106.40ms DONE
-  2026_08_22_000035_add_user_security_metadata ................. 341.42ms DONE
-  2026_08_22_000036_add_user_session_version .................... 80.21ms DONE
+  2026_08_14_000001_create_unifco_core_tables .................. 710.07ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 441.78ms DONE
+  2026_08_14_000003_add_operational_integration ................ 311.15ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 142.63ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 89.85ms DONE
+  2026_08_15_000008_add_finance_core ........................... 396.84ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 680.45ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 500.02ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 234.08ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 253.25ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 537.07ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 20.78ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 481.19ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 509.75ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 637.07ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 649.53ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  156.13ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 188.49ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 282.81ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 146.04ms DONE
+  2026_08_21_000023_create_customer_messaging ................... 80.43ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.06ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 939.42ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 472.17ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 58.47ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 583.90ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  316.47ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 53.22ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 795.85ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 523.38ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 506.43ms DONE
+  2026_08_22_000034_add_user_permission_overrides ............... 96.83ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 348.89ms DONE
+  2026_08_22_000036_add_user_session_version .................... 84.50ms DONE
   2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 583.84ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 .................... 457.07ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ............. 453.79ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 364.97ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................ 704.91ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................ 787.08ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 .................. 373.24ms DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ................ 559.96ms DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................. 167.27ms DONE
-  2026_08_23_000047_create_branding_settings .................... 28.74ms DONE
-  2026_08_24_000048_upgrade_public_request_experience .......... 169.83ms DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 586.51ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 472.79ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 444.52ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 365.34ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 693.53ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 797.05ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 367.61ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 568.80ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 128.73ms DONE
+  2026_08_23_000047_create_branding_settings .................... 31.57ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 185.52ms DONE
+  2026_08_25_000049_rebuild_public_request_single_page ......... 319.45ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -422,14 +423,14 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
 
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrAnalyticsPhase11Test[39m
-  [32;1m✓[39;22m[90m [39m[90mhr analytics dashboard calculates workforce signals[39m[90m                [39m [90m19.45s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr analytics dashboard calculates workforce signals[39m[90m                [39m [90m20.26s[39m  
   [32;1m✓[39;22m[90m [39m[90mworkforce plan can be saved and compared to actuals[39m[90m                 [39m [90m0.29s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase11 routes are registered[39m[90m                                       [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrCompliancePhase10Test[39m
-  [32;1m✓[39;22m[90m [39m[90mcompliance dashboard is available to hr admin[39m[90m                       [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcompliance dashboard is available to hr admin[39m[90m                       [39m [90m0.27s[39m  
   [32;1m✓[39;22m[90m [39m[90mscan creates actionable readiness cases without inventing official[39m[90m… [39m [90m0.29s[39m  
-  [32;1m✓[39;22m[90m [39m[90mqiwa and gosi evidence can be recorded then scan clears source find[39m[90m…[39m [90m0.33s[39m  
+  [32;1m✓[39;22m[90m [39m[90mqiwa and gosi evidence can be recorded then scan clears source find[39m[90m…[39m [90m0.32s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase10 routes are registered[39m[90m                                       [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrDocumentsPhase9Test[39m
@@ -445,14 +446,14 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
   [32;1m✓[39;22m[90m [39m[90memployee portal is scoped to linked employee and own payroll[39m[90m        [39m [90m0.74s[39m  
   [32;1m✓[39;22m[90m [39m[90memployee can submit leave against own balance only[39m[90m                  [39m [90m0.72s[39m  
   [32;1m✓[39;22m[90m [39m[90memployee can submit mission and update only own goal[39m[90m                [39m [90m0.73s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmanager portal exposes direct reports but not outside team or payro[39m[90m…[39m [90m0.72s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmanager can decide direct report leave but cannot touch outside tea[39m[90m…[39m [90m0.74s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmanager portal exposes direct reports but not outside team or payro[39m[90m…[39m [90m0.73s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmanager can decide direct report leave but cannot touch outside tea[39m[90m…[39m [90m0.73s[39m  
   [32;1m✓[39;22m[90m [39m[90munlinked user cannot open employee self service[39m[90m                     [39m [90m0.94s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase8 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrPerformancePhase7Test[39m
   [32;1m✓[39;22m[90m [39m[90mgoals reviews and independent approval work[39m[90m                         [39m [90m0.52s[39m  
-  [32;1m✓[39;22m[90m [39m[90mprobation skill and development records are employee scoped[39m[90m         [39m [90m0.52s[39m  
+  [32;1m✓[39;22m[90m [39m[90mprobation skill and development records are employee scoped[39m[90m         [39m [90m0.51s[39m  
   [32;1m✓[39;22m[90m [39m[90mcareer action requires independent approval and effective date befo[39m[90m…[39m [90m0.51s[39m  
   [32;1m✓[39;22m[90m [39m[90mperformance records are tenant scoped[39m[90m                               [39m [90m0.95s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase7 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
@@ -467,7 +468,7 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
   [32;1m✓[39;22m[90m [39m[90mstandard termination calculates full saudi eos and snapshot[39m[90m         [39m [90m0.50s[39m  
   [32;1m✓[39;22m[90m [39m[90mresignation tiers and article 80 are enforced[39m[90m                       [39m [90m0.50s[39m  
   [32;1m✓[39;22m[90m [39m[90mfinal settlement requires independent approval and can be marked pa[39m[90m…[39m [90m0.51s[39m  
-  [32;1m✓[39;22m[90m [39m[90mfinal settlements are tenant scoped[39m[90m                                 [39m [90m0.95s[39m  
+  [32;1m✓[39;22m[90m [39m[90mfinal settlements are tenant scoped[39m[90m                                 [39m [90m0.96s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase5 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrBusinessTripsPhase4Test[39m
@@ -490,7 +491,7 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEmployeeCorePhase1Test[39m
   [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render new ui[39m[90m                   [39m [90m0.29s[39m  
   [32;1m✓[39;22m[90m [39m[90memployee master can store saudi hr fields and render employee 360[39m[90m   [39m [90m0.27s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.28s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.27s[39m  
   [32;1m✓[39;22m[90m [39m[90mhr phase1 routes are registered[39m[90m                                     [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\Wave10HrOperationsTest[39m
@@ -506,5 +507,5 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
   [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.28s[39m  
 
   [90mTests:[39m    [32;1m58 passed[39;22m[90m (374 assertions)[39m
-  [90mDuration:[39m [39m44.79s[39m
+  [90mDuration:[39m [39m45.62s[39m
 
