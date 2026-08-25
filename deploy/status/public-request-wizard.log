@@ -16,7 +16,7 @@ Lock file operations: 109 installs, 0 updates, 0 removals
   - Locking guzzlehttp/guzzle (8.1.0)
   - Locking guzzlehttp/promises (3.0.2)
   - Locking guzzlehttp/psr7 (3.1.0)
-  - Locking guzzlehttp/uri-template (v2.0.0)
+  - Locking guzzlehttp/uri-template (v2.0.1)
   - Locking hamcrest/hamcrest-php (v3.0.0)
   - Locking laravel/agent-detector (v2.0.2)
   - Locking laravel/framework (v13.26.1)
@@ -109,7 +109,7 @@ Lock file operations: 109 installs, 0 updates, 0 removals
   - Locking symfony/var-dumper (v8.1.5)
   - Locking theseer/tokenizer (2.0.1)
   - Locking tijsverkoyen/css-to-inline-styles (v2.4.0)
-  - Locking vlucas/phpdotenv (v5.6.4)
+  - Locking vlucas/phpdotenv (v5.7.0)
   - Locking voku/portable-ascii (2.1.1)
 Writing lock file
 Installing dependencies from lock file (including require-dev)
@@ -131,7 +131,7 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Downloading guzzlehttp/psr7 (3.1.0)
   - Downloading guzzlehttp/promises (3.0.2)
   - Downloading guzzlehttp/guzzle (8.1.0)
-  - Downloading guzzlehttp/uri-template (v2.0.0)
+  - Downloading guzzlehttp/uri-template (v2.0.1)
   - Downloading symfony/polyfill-intl-normalizer (v1.42.0)
   - Downloading symfony/polyfill-intl-grapheme (v1.41.0)
   - Downloading symfony/polyfill-ctype (v1.37.0)
@@ -143,7 +143,7 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Downloading voku/portable-ascii (2.1.1)
   - Downloading phpoption/phpoption (1.10.0)
   - Downloading graham-campbell/result-type (v1.2.0)
-  - Downloading vlucas/phpdotenv (v5.6.4)
+  - Downloading vlucas/phpdotenv (v5.7.0)
   - Downloading symfony/css-selector (v8.1.5)
   - Downloading tijsverkoyen/css-to-inline-styles (v2.4.0)
   - Downloading symfony/var-dumper (v8.1.5)
@@ -240,7 +240,7 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Installing guzzlehttp/psr7 (3.1.0): Extracting archive
   - Installing guzzlehttp/promises (3.0.2): Extracting archive
   - Installing guzzlehttp/guzzle (8.1.0): Extracting archive
-  - Installing guzzlehttp/uri-template (v2.0.0): Extracting archive
+  - Installing guzzlehttp/uri-template (v2.0.1): Extracting archive
   - Installing symfony/polyfill-intl-normalizer (v1.42.0): Extracting archive
   - Installing symfony/polyfill-intl-grapheme (v1.41.0): Extracting archive
   - Installing symfony/polyfill-ctype (v1.37.0): Extracting archive
@@ -252,7 +252,7 @@ Package operations: 109 installs, 0 updates, 0 removals
   - Installing voku/portable-ascii (2.1.1): Extracting archive
   - Installing phpoption/phpoption (1.10.0): Extracting archive
   - Installing graham-campbell/result-type (v1.2.0): Extracting archive
-  - Installing vlucas/phpdotenv (v5.6.4): Extracting archive
+  - Installing vlucas/phpdotenv (v5.7.0): Extracting archive
   - Installing symfony/css-selector (v8.1.5): Extracting archive
   - Installing tijsverkoyen/css-to-inline-styles (v2.4.0): Extracting archive
   - Installing symfony/var-dumper (v8.1.5): Extracting archive
@@ -362,56 +362,57 @@ No syntax errors detected in database/migrations/2026_08_24_000048_upgrade_publi
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 10.46ms DONE
+  Creating migration table ...................................... 18.30ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables ................... 46.61ms DONE
-  2026_08_14_000002_add_controls_and_transactions ............... 47.08ms DONE
-  2026_08_14_000003_add_operational_integration .................. 7.28ms DONE
-  2026_08_14_000005_create_platform_services_tables .............. 7.52ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ........ 10.21ms DONE
-  2026_08_15_000008_add_finance_core ............................. 9.91ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ........ 34.01ms DONE
-  2026_08_15_000010_add_hr_operations ........................... 21.97ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................. 16.72ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................. 25.71ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion ............... 45.85ms DONE
-  2026_08_18_000014_add_public_site_requests .................... 14.21ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines .. 75.75ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ............ 65.04ms DONE
-  2026_08_18_000017_expand_customer_portal_operations ........... 45.29ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ........... 28.92ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  8.30ms DONE
-  2026_08_21_000020_add_emergency_request_details ............... 13.84ms DONE
-  2026_08_21_000021_add_customer_onboarding ..................... 14.61ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile ...... 7.03ms DONE
-  2026_08_21_000023_create_customer_messaging .................... 3.77ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 0.42ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ................ 52.45ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation ........... 94.42ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility .......... 2.80ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability .... 31.81ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  14.05ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ........ 6.97ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation .. 65.88ms DONE
-  2026_08_22_000032_add_work_order_part_requests ................ 20.01ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ...... 18.06ms DONE
-  2026_08_22_000034_add_user_permission_overrides ................ 3.67ms DONE
-  2026_08_22_000035_add_user_security_metadata ................... 9.55ms DONE
-  2026_08_22_000036_add_user_session_version ..................... 2.32ms DONE
-  2026_08_23_000037_expand_hr_employee_core ..................... 79.85ms DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ............ 64.96ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 ..................... 59.05ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 .............. 10.80ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............... 7.38ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................. 14.61ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................. 17.42ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 .................... 8.66ms DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ................. 22.95ms DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................... 2.58ms DONE
-  2026_08_23_000047_create_branding_settings ..................... 1.66ms DONE
-  2026_08_24_000048_upgrade_public_request_experience ........... 26.44ms DONE
+  2026_08_14_000001_create_unifco_core_tables .................. 736.70ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 473.86ms DONE
+  2026_08_14_000003_add_operational_integration ................ 290.03ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 131.89ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 88.60ms DONE
+  2026_08_15_000008_add_finance_core ........................... 400.70ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 782.43ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 449.30ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 237.26ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 261.24ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 587.23ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 23.87ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 497.41ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 555.39ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 632.26ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 662.21ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  171.01ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 206.02ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 299.58ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 151.97ms DONE
+  2026_08_21_000023_create_customer_messaging .................. 118.00ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.92ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 927.00ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 467.24ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 61.33ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 585.98ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  329.65ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 46.73ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 807.26ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 495.99ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 477.62ms DONE
+  2026_08_22_000034_add_user_permission_overrides .............. 103.03ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 368.73ms DONE
+  2026_08_22_000036_add_user_session_version .................... 92.31ms DONE
+  2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 591.38ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 473.25ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 446.17ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 377.84ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 673.22ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 815.67ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 348.42ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 547.78ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 129.38ms DONE
+  2026_08_23_000047_create_branding_settings .................... 31.48ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 202.37ms DONE
+  2026_08_25_000049_rebuild_public_request_single_page ......... 345.73ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -422,12 +423,12 @@ No syntax errors detected in database/migrations/2026_08_24_000048_upgrade_publi
 
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\PublicRequestWizardTest[39m
-  [32;1m✓[39;22m[90m [39m[90mpublic request page renders four step wizard[39m[90m                        [39m [90m0.65s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpublic request page renders four step wizard[39m[90m                       [39m [90m20.32s[39m  
   [32;1m✓[39;22m[90m [39m[90mservice dropdown has server rendered fallback and step validation l[39m[90m…[39m [90m0.02s[39m  
-  [32;1m✓[39;22m[90m [39m[90mquotation can be submitted without commercial registration[39m[90m          [39m [90m0.04s[39m  
-  [32;1m✓[39;22m[90m [39m[90mservice request uses selected priority and operations pipeline[39m[90m      [39m [90m0.02s[39m  
+  [32;1m✓[39;22m[90m [39m[90mquotation can be submitted without commercial registration[39m[90m          [39m [90m0.05s[39m  
+  [32;1m✓[39;22m[90m [39m[90mservice request uses selected priority and operations pipeline[39m[90m      [39m [90m0.03s[39m  
   [32;1m✓[39;22m[90m [39m[90msuccess page contains reference and next step copy[39m[90m                  [39m [90m0.02s[39m  
 
   [90mTests:[39m    [32;1m5 passed[39;22m[90m (28 assertions)[39m
-  [90mDuration:[39m [39m0.82s[39m
+  [90mDuration:[39m [39m20.53s[39m
 
