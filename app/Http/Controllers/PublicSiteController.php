@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PublicServiceRequest;
 use App\Services\PublicRequestPipelineService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -31,11 +32,76 @@ class PublicSiteController extends Controller
     public function quote(): View { return view('public.request', ['type' => 'QUOTATION']); }
     public function emergency(): View { return view('public.request', ['type' => 'EMERGENCY_MAINTENANCE']); }
 
+    public function assetLookup(Request $request): JsonResponse
+    {
+        $data = $request->validate(['key' => ['required','string','max:200']]);
+        $key = trim($data['key']);
+
+        // QR labels may contain a compact token, an asset code, or a UNIFCO URL.
+        // Only the token/code is used for lookup; no customer data is embedded in the QR itself.
+        if (filter_var($key, FILTER_VALIDATE_URL)) {
+            $parts = parse_url($key);
+            parse_str($parts['query'] ?? '', $query);
+            $key = trim((string) ($query['asset'] ?? $query['token'] ?? basename($parts['path'] ?? '')));
+        }
+        $key = preg_replace('/^UNIFCO-ASSET:/i', '', $key) ?? $key;
+
+        $asset = DB::table('assets as a')
+            ->leftJoin('customers as c', 'c.id', '=', 'a.customer_id')
+            ->leftJoin('customer_sites as s', 's.id', '=', 'a.customer_site_id')
+            ->where(function ($query) use ($key) {
+                $query->where('a.qr_token', $key)->orWhere('a.asset_code', $key);
+            })
+            ->where(function ($query) {
+                $query->whereNull('a.lifecycle_status')->orWhere('a.lifecycle_status', '!=', 'RETIRED');
+            })
+            ->select([
+                'a.id','a.asset_code','a.name','a.asset_category','a.manufacturer','a.model_no',
+                'a.lifecycle_status','a.operational_status','a.verification_status',
+                'c.name as customer_name','s.name as site_name','s.city as site_city','s.address as site_address',
+                's.latitude','s.longitude','s.contact_name','s.contact_mobile',
+            ])->first();
+
+        if (! $asset) {
+            return response()->json(['message' => 'Asset not found.'], 404);
+        }
+
+        $serial = DB::table('asset_specifications')
+            ->where('asset_id', $asset->id)
+            ->whereIn('spec_key', ['serial_number','serial_no','serial'])
+            ->orderByRaw("FIELD(spec_key, 'serial_number', 'serial_no', 'serial')")
+            ->value('spec_value');
+
+        return response()->json([
+            'asset' => [
+                'id' => $asset->id,
+                'asset_code' => $asset->asset_code,
+                'name' => $asset->name,
+                'type' => $asset->asset_category ?: $asset->name,
+                'brand' => $asset->manufacturer,
+                'model' => $asset->model_no,
+                'serial_number' => $serial,
+                'customer_name' => $asset->customer_name,
+                'site_name' => $asset->site_name,
+                'site_city' => $asset->site_city,
+                'site_address' => $asset->site_address,
+                'latitude' => $asset->latitude,
+                'longitude' => $asset->longitude,
+                'contact_name' => $asset->contact_name,
+                'contact_mobile' => $asset->contact_mobile,
+                'lifecycle_status' => $asset->lifecycle_status,
+                'operational_status' => $asset->operational_status,
+                'verification_status' => $asset->verification_status,
+            ],
+        ])->header('Cache-Control', 'no-store, private');
+    }
+
     public function store(Request $request, PublicRequestPipelineService $pipeline): RedirectResponse
     {
         $data = $request->validate([
             'request_intent' => ['required','in:QUOTATION,SERVICE_REQUEST,CONSULTATION'],
             'request_subtype' => ['required','in:SPARE_PARTS_QUOTE,MAINTENANCE_CONTRACT_QUOTE,ROUTINE_MAINTENANCE,URGENT_MAINTENANCE,TECHNICAL_CONSULTATION'],
+            'asset_id' => ['nullable','integer','exists:assets,id'],
             'site_name' => ['required','string','max:180'],
             'company_name' => ['required','string','max:180'],
             'responsible_person' => ['required','string','max:180'],
@@ -72,6 +138,26 @@ class PublicSiteController extends Controller
         ];
         abort_unless($subtypeIntent[$data['request_subtype']] === $data['request_intent'], 422, 'Request type and subtype do not match.');
 
+        if (! empty($data['asset_id'])) {
+            $asset = DB::table('assets as a')
+                ->leftJoin('customers as c', 'c.id', '=', 'a.customer_id')
+                ->leftJoin('customer_sites as s', 's.id', '=', 'a.customer_site_id')
+                ->where('a.id', $data['asset_id'])
+                ->select('a.*','c.name as customer_name','s.name as registry_site_name','s.city as registry_site_city','s.address as registry_site_address','s.latitude as registry_latitude','s.longitude as registry_longitude')
+                ->first();
+            if ($asset) {
+                $data['asset_type'] = $asset->asset_category ?: $data['asset_type'];
+                $data['equipment_brand'] = $asset->manufacturer ?: $data['equipment_brand'];
+                $data['equipment_model'] = $asset->model_no ?: $data['equipment_model'];
+                $data['company_name'] = $asset->customer_name ?: $data['company_name'];
+                $data['site_name'] = $asset->registry_site_name ?: $data['site_name'];
+                $data['site_city'] = $asset->registry_site_city ?: $data['site_city'];
+                $data['site_address'] = $asset->registry_site_address ?: $data['site_address'];
+                $data['latitude'] = $asset->registry_latitude ?? $data['latitude'];
+                $data['longitude'] = $asset->registry_longitude ?? $data['longitude'];
+            }
+        }
+
         $data['request_type'] = match ($data['request_subtype']) {
             'SPARE_PARTS_QUOTE','MAINTENANCE_CONTRACT_QUOTE' => 'QUOTATION',
             'URGENT_MAINTENANCE' => 'EMERGENCY_MAINTENANCE',
@@ -107,10 +193,6 @@ class PublicSiteController extends Controller
             return PublicServiceRequest::create($payload);
         });
 
-        // Ticket issuance is the customer-facing transaction boundary. Downstream
-        // CRM/work-order conversion must never turn a successfully issued ticket
-        // into a 500 response. Conversion failures are logged for operations and
-        // can be retried independently while the customer still receives the receipt.
         try {
             $pipeline->convert($record);
         } catch (Throwable $exception) {
