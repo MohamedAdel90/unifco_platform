@@ -36,19 +36,40 @@ jobs:
           ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 -i "$HOME/.ssh/unifco_recover_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" 'bash -s' <<'REMOTE' > /tmp/unifco-recovery.log 2>&1
           set -euo pipefail
           cd /var/www/unifco_platform
+
+          echo "==> Detect application runtime user"
+          runtime_user="$(ps -eo user,args | awk '/php .*artisan serve.*8081/ && !/awk/{print $1; exit}')"
+          if [ -z "$runtime_user" ]; then runtime_user="root"; fi
+          runtime_group="$(id -gn "$runtime_user" 2>/dev/null || echo "$runtime_user")"
+          echo "runtime_user=$runtime_user runtime_group=$runtime_group"
+
           echo "==> Recovery fetch main"
           git fetch origin main
           git reset --hard origin/main
           echo "server_sha=$(git rev-parse HEAD)"
-          mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
-          chmod -R ug+rwX storage bootstrap/cache || true
+
+          mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs bootstrap/cache
           composer install --no-interaction --prefer-dist --optimize-autoloader
           php artisan migrate --force
-          php artisan optimize:clear
+
+          echo "==> Stop application before clearing runtime caches"
           supervisorctl stop unifco-app || true
           sleep 2
           if command -v fuser >/dev/null 2>&1; then fuser -k 8081/tcp || true; else pkill -f 'php.*artisan serve.*8081' || true; pkill -f 'php -S .*8081' || true; fi
           sleep 2
+
+          echo "==> Clear caches while app is stopped"
+          php artisan optimize:clear
+
+          echo "==> Recreate writable Laravel runtime directories"
+          install -d -m 0775 storage/framework/cache storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+          chown -R "$runtime_user:$runtime_group" storage bootstrap/cache || true
+          chmod -R ug+rwX storage bootstrap/cache || true
+          test -d storage/framework/cache/data
+          test -w storage/framework/cache/data
+          test -w storage/framework/sessions
+          test -w storage/framework/views
+
           supervisorctl reread || true
           supervisorctl update || true
           supervisorctl start unifco-app
@@ -56,10 +77,12 @@ jobs:
           for attempt in $(seq 1 30); do if curl -fsSI http://127.0.0.1:8081/login >/dev/null; then ready=1; break; fi; sleep 2; done
           supervisorctl status unifco-app || true
           if [ "$ready" -ne 1 ]; then supervisorctl tail -100 unifco-app stderr || true; exit 1; fi
+
           php artisan migrate:status | grep -q '000049_rebuild_public_request_single_page'
           php artisan route:list --name=public.request-service >/dev/null
           php artisan route:list --name=public.request.store >/dev/null
           php artisan route:list --name=public.request.received >/dev/null
+
           echo "==> Verify request page"
           request_html="$(curl -fsS http://127.0.0.1:8081/request-service)"
           grep -q 'خدمة أسرع تبدأ بطلب أوضح' <<< "$request_html"
@@ -67,8 +90,12 @@ jobs:
           request_en_html="$(curl -fsS 'http://127.0.0.1:8081/request-service?lang=en')"
           grep -q 'A faster service starts with a clearer request' <<< "$request_en_html"
           grep -q 'Take Photo' <<< "$request_en_html"
-          echo "==> Recent Laravel errors for public request diagnosis"
-          if [ -f storage/logs/laravel.log ]; then tail -n 260 storage/logs/laravel.log || true; else echo 'No laravel.log found'; fi
+
+          echo "==> Verify cache can create nested files"
+          php artisan tinker --execute="cache()->put('production_recovery_write_test', 'ok', 60); if (cache()->get('production_recovery_write_test') !== 'ok') { throw new RuntimeException('Cache write verification failed'); } cache()->forget('production_recovery_write_test');"
+
+          echo "==> Recent Laravel errors"
+          if [ -f storage/logs/laravel.log ]; then tail -n 180 storage/logs/laravel.log || true; fi
           echo "recovery_result=success"
           REMOTE
           rc=$?
