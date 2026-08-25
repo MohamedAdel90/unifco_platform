@@ -22,30 +22,33 @@ class PublicRequestWizardTest extends TestCase
         ], $overrides);
     }
 
-    public function test_public_request_page_is_single_page_bilingual_and_uses_refined_presentation(): void
+    public function test_public_request_page_is_single_page_bilingual_and_uses_final_header_layout(): void
     {
         $this->get('/request-service')->assertOk()
             ->assertSee('خدمة أسرع تبدأ بطلب أوضح', false)
             ->assertSee('خطوات بسيطة تساعد فريق UNIFCO على فهم الخدمة المطلوبة بشكل سريع وواضح.', false)
-            ->assertSee('request-site-header', false)
-            ->assertSee('request-primary-nav', false)
+            ->assertSee('class="request-pill"', false)
+            ->assertSee('class="primary-nav"', false)
+            ->assertSee('class="brandzone"', false)
+            ->assertSee('طلب خدمة', false)
             ->assertSee('طلب عرض سعر', false)
             ->assertSee('عرض سعر قطع غيار', false)
             ->assertSee('عرض سعر عقد صيانة', false)
             ->assertSee('خدمات الصيانة العادية', false)
             ->assertSee('خدمات الصيانة الطارئة', false)
-            ->assertSee('اسم الموقع', false)
-            ->assertSee('صور المعدة', false)
-            ->assertSee('#subConsult{display:none!important}', false)
-            ->assertSee('#map{height:225px!important}', false)
-            ->assertSee('#subQuote{width:calc((100% - 24px)/3)!important', false)
+            ->assertSee('id="technicalConsultationSubtype"', false)
+            ->assertSee('#map{height:220px', false)
+            ->assertSee('width:calc((100% - 22px)/3)', false)
+            ->assertSee('بيانات طلب عرض السعر', false)
+            ->assertDontSee('id="subConsult"', false)
             ->assertDontSee('UNIFCO · ONE FACILITY SHOP', false)
             ->assertDontSee('كل تفاصيل الطلب في صفحة واحدة', false)
             ->assertDontSee('مراجعة وإرسال', false);
 
         $this->get('/request-service?lang=en')->assertOk()
-            ->assertSee('Faster service starts with a clearer request', false)
+            ->assertSee('A faster service starts with a clearer request', false)
             ->assertSee('Simple steps help the UNIFCO team understand the required service quickly and clearly.', false)
+            ->assertSee('Request Service', false)
             ->assertSee('Home', false)
             ->assertSee('About Us', false)
             ->assertSee('Services', false)
@@ -58,8 +61,7 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('Maintenance Contract Quotation', false)
             ->assertSee('Routine Maintenance', false)
             ->assertSee('Emergency Maintenance', false)
-            ->assertSee('Site Name', false)
-            ->assertSee('Equipment Photos', false)
+            ->assertSee('Quotation Request Details', false)
             ->assertDontSee('UNIFCO · ONE FACILITY SHOP', false);
     }
 
