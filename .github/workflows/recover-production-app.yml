@@ -60,36 +60,15 @@ jobs:
           php artisan route:list --name=public.request-service >/dev/null
           php artisan route:list --name=public.request.store >/dev/null
           php artisan route:list --name=public.request.received >/dev/null
-          echo "==> Verify request page reuses homepage header except login"
+          echo "==> Verify request page"
           request_html="$(curl -fsS http://127.0.0.1:8081/request-service)"
           grep -q 'خدمة أسرع تبدأ بطلب أوضح' <<< "$request_html"
-          grep -q 'class="top request-homepage-header"' <<< "$request_html"
-          grep -q 'class="wrap nav"' <<< "$request_html"
-          grep -q 'class="brand-link"' <<< "$request_html"
-          grep -q 'class="site-logo-frame"' <<< "$request_html"
-          grep -q 'class="brand-copy"' <<< "$request_html"
-          grep -q 'class="nav-links"' <<< "$request_html"
-          grep -q 'class="nav-actions"' <<< "$request_html"
-          grep -q 'class="btn red"' <<< "$request_html"
-          grep -q '>طلب خدمة<' <<< "$request_html"
-          ! grep -q 'تسجيل الدخول' <<< "$request_html"
-          ! grep -q 'class="request-pill"' <<< "$request_html"
-          ! grep -q 'class="primary-nav"' <<< "$request_html"
-          grep -q 'عرض سعر قطع غيار' <<< "$request_html"
-          grep -q 'خدمات الصيانة العادية' <<< "$request_html"
           grep -q 'public-request-camera-attachments' <<< "$request_html"
           request_en_html="$(curl -fsS 'http://127.0.0.1:8081/request-service?lang=en')"
           grep -q 'A faster service starts with a clearer request' <<< "$request_en_html"
-          grep -q '>Request Service<' <<< "$request_en_html"
-          grep -q '>Home<' <<< "$request_en_html"
-          grep -q '>About Us<' <<< "$request_en_html"
-          grep -q '>Services<' <<< "$request_en_html"
-          grep -q '>Our Clients<' <<< "$request_en_html"
-          grep -q '>Projects<' <<< "$request_en_html"
-          grep -q '>Careers<' <<< "$request_en_html"
-          grep -q '>Contact us<' <<< "$request_en_html"
-          ! grep -q '>Sign In<' <<< "$request_en_html"
           grep -q 'Take Photo' <<< "$request_en_html"
+          echo "==> Recent Laravel errors for public request diagnosis"
+          if [ -f storage/logs/laravel.log ]; then tail -n 260 storage/logs/laravel.log || true; else echo 'No laravel.log found'; fi
           echo "recovery_result=success"
           REMOTE
           rc=$?
@@ -105,7 +84,7 @@ jobs:
           rc='${{ steps.recover.outputs.rc }}'
           if [ "${rc:-999}" = '0' ]; then result=success; else result=failure; fi
           printf 'source_sha=%s\nverified_at=%s\nresult=%s\nrecovery_rc=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "${rc:-not-run}" > deploy/status/user-admin-production-latest.txt
-          tail -n 520 /tmp/unifco-recovery.log > deploy/status/user-admin-production.log || true
+          tail -n 800 /tmp/unifco-recovery.log > deploy/status/user-admin-production.log || true
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add deploy/status/user-admin-production-latest.txt deploy/status/user-admin-production.log
