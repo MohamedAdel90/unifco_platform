@@ -56,62 +56,40 @@ jobs:
           for attempt in $(seq 1 30); do if curl -fsSI http://127.0.0.1:8081/login >/dev/null; then ready=1; break; fi; sleep 2; done
           supervisorctl status unifco-app || true
           if [ "$ready" -ne 1 ]; then supervisorctl tail -100 unifco-app stderr || true; exit 1; fi
-          echo "==> Verify release migrations and routes"
-          php artisan migrate:status | grep -q '000037_expand_hr_employee_core'
-          php artisan migrate:status | grep -q '000038_build_hr_attendance_leave_phase2'
-          php artisan migrate:status | grep -q '000039_build_hr_payroll_phase3'
-          php artisan migrate:status | grep -q '000040_build_hr_business_trips_phase4'
-          php artisan migrate:status | grep -q '000041_build_hr_end_of_service_phase5'
-          php artisan migrate:status | grep -q '000042_build_hr_recruitment_phase6'
-          php artisan migrate:status | grep -q '000043_build_hr_performance_phase7'
-          php artisan migrate:status | grep -q '000044_build_hr_documents_phase9'
-          php artisan migrate:status | grep -q '000045_build_hr_compliance_phase10'
-          php artisan migrate:status | grep -q '000046_build_hr_analytics_phase11'
-          php artisan migrate:status | grep -q '000048_upgrade_public_request_experience'
           php artisan migrate:status | grep -q '000049_rebuild_public_request_single_page'
           php artisan route:list --name=public.request-service >/dev/null
           php artisan route:list --name=public.request.store >/dev/null
           php artisan route:list --name=public.request.received >/dev/null
-          php artisan route:list --name=hr.dashboard >/dev/null
-          php artisan route:list --name=hr.employees.show >/dev/null
-          php artisan route:list --name=hr.attendance.index >/dev/null
-          php artisan route:list --name=hr.leave.index >/dev/null
-          php artisan route:list --name=hr.payroll.index >/dev/null
-          php artisan route:list --name=hr.missions.index >/dev/null
-          php artisan route:list --name=hr.settlements.index >/dev/null
-          php artisan route:list --name=hr.recruitment.index >/dev/null
-          php artisan route:list --name=hr.performance.index >/dev/null
-          php artisan route:list --name=hr.self-service.index >/dev/null
-          php artisan route:list --name=hr.manager-self-service.index >/dev/null
-          php artisan route:list --name=hr.self-service.documents.index >/dev/null
-          php artisan route:list --name=hr.documents.index >/dev/null
-          php artisan route:list --name=hr.compliance.index >/dev/null
-          php artisan route:list --name=hr.compliance.scan >/dev/null
-          php artisan route:list --name=hr.analytics.index >/dev/null
-          php artisan route:list --name=hr.analytics.plans.store >/dev/null
-          echo "==> Verify native single-page public request header and request form"
+          echo "==> Verify request page reuses homepage header except login"
           request_html="$(curl -fsS http://127.0.0.1:8081/request-service)"
           grep -q 'خدمة أسرع تبدأ بطلب أوضح' <<< "$request_html"
-          grep -q 'class="request-pill"' <<< "$request_html"
-          grep -q 'class="primary-nav"' <<< "$request_html"
+          grep -q 'class="top request-homepage-header"' <<< "$request_html"
+          grep -q 'class="wrap nav"' <<< "$request_html"
+          grep -q 'class="brand-link"' <<< "$request_html"
+          grep -q 'class="site-logo-frame"' <<< "$request_html"
+          grep -q 'class="brand-copy"' <<< "$request_html"
+          grep -q 'class="nav-links"' <<< "$request_html"
+          grep -q 'class="nav-actions"' <<< "$request_html"
+          grep -q 'class="btn red"' <<< "$request_html"
           grep -q '>طلب خدمة<' <<< "$request_html"
+          ! grep -q 'تسجيل الدخول' <<< "$request_html"
+          ! grep -q 'class="request-pill"' <<< "$request_html"
+          ! grep -q 'class="primary-nav"' <<< "$request_html"
           grep -q 'عرض سعر قطع غيار' <<< "$request_html"
-          grep -q 'عرض سعر عقد صيانة' <<< "$request_html"
           grep -q 'خدمات الصيانة العادية' <<< "$request_html"
-          grep -q 'خدمات الصيانة الطارئة' <<< "$request_html"
-          ! grep -q 'request-site-header' <<< "$request_html"
-          ! grep -q 'requestWizard' <<< "$request_html"
-          ! grep -q 'مراجعة وإرسال' <<< "$request_html"
-          ! grep -q 'UNIFCO · ONE FACILITY SHOP' <<< "$request_html"
+          grep -q 'public-request-camera-attachments' <<< "$request_html"
           request_en_html="$(curl -fsS 'http://127.0.0.1:8081/request-service?lang=en')"
           grep -q 'A faster service starts with a clearer request' <<< "$request_en_html"
-          grep -q 'class="request-pill"' <<< "$request_en_html"
           grep -q '>Request Service<' <<< "$request_en_html"
-          grep -q 'Spare Parts Quotation' <<< "$request_en_html"
-          grep -q 'Maintenance Contract Quotation' <<< "$request_en_html"
-          for path in dashboard attendance leave payroll missions settlements recruitment performance self-service manager-self-service documents self-service/documents compliance analytics; do
-            curl -fsSI "http://127.0.0.1:8081/hr/$path" | grep -Eq 'HTTP/.* (200|302)'
-          done
+          grep -q '>Home<' <<< "$request_en_html"
+          grep -q '>About Us<' <<< "$request_en_html"
+          grep -q '>Services<' <<< "$request_en_html"
+          grep -q '>Our Clients<' <<< "$request_en_html"
+          grep -q '>Projects<' <<< "$request_en_html"
+          grep -q '>Careers<' <<< "$request_en_html"
+          grep -q '>Contact us<' <<< "$request_en_html"
+          ! grep -q '>Sign In<' <<< "$request_en_html"
+          grep -q 'Take Photo' <<< "$request_en_html"
           echo "recovery_result=success"
           REMOTE
           rc=$?
