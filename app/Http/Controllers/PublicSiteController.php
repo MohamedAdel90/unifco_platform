@@ -77,7 +77,7 @@ class PublicSiteController extends Controller
             default => 'CONSULTATION',
         };
         $data['service_family'] = strtoupper($data['asset_type']) === 'HVAC' ? 'MEP' : 'ELECTRICAL';
-        $data['subject'] = trim(($data['service_other'] ?: $data['service_category']).' - '.$data['site_name']);
+        $data['subject'] = trim((($data['service_other'] ?? null) ?: $data['service_category']).' - '.$data['site_name']);
         if ($data['request_subtype'] === 'URGENT_MAINTENANCE') $data['urgency'] = 'EMERGENCY';
 
         unset($data['equipment_photos'], $data['problem_photos'], $data['previous_reports']);
