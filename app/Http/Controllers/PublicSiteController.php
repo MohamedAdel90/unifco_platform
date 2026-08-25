@@ -8,7 +8,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 class PublicSiteController extends Controller
 {
@@ -105,7 +107,22 @@ class PublicSiteController extends Controller
             return PublicServiceRequest::create($payload);
         });
 
-        $pipeline->convert($record);
+        // Ticket issuance is the customer-facing transaction boundary. Downstream
+        // CRM/work-order conversion must never turn a successfully issued ticket
+        // into a 500 response. Conversion failures are logged for operations and
+        // can be retried independently while the customer still receives the receipt.
+        try {
+            $pipeline->convert($record);
+        } catch (Throwable $exception) {
+            Log::error('Public request pipeline conversion failed after ticket issuance.', [
+                'public_service_request_id' => $record->id,
+                'reference_no' => $record->reference_no,
+                'request_type' => $record->request_type,
+                'request_subtype' => $record->request_subtype,
+                'exception' => $exception,
+            ]);
+        }
+
         return redirect()->route('public.request.received', ['reference'=>$record->reference_no,'lang'=>$request->input('lang','ar')]);
     }
 
