@@ -40,6 +40,13 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('#map{height:220px', false)
             ->assertSee('width:calc((100% - 22px)/3)', false)
             ->assertSee('بيانات طلب عرض السعر', false)
+            ->assertSee('public-request-camera-attachments', false)
+            ->assertSee('public-request-camera-attachments-logic', false)
+            ->assertSee('التقاط صورة', false)
+            ->assertSee('اختيار من الجهاز', false)
+            ->assertSee("cameraInput.setAttribute('capture','environment')", false)
+            ->assertSee('attachment-preview', false)
+            ->assertSee('attachment-remove', false)
             ->assertDontSee('id="subConsult"', false)
             ->assertDontSee('UNIFCO · ONE FACILITY SHOP', false)
             ->assertDontSee('كل تفاصيل الطلب في صفحة واحدة', false)
@@ -62,6 +69,9 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('Routine Maintenance', false)
             ->assertSee('Emergency Maintenance', false)
             ->assertSee('Quotation Request Details', false)
+            ->assertSee('Take Photo', false)
+            ->assertSee('Choose from Device', false)
+            ->assertSee('Use camera', false)
             ->assertDontSee('UNIFCO · ONE FACILITY SHOP', false);
     }
 
