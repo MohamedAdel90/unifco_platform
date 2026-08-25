@@ -82,17 +82,46 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p deploy/status
           rc='${{ steps.test.outputs.rc }}'
           if [ "${rc:-999}" = '0' ]; then result=success; else result=failure; fi
-          printf 'source_sha=%s\nverified_at=%s\nresult=%s\ntest_rc=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "${rc:-not-run}" > deploy/status/public-request-wizard-latest.txt
-          tail -n 500 /tmp/public-request-wizard.log > deploy/status/public-request-wizard.log || true
+
+          status_tmp="$(mktemp)"
+          log_tmp="$(mktemp)"
+          printf 'source_sha=%s\nverified_at=%s\nresult=%s\ntest_rc=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "${rc:-not-run}" > "$status_tmp"
+          tail -n 500 /tmp/public-request-wizard.log > "$log_tmp" || true
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add deploy/status/public-request-wizard-latest.txt deploy/status/public-request-wizard.log
-          git commit -m 'Record public request qualification [skip ci]' || true
-          git pull --rebase origin main || true
-          git push origin HEAD:main
+
+          recorded=0
+          for attempt in 1 2 3 4; do
+            git fetch origin main
+            git reset --hard origin/main
+            mkdir -p deploy/status
+            cp "$status_tmp" deploy/status/public-request-wizard-latest.txt
+            cp "$log_tmp" deploy/status/public-request-wizard.log
+            git add deploy/status/public-request-wizard-latest.txt deploy/status/public-request-wizard.log
+
+            if git diff --cached --quiet; then
+              echo 'Qualification status is already current.'
+              recorded=1
+              break
+            fi
+
+            git commit -m 'Record public request qualification [skip ci]'
+            if git push origin HEAD:main; then
+              recorded=1
+              break
+            fi
+
+            echo "Status push raced with another main update; retrying ($attempt/4)."
+            sleep $((attempt * 2))
+          done
+
+          if [ "$recorded" -ne 1 ]; then
+            echo 'Unable to persist public request qualification status after retries.' >&2
+            exit 1
+          fi
       - name: Fail when qualification failed
         if: always() && steps.test.outputs.rc != '0'
         run: exit 1
