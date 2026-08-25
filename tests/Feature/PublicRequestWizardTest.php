@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\PublicServiceRequest;
 use App\Services\PublicRequestPipelineService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -22,6 +23,20 @@ class PublicRequestWizardTest extends TestCase
             'service_category'=>'Preventive Maintenance','urgency'=>'URGENT','requested_date'=>now()->addDay()->toDateString(),
             'requested_time'=>'10:00','details'=>'Annual UPS maintenance',
         ], $overrides);
+    }
+
+    private function registeredAsset(): int
+    {
+        $tenantId = DB::table('tenants')->insertGetId(['name'=>'UNIFCO Test','code'=>'UNIFCO-TEST','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $customerId = DB::table('customers')->insertGetId(['tenant_id'=>$tenantId,'customer_code'=>'C-QR-1','name'=>'Red Sea Industrial Co.','status'=>'ACTIVE','onboarding_status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $siteId = DB::table('customer_sites')->insertGetId(['customer_id'=>$customerId,'site_code'=>'JED-S','name'=>'Jeddah South Warehouse','city'=>'Jeddah','address'=>'Industrial City, Jeddah','latitude'=>21.4858,'longitude'=>39.1925,'contact_name'=>'Site Engineer','contact_mobile'=>'0500000000','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $assetId = DB::table('assets')->insertGetId([
+            'tenant_id'=>$tenantId,'customer_id'=>$customerId,'customer_site_id'=>$siteId,'asset_code'=>'AST-2024-000123','name'=>'Air Compressor',
+            'asset_category'=>'HVAC','manufacturer'=>'Atlas Copco','model_no'=>'GA 75','qr_token'=>'qr-safe-token-123','verification_status'=>'VERIFIED',
+            'lifecycle_status'=>'ACTIVE','operational_status'=>'RUNNING','status'=>'REGISTERED','acquisition_cost'=>0,'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        DB::table('asset_specifications')->insert(['asset_id'=>$assetId,'spec_key'=>'serial_number','spec_label'=>'Serial Number','spec_value'=>'AC-2023-4587','created_at'=>now(),'updated_at'=>now()]);
+        return $assetId;
     }
 
     public function test_public_request_page_is_single_page_bilingual_and_reuses_homepage_header_without_login(): void
@@ -48,6 +63,9 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('خدمات الصيانة العادية', false)
             ->assertSee('خدمات الصيانة الطارئة', false)
             ->assertSee('id="technicalConsultationSubtype"', false)
+            ->assertSee('id="assetQrSection"', false)
+            ->assertSee('مسح QR للمعدة', false)
+            ->assertSee('إدخال رقم الأصل', false)
             ->assertSee('#map{height:220px', false)
             ->assertSee('public-request-camera-attachments', false)
             ->assertSee('التقاط صورة', false)
@@ -59,6 +77,8 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('A faster service starts with a clearer request', false)
             ->assertSee('Simple steps help the UNIFCO team understand the required service quickly and clearly.', false)
             ->assertSee('Request Service', false)
+            ->assertSee('Scan Equipment QR', false)
+            ->assertSee('enter the Asset ID manually', false)
             ->assertSee('Home', false)
             ->assertSee('About Us', false)
             ->assertSee('Services', false)
@@ -74,6 +94,30 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('Emergency Maintenance', false)
             ->assertSee('Take Photo', false)
             ->assertSee('Choose from Device', false);
+    }
+
+    public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
+    {
+        $assetId = $this->registeredAsset();
+
+        $this->getJson('/service-assets/lookup?key=qr-safe-token-123')->assertOk()
+            ->assertJsonPath('asset.id', $assetId)
+            ->assertJsonPath('asset.asset_code', 'AST-2024-000123')
+            ->assertJsonPath('asset.customer_name', 'Red Sea Industrial Co.')
+            ->assertJsonPath('asset.site_name', 'Jeddah South Warehouse')
+            ->assertJsonPath('asset.serial_number', 'AC-2023-4587');
+
+        $this->getJson('/service-assets/lookup?key=AST-2024-000123')->assertOk()->assertJsonPath('asset.model', 'GA 75');
+
+        $this->post('/service-requests', $this->payload('SERVICE_REQUEST','ROUTINE_MAINTENANCE', [
+            'asset_id'=>$assetId,'company_name'=>'Tampered Company','site_name'=>'Tampered Site','site_city'=>'Riyadh',
+            'asset_type'=>'UPS','equipment_brand'=>'Tampered Brand','equipment_model'=>'Tampered Model',
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('public_service_requests', [
+            'asset_id'=>$assetId,'company_name'=>'Red Sea Industrial Co.','site_name'=>'Jeddah South Warehouse','site_city'=>'Jeddah',
+            'asset_type'=>'HVAC','equipment_brand'=>'Atlas Copco','equipment_model'=>'GA 75',
+        ]);
     }
 
     public function test_ticket_prefixes_and_serial_sequence_are_generated_as_requested(): void
