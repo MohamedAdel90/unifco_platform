@@ -1,3 +1,13 @@
+No composer.lock file present. Updating dependencies to latest instead of installing from lock file. See https://getcomposer.org/install for more information.
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 109 installs, 0 updates, 0 removals
+  - Locking brick/math (0.18.0)
+  - Locking carbonphp/carbon-doctrine-types (3.2.0)
+  - Locking dflydev/dot-access-data (v3.0.3)
+  - Locking doctrine/inflector (2.1.0)
+  - Locking doctrine/lexer (3.0.1)
+  - Locking dragonmantank/cron-expression (v3.6.0)
   - Locking egulias/email-validator (4.0.4)
   - Locking fakerphp/faker (v1.24.1)
   - Locking filp/whoops (2.18.4)
@@ -349,60 +359,61 @@ No syntax errors detected in app/Http/Controllers/PublicSiteController.php
 No syntax errors detected in app/Models/PublicServiceRequest.php
 No syntax errors detected in app/Services/PublicRequestPipelineService.php
 No syntax errors detected in database/migrations/2026_08_24_000048_upgrade_public_request_experience.php
+No syntax errors detected in database/migrations/2026_08_25_000049_rebuild_public_request_single_page.php
 
    INFO  Preparing database.  
 
-  Creating migration table ....................................... 8.97ms DONE
+  Creating migration table ...................................... 17.56ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables .................. 611.01ms DONE
-  2026_08_14_000002_add_controls_and_transactions .............. 411.19ms DONE
-  2026_08_14_000003_add_operational_integration ................ 259.32ms DONE
-  2026_08_14_000005_create_platform_services_tables ............ 123.10ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ........ 81.21ms DONE
-  2026_08_15_000008_add_finance_core ........................... 349.10ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ....... 597.33ms DONE
-  2026_08_15_000010_add_hr_operations .......................... 378.96ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................ 206.01ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................ 215.43ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .............. 472.75ms DONE
-  2026_08_18_000014_add_public_site_requests .................... 21.86ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines . 408.68ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ........... 440.99ms DONE
-  2026_08_18_000017_expand_customer_portal_operations .......... 537.67ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps .......... 564.25ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  134.32ms DONE
-  2026_08_21_000020_add_emergency_request_details .............. 161.18ms DONE
-  2026_08_21_000021_add_customer_onboarding .................... 251.20ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile .... 145.69ms DONE
-  2026_08_21_000023_create_customer_messaging ................... 66.44ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 2.26ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ............... 775.74ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 447.49ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 58.78ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability ... 550.38ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  284.82ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 40.85ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation . 760.32ms DONE
-  2026_08_22_000032_add_work_order_part_requests ............... 463.30ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 432.36ms DONE
-  2026_08_22_000034_add_user_permission_overrides ............... 82.71ms DONE
-  2026_08_22_000035_add_user_security_metadata ................. 348.54ms DONE
-  2026_08_22_000036_add_user_session_version .................... 86.22ms DONE
+  2026_08_14_000001_create_unifco_core_tables .................. 701.77ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 447.63ms DONE
+  2026_08_14_000003_add_operational_integration ................ 313.84ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 124.29ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 85.08ms DONE
+  2026_08_15_000008_add_finance_core ........................... 351.22ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 595.17ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 394.12ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 220.88ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 237.14ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 507.87ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 19.83ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 417.43ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 476.35ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 594.55ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 722.63ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  151.37ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 179.15ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 288.87ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 153.90ms DONE
+  2026_08_21_000023_create_customer_messaging ................... 77.82ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.24ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 878.00ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 430.29ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 53.91ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 573.30ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  304.44ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 44.54ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 748.55ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 480.70ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 495.99ms DONE
+  2026_08_22_000034_add_user_permission_overrides .............. 104.37ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 358.25ms DONE
+  2026_08_22_000036_add_user_session_version .................... 96.48ms DONE
   2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 533.75ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 .................... 424.87ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ............. 405.11ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 358.79ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................ 631.73ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................ 861.28ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 .................. 377.54ms DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ................ 537.08ms DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................. 125.07ms DONE
-  2026_08_23_000047_create_branding_settings .................... 47.31ms DONE
-  2026_08_24_000048_upgrade_public_request_experience .......... 244.18ms DONE
-  2026_08_25_000049_rebuild_public_request_single_page ......... 288.79ms DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 538.55ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 452.85ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 430.31ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 392.27ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 619.19ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 771.08ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 376.84ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 540.84ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 118.85ms DONE
+  2026_08_23_000047_create_branding_settings .................... 25.47ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 171.50ms DONE
+  2026_08_25_000049_rebuild_public_request_single_page ......... 307.25ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -412,89 +423,11 @@ No syntax errors detected in database/migrations/2026_08_24_000048_upgrade_publi
    INFO  Blade templates cached successfully.  
 
 
-  [39;41;1m FAIL [39;49;22m[39m Tests\Feature\PublicRequestWizardTest[39m
-  [31;1m⨯[39;22m[90m [39m[90mpublic request page renders four step wizard[39m[90m                       [39m [90m18.25s[39m  
-  [31;1m⨯[39;22m[90m [39m[90mservice dropdown has server rendered fallback and step validation l[39m[90m…[39m [90m0.02s[39m  
-  [31;1m⨯[39;22m[90m [39m[90mquotation can be submitted without commercial registration[39m[90m          [39m [90m0.03s[39m  
-  [31;1m⨯[39;22m[90m [39m[90mservice request uses selected priority and operations pipeline[39m[90m      [39m [90m0.02s[39m  
-  [32;1m✓[39;22m[90m [39m[90msuccess page contains reference and next step copy[39m[90m                  [39m [90m0.02s[39m  
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\PublicRequestWizardTest[22m [90m>[39m public request page rende…   
-[39;1m  Expected: [39;22m[31m<!doctype html>[39m[31m<html lang="ar" dir="rtl">[39m[31m<head>[39m[31m<meta charset="utf-8">[39m[31m<meta name="viewport" content="width=device-width,initial-scale=1">[39m[31m<title>[39m[31mUNIFCO | طلب خدمة / عرض سعر[39m[31m</title>[39m[31m<link rel="preconnect" href="https://fonts.googleapis.com">[39m[31m<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>[39m[31m<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">[39m[31m<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">[39m[31m<style>[39m[31m\n[39m[39;1m
-  [39;22m[31m:root{font-family:"Cairo",Tahoma,Arial,sans-serif;--navy:#071f4d;--red:#e20b24;--ink:#142641;--muted:#7c899b;--line:#d9e2ec;--soft:#f5f8fb}*{box-sizing:border-box}body{margin:0;background:var(--soft);color:var(--ink)}.top{height:80px;background:#fff;border-bottom:1px solid #e7edf4}.topin{width:min(1220px,94%);height:100%;margin:auto;display:flex;align-items:center;gap:14px}.logo{width:155px;height:62px;object-fit:contain}.actions{margin-inline-start:auto;display:flex;gap:8px}.actions a{font-size:11px;font-weight:800;text-decoration:none;color:var(--navy);padding:9px 12px;border-radius:8px}.actions .lang{border:1px solid var(--line)}.hero{background:linear-gradient(90deg,rgba(5,24,51,.98),rgba(7,31,77,.82)),url('/images/home/hero-electrical.svg?v=20260821-11') center/cover;color:#fff;border-bottom:4px solid var(--red);min-height:205px}.heroin{width:min(1220px,94%);margin:auto;padding:32px 0}.eyebrow{font-size:10px;font-weight:900;letter-spacing:.08em}.hero h1{font-size:clamp(28px,4vw,46px);margin:7px 0}.hero p{margin:0;color:#dce7f4;font-size:12px}.shell{width:min(1220px,94%);margin:-38px auto 60px}.card{background:#fff;border:1px solid #e1e8f0;border-radius:20px;box-shadow:0 22px 58px rgba(7,31,77,.11);padding:28px}.section{padding:0 0 24px;margin-bottom:24px;border-bottom:1px solid #edf1f5}.section:last-of-type{border:0;margin-bottom:0}.section h2{margin:0 0 6px;font-size:17px;color:var(--navy)}.section p{margin:0 0 16px;color:var(--muted);font-size:10px}.intent-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.pick{position:relative}.pick input{position:absolute;opacity:0}.pick span{display:block;border:1px solid var(--line);border-radius:13px;padding:18px;cursor:pointer;background:#fff;min-height:88px}.pick span b{display:block;font-size:13px;color:var(--navy)}.pick span small{display:block;font-size:9px;color:#8793a4;margin-top:5px}.pick input:checked+span{border-color:var(--navy);box-shadow:0 0 0 3px rgba(7,31,77,.06);background:#f7faff}.subtypes{display:none;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.subtypes.show{display:grid}.subpick input{position:absolute;opacity:0}.subpick span{display:block;text-align:center;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:11px;font-weight:800;cursor:pointer}.subpick input:checked+span{background:var(--navy);color:#fff;border-color:var(--navy)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:6px;font-size:10px;font-weight:800}.full{grid-column:1/-1}.req{color:var(--red)}input,select,textarea{width:100%;border:1px solid #cfdae6;border-radius:10px;padding:11px 12px;min-height:48px;background:#fff;color:var(--ink);font:inherit;font-size:11px;outline:none}textarea{min-height:120px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:#6f87a7;box-shadow:0 0 0 3px rgba(7,31,77,.05)}#map{height:310px;border:1px solid var(--line);border-radius:12px;overflow:hidden}.map-actions{display:flex;gap:8px;align-items:center;margin-top:9px;flex-wrap:wrap}.map-actions button,.map-actions a{border:1px solid var(--line);background:#fff;color:var(--navy);font:inherit;font-size:9px;font-weight:800;padding:9px 12px;border-radius:8px;text-decoration:none;cursor:pointer}.hint{font-size:8px;color:#8793a3;font-weight:500}.upload{padding:12px;border:1px dashed #ccd7e3;border-radius:10px;background:#fafcff}.submitbar{display:flex;align-items:center;justify-content:space-between;gap:15px;padding-top:24px}.trust{font-size:9px;color:#748296}.submit{border:0;border-radius:10px;background:var(--red);color:#fff;padding:13px 26px;font:inherit;font-size:12px;font-weight:900;cursor:pointer}.error{background:#fff0f2;color:#9f1730;border-radius:10px;padding:12px;margin-bottom:18px;font-size:10px}@media(max-width:760px){.intent-grid,.subtypes,.grid{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:20px}.shell{margin-top:-24px}.submitbar{flex-direction:column}.submit{width:100%}.logo{width:125px}.top{height:72px}.topin{height:72px}}\n[39m[39;1m
-  [39;22m[31m</style>[39m[31m<style id="dynamic-brand-logo-presentation">[39m[31m\n[39m[39;1m
-  [39;22m[90m... (83 more lines)[39m[39;1m
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\PublicRequestWizardTest[39m
+  [32;1m✓[39;22m[90m [39m[90mpublic request page is single page and bilingual[39m[90m                   [39m [90m17.92s[39m  
+  [32;1m✓[39;22m[90m [39m[90mticket prefixes and serial sequence are generated as requested[39m[90m      [39m [90m0.11s[39m  
+  [32;1m✓[39;22m[90m [39m[90mticket receipt shows request details and appointment[39m[90m                [39m [90m0.04s[39m  
 
-  To contain: [39;22m[32mخدمة أسرع تبدأ بطلب أوضح[39m
-
-  at [32mtests/Feature/PublicRequestWizardTest.php[39m:[32m17[39m
-     13▕     public function test_public_request_page_renders_four_step_wizard(): void
-     14▕     {
-     15▕         $this->get('/request-service')
-     16▕             ->assertOk()
-  ➜  17▕             ->assertSee('خدمة أسرع تبدأ بطلب أوضح', false)
-     18▕             ->assertSee('طلب عرض سعر', false)
-     19▕             ->assertSee('طلب صيانة / خدمة', false)
-     20▕             ->assertSee('استشارة فنية', false)
-     21▕             ->assertSee('مراجعة وإرسال', false);
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\PublicRequestWizardTest[22m [90m>[39m service dropdown has serv…   
-[39;1m  Expected: [39;22m[31m<!doctype html>[39m[31m<html lang="ar" dir="rtl">[39m[31m<head>[39m[31m<meta charset="utf-8">[39m[31m<meta name="viewport" content="width=device-width,initial-scale=1">[39m[31m<title>[39m[31mUNIFCO | طلب خدمة / عرض سعر[39m[31m</title>[39m[31m<link rel="preconnect" href="https://fonts.googleapis.com">[39m[31m<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>[39m[31m<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">[39m[31m<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">[39m[31m<style>[39m[31m\n[39m[39;1m
-  [39;22m[31m:root{font-family:"Cairo",Tahoma,Arial,sans-serif;--navy:#071f4d;--red:#e20b24;--ink:#142641;--muted:#7c899b;--line:#d9e2ec;--soft:#f5f8fb}*{box-sizing:border-box}body{margin:0;background:var(--soft);color:var(--ink)}.top{height:80px;background:#fff;border-bottom:1px solid #e7edf4}.topin{width:min(1220px,94%);height:100%;margin:auto;display:flex;align-items:center;gap:14px}.logo{width:155px;height:62px;object-fit:contain}.actions{margin-inline-start:auto;display:flex;gap:8px}.actions a{font-size:11px;font-weight:800;text-decoration:none;color:var(--navy);padding:9px 12px;border-radius:8px}.actions .lang{border:1px solid var(--line)}.hero{background:linear-gradient(90deg,rgba(5,24,51,.98),rgba(7,31,77,.82)),url('/images/home/hero-electrical.svg?v=20260821-11') center/cover;color:#fff;border-bottom:4px solid var(--red);min-height:205px}.heroin{width:min(1220px,94%);margin:auto;padding:32px 0}.eyebrow{font-size:10px;font-weight:900;letter-spacing:.08em}.hero h1{font-size:clamp(28px,4vw,46px);margin:7px 0}.hero p{margin:0;color:#dce7f4;font-size:12px}.shell{width:min(1220px,94%);margin:-38px auto 60px}.card{background:#fff;border:1px solid #e1e8f0;border-radius:20px;box-shadow:0 22px 58px rgba(7,31,77,.11);padding:28px}.section{padding:0 0 24px;margin-bottom:24px;border-bottom:1px solid #edf1f5}.section:last-of-type{border:0;margin-bottom:0}.section h2{margin:0 0 6px;font-size:17px;color:var(--navy)}.section p{margin:0 0 16px;color:var(--muted);font-size:10px}.intent-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.pick{position:relative}.pick input{position:absolute;opacity:0}.pick span{display:block;border:1px solid var(--line);border-radius:13px;padding:18px;cursor:pointer;background:#fff;min-height:88px}.pick span b{display:block;font-size:13px;color:var(--navy)}.pick span small{display:block;font-size:9px;color:#8793a4;margin-top:5px}.pick input:checked+span{border-color:var(--navy);box-shadow:0 0 0 3px rgba(7,31,77,.06);background:#f7faff}.subtypes{display:none;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.subtypes.show{display:grid}.subpick input{position:absolute;opacity:0}.subpick span{display:block;text-align:center;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:11px;font-weight:800;cursor:pointer}.subpick input:checked+span{background:var(--navy);color:#fff;border-color:var(--navy)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:6px;font-size:10px;font-weight:800}.full{grid-column:1/-1}.req{color:var(--red)}input,select,textarea{width:100%;border:1px solid #cfdae6;border-radius:10px;padding:11px 12px;min-height:48px;background:#fff;color:var(--ink);font:inherit;font-size:11px;outline:none}textarea{min-height:120px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:#6f87a7;box-shadow:0 0 0 3px rgba(7,31,77,.05)}#map{height:310px;border:1px solid var(--line);border-radius:12px;overflow:hidden}.map-actions{display:flex;gap:8px;align-items:center;margin-top:9px;flex-wrap:wrap}.map-actions button,.map-actions a{border:1px solid var(--line);background:#fff;color:var(--navy);font:inherit;font-size:9px;font-weight:800;padding:9px 12px;border-radius:8px;text-decoration:none;cursor:pointer}.hint{font-size:8px;color:#8793a3;font-weight:500}.upload{padding:12px;border:1px dashed #ccd7e3;border-radius:10px;background:#fafcff}.submitbar{display:flex;align-items:center;justify-content:space-between;gap:15px;padding-top:24px}.trust{font-size:9px;color:#748296}.submit{border:0;border-radius:10px;background:var(--red);color:#fff;padding:13px 26px;font:inherit;font-size:12px;font-weight:900;cursor:pointer}.error{background:#fff0f2;color:#9f1730;border-radius:10px;padding:12px;margin-bottom:18px;font-size:10px}@media(max-width:760px){.intent-grid,.subtypes,.grid{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:20px}.shell{margin-top:-24px}.submitbar{flex-direction:column}.submit{width:100%}.logo{width:125px}.top{height:72px}.topin{height:72px}}\n[39m[39;1m
-  [39;22m[31m</style>[39m[31m<style id="dynamic-brand-logo-presentation">[39m[31m\n[39m[39;1m
-  [39;22m[90m... (83 more lines)[39m[39;1m
-
-  To contain: [39;22m[32mdata-family="FACILITY"[39m
-
-  at [32mtests/Feature/PublicRequestWizardTest.php[39m:[32m28[39m
-     24▕     public function test_service_dropdown_has_server_rendered_fallback_and_step_validation_logic(): void
-     25▕     {
-     26▕         $this->get('/request-service')
-     27▕             ->assertOk()
-  ➜  28▕             ->assertSee('data-family="FACILITY"', false)
-     29▕             ->assertSee('إدارة مرافق متكاملة', false)
-     30▕             ->assertSee('data-family="ELECTRICAL"', false)
-     31▕             ->assertSee('مولدات كهربائية', false)
-     32▕             ->assertSee('function filterServices', false)
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\PublicRequestWizardTest[22m [90m>[39m q… [41;1m ModelNotFoundException [49;22m  
-[39;1m  No query results for model [App\Models\PublicServiceRequest].[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php[39m:[32m786[39m
-    782▕         if (! is_null($model = $this->first($columns))) {
-    783▕             return $model;
-    784▕         }
-    785▕ 
-  ➜ 786▕         throw (new ModelNotFoundException)->setModel(get_class($this->model));
-    787▕     }
-    788▕ 
-    789▕     /**
-    790▕      * Execute the query and get the first result or call a callback.
-
-      [2m+4 vendor frames [22m
-  [33m5   [39m[39;1mtests/Feature/PublicRequestWizardTest.php[39;22m:[39;1m56[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\PublicRequestWizardTest[22m [90m>[39m s… [41;1m ModelNotFoundException [49;22m  
-[39;1m  No query results for model [App\Models\PublicServiceRequest].[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php[39m:[32m786[39m
-    782▕         if (! is_null($model = $this->first($columns))) {
-    783▕             return $model;
-    784▕         }
-    785▕ 
-  ➜ 786▕         throw (new ModelNotFoundException)->setModel(get_class($this->model));
-    787▕     }
-    788▕ 
-    789▕     /**
-    790▕      * Execute the query and get the first result or call a callback.
-
-      [2m+4 vendor frames [22m
-  [33m5   [39m[39;1mtests/Feature/PublicRequestWizardTest.php[39;22m:[39;1m82[39;22m
-
-
-  [90mTests:[39m    [31;1m4 failed[39;22m[90m,[39m[39m [39m[32;1m1 passed[39;22m[90m (8 assertions)[39m
-  [90mDuration:[39m [39m18.42s[39m
+  [90mTests:[39m    [32;1m3 passed[39;22m[90m (34 assertions)[39m
+  [90mDuration:[39m [39m18.15s[39m
 
