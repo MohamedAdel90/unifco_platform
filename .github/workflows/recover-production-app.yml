@@ -89,19 +89,24 @@ jobs:
           php artisan route:list --name=hr.compliance.scan >/dev/null
           php artisan route:list --name=hr.analytics.index >/dev/null
           php artisan route:list --name=hr.analytics.plans.store >/dev/null
-          echo "==> Verify single-page public request and HR authenticated pages"
+          echo "==> Verify native single-page public request header and request form"
           request_html="$(curl -fsS http://127.0.0.1:8081/request-service)"
           grep -q 'خدمة أسرع تبدأ بطلب أوضح' <<< "$request_html"
-          grep -q 'request-site-header' <<< "$request_html"
+          grep -q 'class="request-pill"' <<< "$request_html"
+          grep -q 'class="primary-nav"' <<< "$request_html"
+          grep -q '>طلب خدمة<' <<< "$request_html"
           grep -q 'عرض سعر قطع غيار' <<< "$request_html"
           grep -q 'عرض سعر عقد صيانة' <<< "$request_html"
           grep -q 'خدمات الصيانة العادية' <<< "$request_html"
           grep -q 'خدمات الصيانة الطارئة' <<< "$request_html"
+          ! grep -q 'request-site-header' <<< "$request_html"
           ! grep -q 'requestWizard' <<< "$request_html"
           ! grep -q 'مراجعة وإرسال' <<< "$request_html"
           ! grep -q 'UNIFCO · ONE FACILITY SHOP' <<< "$request_html"
           request_en_html="$(curl -fsS 'http://127.0.0.1:8081/request-service?lang=en')"
-          grep -q 'Faster service starts with a clearer request' <<< "$request_en_html"
+          grep -q 'A faster service starts with a clearer request' <<< "$request_en_html"
+          grep -q 'class="request-pill"' <<< "$request_en_html"
+          grep -q '>Request Service<' <<< "$request_en_html"
           grep -q 'Spare Parts Quotation' <<< "$request_en_html"
           grep -q 'Maintenance Contract Quotation' <<< "$request_en_html"
           for path in dashboard attendance leave payroll missions settlements recruitment performance self-service manager-self-service documents self-service/documents compliance analytics; do
