@@ -2,9 +2,9 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Recovery fetch main
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   361b500..6c53853  main       -> origin/main
-HEAD is now at 6c53853 Deploy centered request service action
-server_sha=6c53853793b74f5623c1972bd5e73e69cea7706b
+   6c53853..73a1136  main       -> origin/main
+HEAD is now at 73a1136 Deploy resilient public ticket issuance
+server_sha=73a11367b71593f41e7ff26e14ac27509ed7415b
 Composer plugins have been disabled for safety in this non-interactive session.
 Set COMPOSER_ALLOW_SUPERUSER=1 if you want to allow plugins to run as root/super user.
 Do not run Composer as root/super user! See https://getcomposer.org/root for details
@@ -32,15 +32,15 @@ Use the `composer fund` command to find out more!
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 0.87ms DONE
-  cache .......................................................... 2.48ms DONE
-  compiled ....................................................... 0.60ms DONE
-  events ......................................................... 0.33ms DONE
-  routes ......................................................... 0.42ms DONE
-  views .......................................................... 3.64ms DONE
+  config ......................................................... 1.24ms DONE
+  cache .......................................................... 2.66ms DONE
+  compiled ....................................................... 0.80ms DONE
+  events ......................................................... 0.47ms DONE
+  routes ......................................................... 0.50ms DONE
+  views .......................................................... 3.60ms DONE
 
 unifco-app: stopped
 No config updates to processes
 unifco-app: started
-unifco-app                       RUNNING   pid 539753, uptime 0:00:03
+unifco-app                       RUNNING   pid 540700, uptime 0:00:02
 ==> Verify request page reuses homepage header except login
