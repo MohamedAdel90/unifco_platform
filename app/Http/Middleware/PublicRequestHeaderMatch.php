@@ -52,7 +52,7 @@ class PublicRequestHeaderMatch
             .'</a>'
             .'<nav class="nav-links">'.$navInner.'</nav>'
             .'<div class="nav-actions">'
-            .'<a class="btn red request-center-action" href="#requestForm">'.$requestLabel.'</a>'
+            .'<a class="btn red" id="requestCenterAction" href="#requestForm">'.$requestLabel.'</a>'
             .'<a class="lang" href="'.$languageUrl.'">'.$languageLabel.'</a>'
             .'</div>'
             .'<button class="menu-toggle" type="button" aria-label="Menu" onclick="document.getElementById(\'requestMobileMenu\').classList.toggle(\'open\')">☰</button>'
@@ -82,7 +82,7 @@ html[dir="ltr"] .request-homepage-header .nav-links{direction:ltr!important}
 .request-homepage-header .nav-actions{display:flex!important;align-items:center!important;gap:9px!important;direction:ltr!important;flex:0 0 auto!important}
 .request-homepage-header .btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-height:42px!important;height:auto!important;padding:10px 18px!important;border:1px solid transparent!important;border-radius:6px!important;color:#fff!important;font-size:11px!important;font-weight:900!important;text-decoration:none!important;box-shadow:none!important}
 .request-homepage-header .btn.red{background:#ce122d!important}
-.request-homepage-header .request-center-action{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;z-index:3!important;margin:0!important;white-space:nowrap!important}
+.request-homepage-header #requestCenterAction{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;z-index:3!important;margin:0!important;white-space:nowrap!important}
 .request-homepage-header .lang{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;min-width:0!important;min-height:42px!important;height:auto!important;padding:9px 13px!important;border:1px solid #ccd4df!important;border-radius:6px!important;font-family:inherit!important;font-size:10px!important;font-weight:900!important;color:#071f4d!important;background:#fff!important;text-decoration:none!important;box-shadow:none!important}
 .request-homepage-header .menu-toggle{display:none!important;border:0!important;background:#071f4d!important;color:#fff!important;width:42px!important;height:42px!important;border-radius:7px!important;font-size:20px!important;cursor:pointer!important}
 .request-homepage-header .mobile-menu{display:none!important;padding:0 0 14px!important}
@@ -90,7 +90,7 @@ html[dir="ltr"] .request-homepage-header .nav-links{direction:ltr!important}
 .request-homepage-header .mobile-menu a{padding:10px 12px!important;background:#f5f7fa!important;border-radius:7px!important;color:#071f4d!important;font-size:11px!important;font-weight:800!important;text-decoration:none!important}
 @media(max-width:1060px){.request-homepage-header .nav-links{gap:12px!important}.request-homepage-header .nav-links a{min-width:42px!important;font-size:9px!important}}
 @media(max-width:850px){.request-homepage-header .nav-links{display:none!important}.request-homepage-header .menu-toggle{display:block!important}.request-homepage-header .brand-link{margin-right:auto!important}.request-homepage-header .nav{gap:12px!important}}
-@media(max-width:700px){.request-homepage-header .site-logo-frame{width:38px!important;height:46px!important;flex-basis:38px!important}.request-homepage-header .site-logo{width:38px!important;height:59px!important}.request-homepage-header .brand-copy strong{font-size:21px!important}.request-homepage-header .brand-copy small{font-size:5.5px!important}.request-homepage-header .request-center-action{display:none!important}.request-homepage-header .nav{min-height:70px!important}}
+@media(max-width:700px){.request-homepage-header .site-logo-frame{width:38px!important;height:46px!important;flex-basis:38px!important}.request-homepage-header .site-logo{width:38px!important;height:59px!important}.request-homepage-header .brand-copy strong{font-size:21px!important}.request-homepage-header .brand-copy small{font-size:5.5px!important}.request-homepage-header #requestCenterAction{display:none!important}.request-homepage-header .nav{min-height:70px!important}}
 </style>
 HTML;
 
