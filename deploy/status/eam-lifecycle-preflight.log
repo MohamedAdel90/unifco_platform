@@ -1,33 +1,3 @@
-  - Locking nunomaduro/termwind (v2.4.0)
-  - Locking phar-io/manifest (2.0.4)
-  - Locking phar-io/version (3.2.1)
-  - Locking phpoption/phpoption (1.10.0)
-  - Locking phpunit/php-code-coverage (12.5.7)
-  - Locking phpunit/php-file-iterator (6.0.2)
-  - Locking phpunit/php-invoker (6.0.0)
-  - Locking phpunit/php-text-template (5.0.0)
-  - Locking phpunit/php-timer (8.0.0)
-  - Locking phpunit/phpunit (12.5.33)
-  - Locking psr/clock (1.0.0)
-  - Locking psr/container (2.0.2)
-  - Locking psr/event-dispatcher (1.0.0)
-  - Locking psr/http-client (1.0.3)
-  - Locking psr/http-factory (1.1.0)
-  - Locking psr/http-message (2.0)
-  - Locking psr/log (3.0.2)
-  - Locking psr/simple-cache (3.0.0)
-  - Locking psy/psysh (v0.12.24)
-  - Locking ramsey/collection (2.1.1)
-  - Locking ramsey/uuid (4.9.3)
-  - Locking sebastian/cli-parser (4.2.1)
-  - Locking sebastian/comparator (7.1.8)
-  - Locking sebastian/complexity (5.0.0)
-  - Locking sebastian/diff (7.0.1)
-  - Locking sebastian/environment (8.1.2)
-  - Locking sebastian/exporter (7.0.3)
-  - Locking sebastian/global-state (8.0.3)
-  - Locking sebastian/lines-of-code (4.0.1)
-  - Locking sebastian/object-enumerator (7.0.0)
   - Locking sebastian/object-reflector (5.0.0)
   - Locking sebastian/recursion-context (7.0.1)
   - Locking sebastian/type (6.0.4)
@@ -316,25 +286,55 @@ cp: warning: behavior of -n is non-portable and may change in future; use --upda
 
    INFO  Preparing database.  
 
-  Creating migration table ..................................... 104.36ms DONE
+  Creating migration table ...................................... 18.26ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables ........................ 1s DONE
-  2026_08_14_000002_add_controls_and_transactions .............. 594.88ms DONE
-  2026_08_14_000003_add_operational_integration ................ 464.49ms DONE
-  2026_08_14_000005_create_platform_services_tables ............ 224.42ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ....... 145.19ms DONE
-  2026_08_15_000008_add_finance_core ........................... 667.82ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ....... 894.12ms DONE
-  2026_08_15_000010_add_hr_operations .......................... 613.59ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................ 297.78ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................ 352.80ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .............. 766.96ms DONE
-  2026_08_18_000014_add_public_site_requests .................... 29.89ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines . 598.01ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ........... 615.87ms DONE
-  2026_08_18_000017_expand_customer_portal_operations .......... 869.91ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ................ 1s DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  207.61ms DONE
-  2026_08_21_000020_add_emergency_request_details 
+  2026_08_14_000001_create_unifco_core_tables .................. 638.42ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 381.50ms DONE
+  2026_08_14_000003_add_operational_integration ................ 283.01ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 121.34ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 79.74ms DONE
+  2026_08_15_000008_add_finance_core ........................... 344.77ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 587.93ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 382.29ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 211.88ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 223.55ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 493.63ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 21.21ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 417.91ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 466.76ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 611.20ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 666.40ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  143.02ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 179.48ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 377.04ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 153.19ms DONE
+  2026_08_21_000023_create_customer_messaging ................... 78.43ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.41ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 846.88ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 412.51ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 53.00ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 560.33ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  292.40ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 42.54ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 729.74ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 482.39ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 470.82ms DONE
+  2026_08_22_000034_add_user_permission_overrides ............... 85.89ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 357.07ms DONE
+  2026_08_22_000036_add_user_session_version .................... 84.91ms DONE
+  2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 553.93ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 452.84ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 401.03ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 376.33ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 650.90ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 753.46ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 367.22ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 504.16ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 130.67ms DONE
+  2026_08_23_000047_create_branding_settings .................... 25.72ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 167.53ms DONE
+  2026_08_25_000049_rebuild_public_request_single_page ......... 290.81ms DONE
+
