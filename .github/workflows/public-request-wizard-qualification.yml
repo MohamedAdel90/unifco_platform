@@ -1,4 +1,4 @@
-name: Public Request Wizard Qualification
+name: Public Request Single Page Qualification
 
 on:
   push:
@@ -10,6 +10,7 @@ on:
       - 'resources/views/public/request.blade.php'
       - 'resources/views/public/received.blade.php'
       - 'database/migrations/2026_08_24_000048_upgrade_public_request_experience.php'
+      - 'database/migrations/2026_08_25_000049_rebuild_public_request_single_page.php'
       - 'tests/Feature/PublicRequestWizardTest.php'
       - '.github/workflows/public-request-wizard-qualification.yml'
   workflow_dispatch:
@@ -42,7 +43,7 @@ jobs:
           php-version: '8.4'
           extensions: pdo_mysql
           coverage: none
-      - name: Qualify public request wizard
+      - name: Qualify single-page public request intake
         id: test
         shell: bash
         run: |
@@ -57,8 +58,10 @@ jobs:
             php -l app/Models/PublicServiceRequest.php
             php -l app/Services/PublicRequestPipelineService.php
             php -l database/migrations/2026_08_24_000048_upgrade_public_request_experience.php
+            php -l database/migrations/2026_08_25_000049_rebuild_public_request_single_page.php
             php artisan migrate:fresh --force
             php artisan route:list --name=public.request.store >/dev/null
+            php artisan route:list --name=public.request.received >/dev/null
             php artisan view:clear
             php artisan view:cache
             php artisan test tests/Feature/PublicRequestWizardTest.php
@@ -79,7 +82,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add deploy/status/public-request-wizard-latest.txt deploy/status/public-request-wizard.log
-          git commit -m 'Record public request wizard qualification [skip ci]' || true
+          git commit -m 'Record public request qualification [skip ci]' || true
           git pull --rebase origin main || true
           git push origin HEAD:main
       - name: Fail when qualification failed
