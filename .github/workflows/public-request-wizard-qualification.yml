@@ -7,6 +7,7 @@ on:
       - 'app/Http/Controllers/PublicSiteController.php'
       - 'app/Http/Middleware/BrandingPresentation.php'
       - 'app/Http/Middleware/PublicRequestAttachmentsPresentation.php'
+      - 'app/Http/Middleware/PublicRequestHeaderMatch.php'
       - 'app/Models/PublicServiceRequest.php'
       - 'app/Services/PublicRequestPipelineService.php'
       - 'bootstrap/app.php'
@@ -60,6 +61,7 @@ jobs:
             php -l app/Http/Controllers/PublicSiteController.php
             php -l app/Http/Middleware/BrandingPresentation.php
             php -l app/Http/Middleware/PublicRequestAttachmentsPresentation.php
+            php -l app/Http/Middleware/PublicRequestHeaderMatch.php
             php -l bootstrap/app.php
             php -l app/Models/PublicServiceRequest.php
             php -l app/Services/PublicRequestPipelineService.php
