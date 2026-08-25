@@ -22,9 +22,13 @@ class PublicRequestWizardTest extends TestCase
         ], $overrides);
     }
 
-    public function test_public_request_page_is_single_page_and_bilingual(): void
+    public function test_public_request_page_is_single_page_bilingual_and_uses_refined_presentation(): void
     {
         $this->get('/request-service')->assertOk()
+            ->assertSee('خدمة أسرع تبدأ بطلب أوضح', false)
+            ->assertSee('خطوات بسيطة تساعد فريق UNIFCO على فهم الخدمة المطلوبة بشكل سريع وواضح.', false)
+            ->assertSee('request-site-header', false)
+            ->assertSee('request-primary-nav', false)
             ->assertSee('طلب عرض سعر', false)
             ->assertSee('عرض سعر قطع غيار', false)
             ->assertSee('عرض سعر عقد صيانة', false)
@@ -32,16 +36,31 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('خدمات الصيانة الطارئة', false)
             ->assertSee('اسم الموقع', false)
             ->assertSee('صور المعدة', false)
+            ->assertSee('#subConsult{display:none!important}', false)
+            ->assertSee('#map{height:225px!important}', false)
+            ->assertSee('#subQuote{width:calc((100% - 24px)/3)!important', false)
+            ->assertDontSee('UNIFCO · ONE FACILITY SHOP', false)
+            ->assertDontSee('كل تفاصيل الطلب في صفحة واحدة', false)
             ->assertDontSee('مراجعة وإرسال', false);
 
         $this->get('/request-service?lang=en')->assertOk()
+            ->assertSee('Faster service starts with a clearer request', false)
+            ->assertSee('Simple steps help the UNIFCO team understand the required service quickly and clearly.', false)
+            ->assertSee('Home', false)
+            ->assertSee('About Us', false)
+            ->assertSee('Services', false)
+            ->assertSee('Our Clients', false)
+            ->assertSee('Projects', false)
+            ->assertSee('Careers', false)
+            ->assertSee('Contact us', false)
             ->assertSee('Request a Quotation', false)
             ->assertSee('Spare Parts Quotation', false)
             ->assertSee('Maintenance Contract Quotation', false)
             ->assertSee('Routine Maintenance', false)
             ->assertSee('Emergency Maintenance', false)
             ->assertSee('Site Name', false)
-            ->assertSee('Equipment Photos', false);
+            ->assertSee('Equipment Photos', false)
+            ->assertDontSee('UNIFCO · ONE FACILITY SHOP', false);
     }
 
     public function test_ticket_prefixes_and_serial_sequence_are_generated_as_requested(): void
