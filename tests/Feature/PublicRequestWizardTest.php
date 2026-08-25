@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\PublicServiceRequest;
+use App\Services\PublicRequestPipelineService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use RuntimeException;
 use Tests\TestCase;
 
 class PublicRequestWizardTest extends TestCase
@@ -34,7 +36,7 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('class="brand-copy"', false)
             ->assertSee('class="nav-links"', false)
             ->assertSee('class="nav-actions"', false)
-            ->assertSee('class="btn red"', false)
+            ->assertSee('class="btn red request-center-action"', false)
             ->assertSee('طلب خدمة', false)
             ->assertDontSee('تسجيل الدخول', false)
             ->assertDontSee('class="request-pill"', false)
@@ -89,6 +91,22 @@ class PublicRequestWizardTest extends TestCase
 
         $this->post('/service-requests', $this->payload('CONSULTATION','TECHNICAL_CONSULTATION'))->assertRedirect();
         $this->assertDatabaseHas('public_service_requests',['reference_no'=>'UNC-926000005','request_type'=>'CONSULTATION']);
+    }
+
+    public function test_pipeline_failure_does_not_block_ticket_reference_or_receipt_redirect(): void
+    {
+        $pipeline = $this->mock(PublicRequestPipelineService::class);
+        $pipeline->shouldReceive('convert')->once()->andThrow(new RuntimeException('Simulated downstream CRM failure'));
+
+        $response = $this->post('/service-requests', $this->payload('QUOTATION','SPARE_PARTS_QUOTE'));
+
+        $response->assertRedirect('/request-received/UNQ-926000001?lang=en');
+        $this->assertDatabaseHas('public_service_requests', [
+            'reference_no' => 'UNQ-926000001',
+            'ticket_serial' => 926000001,
+            'status' => 'NEW',
+        ]);
+        $this->get('/request-received/UNQ-926000001?lang=en')->assertOk()->assertSee('UNQ-926000001', false);
     }
 
     public function test_ticket_receipt_shows_request_details_and_appointment(): void
