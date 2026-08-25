@@ -1,8 +1,8 @@
-release=warehouse-field-inventory-v3-consumption
-source_sha=2fde9366da22f2910c8baecd5f00afbafce472b3
-verified_at=2026-08-25T23:30:22Z
-result=failure
+release=public-request-asset-qr-v1
+source_sha=bcfd1b0d416c1c3576447efb45fd368cf8bae6e8
+verified_at=2026-08-25T23:51:17Z
+result=success
 source_validation=success
 laravel_preflight_rc=0
-homepage_validation=failure
-deploy_rc=not-run
+public_release_validation=success
+deploy_rc=0
