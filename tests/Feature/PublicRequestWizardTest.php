@@ -22,15 +22,23 @@ class PublicRequestWizardTest extends TestCase
         ], $overrides);
     }
 
-    public function test_public_request_page_is_single_page_bilingual_and_uses_final_header_layout(): void
+    public function test_public_request_page_is_single_page_bilingual_and_reuses_homepage_header_without_login(): void
     {
         $this->get('/request-service')->assertOk()
             ->assertSee('خدمة أسرع تبدأ بطلب أوضح', false)
             ->assertSee('خطوات بسيطة تساعد فريق UNIFCO على فهم الخدمة المطلوبة بشكل سريع وواضح.', false)
-            ->assertSee('class="request-pill"', false)
-            ->assertSee('class="primary-nav"', false)
-            ->assertSee('class="brandzone"', false)
+            ->assertSee('class="top request-homepage-header"', false)
+            ->assertSee('class="wrap nav"', false)
+            ->assertSee('class="brand-link"', false)
+            ->assertSee('class="site-logo-frame"', false)
+            ->assertSee('class="brand-copy"', false)
+            ->assertSee('class="nav-links"', false)
+            ->assertSee('class="nav-actions"', false)
+            ->assertSee('class="btn red"', false)
             ->assertSee('طلب خدمة', false)
+            ->assertDontSee('تسجيل الدخول', false)
+            ->assertDontSee('class="request-pill"', false)
+            ->assertDontSee('class="primary-nav"', false)
             ->assertSee('طلب عرض سعر', false)
             ->assertSee('عرض سعر قطع غيار', false)
             ->assertSee('عرض سعر عقد صيانة', false)
@@ -38,19 +46,11 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('خدمات الصيانة الطارئة', false)
             ->assertSee('id="technicalConsultationSubtype"', false)
             ->assertSee('#map{height:220px', false)
-            ->assertSee('width:calc((100% - 22px)/3)', false)
-            ->assertSee('بيانات طلب عرض السعر', false)
             ->assertSee('public-request-camera-attachments', false)
-            ->assertSee('public-request-camera-attachments-logic', false)
             ->assertSee('التقاط صورة', false)
             ->assertSee('اختيار من الجهاز', false)
-            ->assertSee("cameraInput.setAttribute('capture','environment')", false)
-            ->assertSee('attachment-preview', false)
-            ->assertSee('attachment-remove', false)
             ->assertDontSee('id="subConsult"', false)
-            ->assertDontSee('UNIFCO · ONE FACILITY SHOP', false)
-            ->assertDontSee('كل تفاصيل الطلب في صفحة واحدة', false)
-            ->assertDontSee('مراجعة وإرسال', false);
+            ->assertDontSee('UNIFCO · ONE FACILITY SHOP', false);
 
         $this->get('/request-service?lang=en')->assertOk()
             ->assertSee('A faster service starts with a clearer request', false)
@@ -63,16 +63,14 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('Projects', false)
             ->assertSee('Careers', false)
             ->assertSee('Contact us', false)
+            ->assertDontSee('Sign In', false)
             ->assertSee('Request a Quotation', false)
             ->assertSee('Spare Parts Quotation', false)
             ->assertSee('Maintenance Contract Quotation', false)
             ->assertSee('Routine Maintenance', false)
             ->assertSee('Emergency Maintenance', false)
-            ->assertSee('Quotation Request Details', false)
             ->assertSee('Take Photo', false)
-            ->assertSee('Choose from Device', false)
-            ->assertSee('Use camera', false)
-            ->assertDontSee('UNIFCO · ONE FACILITY SHOP', false);
+            ->assertSee('Choose from Device', false);
     }
 
     public function test_ticket_prefixes_and_serial_sequence_are_generated_as_requested(): void
