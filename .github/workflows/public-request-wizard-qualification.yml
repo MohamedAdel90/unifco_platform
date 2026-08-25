@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'app/Http/Controllers/PublicSiteController.php'
+      - 'app/Http/Middleware/BrandingPresentation.php'
       - 'app/Models/PublicServiceRequest.php'
       - 'app/Services/PublicRequestPipelineService.php'
       - 'resources/views/public/request.blade.php'
@@ -55,6 +56,7 @@ jobs:
             cp .env.example .env
             php artisan key:generate --force
             php -l app/Http/Controllers/PublicSiteController.php
+            php -l app/Http/Middleware/BrandingPresentation.php
             php -l app/Models/PublicServiceRequest.php
             php -l app/Services/PublicRequestPipelineService.php
             php -l database/migrations/2026_08_24_000048_upgrade_public_request_experience.php
