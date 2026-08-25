@@ -2,9 +2,9 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Recovery fetch main
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   b3c0b6a..da862ed  main       -> origin/main
-HEAD is now at da862ed Record asset part consumption deployment verification [skip ci]
-server_sha=da862edc43b006a0b7bb2c563d745d7691d3c523
+   da862ed..5c1e9e7  main       -> origin/main
+HEAD is now at 5c1e9e7 Verify shared homepage header on request page
+server_sha=5c1e9e7d587ae3ab8ebba0717ec776ef564a4d5b
 Composer plugins have been disabled for safety in this non-interactive session.
 Set COMPOSER_ALLOW_SUPERUSER=1 if you want to allow plugins to run as root/super user.
 Do not run Composer as root/super user! See https://getcomposer.org/root for details
@@ -32,17 +32,16 @@ Use the `composer fund` command to find out more!
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 0.98ms DONE
-  cache .......................................................... 2.56ms DONE
-  compiled ....................................................... 0.86ms DONE
-  events ......................................................... 0.48ms DONE
-  routes ......................................................... 0.46ms DONE
-  views .......................................................... 3.63ms DONE
+  config ......................................................... 1.09ms DONE
+  cache .......................................................... 2.80ms DONE
+  compiled ....................................................... 0.73ms DONE
+  events ......................................................... 0.40ms DONE
+  routes ......................................................... 0.48ms DONE
+  views .......................................................... 4.01ms DONE
 
 unifco-app: stopped
 No config updates to processes
 unifco-app: started
-unifco-app                       RUNNING   pid 537464, uptime 0:00:02
-==> Verify release migrations and routes
-==> Verify native single-page public request header and request form
+unifco-app                       RUNNING   pid 538833, uptime 0:00:02
+==> Verify request page reuses homepage header except login
 recovery_result=success
