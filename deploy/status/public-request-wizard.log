@@ -362,57 +362,57 @@ No syntax errors detected in database/migrations/2026_08_24_000048_upgrade_publi
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 18.30ms DONE
+  Creating migration table ...................................... 19.75ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables .................. 736.70ms DONE
-  2026_08_14_000002_add_controls_and_transactions .............. 473.86ms DONE
-  2026_08_14_000003_add_operational_integration ................ 290.03ms DONE
-  2026_08_14_000005_create_platform_services_tables ............ 131.89ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ........ 88.60ms DONE
-  2026_08_15_000008_add_finance_core ........................... 400.70ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ....... 782.43ms DONE
-  2026_08_15_000010_add_hr_operations .......................... 449.30ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................ 237.26ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................ 261.24ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .............. 587.23ms DONE
-  2026_08_18_000014_add_public_site_requests .................... 23.87ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines . 497.41ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ........... 555.39ms DONE
-  2026_08_18_000017_expand_customer_portal_operations .......... 632.26ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps .......... 662.21ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  171.01ms DONE
-  2026_08_21_000020_add_emergency_request_details .............. 206.02ms DONE
-  2026_08_21_000021_add_customer_onboarding .................... 299.58ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile .... 151.97ms DONE
-  2026_08_21_000023_create_customer_messaging .................. 118.00ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 2.92ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ............... 927.00ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 467.24ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 61.33ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability ... 585.98ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  329.65ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 46.73ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation . 807.26ms DONE
-  2026_08_22_000032_add_work_order_part_requests ............... 495.99ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 477.62ms DONE
-  2026_08_22_000034_add_user_permission_overrides .............. 103.03ms DONE
-  2026_08_22_000035_add_user_security_metadata ................. 368.73ms DONE
-  2026_08_22_000036_add_user_session_version .................... 92.31ms DONE
+  2026_08_14_000001_create_unifco_core_tables .................. 669.19ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 398.08ms DONE
+  2026_08_14_000003_add_operational_integration ................ 291.13ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 120.99ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 81.76ms DONE
+  2026_08_15_000008_add_finance_core ........................... 354.47ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 610.64ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 392.80ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 203.42ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 222.41ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 474.62ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 21.77ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 403.43ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 515.49ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 553.17ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 575.98ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  135.91ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 172.17ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 269.15ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 136.57ms DONE
+  2026_08_21_000023_create_customer_messaging ................... 75.73ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.01ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 801.99ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 451.10ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 63.67ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 544.55ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  281.50ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 38.24ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 742.64ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 509.98ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 435.96ms DONE
+  2026_08_22_000034_add_user_permission_overrides ............... 84.61ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 322.23ms DONE
+  2026_08_22_000036_add_user_session_version .................... 77.02ms DONE
   2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 591.38ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 .................... 473.25ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ............. 446.17ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 377.84ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................ 673.22ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................ 815.67ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 .................. 348.42ms DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ................ 547.78ms DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................. 129.38ms DONE
-  2026_08_23_000047_create_branding_settings .................... 31.48ms DONE
-  2026_08_24_000048_upgrade_public_request_experience .......... 202.37ms DONE
-  2026_08_25_000049_rebuild_public_request_single_page ......... 345.73ms DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 539.96ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 419.92ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 405.70ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 355.06ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 656.96ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 709.01ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 341.50ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 530.99ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 122.18ms DONE
+  2026_08_23_000047_create_branding_settings .................... 25.37ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 185.71ms DONE
+  2026_08_25_000049_rebuild_public_request_single_page ......... 288.71ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -422,13 +422,49 @@ No syntax errors detected in database/migrations/2026_08_24_000048_upgrade_publi
    INFO  Blade templates cached successfully.  
 
 
-  [30;42;1m PASS [39;49;22m[39m Tests\Feature\PublicRequestWizardTest[39m
-  [32;1m✓[39;22m[90m [39m[90mpublic request page renders four step wizard[39m[90m                       [39m [90m20.32s[39m  
+  [39;41;1m FAIL [39;49;22m[39m Tests\Feature\PublicRequestWizardTest[39m
+  [32;1m✓[39;22m[90m [39m[90mpublic request page renders four step wizard[39m[90m                       [39m [90m17.55s[39m  
   [32;1m✓[39;22m[90m [39m[90mservice dropdown has server rendered fallback and step validation l[39m[90m…[39m [90m0.02s[39m  
-  [32;1m✓[39;22m[90m [39m[90mquotation can be submitted without commercial registration[39m[90m          [39m [90m0.05s[39m  
-  [32;1m✓[39;22m[90m [39m[90mservice request uses selected priority and operations pipeline[39m[90m      [39m [90m0.03s[39m  
+  [31;1m⨯[39;22m[90m [39m[90mquotation can be submitted without commercial registration[39m[90m          [39m [90m0.03s[39m  
+  [31;1m⨯[39;22m[90m [39m[90mservice request uses selected priority and operations pipeline[39m[90m      [39m [90m0.02s[39m  
   [32;1m✓[39;22m[90m [39m[90msuccess page contains reference and next step copy[39m[90m                  [39m [90m0.02s[39m  
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PublicRequestWizardTest[22m [90m>[39m q… [41;1m ModelNotFoundException [49;22m  
+[39;1m  No query results for model [App\Models\PublicServiceRequest].[39;22m
 
-  [90mTests:[39m    [32;1m5 passed[39;22m[90m (28 assertions)[39m
-  [90mDuration:[39m [39m20.53s[39m
+  at [32mvendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php[39m:[32m786[39m
+    782▕         if (! is_null($model = $this->first($columns))) {
+    783▕             return $model;
+    784▕         }
+    785▕ 
+  ➜ 786▕         throw (new ModelNotFoundException)->setModel(get_class($this->model));
+    787▕     }
+    788▕ 
+    789▕     /**
+    790▕      * Execute the query and get the first result or call a callback.
+
+      [2m+4 vendor frames [22m
+  [33m5   [39m[39;1mtests/Feature/PublicRequestWizardTest.php[39;22m:[39;1m56[39;22m
+
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PublicRequestWizardTest[22m [90m>[39m s… [41;1m ModelNotFoundException [49;22m  
+[39;1m  No query results for model [App\Models\PublicServiceRequest].[39;22m
+
+  at [32mvendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php[39m:[32m786[39m
+    782▕         if (! is_null($model = $this->first($columns))) {
+    783▕             return $model;
+    784▕         }
+    785▕ 
+  ➜ 786▕         throw (new ModelNotFoundException)->setModel(get_class($this->model));
+    787▕     }
+    788▕ 
+    789▕     /**
+    790▕      * Execute the query and get the first result or call a callback.
+
+      [2m+4 vendor frames [22m
+  [33m5   [39m[39;1mtests/Feature/PublicRequestWizardTest.php[39;22m:[39;1m82[39;22m
+
+
+  [90mTests:[39m    [31;1m2 failed[39;22m[90m,[39m[39m [39m[32;1m3 passed[39;22m[90m (17 assertions)[39m
+  [90mDuration:[39m [39m17.72s[39m
 
