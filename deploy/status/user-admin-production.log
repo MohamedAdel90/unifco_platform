@@ -2,9 +2,9 @@ Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
 ==> Recovery fetch main
 From github.com:zeroonesolutions0101/unifco_platform
  * branch            main       -> FETCH_HEAD
-   3d97afa..0ada32a  main       -> origin/main
-HEAD is now at 0ada32a Align production recovery with single-page request form
-server_sha=0ada32a50cb63af6ab3dc0667f626b5f3929bde1
+   0ada32a..3f42e53  main       -> origin/main
+HEAD is now at 3f42e53 Deploy final balanced request header
+server_sha=3f42e53394bb8e6c1930309a883a003d9bb572a4
 Composer plugins have been disabled for safety in this non-interactive session.
 Set COMPOSER_ALLOW_SUPERUSER=1 if you want to allow plugins to run as root/super user.
 Do not run Composer as root/super user! See https://getcomposer.org/root for details
@@ -32,17 +32,17 @@ Use the `composer fund` command to find out more!
 
    INFO  Clearing cached bootstrap files.  
 
-  config ......................................................... 1.00ms DONE
-  cache .......................................................... 2.92ms DONE
-  compiled ....................................................... 0.86ms DONE
-  events ......................................................... 0.51ms DONE
-  routes ......................................................... 0.45ms DONE
-  views .......................................................... 3.70ms DONE
+  config ......................................................... 1.02ms DONE
+  cache .......................................................... 2.99ms DONE
+  compiled ....................................................... 0.81ms DONE
+  events ......................................................... 0.44ms DONE
+  routes ......................................................... 0.43ms DONE
+  views .......................................................... 3.75ms DONE
 
 unifco-app: stopped
 No config updates to processes
 unifco-app: started
-unifco-app                       RUNNING   pid 469403, uptime 0:00:02
+unifco-app                       RUNNING   pid 472031, uptime 0:00:02
 ==> Verify release migrations and routes
 ==> Verify single-page public request and HR authenticated pages
 recovery_result=success
