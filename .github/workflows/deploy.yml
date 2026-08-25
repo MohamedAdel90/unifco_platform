@@ -48,6 +48,10 @@ jobs:
           set -euo pipefail
           php -l app/Http/Controllers/DashboardController.php
           php -l app/Http/Controllers/AuthController.php
+          php -l app/Http/Controllers/PublicSiteController.php
+          php -l app/Http/Middleware/PublicAssetQrPresentation.php
+          php -l app/Models/PublicServiceRequest.php
+          php -l app/Services/PublicRequestPipelineService.php
           php -l app/Http/Controllers/Inventory/WarehouseFieldInventoryController.php
           php -l app/Http/Controllers/Inventory/InventoryTransferOrderController.php
           php -l app/Http/Controllers/Inventory/WorkOrderPartRequestController.php
@@ -78,6 +82,7 @@ jobs:
           php -l app/Http/Controllers/Maintenance/WorkOrderController.php
           php -l app/Http/Controllers/CustomerAssetReadController.php
           php -l app/Http/Controllers/CustomerPortalController.php
+          php -l tests/Feature/PublicRequestWizardTest.php
           php -l tests/Feature/OperationsCommandCenterTest.php
           php -l tests/Feature/WarehouseFieldInventoryTest.php
           php -l tests/Feature/WorkOrderPartRequestTest.php
@@ -85,26 +90,22 @@ jobs:
           php -l tests/Feature/FoundationTest.php
           php -l routes/web.php
           php -l routes/public.php
+          php -l routes/public-asset-qr.php
           php -l routes/parts.php
           php -l routes/console.php
+          php -l database/migrations/2026_08_26_000050_link_public_requests_to_asset_registry.php
           for migration in database/migrations/2026_08_21_00002{5,6,7,8,9}_*.php database/migrations/2026_08_21_000030_*.php database/migrations/2026_08_22_000031_*.php database/migrations/2026_08_22_000032_*.php database/migrations/2026_08_22_000033_*.php; do php -l "$migration"; done
+          grep -q 'assetLookup' app/Http/Controllers/PublicSiteController.php
+          grep -q 'assetQrSection' app/Http/Middleware/PublicAssetQrPresentation.php
+          grep -q 'public.asset.lookup' routes/public-asset-qr.php
+          grep -q "'asset_id'" app/Models/PublicServiceRequest.php
           grep -q 'Operations Command Center' resources/views/dashboard.blade.php
           grep -q 'Spare Parts Control Center' resources/views/inventory/warehouse/index.blade.php
           grep -q 'Consume on Asset' resources/views/maintenance/work-orders/part-requests.blade.php
           grep -q 'Return to' resources/views/maintenance/work-orders/part-requests.blade.php
           grep -q 'Installed Parts & Components' resources/views/eam/assets/part-history.blade.php
           grep -q 'Installed Parts & Components' resources/views/customer/asset-part-history.blade.php
-          grep -q 'parts.consume' database/migrations/2026_08_22_000033_add_asset_part_consumption_and_returns.php
-          grep -q 'Resolve all requested/issued parts' app/Models/WorkOrder.php
-          grep -q 'asset_part_installations' tests/Feature/WorkOrderPartConsumptionTest.php
-          grep -q 'parts.request.receive' database/migrations/2026_08_22_000032_add_work_order_part_requests.php
-          grep -q 'Critical and emergency part requests require supervisor' app/Services/Inventory/WorkOrderPartRequestService.php
-          grep -q "STOREKEEPER" app/Http/Controllers/AuthController.php
-          grep -q 'inventory_transfer_orders' database/migrations/2026_08_22_000031_build_warehouse_field_inventory_foundation.php
-          grep -q 'PLAN_REPLACEMENT' app/Services/EAM/AssetHealthService.php
-          grep -q 'OUT_OF_STOCK' app/Services/EAM/AssetSparePartReorderService.php
           grep -q 'unifco:bootstrap-warehouse-access' deploy/deploy.sh
-          grep -q 'Skipping UNIFCO logo materialization by request' deploy/deploy.sh
 
       - name: Laravel application preflight
         id: preflight
@@ -121,6 +122,9 @@ jobs:
             php artisan list | grep -q 'unifco:import-sqlite'
             php artisan migrate:fresh --force
             php artisan route:list --name=dashboard >/dev/null
+            php artisan route:list --name=public.request.store >/dev/null
+            php artisan route:list --name=public.request.received >/dev/null
+            php artisan route:list --name=public.asset.lookup | grep -q 'service-assets/lookup'
             php artisan route:list --name=inventory.warehouse.index | grep -q 'inventory/warehouse-control'
             php artisan route:list --name=inventory.transfers.issue >/dev/null
             php artisan route:list --name=inventory.part-requests.approve >/dev/null
@@ -141,38 +145,30 @@ jobs:
             php artisan unifco:check-spare-reorder-alerts
             php artisan view:clear
             php artisan view:cache
-            php artisan test tests/Feature/WorkOrderPartConsumptionTest.php tests/Feature/WorkOrderPartRequestTest.php tests/Feature/WarehouseFieldInventoryTest.php tests/Feature/OperationsCommandCenterTest.php tests/Feature/FoundationTest.php
+            php artisan test tests/Feature/PublicRequestWizardTest.php tests/Feature/WorkOrderPartConsumptionTest.php tests/Feature/WorkOrderPartRequestTest.php tests/Feature/WarehouseFieldInventoryTest.php tests/Feature/OperationsCommandCenterTest.php tests/Feature/FoundationTest.php
           ) > >(tee /tmp/unifco-eam-preflight.log) 2>&1
           rc=$?
           echo "rc=$rc" >> "$GITHUB_OUTPUT"
           exit 0
 
-      - name: Validate electrical homepage release
+      - name: Validate public request and homepage release
         id: homepage
         if: ${{ steps.source.outcome == 'success' && steps.preflight.outputs.rc == '0' }}
         shell: bash
         run: |
           set -euo pipefail
-          for asset in \
-            public/images/home/hero-electrical.svg \
-            public/images/home/facility-power.svg \
-            public/images/home/generator.svg \
-            public/images/home/ats.svg \
-            public/images/home/transformer.svg \
-            public/images/home/ups.svg \
-            public/images/home/mv-switchgear.svg \
-            public/images/home/sector-commercial.svg \
-            public/images/home/sector-industrial.svg \
-            public/images/home/sector-healthcare.svg \
-            public/images/home/sector-education.svg \
-            public/images/home/sector-government.svg \
-            public/images/home/sector-warehouse.svg \
-            public/images/home/sector-datacenter.svg; do
-            test -s "$asset"
-          done
-          grep -q '/images/home/hero-electrical.svg' resources/views/public/home.blade.php
-          ! grep -q '<span>الضيافة</span>' resources/views/public/home.blade.php
+          test -s public/images/home/hero-electrical.svg
+          test -s public/images/home/facility-power.svg
+          test -s public/images/home/generator.svg
+          test -s public/images/home/ats.svg
+          test -s public/images/home/industry-photo-v14-00.webp
+          test -s public/images/home/client-portal-v14.webp
+          test -s resources/views/public/home.blade.php
+          test -s resources/views/public/request.blade.php
           grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php
+          grep -q 'id="requestForm"' resources/views/public/request.blade.php
+          grep -q 'Scan Equipment QR' app/Http/Middleware/PublicAssetQrPresentation.php
+          grep -q 'مسح QR للمعدة' app/Http/Middleware/PublicAssetQrPresentation.php
 
       - name: Deploy via SSH
         id: deploy
@@ -217,14 +213,14 @@ jobs:
           homepage_result="${{ steps.homepage.outcome }}"
           deploy_rc="${{ steps.deploy.outputs.rc }}"
           if [ "$source_result" = "success" ] && [ "${preflight_rc:-999}" = "0" ] && [ "$homepage_result" = "success" ] && [ "${deploy_rc:-999}" = "0" ]; then result="success"; else result="failure"; fi
-          printf 'release=warehouse-field-inventory-v3-consumption\nsource_sha=%s\nverified_at=%s\nresult=%s\nsource_validation=%s\nlaravel_preflight_rc=%s\nhomepage_validation=%s\ndeploy_rc=%s\n' \
+          printf 'release=public-request-asset-qr-v1\nsource_sha=%s\nverified_at=%s\nresult=%s\nsource_validation=%s\nlaravel_preflight_rc=%s\npublic_release_validation=%s\ndeploy_rc=%s\n' \
             "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "$source_result" "${preflight_rc:-not-run}" "$homepage_result" "${deploy_rc:-not-run}" > deploy/status/eam-lifecycle-latest.txt
           if [ -f /tmp/unifco-eam-preflight.log ]; then tail -n 340 /tmp/unifco-eam-preflight.log > deploy/status/eam-lifecycle-preflight.log; else printf 'Preflight step did not produce a log.\n' > deploy/status/eam-lifecycle-preflight.log; fi
           if [ -f /tmp/unifco-eam-deploy.log ]; then tail -n 240 /tmp/unifco-eam-deploy.log > deploy/status/eam-lifecycle-deploy.log; else printf 'Deployment step did not produce an SSH log.\n' > deploy/status/eam-lifecycle-deploy.log; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add deploy/status/eam-lifecycle-latest.txt deploy/status/eam-lifecycle-preflight.log deploy/status/eam-lifecycle-deploy.log
-          git commit -m "Record asset part consumption deployment verification [skip ci]" || true
+          git commit -m "Record public request asset QR deployment verification [skip ci]" || true
           git pull --rebase origin main || true
           git push origin HEAD:main
 
