@@ -31,43 +31,71 @@ class PublicRequestHeaderMatch
         $home = route('public.home', ['lang' => $locale]);
         $languageUrl = $request->fullUrlWithQuery(['lang' => $otherLocale]);
         $languageLabel = $isArabic ? 'EN' : 'AR';
+        $requestLabel = $isArabic ? 'طلب خدمة' : 'Request Service';
 
-        $brand = '<div class="brandzone request-home-brand">'
-            .'<a class="brand-link request-brand-link" href="'.$home.'">'
+        preg_match('/<nav class="primary-nav">(.*?)<\/nav>/s', $html, $navMatch);
+        $navInner = $navMatch[1] ?? '';
+
+        $mobileLabels = $isArabic
+            ? ['الرئيسية'=>'home','من نحن'=>'about','الخدمات'=>'services','عملاؤنا'=>'industries','المشاريع'=>'projects','الوظائف'=>'careers','تواصل معنا'=>'contact']
+            : ['Home'=>'home','About Us'=>'about','Services'=>'services','Our Clients'=>'industries','Projects'=>'projects','Careers'=>'careers','Contact us'=>'contact'];
+        $mobileLinks = '';
+        foreach ($mobileLabels as $label => $anchor) {
+            $mobileLinks .= '<a href="'.$home.'#'.$anchor.'">'.$label.'</a>';
+        }
+
+        $header = '<header class="top request-homepage-header">'
+            .'<div class="wrap nav">'
+            .'<a class="brand-link" href="'.$home.'">'
             .'<span class="site-logo-frame"><img class="site-logo" src="'.route('brand.logo').'" alt="UNIFCO"></span>'
             .'<span class="brand-copy"><strong>UNIFCO</strong><small>ONE FACILITY SHOP</small></span>'
             .'</a>'
+            .'<nav class="nav-links">'.$navInner.'</nav>'
+            .'<div class="nav-actions">'
+            .'<a class="btn red" href="#requestForm">'.$requestLabel.'</a>'
             .'<a class="lang" href="'.$languageUrl.'">'.$languageLabel.'</a>'
-            .'</div>';
+            .'</div>'
+            .'<button class="menu-toggle" type="button" aria-label="Menu" onclick="document.getElementById(\'requestMobileMenu\').classList.toggle(\'open\')">☰</button>'
+            .'</div>'
+            .'<div class="wrap mobile-menu" id="requestMobileMenu">'.$mobileLinks.'</div>'
+            .'</header>';
 
-        $html = preg_replace('/<div class="brandzone">.*?<\/div>/s', $brand, $html, 1) ?? $html;
-
-        $fontLink = '<link id="public-request-inter-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap">';
+        $html = preg_replace('/<header class="top">.*?<\/header>/s', $header, $html, 1) ?? $html;
 
         $style = <<<'HTML'
 <style id="public-request-home-header-match">
-/* Exact brand typography and logo geometry from the public homepage header. */
-body .top{height:auto!important;min-height:76px!important;background:rgba(255,255,255,.97)!important;border-bottom:1px solid #e7ebf0!important}
-body .topin{width:min(1280px,94%)!important;min-height:76px!important;height:76px!important;margin-inline:auto!important;display:grid!important;grid-template-columns:minmax(245px,1fr) auto minmax(520px,1.7fr)!important;align-items:center!important;gap:20px!important;direction:ltr!important}
-body .request-home-brand{display:flex!important;align-items:center!important;gap:20px!important;justify-self:start!important;min-width:0!important}
-body .request-brand-link{display:flex!important;align-items:center!important;gap:9px!important;margin:0!important;text-decoration:none!important;direction:ltr!important;flex:0 0 auto!important}
-body .request-brand-link .site-logo-frame{width:42px!important;height:50px!important;overflow:hidden!important;flex:0 0 42px!important;display:block!important}
-body .request-brand-link .site-logo{display:block!important;width:42px!important;height:65px!important;max-width:none!important;object-fit:cover!important;object-position:center top!important;margin:0!important;padding:0!important}
-body .request-brand-link .brand-copy{display:flex!important;flex-direction:column!important;line-height:.88!important;direction:ltr!important}
-body .request-brand-link .brand-copy strong{font-family:Inter,Arial,sans-serif!important;font-size:24px!important;font-weight:800!important;letter-spacing:.03em!important;line-height:.88!important;color:#071f4d!important;white-space:nowrap!important}
-body .request-brand-link .brand-copy small{margin-top:5px!important;font-family:Inter,Arial,sans-serif!important;font-size:6px!important;font-weight:900!important;letter-spacing:.16em!important;line-height:1!important;color:#ce122d!important;white-space:nowrap!important}
-body .request-home-brand .lang{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:48px!important;height:42px!important;min-height:42px!important;padding:9px 13px!important;border:1px solid #ccd4df!important;border-radius:6px!important;background:#fff!important;color:#071f4d!important;font-family:Inter,Arial,sans-serif!important;font-size:10px!important;font-weight:900!important;text-decoration:none!important;box-shadow:none!important}
-body .request-pill{justify-self:center!important;min-width:170px!important;height:42px!important;min-height:42px!important;padding:10px 18px!important;border-radius:6px!important;background:#ce122d!important;color:#fff!important;font-size:11px!important;font-weight:900!important;box-shadow:none!important}
-body .primary-nav{justify-self:end!important;gap:16px!important;min-width:0!important;height:76px!important;align-items:center!important}
-body .primary-nav a{min-width:50px!important;padding:7px 1px!important;font-size:10px!important;gap:4px!important}
-body .primary-nav .ico,body .primary-nav svg{width:20px!important;height:20px!important}
-@media(max-width:1180px){body .topin{grid-template-columns:minmax(225px,.95fr) auto minmax(455px,1.55fr)!important;gap:14px!important}body .request-home-brand{gap:14px!important}body .primary-nav{gap:9px!important}body .primary-nav a{font-size:9px!important;min-width:44px!important}}
-@media(max-width:1030px){body .topin{grid-template-columns:minmax(235px,1fr) auto!important}body .primary-nav{display:none!important}body .request-pill{justify-self:end!important}}
-@media(max-width:700px){body .topin{width:94%!important;grid-template-columns:1fr auto!important;gap:8px!important}body .request-home-brand{gap:9px!important}body .request-brand-link{gap:7px!important}body .request-brand-link .site-logo-frame{width:38px!important;height:46px!important;flex-basis:38px!important}body .request-brand-link .site-logo{width:38px!important;height:59px!important}body .request-brand-link .brand-copy strong{font-size:21px!important}body .request-brand-link .brand-copy small{font-size:5.5px!important;margin-top:4px!important}body .request-home-brand .lang{min-width:43px!important;height:40px!important;min-height:40px!important;padding:8px 10px!important}body .request-pill{min-width:auto!important;height:40px!important;min-height:40px!important;padding:8px 13px!important;font-size:10px!important}}
+/* Request page intentionally reuses the homepage header structure and dimensions. */
+.request-homepage-header.top{position:sticky!important;top:0!important;z-index:60!important;height:auto!important;min-height:0!important;background:rgba(255,255,255,.97)!important;border-bottom:1px solid #e7ebf0!important;backdrop-filter:blur(14px)!important}
+.request-homepage-header .wrap{width:min(1280px,94%)!important;margin-inline:auto!important}
+.request-homepage-header .nav{min-height:76px!important;height:auto!important;display:flex!important;align-items:center!important;gap:20px!important;direction:ltr!important}
+.request-homepage-header .brand-link{display:flex!important;align-items:center!important;gap:9px!important;margin-right:auto!important;direction:ltr!important;flex:0 0 auto!important;text-decoration:none!important}
+.request-homepage-header .site-logo-frame{width:42px!important;height:50px!important;overflow:hidden!important;flex:0 0 42px!important;display:block!important}
+.request-homepage-header .site-logo{display:block!important;width:42px!important;height:65px!important;max-width:none!important;object-fit:cover!important;object-position:center top!important;margin:0!important;padding:0!important}
+.request-homepage-header .brand-copy{display:flex!important;flex-direction:column!important;line-height:.88!important;direction:ltr!important}
+.request-homepage-header .brand-copy strong{font-family:Inter,Arial,sans-serif!important;font-size:24px!important;font-weight:700!important;letter-spacing:.03em!important;line-height:.88!important;color:#071f4d!important;white-space:nowrap!important}
+.request-homepage-header .brand-copy small{margin-top:5px!important;font-family:Inter,Arial,sans-serif!important;font-size:6px!important;font-weight:900!important;letter-spacing:.16em!important;line-height:1!important;color:#ce122d!important;white-space:nowrap!important}
+.request-homepage-header .nav-links{display:flex!important;align-items:center!important;gap:23px!important;direction:rtl!important;margin:0!important;min-width:0!important}
+html[dir="ltr"] .request-homepage-header .nav-links{direction:ltr!important}
+.request-homepage-header .nav-links a{position:relative!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;min-width:48px!important;padding:7px 1px!important;color:#25354d!important;text-decoration:none!important;font-size:10px!important;font-weight:800!important;line-height:1.15!important;white-space:nowrap!important}
+.request-homepage-header .nav-links .ico{display:grid!important;place-items:center!important;width:20px!important;height:20px!important}
+.request-homepage-header .nav-links svg{display:block!important;width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.request-homepage-header .nav-links a:first-child:after,.request-homepage-header .nav-links a:hover:after{content:""!important;position:absolute!important;inset-inline:0!important;bottom:-7px!important;height:2px!important;background:#ce122d!important}
+.request-homepage-header .nav-actions{display:flex!important;align-items:center!important;gap:9px!important;direction:ltr!important;flex:0 0 auto!important}
+.request-homepage-header .btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-height:42px!important;height:auto!important;padding:10px 18px!important;border:1px solid transparent!important;border-radius:6px!important;color:#fff!important;font-size:11px!important;font-weight:900!important;text-decoration:none!important;box-shadow:none!important;transform:none!important}
+.request-homepage-header .btn.red{background:#ce122d!important}
+.request-homepage-header .lang{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;min-width:0!important;min-height:42px!important;height:auto!important;padding:9px 13px!important;border:1px solid #ccd4df!important;border-radius:6px!important;font-family:inherit!important;font-size:10px!important;font-weight:900!important;color:#071f4d!important;background:#fff!important;text-decoration:none!important;box-shadow:none!important}
+.request-homepage-header .menu-toggle{display:none!important;border:0!important;background:#071f4d!important;color:#fff!important;width:42px!important;height:42px!important;border-radius:7px!important;font-size:20px!important;cursor:pointer!important}
+.request-homepage-header .mobile-menu{display:none!important;padding:0 0 14px!important}
+.request-homepage-header .mobile-menu.open{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}
+.request-homepage-header .mobile-menu a{padding:10px 12px!important;background:#f5f7fa!important;border-radius:7px!important;color:#071f4d!important;font-size:11px!important;font-weight:800!important;text-decoration:none!important}
+/* The login action is deliberately absent on request-service; every other homepage header action remains. */
+@media(max-width:1060px){.request-homepage-header .nav-links{gap:12px!important}.request-homepage-header .nav-links a{min-width:42px!important;font-size:9px!important}}
+@media(max-width:850px){.request-homepage-header .nav-links{display:none!important}.request-homepage-header .menu-toggle{display:block!important}.request-homepage-header .brand-link{margin-right:auto!important}.request-homepage-header .nav{gap:12px!important}}
+@media(max-width:700px){.request-homepage-header .site-logo-frame{width:38px!important;height:46px!important;flex-basis:38px!important}.request-homepage-header .site-logo{width:38px!important;height:59px!important}.request-homepage-header .brand-copy strong{font-size:21px!important}.request-homepage-header .brand-copy small{font-size:5.5px!important}.request-homepage-header .nav-actions .btn.red{display:none!important}.request-homepage-header .nav{min-height:70px!important}}
 </style>
 HTML;
 
-        $html = str_replace('</head>', $fontLink."\n".$style."\n</head>", $html);
+        $html = str_replace('</head>', $style."\n</head>", $html);
         $response->setContent($html);
         return $response;
     }
