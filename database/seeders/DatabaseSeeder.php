@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
                 ManufacturingDemoSeeder::class,
                 MaintenanceEamDemoSeeder::class,
                 PlatformDemoSeeder::class,
+                WorkflowTestUsersSeeder::class,
             ]);
         }
     }
