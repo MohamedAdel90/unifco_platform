@@ -124,3 +124,4 @@ Schedule::command('unifco:deliver-reports')->hourly()->withoutOverlapping();
 Schedule::command('unifco:generate-pm-work-orders')->hourly()->withoutOverlapping();
 Schedule::command('unifco:recalculate-asset-health')->dailyAt('03:10')->withoutOverlapping();
 Schedule::command('unifco:check-spare-reorder-alerts')->dailyAt('07:30')->withoutOverlapping();
+Schedule::command('unifco:check-approval-sla')->everyFifteenMinutes()->withoutOverlapping();
