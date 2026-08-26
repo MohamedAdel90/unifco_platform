@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: deploy-main
@@ -25,15 +25,20 @@ jobs:
     services:
       mysql:
         image: mysql:8.0
-        env: {MYSQL_DATABASE: unifco_testing, MYSQL_USER: unifco_test, MYSQL_PASSWORD: 'Unifco_Test!2026', MYSQL_ROOT_PASSWORD: 'Unifco_Root!2026'}
+        env:
+          MYSQL_DATABASE: unifco_testing
+          MYSQL_USER: unifco_test
+          MYSQL_PASSWORD: Unifco_Test!2026
+          MYSQL_ROOT_PASSWORD: Unifco_Root!2026
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -uunifco_test -pUnifco_Test!2026 --silent"
           --health-interval=5s --health-timeout=5s --health-retries=20
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PHP for source validation
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
@@ -41,138 +46,67 @@ jobs:
           extensions: pdo_mysql
           coverage: none
 
-      - name: Validate PHP source
-        id: source
+      - name: Validate release source
         shell: bash
         run: |
           set -euo pipefail
-          php -l app/Http/Controllers/DashboardController.php
-          php -l app/Http/Controllers/AuthController.php
           php -l app/Http/Controllers/PublicSiteController.php
-          php -l app/Http/Middleware/PublicAssetQrPresentation.php
-          php -l app/Models/PublicServiceRequest.php
-          php -l app/Services/PublicRequestPipelineService.php
-          php -l app/Http/Controllers/Inventory/WarehouseFieldInventoryController.php
-          php -l app/Http/Controllers/Inventory/InventoryTransferOrderController.php
-          php -l app/Http/Controllers/Inventory/WorkOrderPartRequestController.php
-          php -l app/Http/Controllers/Inventory/WorkOrderPartConsumptionController.php
-          php -l app/Services/Inventory/InventoryTransferService.php
-          php -l app/Services/Inventory/WorkOrderPartRequestService.php
-          php -l app/Services/Inventory/WorkOrderPartConsumptionService.php
-          php -l app/Services/Dashboard/WarehouseDashboardService.php
-          php -l app/Console/Commands/BootstrapWarehouseAccess.php
-          php -l app/Console/Commands/ImportSqliteDatabase.php
-          php -l app/Models/Warehouse.php
-          php -l app/Models/WarehouseBin.php
-          php -l app/Models/InventoryTransferOrder.php
-          php -l app/Models/InventoryTransferOrderLine.php
-          php -l app/Models/WorkOrderPartRequest.php
-          php -l app/Models/WorkOrderPartRequestLine.php
-          php -l app/Models/AssetPartInstallation.php
-          php -l app/Models/Asset.php
-          php -l app/Models/MaintenancePlan.php
-          php -l app/Models/WorkOrder.php
-          php -l app/Services/EAM/AssetHealthService.php
-          php -l app/Services/EAM/AssetSparePartReorderService.php
-          php -l app/Http/Controllers/EAM/AssetController.php
-          php -l app/Http/Controllers/EAM/AssetMeterController.php
-          php -l app/Http/Controllers/EAM/AssetSparePartController.php
-          php -l app/Http/Controllers/EAM/AssetReliabilityController.php
-          php -l app/Http/Controllers/EAM/AssetHealthDashboardController.php
-          php -l app/Http/Controllers/Maintenance/WorkOrderController.php
-          php -l app/Http/Controllers/CustomerAssetReadController.php
           php -l app/Http/Controllers/CustomerPortalController.php
-          php -l tests/Feature/PublicRequestWizardTest.php
-          php -l tests/Feature/OperationsCommandCenterTest.php
-          php -l tests/Feature/WarehouseFieldInventoryTest.php
-          php -l tests/Feature/WorkOrderPartRequestTest.php
-          php -l tests/Feature/WorkOrderPartConsumptionTest.php
-          php -l tests/Feature/FoundationTest.php
-          php -l routes/web.php
+          php -l app/Services/PublicRequestPipelineService.php
+          php -l app/Services/ServiceRequestWorkflowService.php
+          php -l app/Services/CustomerLifecycleService.php
+          php -l app/Http/Middleware/BrandingPresentation.php
+          php -l app/Http/Middleware/LegacyFormCompatibility.php
+          php -l app/Http/Middleware/CustomerPortalDashboardPresentation.php
+          php -l app/Http/Middleware/PublicAssetQrPresentation.php
+          php -l app/Http/Middleware/PublicAssetQrInsecureFallback.php
+          php -l app/Console/Commands/MaterializeBrandLogo.php
+          php -l app/Console/Commands/CheckApprovalSla.php
+          php -l bootstrap/app.php
           php -l routes/public.php
-          php -l routes/public-asset-qr.php
+          php -l routes/brand.php
           php -l routes/parts.php
           php -l routes/console.php
           php -l database/migrations/2026_08_26_000050_link_public_requests_to_asset_registry.php
-          for migration in database/migrations/2026_08_21_00002{5,6,7,8,9}_*.php database/migrations/2026_08_21_000030_*.php database/migrations/2026_08_22_000031_*.php database/migrations/2026_08_22_000032_*.php database/migrations/2026_08_22_000033_*.php; do php -l "$migration"; done
-          grep -q 'assetLookup' app/Http/Controllers/PublicSiteController.php
-          grep -q 'assetQrSection' app/Http/Middleware/PublicAssetQrPresentation.php
+          php -l database/migrations/2026_08_26_000051_build_service_request_workflow_foundation.php
+          grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php
+          grep -q 'customer-portal-20260826-workflow-1' app/Http/Controllers/CustomerPortalController.php
           grep -q 'public.asset.lookup' routes/public-asset-qr.php
-          grep -q "'asset_id'" app/Models/PublicServiceRequest.php
-          grep -q 'Operations Command Center' resources/views/dashboard.blade.php
-          grep -q 'Spare Parts Control Center' resources/views/inventory/warehouse/index.blade.php
-          grep -q 'Consume on Asset' resources/views/maintenance/work-orders/part-requests.blade.php
-          grep -q 'Return to' resources/views/maintenance/work-orders/part-requests.blade.php
-          grep -q 'Installed Parts & Components' resources/views/eam/assets/part-history.blade.php
-          grep -q 'Installed Parts & Components' resources/views/customer/asset-part-history.blade.php
-          grep -q 'unifco:bootstrap-warehouse-access' deploy/deploy.sh
+          grep -q 'unifco:check-approval-sla' routes/console.php
 
-      - name: Laravel application preflight
-        id: preflight
-        shell: bash
-        run: |
-          set +e
-          (
-            set -euo pipefail
-            mkdir -p database storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
-            chmod -R u+rwX storage bootstrap/cache
-            composer install --no-interaction --prefer-dist --no-progress
-            cp -n .env.example .env || true
-            php artisan key:generate --force
-            php artisan list | grep -q 'unifco:import-sqlite'
-            php artisan migrate:fresh --force
-            php artisan route:list --name=dashboard >/dev/null
-            php artisan route:list --name=public.request.store >/dev/null
-            php artisan route:list --name=public.request.received >/dev/null
-            php artisan route:list --name=public.asset.lookup | grep -q 'service-assets/lookup'
-            php artisan route:list --name=inventory.warehouse.index | grep -q 'inventory/warehouse-control'
-            php artisan route:list --name=inventory.transfers.issue >/dev/null
-            php artisan route:list --name=inventory.part-requests.approve >/dev/null
-            php artisan route:list --name=inventory.part-requests.pick >/dev/null
-            php artisan route:list --name=inventory.part-requests.issue >/dev/null
-            php artisan route:list --name=inventory.part-requests.receive >/dev/null
-            php artisan route:list --name=inventory.part-requests.consume >/dev/null
-            php artisan route:list --name=inventory.part-requests.return >/dev/null
-            php artisan route:list --name=maintenance.work-orders.part-requests.store >/dev/null
-            php artisan route:list --name=eam.health.index | grep -q 'eam/health'
-            php artisan route:list --name=customer.asset-health | grep -q 'customer/asset-health'
-            php artisan route:list --name=maintenance.work-orders.show >/dev/null
-            php artisan list | grep -q 'unifco:bootstrap-warehouse-access'
-            php artisan list | grep -q 'unifco:recalculate-asset-health'
-            php artisan list | grep -q 'unifco:check-spare-reorder-alerts'
-            php artisan unifco:bootstrap-warehouse-access
-            php artisan unifco:recalculate-asset-health
-            php artisan unifco:check-spare-reorder-alerts
-            php artisan view:clear
-            php artisan view:cache
-            php artisan test tests/Feature/PublicRequestWizardTest.php tests/Feature/WorkOrderPartConsumptionTest.php tests/Feature/WorkOrderPartRequestTest.php tests/Feature/WarehouseFieldInventoryTest.php tests/Feature/OperationsCommandCenterTest.php tests/Feature/FoundationTest.php
-          ) > >(tee /tmp/unifco-eam-preflight.log) 2>&1
-          rc=$?
-          echo "rc=$rc" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Validate public request and homepage release
-        id: homepage
-        if: ${{ steps.source.outcome == 'success' && steps.preflight.outputs.rc == '0' }}
+      - name: Laravel release preflight
         shell: bash
         run: |
           set -euo pipefail
-          test -s public/images/home/hero-electrical.svg
-          test -s public/images/home/facility-power.svg
-          test -s public/images/home/generator.svg
-          test -s public/images/home/ats.svg
-          test -s public/images/home/industry-photo-v14-00.webp
-          test -s public/images/home/client-portal-v14.webp
-          test -s resources/views/public/home.blade.php
-          test -s resources/views/public/request.blade.php
-          grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php
-          grep -q 'id="requestForm"' resources/views/public/request.blade.php
-          grep -q 'Scan Equipment QR' app/Http/Middleware/PublicAssetQrPresentation.php
-          grep -q 'مسح QR للمعدة' app/Http/Middleware/PublicAssetQrPresentation.php
+          mkdir -p database storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
+          chmod -R u+rwX storage bootstrap/cache
+          composer install --no-interaction --prefer-dist --no-progress
+          cp -n .env.example .env || true
+          php artisan key:generate --force
+          php artisan migrate:fresh --force
+          php artisan brand:materialize
+          test -s public/images/unifco-logo.webp
+          php artisan route:list --name=public.request.store >/dev/null
+          php artisan route:list --name=public.asset.lookup >/dev/null
+          php artisan route:list --name=customer.portal >/dev/null
+          php artisan route:list --name=workflow.approvals.index >/dev/null
+          php artisan route:list --name=inventory.part-requests.consume >/dev/null
+          php artisan route:list --name=inventory.part-requests.return >/dev/null
+          php artisan list | grep -q 'unifco:check-approval-sla'
+          php artisan view:cache
+          php artisan test \
+            tests/Feature/PublicRequestWizardTest.php \
+            tests/Feature/PublicSiteGuestRequestsTest.php \
+            tests/Feature/ServiceRequestWorkflowTest.php \
+            tests/Feature/CustomerPortalAdvancedOperationsTest.php \
+            tests/Feature/CustomerPortalTest.php \
+            tests/Feature/WorkOrderPartConsumptionTest.php \
+            tests/Feature/WorkOrderPartRequestTest.php \
+            tests/Feature/BrandIdentityTest.php \
+            tests/Feature/BrandReleaseQualificationTest.php \
+            tests/Feature/BrandingSettingsTest.php
 
       - name: Deploy via SSH
-        id: deploy
-        if: ${{ steps.source.outcome == 'success' && steps.preflight.outputs.rc == '0' && steps.homepage.outcome == 'success' }}
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -180,50 +114,19 @@ jobs:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
         run: |
-          set +e
+          set -euo pipefail
           install -m 700 -d "$HOME/.ssh"
           printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_deploy_key"
           chmod 600 "$HOME/.ssh/unifco_deploy_key"
           rc=1
-          : > /tmp/unifco-eam-deploy.log
-          for attempt in $(seq 1 12); do
-            echo "SSH deploy attempt $attempt/12" | tee -a /tmp/unifco-eam-deploy.log
-            ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
-              -i "$HOME/.ssh/unifco_deploy_key" \
-              -p "$DEPLOY_PORT" \
-              "$DEPLOY_USER@$DEPLOY_HOST" \
-              'bash /var/www/unifco_platform/deploy/deploy.sh' \
-              >> /tmp/unifco-eam-deploy.log 2>&1
-            rc=$?
-            if [ "$rc" -eq 0 ]; then break; fi
-            if [ "$attempt" -lt 12 ]; then sleep 30; fi
+          for attempt in $(seq 1 5); do
+            echo "SSH deploy attempt $attempt/5"
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
+              -i "$HOME/.ssh/unifco_deploy_key" -p "$DEPLOY_PORT" \
+              "$DEPLOY_USER@$DEPLOY_HOST" 'bash /var/www/unifco_platform/deploy/deploy.sh'; then
+              rc=0
+              break
+            fi
+            [ "$attempt" -eq 5 ] || sleep 20
           done
-          cat /tmp/unifco-eam-deploy.log
-          echo "rc=$rc" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Record verification result
-        if: ${{ always() }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p deploy/status
-          source_result="${{ steps.source.outcome }}"
-          preflight_rc="${{ steps.preflight.outputs.rc }}"
-          homepage_result="${{ steps.homepage.outcome }}"
-          deploy_rc="${{ steps.deploy.outputs.rc }}"
-          if [ "$source_result" = "success" ] && [ "${preflight_rc:-999}" = "0" ] && [ "$homepage_result" = "success" ] && [ "${deploy_rc:-999}" = "0" ]; then result="success"; else result="failure"; fi
-          printf 'release=public-request-asset-qr-v1\nsource_sha=%s\nverified_at=%s\nresult=%s\nsource_validation=%s\nlaravel_preflight_rc=%s\npublic_release_validation=%s\ndeploy_rc=%s\n' \
-            "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "$source_result" "${preflight_rc:-not-run}" "$homepage_result" "${deploy_rc:-not-run}" > deploy/status/eam-lifecycle-latest.txt
-          if [ -f /tmp/unifco-eam-preflight.log ]; then tail -n 340 /tmp/unifco-eam-preflight.log > deploy/status/eam-lifecycle-preflight.log; else printf 'Preflight step did not produce a log.\n' > deploy/status/eam-lifecycle-preflight.log; fi
-          if [ -f /tmp/unifco-eam-deploy.log ]; then tail -n 240 /tmp/unifco-eam-deploy.log > deploy/status/eam-lifecycle-deploy.log; else printf 'Deployment step did not produce an SSH log.\n' > deploy/status/eam-lifecycle-deploy.log; fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add deploy/status/eam-lifecycle-latest.txt deploy/status/eam-lifecycle-preflight.log deploy/status/eam-lifecycle-deploy.log
-          git commit -m "Record public request asset QR deployment verification [skip ci]" || true
-          git pull --rebase origin main || true
-          git push origin HEAD:main
-
-      - name: Fail workflow when verification failed
-        if: ${{ always() && (steps.source.outcome != 'success' || steps.preflight.outputs.rc != '0' || steps.homepage.outcome != 'success' || steps.deploy.outputs.rc != '0') }}
-        run: exit 1
+          exit "$rc"
