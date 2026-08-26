@@ -11,22 +11,22 @@ class WorkflowRoleWorkspaceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_each_workflow_role_gets_its_own_workspace(): void
+    public function test_each_workflow_role_gets_its_own_workspace_and_action_queue(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $expected=[
-            'engineer@unifco.local'=>'Maintenance Engineer Workspace',
-            'maintenance.manager@unifco.local'=>'Maintenance Manager Workspace',
-            'procurement@unifco.local'=>'Procurement Workspace',
-            'tenders@unifco.local'=>'Tenders & Contracts Workspace',
-            'finance@unifco.local'=>'Finance Workspace',
-            'projects.manager@unifco.local'=>'Project Manager Workspace',
-            'ceo@unifco.local'=>'CEO Executive Workspace',
+            'engineer@unifco.local'=>['Maintenance Engineer Workspace','Technical Work Queue'],
+            'maintenance.manager@unifco.local'=>['Maintenance Manager Workspace','Operational Review Queue'],
+            'procurement@unifco.local'=>['Procurement Workspace','Procurement Action Queue'],
+            'tenders@unifco.local'=>['Tenders & Contracts Workspace','Commercial Queue'],
+            'finance@unifco.local'=>['Finance Workspace','Financial Review Queue'],
+            'projects.manager@unifco.local'=>['Project Manager Workspace','Execution Queue'],
+            'ceo@unifco.local'=>['CEO Executive Workspace','Executive Exception Queue'],
         ];
 
-        foreach($expected as $email=>$title){
+        foreach($expected as $email=>[$title,$queue]){
             $user=User::where('email',$email)->firstOrFail();
-            $this->actingAs($user)->get('/workflow/workspace')->assertOk()->assertSee($title);
+            $this->actingAs($user)->get('/workflow/workspace')->assertOk()->assertSee($title)->assertSee($queue);
             $this->actingAs($user)->get('/')->assertRedirect('/workflow/workspace');
         }
     }
@@ -41,6 +41,38 @@ class WorkflowRoleWorkspaceTest extends TestCase
 
         $this->post('/login',['email'=>'workflow.customer@unifco.local','password'=>'UnifcoWorkflow!2026'])
             ->assertRedirect('/customer');
+    }
+
+    public function test_role_navigation_is_limited_to_relevant_modules(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+
+        $engineer=User::where('email','engineer@unifco.local')->firstOrFail();
+        $this->actingAs($engineer)->get('/workflow/workspace')
+            ->assertOk()
+            ->assertSee('My Technical Approvals')
+            ->assertSee('Work Orders')
+            ->assertSee('Assets & EAM')
+            ->assertDontSee('Purchase Orders')
+            ->assertDontSee('Finance Core')
+            ->assertDontSee('Executive Reports');
+
+        $finance=User::where('email','finance@unifco.local')->firstOrFail();
+        $this->actingAs($finance)->get('/workflow/workspace')
+            ->assertOk()
+            ->assertSee('My Financial Approvals')
+            ->assertSee('Finance Core')
+            ->assertSee('Journals')
+            ->assertDontSee('Work Orders')
+            ->assertDontSee('Purchase Orders');
+
+        $ceo=User::where('email','ceo@unifco.local')->firstOrFail();
+        $this->actingAs($ceo)->get('/workflow/workspace')
+            ->assertOk()
+            ->assertSee('Executive Approvals')
+            ->assertSee('Executive Reports')
+            ->assertSee('Projects Overview')
+            ->assertDontSee('Maintenance Operations');
     }
 
     public function test_workspaces_do_not_show_another_roles_identity(): void
