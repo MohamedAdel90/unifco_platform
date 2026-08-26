@@ -1,0 +1,5 @@
+release=service-workflow-customer-360-v1
+workflow=conditional-approval-matrix
+customer_portal=existing-customer-360
+sla=enabled
+released_at=2026-08-26
