@@ -9,17 +9,21 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    private const WORKFLOW_ROLES = [
+        'MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','PROJECT_MANAGER','CEO',
+    ];
+
     public function create(): View { return view('auth.login'); }
 
     public function store(Request $request): RedirectResponse
     {
-        $credentials = $request->validate(['email'=>['required','email'],'password'=>['required']]);
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        $credentials=$request->validate(['email'=>['required','email'],'password'=>['required']]);
+        if(!Auth::attempt($credentials,$request->boolean('remember'))){
             return back()->withErrors(['email'=>'Invalid credentials.'])->onlyInput('email');
         }
         $request->session()->regenerate();
         $user=Auth::user();
-        if ($user->status !== 'ACTIVE' || $user->locked_at) {
+        if($user->status!=='ACTIVE'||$user->locked_at){
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -28,8 +32,9 @@ class AuthController extends Controller
         $user->forceFill(['last_login_at'=>now()])->save();
         $request->session()->put('account_session_version',(int)$user->session_version);
 
-        if ($user->role === 'CUSTOMER') return redirect()->intended(route('customer.portal'));
-        if ($user->role === 'STOREKEEPER') return redirect()->intended(route('inventory.warehouse.index'));
+        if($user->role==='CUSTOMER') return redirect()->intended(route('customer.portal'));
+        if($user->role==='STOREKEEPER') return redirect()->intended(route('inventory.warehouse.index'));
+        if(in_array($user->role,self::WORKFLOW_ROLES,true)) return redirect()->intended(route('workflow.workspace'));
         return redirect()->intended(route('dashboard'));
     }
 
