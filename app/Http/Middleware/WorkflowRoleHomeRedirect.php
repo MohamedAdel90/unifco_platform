@@ -15,7 +15,7 @@ class WorkflowRoleHomeRedirect
     public function handle(Request $request, Closure $next): Response
     {
         $user=$request->user();
-        if($user && $request->routeIs('dashboard') && in_array($user->role,self::ROLES,true)){
+        if($user && in_array($user->role,self::ROLES,true) && ($request->routeIs('dashboard') || $request->routeIs('public.home'))){
             return redirect()->route('workflow.workspace');
         }
         return $next($request);
