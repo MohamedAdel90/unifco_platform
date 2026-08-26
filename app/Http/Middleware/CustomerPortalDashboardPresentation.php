@@ -24,7 +24,14 @@ class CustomerPortalDashboardPresentation
 
         $items=$orders->map(fn($w)=>'<div class="item"><div><div class="title">'.e($w->work_order_no).'</div><div class="sub">'.e($w->priority).' · '.e($w->status).'</div></div><span class="pill">Work Order</span></div>')->implode('');
         $panel='<section class="card panel" style="margin:14px 0"><h3>Recent Work Orders</h3><div class="recent">'.$items.'</div></section>';
-        $response->setContent(str_replace('<section class="stats">',$panel.'<section class="stats">',$html,1));
+
+        $needle='<section class="stats">';
+        $position=strpos($html,$needle);
+        if ($position!==false) {
+            $html=substr($html,0,$position).$panel.substr($html,$position);
+            $response->setContent($html);
+        }
+
         return $response;
     }
 }
