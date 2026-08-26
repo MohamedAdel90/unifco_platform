@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Customer,Organization,Tenant,User};
+use App\Models\{Customer,CustomerContact,CustomerSite,Organization,Tenant,User};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\{DB,Hash};
 
@@ -60,12 +60,22 @@ class WorkflowTestUsersSeeder extends Seeder
 
         $customer=Customer::updateOrCreate(
             ['tenant_id'=>$tenant->id,'customer_code'=>'WF-TEST-001'],
-            ['organization_id'=>$org->id,'name'=>'UNIFCO Workflow Test Customer','commercial_registration'=>'WF-TEST-CR-001','email'=>'workflow.customer@unifco.local','contact_name'=>'Workflow Customer Admin','phone'=>'0500000001','city'=>'Riyadh','country'=>'Saudi Arabia','status'=>'ACTIVE','onboarding_status'=>'COMPLETE']
+            ['organization_id'=>$org->id,'name'=>'UNIFCO Workflow Test Customer','commercial_registration'=>'WF-TEST-CR-001','email'=>'workflow.customer@unifco.local','contact_name'=>'Workflow Customer Admin','phone'=>'0500000001','city'=>'Riyadh','country'=>'Saudi Arabia','address'=>'Riyadh Test Facility','status'=>'ACTIVE','onboarding_status'=>'ACTIVE']
+        );
+
+        CustomerContact::updateOrCreate(
+            ['customer_id'=>$customer->id,'email'=>'workflow.customer@unifco.local'],
+            ['name'=>'Workflow Customer Admin','job_title'=>'Facility Manager','contact_type'=>'PRIMARY','mobile'=>'0500000001','is_primary'=>true]
+        );
+
+        CustomerSite::updateOrCreate(
+            ['customer_id'=>$customer->id,'site_code'=>'WF-RUH-01'],
+            ['name'=>'Workflow Riyadh Test Site','city'=>'Riyadh','address'=>'Riyadh Test Facility','contact_name'=>'Workflow Customer Admin','contact_mobile'=>'0500000001','status'=>'ACTIVE']
         );
 
         User::updateOrCreate(
             ['email'=>'workflow.customer@unifco.local'],
-            ['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'name'=>'Workflow Customer Admin','password'=>Hash::make($password),'role'=>'CUSTOMER','customer_portal_role'=>'ADMIN','status'=>'ACTIVE','force_password_change'=>false]
+            ['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'name'=>'Workflow Customer Admin','password'=>Hash::make($password),'role'=>'CUSTOMER','customer_portal_role'=>'CUSTOMER_ADMIN','status'=>'ACTIVE','force_password_change'=>false]
         );
     }
 }
