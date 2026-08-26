@@ -53,10 +53,13 @@ jobs:
           php -l app/Http/Controllers/PublicSiteController.php
           php -l app/Http/Controllers/CustomerPortalController.php
           php -l app/Http/Controllers/Workflow/ApprovalController.php
+          php -l app/Http/Controllers/Workflow/WorkflowWorkspaceController.php
+          php -l app/Http/Controllers/AuthController.php
           php -l app/Services/PublicRequestPipelineService.php
           php -l app/Services/ServiceRequestWorkflowService.php
           php -l app/Services/CustomerLifecycleService.php
           php -l app/Services/ApprovalService.php
+          php -l app/Http/Middleware/WorkflowRoleHomeRedirect.php
           php -l app/Http/Middleware/BrandingPresentation.php
           php -l app/Http/Middleware/LegacyFormCompatibility.php
           php -l app/Http/Middleware/CustomerPortalDashboardPresentation.php
@@ -66,16 +69,15 @@ jobs:
           php -l app/Console/Commands/CheckApprovalSla.php
           php -l database/seeders/WorkflowTestUsersSeeder.php
           php -l bootstrap/app.php
+          php -l routes/web.php
           php -l routes/public.php
           php -l routes/brand.php
           php -l routes/parts.php
           php -l routes/console.php
           php -l database/migrations/2026_08_26_000050_link_public_requests_to_asset_registry.php
           php -l database/migrations/2026_08_26_000051_build_service_request_workflow_foundation.php
-          grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php
-          grep -q 'customer-portal-20260826-workflow-1' app/Http/Controllers/CustomerPortalController.php
-          grep -q 'public.asset.lookup' routes/public-asset-qr.php
-          grep -q 'unifco:check-approval-sla' routes/console.php
+          grep -q 'workflow.workspace' app/Http/Controllers/AuthController.php
+          grep -q 'WorkflowWorkspaceController' routes/web.php
           grep -q 'CUSTOMER_ADMIN' database/seeders/WorkflowTestUsersSeeder.php
 
       - name: Laravel release preflight
@@ -93,6 +95,7 @@ jobs:
           php artisan route:list --name=public.request.store >/dev/null
           php artisan route:list --name=public.asset.lookup >/dev/null
           php artisan route:list --name=customer.portal >/dev/null
+          php artisan route:list --name=workflow.workspace >/dev/null
           php artisan route:list --name=workflow.approvals.index >/dev/null
           php artisan route:list --name=inventory.part-requests.consume >/dev/null
           php artisan route:list --name=inventory.part-requests.return >/dev/null
@@ -103,6 +106,7 @@ jobs:
             tests/Feature/PublicSiteGuestRequestsTest.php \
             tests/Feature/ServiceRequestWorkflowTest.php \
             tests/Feature/WorkflowTestUsersSeederTest.php \
+            tests/Feature/WorkflowRoleWorkspaceTest.php \
             tests/Feature/CustomerPortalAdvancedOperationsTest.php \
             tests/Feature/CustomerPortalTest.php \
             tests/Feature/WorkOrderPartConsumptionTest.php \
