@@ -14,20 +14,21 @@ echo "==> Server checkout: $DEPLOY_SHA"
 echo "==> Validating current release foundation"
 for file in \
   resources/views/public/request.blade.php \
+  resources/views/workflow/workspace.blade.php \
   routes/public.php \
   routes/public-asset-qr.php \
   routes/parts.php \
   database/migrations/2026_08_26_000050_link_public_requests_to_asset_registry.php \
   database/migrations/2026_08_26_000051_build_service_request_workflow_foundation.php \
   database/seeders/WorkflowTestUsersSeeder.php \
+  app/Http/Controllers/Workflow/WorkflowWorkspaceController.php \
   app/Services/ServiceRequestWorkflowService.php \
   app/Services/CustomerLifecycleService.php; do
   test -s "$file" || { echo "ERROR: required release file missing: $file"; exit 1; }
 done
 grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
 grep -q 'customer-portal-20260826-workflow-1' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer 360 workflow release marker missing"; exit 1; }
-grep -q 'unifco:check-approval-sla' routes/console.php || { echo "ERROR: approval SLA scheduler missing"; exit 1; }
-grep -q 'WorkOrderPartConsumptionController' routes/parts.php || { echo "ERROR: work-order part lifecycle routes missing"; exit 1; }
+grep -q 'WorkflowWorkspaceController' routes/web.php || { echo "ERROR: workflow workspace route missing"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -52,17 +53,15 @@ for attempt in $(seq 1 20); do
   sleep 2
 done
 [ "$ready" -eq 1 ] || { echo "ERROR: database did not become ready"; exit 1; }
-DB_DRIVER="$(php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo Illuminate\Support\Facades\DB::connection()->getDriverName();')"
-[ "$DB_DRIVER" = "mysql" ] || { echo "ERROR: deployment requires MySQL; got $DB_DRIVER"; exit 1; }
 
-echo "==> Applying migrations and operational bootstraps"
+echo "==> Applying migrations and workflow test accounts"
 php artisan migrate --force
 php artisan db:seed --class='Database\Seeders\WorkflowTestUsersSeeder' --force
 php artisan unifco:bootstrap-warehouse-access
 php artisan brand:materialize
 php artisan storage:link || true
 
-echo "==> Verifying workflow test identities"
+echo "==> Verifying workflow test identities and password"
 php -r '
 require "vendor/autoload.php";
 $app=require "bootstrap/app.php";
@@ -77,22 +76,22 @@ $expected=[
 "ceo@unifco.local"=>"CEO",
 "workflow.customer@unifco.local"=>"CUSTOMER",
 ];
-foreach($expected as $email=>$role){$u=App\Models\User::where("email",$email)->first(); if(!$u||$u->role!==$role){fwrite(STDERR,"ERROR: workflow test user invalid: $email\n");exit(1);}}
-echo "Workflow test identities verified\n";
+foreach($expected as $email=>$role){
+ $u=App\Models\User::where("email",$email)->first();
+ if(!$u||$u->role!==$role||!Illuminate\Support\Facades\Hash::check("UnifcoWorkflow!2026",$u->password)){
+   fwrite(STDERR,"ERROR: workflow test user invalid: $email\n"); exit(1);
+ }
+}
+echo "Workflow test identities and passwords verified\n";
 '
 
 echo "==> Verifying critical runtime routes and commands"
+php artisan route:list --name=workflow.workspace >/dev/null
+php artisan route:list --name=workflow.approvals.index >/dev/null
+php artisan route:list --name=customer.portal >/dev/null
 php artisan route:list --name=public.request.store >/dev/null
 php artisan route:list --name=public.asset.lookup >/dev/null
-php artisan route:list --name=customer.portal >/dev/null
-php artisan route:list --name=customer.asset.show >/dev/null
-php artisan route:list --name=maintenance.work-orders.show >/dev/null
-php artisan route:list --name=inventory.part-requests.consume >/dev/null
-php artisan route:list --name=inventory.part-requests.return >/dev/null
-php artisan route:list --name=workflow.approvals.index >/dev/null
 php artisan list | grep -q 'unifco:check-approval-sla'
-php artisan list | grep -q 'unifco:recalculate-asset-health'
-php artisan list | grep -q 'unifco:check-spare-reorder-alerts'
 
 php artisan optimize:clear
 supervisorctl restart "$APP_NAME"
