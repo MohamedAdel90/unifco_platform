@@ -43,8 +43,18 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
 
         $this->assertDatabaseHas('service_requests',[
             'customer_id'=>$c['customer']->id,'asset_id'=>$c['asset']->id,'service_contract_id'=>$c['contract']->id,
-            'priority'=>'EMERGENCY','response_sla_minutes'=>30,'resolution_sla_minutes'=>240,'status'=>'OPEN',
+            'request_type'=>'MAINTENANCE','eligibility'=>'IN_CONTRACT','priority'=>'EMERGENCY','response_sla_minutes'=>10,'resolution_sla_minutes'=>240,'status'=>'OPEN',
         ]);
+        $this->assertDatabaseHas('customer_activity_events',['customer_id'=>$c['customer']->id,'event_type'=>'SERVICE_REQUEST_CREATED']);
+    }
+
+    public function test_customer_360_exposes_requests_quotations_and_timeline_sections(): void
+    {
+        $c=$this->context();
+        $this->actingAs($c['user'])->get('/customer/requests')->assertOk()->assertSee('Service Requests');
+        $this->actingAs($c['user'])->get('/customer/quotations')->assertOk()->assertSee('Quotations');
+        $this->actingAs($c['user'])->get('/customer/timeline')->assertOk()->assertSee('Transaction Timeline');
+        $this->actingAs($c['user'])->get('/customer')->assertOk()->assertSee('Customer 360 Dashboard');
     }
 
     public function test_customer_can_download_own_invoice_and_contract_as_pdf(): void
@@ -63,6 +73,7 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
         $quotation=CrmQuotation::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'opportunity_id'=>$opportunity->id,'customer_id'=>$c['customer']->id,'quotation_no'=>'QT-1','quotation_date'=>now(),'currency'=>'SAR','amount'=>7500,'status'=>'SENT']);
         $this->actingAs($c['user'])->post('/customer/quotations/'.$quotation->id.'/decision',['decision'=>'APPROVE','notes'=>'Approved'])->assertRedirect();
         $this->assertDatabaseHas('crm_quotations',['id'=>$quotation->id,'status'=>'CUSTOMER_APPROVED','customer_decision_notes'=>'Approved']);
+        $this->assertDatabaseHas('customer_activity_events',['customer_id'=>$c['customer']->id,'event_type'=>'QUOTATION_APPROVE']);
 
         $other=Customer::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_code'=>'C2','name'=>'Other','status'=>'ACTIVE']);
         $otherOpportunity=$this->opportunity($c,'2');
