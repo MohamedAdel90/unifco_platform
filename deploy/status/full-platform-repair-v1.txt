@@ -1,0 +1,3 @@
+release=full-platform-repair-v1
+scope=branding,public-home,public-intake,customer-360,legacy-forms,workflow,qr,deploy
+status=ready-for-qualification
