@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset,CrmQuotation,FinancialDocument,MaintenanceVisitReport,ServiceContract,ServiceRequest};
-use App\Services\CustomerPdfService;
+use App\Models\{Asset,CrmQuotation,Customer,FinancialDocument,MaintenanceVisitReport,ServiceContract,ServiceRequest};
+use App\Services\{CustomerLifecycleService,CustomerPdfService,ServiceRequestWorkflowService};
 use Illuminate\Http\{RedirectResponse,Request,Response};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -17,7 +17,7 @@ class CustomerPortalOperationsController extends Controller
         return (int) $user->customer_id;
     }
 
-    public function requestService(Request $request): RedirectResponse
+    public function requestService(Request $request, ServiceRequestWorkflowService $workflow, CustomerLifecycleService $lifecycle): RedirectResponse
     {
         $customerId = $this->customerId();
         $data = $request->validate([
@@ -31,28 +31,44 @@ class CustomerPortalOperationsController extends Controller
         ]);
         if (!empty($data['asset_id'])) abort_unless(Asset::whereKey($data['asset_id'])->where('customer_id',$customerId)->exists(),403);
         if (!empty($data['service_contract_id'])) abort_unless(ServiceContract::whereKey($data['service_contract_id'])->where('customer_id',$customerId)->exists(),403);
-        $customer = DB::table('customers')->find($customerId);
-        ServiceRequest::create($data + [
+
+        $customer = Customer::findOrFail($customerId);
+        $serviceRequest = ServiceRequest::create($data + [
             'tenant_id'=>auth()->user()->tenant_id,'organization_id'=>auth()->user()->organization_id,'customer_id'=>$customerId,
-            'request_no'=>'CP-'.now()->format('Ymd').'-'.strtoupper(Str::random(6)), 'company_name'=>$customer->name,
-            'email'=>$customer->email,'mobile'=>null,'priority'=>$data['priority'],'status'=>'OPEN',
-            'response_sla_minutes'=>$data['priority']==='EMERGENCY'?30:240,
+            'request_no'=>'CP-'.now()->format('Ymd').'-'.strtoupper(Str::random(6)), 'request_type'=>'MAINTENANCE','company_name'=>$customer->name,
+            'commercial_registration'=>$customer->commercial_registration,'email'=>$customer->email,'mobile'=>$customer->phone,'priority'=>$data['priority'],'status'=>'OPEN',
+            'workflow_stage'=>'NEW','eligibility'=>!empty($data['service_contract_id'])?'IN_CONTRACT':'CHARGEABLE',
+            'response_sla_minutes'=>$data['priority']==='EMERGENCY'?10:120,
             'resolution_sla_minutes'=>$data['priority']==='EMERGENCY'?240:1440,
         ]);
-        return back()->with('status','تم إرسال طلب الخدمة ومتابعته من لوحة العميل.');
+
+        $workflow->start($serviceRequest, [
+            'procurement_required'=>false,'risk_level'=>'NORMAL','estimated_value'=>0,'payment_terms_days'=>0,
+        ]);
+        $lifecycle->record($customer, 'SERVICE_REQUEST_CREATED', 'Service request '.$serviceRequest->request_no.' created', $serviceRequest->subject, $serviceRequest, [
+            'priority'=>$serviceRequest->priority,'eligibility'=>$serviceRequest->eligibility,
+        ]);
+
+        return redirect()->route('customer.section','requests')->with('status','تم إرسال طلب الخدمة وبدء مسار المراجعة والـSLA.');
     }
 
-    public function decideQuotation(Request $request, CrmQuotation $quotation): RedirectResponse
+    public function decideQuotation(Request $request, CrmQuotation $quotation, CustomerLifecycleService $lifecycle): RedirectResponse
     {
         $customerId=$this->customerId();
         abort_unless((int)$quotation->customer_id===$customerId,403);
-        $data=$request->validate(['decision'=>['required','in:APPROVE,REJECT'],'notes'=>['nullable','string','max:2000']]);
-        $quotation->update($data['decision']==='APPROVE' ? [
-            'status'=>'CUSTOMER_APPROVED','customer_approved_at'=>now(),'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null,
-        ] : [
-            'status'=>'CUSTOMER_REJECTED','customer_rejected_at'=>now(),'customer_approved_at'=>null,'customer_decision_notes'=>$data['notes']??null,
-        ]);
-        return back()->with('status','تم تسجيل قرار عرض السعر.');
+        $data=$request->validate(['decision'=>['required','in:APPROVE,REJECT,REVISION'],'notes'=>['nullable','string','max:2000']]);
+
+        if ($data['decision']==='APPROVE') {
+            $quotation->update(['status'=>'CUSTOMER_APPROVED','customer_approved_at'=>now(),'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null]);
+        } elseif ($data['decision']==='REJECT') {
+            $quotation->update(['status'=>'CUSTOMER_REJECTED','customer_rejected_at'=>now(),'customer_approved_at'=>null,'customer_decision_notes'=>$data['notes']??null]);
+        } else {
+            $quotation->update(['status'=>'REVISION_REQUESTED','customer_approved_at'=>null,'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null]);
+        }
+
+        $customer=Customer::findOrFail($customerId);
+        $lifecycle->record($customer, 'QUOTATION_'.$data['decision'], 'Quotation '.$quotation->quotation_no.' '.$data['decision'], $data['notes']??null, $quotation);
+        return back()->with('status','تم تسجيل قرار عرض السعر وتحديث سجل العميل.');
     }
 
     public function invoicePdf(FinancialDocument $invoice, CustomerPdfService $pdf): Response
