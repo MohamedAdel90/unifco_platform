@@ -60,6 +60,7 @@ jobs:
           php -l app/Services/CustomerLifecycleService.php
           php -l app/Services/ApprovalService.php
           php -l app/Http/Middleware/WorkflowRoleHomeRedirect.php
+          php -l app/Http/Middleware/WorkflowRoleNavigationPresentation.php
           php -l app/Http/Middleware/BrandingPresentation.php
           php -l app/Http/Middleware/LegacyFormCompatibility.php
           php -l app/Http/Middleware/CustomerPortalDashboardPresentation.php
@@ -76,6 +77,7 @@ jobs:
           php -l routes/console.php
           php -l database/migrations/2026_08_26_000050_link_public_requests_to_asset_registry.php
           php -l database/migrations/2026_08_26_000051_build_service_request_workflow_foundation.php
+          grep -q 'WorkflowRoleNavigationPresentation' bootstrap/app.php
           grep -q 'workflow.workspace' app/Http/Controllers/AuthController.php
           grep -q 'WorkflowWorkspaceController' routes/web.php
           grep -q 'CUSTOMER_ADMIN' database/seeders/WorkflowTestUsersSeeder.php
