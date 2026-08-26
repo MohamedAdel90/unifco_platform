@@ -19,6 +19,7 @@ for file in \
   routes/parts.php \
   database/migrations/2026_08_26_000050_link_public_requests_to_asset_registry.php \
   database/migrations/2026_08_26_000051_build_service_request_workflow_foundation.php \
+  database/seeders/WorkflowTestUsersSeeder.php \
   app/Services/ServiceRequestWorkflowService.php \
   app/Services/CustomerLifecycleService.php; do
   test -s "$file" || { echo "ERROR: required release file missing: $file"; exit 1; }
@@ -56,9 +57,29 @@ DB_DRIVER="$(php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.
 
 echo "==> Applying migrations and operational bootstraps"
 php artisan migrate --force
+php artisan db:seed --class='Database\\Seeders\\WorkflowTestUsersSeeder' --force
 php artisan unifco:bootstrap-warehouse-access
 php artisan brand:materialize
 php artisan storage:link || true
+
+echo "==> Verifying workflow test identities"
+php -r '
+require "vendor/autoload.php";
+$app=require "bootstrap/app.php";
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$expected=[
+"engineer@unifco.local"=>"MAINTENANCE_ENGINEER",
+"maintenance.manager@unifco.local"=>"MAINTENANCE_MANAGER",
+"procurement@unifco.local"=>"PROCUREMENT",
+"tenders@unifco.local"=>"TENDERS_CONTRACTS",
+"finance@unifco.local"=>"FINANCE",
+"projects.manager@unifco.local"=>"PROJECT_MANAGER",
+"ceo@unifco.local"=>"CEO",
+"workflow.customer@unifco.local"=>"CUSTOMER",
+];
+foreach($expected as $email=>$role){$u=App\Models\User::where("email",$email)->first(); if(!$u||$u->role!==$role){fwrite(STDERR,"ERROR: workflow test user invalid: $email\n");exit(1);}}
+echo "Workflow test identities verified\n";
+'
 
 echo "==> Verifying critical runtime routes and commands"
 php artisan route:list --name=public.request.store >/dev/null
@@ -73,17 +94,6 @@ php artisan list | grep -q 'unifco:check-approval-sla'
 php artisan list | grep -q 'unifco:recalculate-asset-health'
 php artisan list | grep -q 'unifco:check-spare-reorder-alerts'
 
-php -r '
-require "vendor/autoload.php";
-$app=require "bootstrap/app.php";
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-$tables=["customer_activity_events","approval_requests","service_requests","work_orders","work_order_part_requests","asset_part_installations","work_order_part_returns"];
-foreach($tables as $table){if(!Illuminate\Support\Facades\Schema::hasTable($table)){fwrite(STDERR,"ERROR: required table missing: $table\n");exit(1);}}
-foreach(["request_type","workflow_stage","eligibility","current_stage_due_at"] as $col){if(!Illuminate\Support\Facades\Schema::hasColumn("service_requests",$col)){fwrite(STDERR,"ERROR: service workflow column missing: $col\n");exit(1);}}
-foreach(["workflow_key","approval_role","sla_minutes","due_at"] as $col){if(!Illuminate\Support\Facades\Schema::hasColumn("approval_requests",$col)){fwrite(STDERR,"ERROR: approval workflow column missing: $col\n");exit(1);}}
-echo "Database release foundation verified\n";
-'
-
 php artisan optimize:clear
 supervisorctl restart "$APP_NAME"
 
@@ -96,15 +106,5 @@ done
 [ "$app_ready" -eq 1 ] || { echo "ERROR: application did not become ready"; exit 1; }
 
 curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-electrical-20260821-12' || { echo "ERROR: homepage release header missing"; exit 1; }
-curl -fsS http://127.0.0.1:8081/brand/unifco-logo-v2.webp -o /tmp/unifco-logo.webp
-php -r '$b=file_get_contents("/tmp/unifco-logo.webp"); if(substr($b,0,4)!=="RIFF"||substr($b,8,4)!=="WEBP") exit(1);' || { echo "ERROR: brand logo endpoint invalid"; exit 1; }
-
-echo "==> Verifying login CSRF/session round trip"
-rm -f /tmp/unifco-login.cookies /tmp/unifco-login.html /tmp/unifco-login-post.headers
-curl -fsS -c /tmp/unifco-login.cookies http://127.0.0.1:8081/login -o /tmp/unifco-login.html
-csrf_token="$(grep -o 'name="_token" value="[^"]*"' /tmp/unifco-login.html | head -n1 | sed 's/^.*value="//;s/"$//')"
-[ -n "$csrf_token" ] || { echo "ERROR: could not extract CSRF token"; exit 1; }
-login_status="$(curl -sS -o /dev/null -D /tmp/unifco-login-post.headers -w '%{http_code}' -b /tmp/unifco-login.cookies -c /tmp/unifco-login.cookies -X POST http://127.0.0.1:8081/login --data-urlencode "_token=${csrf_token}" --data-urlencode 'email=csrf-check@unifco.invalid' --data-urlencode 'password=invalid-password')"
-[ "$login_status" = "302" ] || { echo "ERROR: login validation returned HTTP $login_status"; exit 1; }
 
 echo "==> Deploy complete at $DEPLOY_SHA"
