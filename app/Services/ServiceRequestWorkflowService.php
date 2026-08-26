@@ -21,7 +21,7 @@ class ServiceRequestWorkflowService
     {
         $type = strtoupper((string) ($request->request_type ?: 'MAINTENANCE'));
         $value = (float) ($context['estimated_value'] ?? 0);
-        $margin = array_key_exists('margin_pct', $context) ? (float) $context['margin_pct'] : null;
+        $margin = array_key_exists('margin_pct', $context) && $context['margin_pct'] !== null ? (float) $context['margin_pct'] : null;
         $paymentDays = (int) ($context['payment_terms_days'] ?? 0);
         $risk = strtoupper((string) ($context['risk_level'] ?? 'NORMAL'));
         $procurement = (bool) ($context['procurement_required'] ?? $request->procurement_required);
@@ -47,10 +47,11 @@ class ServiceRequestWorkflowService
         }
 
         if ($emergency && $type === 'MAINTENANCE') {
-            $steps = array_values(array_filter($steps, fn ($s) => $s[1] === 'MAINTENANCE_ENGINEER'));
+            $steps = [['TECHNICAL_REVIEW','MAINTENANCE_ENGINEER']];
         }
 
         $requester = User::where('tenant_id', $request->tenant_id)
+            ->where('role', '!=', 'CUSTOMER')
             ->whereIn('status', ['ACTIVE','ENABLED'])
             ->orderByRaw("CASE WHEN role='ADMIN' THEN 0 ELSE 1 END")
             ->first();
@@ -76,13 +77,13 @@ class ServiceRequestWorkflowService
                 default => 'TECHNICAL_REVIEW',
             };
             $sla = self::SLA[$slaKey];
+            $status = $index === 0 ? 'PENDING' : 'WAITING';
 
             return ApprovalRequest::firstOrCreate([
                 'tenant_id' => $request->tenant_id,
                 'entity_type' => ServiceRequest::class,
                 'entity_id' => $request->id,
                 'action' => $action,
-                'status' => 'PENDING',
             ], [
                 'organization_id' => $request->organization_id,
                 'requested_by' => $requester->id,
@@ -90,7 +91,8 @@ class ServiceRequestWorkflowService
                 'approval_role' => $role,
                 'step_order' => $index + 1,
                 'sla_minutes' => $sla,
-                'due_at' => now()->addMinutes($sla),
+                'status' => $status,
+                'due_at' => $status === 'PENDING' ? now()->addMinutes($sla) : null,
                 'metadata' => $context,
             ]);
         });
