@@ -1,87 +1,24 @@
 SSH deploy attempt 1/12
-Warning: Permanently added '147.93.95.232' (ED25519) to the list of known hosts.
-==> Fetching latest main from origin
-From github.com:zeroonesolutions0101/unifco_platform
- * branch            main       -> FETCH_HEAD
-   f17dd76..79814e6  main       -> origin/main
-==> Checking out origin/main
-HEAD is now at 79814e6 Refine compact service cards and approved icon styling
-==> Server checkout: 79814e6d16654d5148d2f36211808f10bd5b81e0
-==> Verifying required release files
-==> Installing dependencies
-Composer plugins have been disabled for safety in this non-interactive session.
-Set COMPOSER_ALLOW_SUPERUSER=1 if you want to allow plugins to run as root/super user.
-Do not run Composer as root/super user! See https://getcomposer.org/root for details
-Installing dependencies from lock file (including require-dev)
-Verifying lock file contents can be installed on current platform.
-Nothing to install, update or remove
-Generating optimized autoload files
-> Illuminate\Foundation\ComposerScripts::postAutoloadDump
-> @php artisan package:discover --ansi
-
-  [37;44m INFO [39;49m Discovering packages.  
-
-  laravel/pail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
-  laravel/pao [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
-  laravel/tinker [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
-  nesbot/carbon [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
-  nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
-  nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
-
-78 packages you are using are looking for funding.
-Use the `composer fund` command to find out more!
-==> Repairing Laravel session directories and permissions
-==> Enforcing HTTP-safe session cookie settings
-==> Skipping UNIFCO logo materialization by request
-==> Clearing cached configuration
-
-   INFO  Clearing cached bootstrap files.  
-
-  config ......................................................... 1.15ms DONE
-  cache .......................................................... 2.92ms DONE
-  compiled ....................................................... 0.78ms DONE
-  events ......................................................... 0.37ms DONE
-  routes ......................................................... 0.42ms DONE
-  views .......................................................... 3.59ms DONE
-
-==> Waiting for the database
-==> Repairing customer messaging schema first
-
-   INFO  Nothing to migrate.  
-
-==> Applying all remaining migrations
-
-   INFO  Nothing to migrate.  
-
-==> Bootstrapping warehouse access
-Warehouse access ready: MAIN-WH / storekeeper@unifco.local
-==> Verifying EAM, warehouse and part lifecycle routes
-==> Calculating initial asset health intelligence
-Asset health recalculation complete. Assets processed: 5.
-==> Synchronizing spare part reorder states
-Spare reorder check complete. Active alerts: 0; notifications refreshed: 0.
-==> Verifying operational, warehouse and part lifecycle tables
-Operational warehouse, technician request, consume and return lifecycle ready
-==> Ensuring public upload storage link
-
-   ERROR  The [public/storage] link already exists.  
-
-==> Clearing caches after deployment
-
-   INFO  Clearing cached bootstrap files.  
-
-  config ......................................................... 0.97ms DONE
-  cache .......................................................... 2.73ms DONE
-  compiled ....................................................... 0.97ms DONE
-  events ......................................................... 0.82ms DONE
-  routes ......................................................... 0.72ms DONE
-  views .......................................................... 3.99ms DONE
-
-==> Restarting unifco-app
-unifco-app: stopped
-unifco-app: started
-==> Waiting for application
-==> Verifying homepage release
-==> Verifying login session and CSRF round trip
-Login CSRF/session round trip verified: HTTP 302
-==> Deploy complete at 79814e6d16654d5148d2f36211808f10bd5b81e0
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 2/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 3/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 4/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 5/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 6/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 7/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 8/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 9/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 10/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 11/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
+SSH deploy attempt 12/12
+ssh: connect to host 147.93.95.232 port 22: Connection timed out
