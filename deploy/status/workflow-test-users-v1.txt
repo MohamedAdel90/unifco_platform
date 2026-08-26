@@ -1,0 +1,3 @@
+release=workflow-test-users-v1
+accounts=engineer,maintenance-manager,procurement,tenders,finance,projects-manager,ceo,customer
+role_scoped_approvals=true
