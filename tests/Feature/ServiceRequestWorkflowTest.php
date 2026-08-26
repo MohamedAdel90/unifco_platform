@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\{ApprovalRequest,Customer,Organization,ServiceRequest,Tenant,User};
 use App\Services\{ApprovalService,ServiceRequestWorkflowService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class ServiceRequestWorkflowTest extends TestCase
@@ -17,7 +18,7 @@ class ServiceRequestWorkflowTest extends TestCase
         $org=Organization::create(['tenant_id'=>$tenant->id,'name'=>'HQ','code'=>'HQ','status'=>'ACTIVE']);
         $customer=Customer::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_code'=>'C-WF','name'=>'Workflow Customer','email'=>'wf@example.test','status'=>'ACTIVE']);
         $requester=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'System Admin','email'=>'wf-admin@example.test','password'=>'StrongPassword123','role'=>'ADMIN','status'=>'ACTIVE']);
-        $approver=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Approver','email'=>'wf-approver@example.test','password'=>'StrongPassword123','role'=>'MANAGER','status'=>'ACTIVE']);
+        $approver=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Maintenance Engineer','email'=>'wf-engineer@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_ENGINEER','status'=>'ACTIVE']);
         return compact('tenant','org','customer','requester','approver');
     }
 
@@ -64,6 +65,23 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('PENDING',$steps->get(1)->status);
         $this->assertTrue($steps->skip(2)->every(fn($step)=>$step->status==='WAITING'));
         $this->assertSame($steps->get(1)->action,$request->fresh()->workflow_stage);
+    }
+
+    public function test_wrong_role_cannot_decide_another_roles_approval(): void
+    {
+        $c=$this->context();
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'request_no'=>'SR-WF-ROLE','request_type'=>'QUOTATION','company_name'=>$c['customer']->name,'email'=>$c['customer']->email,
+            'service_category'=>'Quotation','subject'=>'Role ownership','details'=>'Scope','priority'=>'NORMAL','status'=>'OPEN','workflow_stage'=>'NEW','eligibility'=>'CHARGEABLE',
+        ]);
+        app(ServiceRequestWorkflowService::class)->start($request,['estimated_value'=>50000,'margin_pct'=>20,'payment_terms_days'=>30,'risk_level'=>'NORMAL']);
+        $first=ApprovalRequest::where('entity_id',$request->id)->where('status','PENDING')->firstOrFail();
+        $wrong=User::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'name'=>'Procurement','email'=>'wf-procurement@example.test','password'=>'StrongPassword123','role'=>'PROCUREMENT','status'=>'ACTIVE']);
+        $this->actingAs($wrong);
+
+        $this->expectException(ValidationException::class);
+        app(ApprovalService::class)->decide($first,'APPROVED','Should not be allowed');
     }
 
     public function test_in_contract_routine_maintenance_keeps_approval_path_short(): void
