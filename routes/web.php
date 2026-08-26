@@ -16,7 +16,7 @@ use App\Http\Controllers\Platform\{DocumentController,NotificationController};
 use App\Http\Controllers\Procurement\{GoodsReceiptController,PurchaseOrderController};
 use App\Http\Controllers\Projects\ProjectController;
 use App\Http\Controllers\Reporting\ExecutiveReportController;
-use App\Http\Controllers\Workflow\ApprovalController;
+use App\Http\Controllers\Workflow\{ApprovalController,WorkflowWorkspaceController};
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health/live',[HealthController::class,'live']);
@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('workflow')->name('workflow.')->group(function () {
+        Route::get('/workspace',WorkflowWorkspaceController::class)->middleware('permission:workflow.approval.read')->name('workspace');
         Route::get('/approvals',[ApprovalController::class,'index'])->middleware('permission:workflow.approval.read')->name('approvals.index');
         Route::post('/approvals/{approval}/decide',[ApprovalController::class,'decide'])->middleware('permission:workflow.approval.decide')->name('approvals.decide');
     });
