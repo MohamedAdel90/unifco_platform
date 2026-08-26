@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\{AuthenticateApiToken,AuthenticateJwt,BrandingPresentation,EnsureUserSessionValid,PublicAssetQrInsecureFallback,PublicAssetQrPresentation,PublicRequestAttachmentsPresentation,PublicRequestHeaderMatch,PublicServiceLinks,RequirePermission};
+use App\Http\Middleware\{AuthenticateApiToken,AuthenticateJwt,BrandingPresentation,EnsureUserSessionValid,PublicAssetQrInsecureFallback,PublicAssetQrPresentation,PublicRequestAttachmentsPresentation,PublicRequestCompactDesign,PublicRequestHeaderMatch,PublicServiceLinks,RequirePermission};
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -34,7 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['permission'=>RequirePermission::class,'api.token'=>AuthenticateApiToken::class,'jwt'=>AuthenticateJwt::class]);
-        $middleware->web(append: [EnsureUserSessionValid::class,BrandingPresentation::class,PublicRequestHeaderMatch::class,PublicRequestAttachmentsPresentation::class,PublicAssetQrPresentation::class,PublicAssetQrInsecureFallback::class,PublicServiceLinks::class]);
+        $middleware->web(append: [EnsureUserSessionValid::class,BrandingPresentation::class,PublicRequestHeaderMatch::class,PublicRequestAttachmentsPresentation::class,PublicAssetQrPresentation::class,PublicAssetQrInsecureFallback::class,PublicRequestCompactDesign::class,PublicServiceLinks::class]);
         $middleware->validateCsrfTokens(except: ['login']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
