@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset,CrmQuotation,Customer,FinancialDocument,MaintenancePlan,MaintenanceVisitReport,ServiceContract,ServiceRequest,WorkOrder};
+use App\Models\{Asset,CrmQuotation,Customer,CustomerActivityEvent,FinancialDocument,MaintenancePlan,MaintenanceVisitReport,ServiceContract,ServiceRequest,WorkOrder};
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +17,7 @@ class CustomerPortalController extends Controller
         $customer = Customer::findOrFail($user->customer_id);
         $section = $section ?: 'dashboard';
 
-        $allowedSections = ['dashboard','contracts','assets','work-orders','maintenance','invoices','reports','sla','documents','notifications'];
+        $allowedSections = ['dashboard','requests','quotations','timeline','contracts','assets','work-orders','maintenance','invoices','reports','sla','documents','notifications'];
         abort_unless(in_array($section, $allowedSections, true), 404);
 
         $contractFilter = $request->integer('contract_id') ?: null;
@@ -39,7 +39,6 @@ class CustomerPortalController extends Controller
             ->when($contractFilter, fn ($q) => $q->where('service_contract_id', $contractFilter))
             ->latest('created_at')->limit(100)->get();
 
-        // Customer users may see execution status and evidence, but never UNIFCO internal costing.
         $workOrders->each(function (WorkOrder $workOrder): void {
             $workOrder->setAttribute('labor_cost', null);
             $workOrder->setAttribute('material_cost', null);
@@ -62,6 +61,9 @@ class CustomerPortalController extends Controller
             ->when($assetFilter, fn ($q) => $q->where('asset_id', $assetFilter))
             ->latest()->limit(100)->get();
         $quotations = CrmQuotation::where('customer_id', $customer->id)->latest('quotation_date')->limit(50)->get();
+        $timeline = Schema::hasTable('customer_activity_events')
+            ? CustomerActivityEvent::where('customer_id', $customer->id)->whereIn('visibility', ['BOTH','CUSTOMER'])->latest()->limit(100)->get()
+            : collect();
         $visitReports = MaintenanceVisitReport::where('customer_id', $customer->id)
             ->whereIn('asset_id', $assetIds)->when($contractFilter, fn ($q) => $q->where('service_contract_id', $contractFilter))
             ->latest('visit_date')->limit(100)->get();
@@ -85,12 +87,16 @@ class CustomerPortalController extends Controller
         $completedCount = $workOrders->filter(fn ($w) => in_array(strtoupper((string) $w->status), $completeStatuses, true))->count();
         $overdueCount = $workOrders->filter(fn ($w) => $w->planned_start && $w->planned_start->isPast() && ! in_array(strtoupper((string) $w->status), $completeStatuses, true))->count();
         $recentWorkOrders = $workOrders->take(4);
+        $recentRequests = $requests->take(5);
         $upcomingPlans = $plans->whereNotNull('next_due_date')->filter(fn ($p) => $p->next_due_date->gte(today()))->take(4);
         $workOrderTotal = max(1, $workOrders->count());
         $slaPerformance = $workOrders->isEmpty() ? 100 : (int) round(($completedCount / $workOrderTotal) * 100);
         $preventiveCount = $workOrders->where('maintenance_type', 'PREVENTIVE')->count();
         $correctiveCount = $workOrders->where('maintenance_type', 'CORRECTIVE')->count();
         $openInvoiceAmount = $invoices->sum(fn ($i) => (float) $i->open_amount);
+        $openRequestCount = $requests->whereNotIn('status', ['CLOSED','REJECTED','CANCELLED'])->count();
+        $pendingQuotationCount = $quotations->whereIn('status', ['DRAFT','SENT','UNDER_REVIEW','REVISION_REQUESTED'])->count();
+        $activeContractCount = $contracts->where('status', 'ACTIVE')->count();
         $locations = Asset::where('customer_id', $customer->id)->whereNotNull('location_code')->distinct()->orderBy('location_code')->pluck('location_code');
         $warrantyParts = Asset::whereIn('id', $allCustomerAssetIds)->orderBy('warranty_expiry')->get();
 
@@ -106,8 +112,8 @@ class CustomerPortalController extends Controller
         }
 
         $html = view('customer.section', compact(
-            'section', 'customer', 'contracts', 'assets', 'plans', 'workOrders', 'invoices', 'payments', 'materials', 'requests', 'quotations', 'visitReports', 'attachments', 'alerts', 'locations', 'warrantyParts',
-            'openInvoiceAmount', 'openWorkOrders', 'inProgressCount', 'completedCount', 'overdueCount', 'recentWorkOrders', 'upcomingPlans', 'slaPerformance', 'preventiveCount', 'correctiveCount',
+            'section', 'customer', 'contracts', 'assets', 'plans', 'workOrders', 'invoices', 'payments', 'materials', 'requests', 'quotations', 'timeline', 'visitReports', 'attachments', 'alerts', 'locations', 'warrantyParts',
+            'openInvoiceAmount', 'openWorkOrders', 'openRequestCount', 'pendingQuotationCount', 'activeContractCount', 'inProgressCount', 'completedCount', 'overdueCount', 'recentWorkOrders', 'recentRequests', 'upcomingPlans', 'slaPerformance', 'preventiveCount', 'correctiveCount',
             'contractFilter', 'assetFilter', 'locationFilter', 'unreadInbox', 'inboxReady'
         ))->render();
 
@@ -142,7 +148,7 @@ class CustomerPortalController extends Controller
         }
 
         return response($html)
-            ->header('X-UNIFCO-Customer-Portal-Release','customer-portal-20260821-5')
+            ->header('X-UNIFCO-Customer-Portal-Release','customer-portal-20260826-workflow-1')
             ->header('Cache-Control','no-cache, no-store, must-revalidate');
     }
 }
