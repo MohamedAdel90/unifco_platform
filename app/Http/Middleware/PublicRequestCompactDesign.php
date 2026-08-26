@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+// Restored design state prior to the latest compact-reference experiment.
 class PublicRequestCompactDesign
 {
     public function handle(Request $request, Closure $next): Response
