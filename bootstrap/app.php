@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\{AuthenticateApiToken,AuthenticateJwt,BrandingPresentation,EnsureUserSessionValid,PublicAssetQrInsecureFallback,PublicAssetQrPresentation,PublicRequestAttachmentsPresentation,PublicRequestCompactDesign,PublicRequestHeaderMatch,PublicServiceLinks,RequirePermission};
+use App\Http\Middleware\{AuthenticateApiToken,AuthenticateJwt,BrandingPresentation,EnsureUserSessionValid,LegacyFormCompatibility,PublicAssetQrInsecureFallback,PublicAssetQrPresentation,PublicRequestAttachmentsPresentation,PublicRequestCompactDesign,PublicRequestHeaderMatch,PublicServiceLinks,RequirePermission};
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -34,7 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['permission'=>RequirePermission::class,'api.token'=>AuthenticateApiToken::class,'jwt'=>AuthenticateJwt::class]);
-        $middleware->web(append: [EnsureUserSessionValid::class,BrandingPresentation::class,PublicRequestHeaderMatch::class,PublicRequestAttachmentsPresentation::class,PublicAssetQrPresentation::class,PublicAssetQrInsecureFallback::class,PublicRequestCompactDesign::class,PublicServiceLinks::class]);
+        // Response mutators unwind in reverse order, so the insecure QR fallback is
+        // registered before the QR presentation middleware and can see its injected UI.
+        $middleware->web(append: [EnsureUserSessionValid::class,LegacyFormCompatibility::class,BrandingPresentation::class,PublicRequestHeaderMatch::class,PublicRequestAttachmentsPresentation::class,PublicAssetQrInsecureFallback::class,PublicAssetQrPresentation::class,PublicRequestCompactDesign::class,PublicServiceLinks::class]);
         $middleware->validateCsrfTokens(except: ['login']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
