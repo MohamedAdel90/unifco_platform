@@ -70,7 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/customer/profile/logo', [CustomerProfileController::class,'updateLogo'])->name('customer.profile.logo');
     Route::put('/customer/profile/password', [CustomerProfileController::class,'updatePassword'])->name('customer.profile.password');
     Route::get('/customer/{section}', CustomerPortalController::class)
-        ->whereIn('section', ['dashboard','contracts','assets','work-orders','maintenance','invoices','reports','sla','documents','notifications'])
+        ->whereIn('section', ['dashboard','requests','quotations','timeline','contracts','assets','work-orders','maintenance','invoices','reports','sla','documents','notifications'])
         ->name('customer.section');
     Route::post('/customer/service-requests', [CustomerPortalOperationsController::class,'requestService'])->name('customer.requests.store');
     Route::post('/customer/quotations/{quotation}/decision', [CustomerPortalOperationsController::class,'decideQuotation'])->name('customer.quotations.decision');
