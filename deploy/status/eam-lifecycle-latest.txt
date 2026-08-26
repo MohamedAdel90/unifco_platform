@@ -1,8 +1,8 @@
 release=public-request-asset-qr-v1
-source_sha=c85a7102fef899d6b291a99fb5e42233330968b3
-verified_at=2026-08-26T10:41:26Z
-result=success
+source_sha=9c64806b2b194bec85427f677d5a16db1baf64a9
+verified_at=2026-08-26T14:00:29Z
+result=failure
 source_validation=success
-laravel_preflight_rc=0
-public_release_validation=success
-deploy_rc=0
+laravel_preflight_rc=not-run
+public_release_validation=skipped
+deploy_rc=not-run
