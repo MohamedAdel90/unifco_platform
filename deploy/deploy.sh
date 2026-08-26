@@ -57,7 +57,7 @@ DB_DRIVER="$(php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.
 
 echo "==> Applying migrations and operational bootstraps"
 php artisan migrate --force
-php artisan db:seed --class='Database\\Seeders\\WorkflowTestUsersSeeder' --force
+php artisan db:seed --class='Database\Seeders\WorkflowTestUsersSeeder' --force
 php artisan unifco:bootstrap-warehouse-access
 php artisan brand:materialize
 php artisan storage:link || true
