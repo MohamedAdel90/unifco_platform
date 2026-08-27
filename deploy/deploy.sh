@@ -27,6 +27,7 @@ for file in \
   database/migrations/2026_08_27_000052_add_customer_portal_rbac_scopes.php \
   database/migrations/2026_08_27_000053_add_customer_portal_action_requests.php \
   database/migrations/2026_08_27_000054_add_customer_action_attachments.php \
+  database/migrations/2026_08_27_000055_add_assignment_sla_to_customer_actions.php \
   database/seeders/WorkflowTestUsersSeeder.php \
   app/Http/Controllers/Workflow/WorkflowWorkspaceController.php \
   app/Http/Controllers/Workflow/CustomerActionInboxController.php \
@@ -42,6 +43,7 @@ grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.
 grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal Phase 1 marker missing"; exit 1; }
 grep -q 'customer.actions' routes/customer-phase2.php || { echo "ERROR: Customer Portal Phase 2 action route missing"; exit 1; }
 grep -q 'workflow.customer-actions.index' routes/customer-phase2.php || { echo "ERROR: internal customer action inbox route missing"; exit 1; }
+grep -q 'assigned_role' app/Http/Controllers/CustomerPortalPhase2ActionController.php || { echo "ERROR: customer action role assignment missing"; exit 1; }
 grep -q 'CustomerPortalAccessAdminController' routes/public.php || { echo "ERROR: Customer Users & Access routes missing"; exit 1; }
 grep -q 'WorkflowWorkspaceController' routes/web.php || { echo "ERROR: workflow workspace route missing"; exit 1; }
 
@@ -101,6 +103,7 @@ foreach($expected as $email=>$expectedRole){
  }
 }
 foreach(["customer_portal_user_scopes","customer_portal_action_requests"] as $table){if(!Illuminate\Support\Facades\Schema::hasTable($table)){fwrite(STDERR,"ERROR: required customer portal table missing: $table\n");exit(1);}}
+foreach(["assigned_role","priority","due_at"] as $column){if(!Illuminate\Support\Facades\Schema::hasColumn("customer_portal_action_requests",$column)){fwrite(STDERR,"ERROR: customer action SLA column missing: $column\n");exit(1);}}
 echo "Workflow and Customer Portal identities verified\n";
 '
 
