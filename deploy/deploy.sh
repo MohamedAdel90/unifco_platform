@@ -25,6 +25,7 @@ for file in \
   database/migrations/2026_08_27_000058_build_professional_asset_master.php \
   database/migrations/2026_08_27_000059_normalize_user_status_semantics.php \
   database/migrations/2026_08_27_000060_build_asset_lifecycle_commissioning.php \
+  database/migrations/2026_08_27_000061_normalize_asset_documents_for_professional_master.php \
   database/seeders/WorkflowTestUsersSeeder.php \
   app/Http/Controllers/Maintenance/AssetMasterController.php \
   app/Models/Asset.php app/Models/AssetCategoryTemplate.php app/Models/AssetDocument.php \
@@ -79,8 +80,9 @@ php -r '
 require "vendor/autoload.php";
 $app=require "bootstrap/app.php";
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-foreach(["asset_locations","asset_lifecycle_events","asset_commissioning_records"] as $table){if(!Illuminate\Support\Facades\Schema::hasTable($table)){fwrite(STDERR,"ERROR: Phase B table missing: $table\n");exit(1);}}
+foreach(["asset_locations","asset_lifecycle_events","asset_commissioning_records","asset_documents"] as $table){if(!Illuminate\Support\Facades\Schema::hasTable($table)){fwrite(STDERR,"ERROR: Phase B table missing: $table\n");exit(1);}}
 foreach(["asset_location_id","commissioning_status","commissioning_requested_by","commissioning_requested_at","commissioning_approved_by","commissioning_approved_at","commissioning_notes"] as $column){if(!Illuminate\Support\Facades\Schema::hasColumn("assets",$column)){fwrite(STDERR,"ERROR: Phase B asset column missing: $column\n");exit(1);}}
+foreach(["tenant_id","organization_id","path","file_path","mime_type","version","issued_at","expires_at"] as $column){if(!Illuminate\Support\Facades\Schema::hasColumn("asset_documents",$column)){fwrite(STDERR,"ERROR: professional asset document column missing: $column\n");exit(1);}}
 $c=Illuminate\Support\Facades\DB::selectOne("SELECT DATA_TYPE data_type FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=\"users\" AND COLUMN_NAME=\"status\"");
 if(!$c||$c->data_type!=="varchar"){fwrite(STDERR,"ERROR: users.status must use lifecycle strings\n");exit(1);}
 echo "Asset Phase B database foundation verified\n";
