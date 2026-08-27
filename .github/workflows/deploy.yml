@@ -91,8 +91,8 @@ jobs:
           grep -q 'customer.access.index' routes/public.php
           grep -q 'customer.actions' routes/customer-phase2.php
           grep -q 'workflow.customer-actions.index' routes/customer-phase2.php
-          grep -q 'crm.acquisition.request-conversion' routes/customer-acquisition.php
-          grep -q 'crm.acquisition.review-onboarding' routes/customer-acquisition.php
+          grep -q "name('request-conversion')" routes/customer-acquisition.php
+          grep -q "name('review-onboarding')" routes/customer-acquisition.php
           grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php
           grep -q 'assigned_role' app/Http/Controllers/CustomerPortalPhase2ActionController.php
           grep -q 'workflow.site.manager@unifco.local' database/seeders/WorkflowTestUsersSeeder.php
