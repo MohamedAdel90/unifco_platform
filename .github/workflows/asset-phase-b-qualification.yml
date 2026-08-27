@@ -6,13 +6,16 @@ on:
     paths:
       - 'app/Models/Asset*.php'
       - 'app/Services/AssetMasterService.php'
+      - 'app/Services/AssetMaintenanceIntelligenceService.php'
       - 'app/Http/Controllers/Maintenance/AssetMasterController.php'
+      - 'app/Http/Controllers/Maintenance/AssetMaintenanceIntelligenceController.php'
       - 'database/migrations/2026_08_27_000060_build_asset_lifecycle_commissioning.php'
       - 'database/migrations/2026_08_27_000061_normalize_asset_documents_for_professional_master.php'
       - 'resources/views/maintenance/asset-master/**'
       - 'routes/asset-master.php'
       - 'tests/Feature/ProfessionalAssetMasterTest.php'
       - 'tests/Feature/AssetLifecyclePhaseBTest.php'
+      - 'tests/Feature/AssetMaintenanceIntelligenceTest.php'
       - 'deploy/deploy.sh'
       - '.github/workflows/deploy.yml'
       - '.github/workflows/asset-phase-b-qualification.yml'
@@ -52,11 +55,14 @@ jobs:
           set -euo pipefail
           php -l app/Models/Asset.php
           php -l app/Models/AssetDocument.php
+          php -l app/Models/AssetMeterReading.php
           php -l app/Models/AssetLocation.php
           php -l app/Models/AssetLifecycleEvent.php
           php -l app/Models/AssetCommissioningRecord.php
           php -l app/Services/AssetMasterService.php
+          php -l app/Services/AssetMaintenanceIntelligenceService.php
           php -l app/Http/Controllers/Maintenance/AssetMasterController.php
+          php -l app/Http/Controllers/Maintenance/AssetMaintenanceIntelligenceController.php
           php -l database/migrations/2026_08_27_000060_build_asset_lifecycle_commissioning.php
           php -l database/migrations/2026_08_27_000061_normalize_asset_documents_for_professional_master.php
           php -l routes/asset-master.php
@@ -64,8 +70,10 @@ jobs:
           grep -q "name('commissioning.request')" routes/asset-master.php
           grep -q "name('commissioning.review')" routes/asset-master.php
           grep -q "name('transition')" routes/asset-master.php
+          grep -q "name('intelligence.meter')" routes/asset-master.php
+          grep -q "name('intelligence.recalculate')" routes/asset-master.php
           grep -q 'Maker/checker control' app/Services/AssetMasterService.php
-          grep -q 'Lifecycle Timeline' resources/views/maintenance/asset-master/show.blade.php
+          grep -q 'Health Score' resources/views/maintenance/asset-master/intelligence.blade.php
           grep -q 'file_path' app/Http/Controllers/Maintenance/AssetMasterController.php
           grep -q '000061_normalize_asset_documents' deploy/deploy.sh
       - name: Prepare writable directories
@@ -83,6 +91,9 @@ jobs:
           php artisan route:list --name=asset-master.commissioning.request >/dev/null
           php artisan route:list --name=asset-master.commissioning.review >/dev/null
           php artisan route:list --name=asset-master.locations.store >/dev/null
+          php artisan route:list --name=asset-master.intelligence.show >/dev/null
+          php artisan route:list --name=asset-master.intelligence.meter >/dev/null
+          php artisan route:list --name=asset-master.intelligence.recalculate >/dev/null
           php artisan view:cache
       - name: Run Phase A and B asset tests
-        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AssetLifecyclePhaseBTest.php
+        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php
