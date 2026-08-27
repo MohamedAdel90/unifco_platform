@@ -52,6 +52,7 @@ jobs:
           php -l app/Http/Controllers/PublicSiteController.php
           php -l app/Http/Controllers/CustomerPortalController.php
           php -l app/Http/Controllers/CustomerPortalOperationsController.php
+          php -l app/Http/Controllers/CustomerPortalAccessAdminController.php
           php -l app/Http/Controllers/CustomerAssetReadController.php
           php -l app/Services/CustomerPortalAccessService.php
           php -l app/Http/Controllers/Workflow/ApprovalController.php
@@ -69,8 +70,10 @@ jobs:
           php -l routes/web.php
           php -l routes/public.php
           grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php
-          grep -q 'SITE_MANAGER' app/Services/CustomerPortalAccessService.php
+          grep -q 'CustomerPortalAccessAdminController' routes/public.php
+          grep -q 'customer.access.index' routes/public.php
           grep -q 'workflow.site.manager@unifco.local' database/seeders/WorkflowTestUsersSeeder.php
+          test -s resources/views/customer/users-access.blade.php
 
       - name: Laravel release preflight
         shell: bash
@@ -87,6 +90,9 @@ jobs:
           php artisan route:list --name=customer.portal >/dev/null
           php artisan route:list --name=customer.section >/dev/null
           php artisan route:list --name=customer.requests.store >/dev/null
+          php artisan route:list --name=customer.access.index >/dev/null
+          php artisan route:list --name=customer.access.store >/dev/null
+          php artisan route:list --name=customer.access.update >/dev/null
           php artisan view:cache
           php artisan test \
             tests/Feature/CustomerPortalRbacPhase1Test.php \
