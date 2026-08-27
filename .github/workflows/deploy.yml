@@ -66,6 +66,9 @@ jobs:
           php -l app/Models/Asset.php
           php -l app/Models/AssetCategoryTemplate.php
           php -l app/Models/AssetDocument.php
+          php -l app/Models/AssetLocation.php
+          php -l app/Models/AssetLifecycleEvent.php
+          php -l app/Models/AssetCommissioningRecord.php
           php -l app/Services/AssetMasterService.php
           php -l app/Services/CustomerAcquisitionService.php
           php -l app/Services/CustomerPortalAccessService.php
@@ -90,6 +93,7 @@ jobs:
           php -l database/migrations/2026_08_27_000057_add_acquisition_governance_fields.php
           php -l database/migrations/2026_08_27_000058_build_professional_asset_master.php
           php -l database/migrations/2026_08_27_000059_normalize_user_status_semantics.php
+          php -l database/migrations/2026_08_27_000060_build_asset_lifecycle_commissioning.php
           php -l bootstrap/app.php
           php -l routes/web.php
           php -l routes/public.php
@@ -107,7 +111,11 @@ jobs:
           grep -q "name('request-conversion')" routes/customer-acquisition.php
           grep -q "name('review-onboarding')" routes/customer-acquisition.php
           grep -q "name('verify')" routes/asset-master.php
+          grep -q "name('transition')" routes/asset-master.php
+          grep -q "name('commissioning.request')" routes/asset-master.php
+          grep -q "name('commissioning.review')" routes/asset-master.php
           grep -q 'data_completeness_score' app/Services/AssetMasterService.php
+          grep -q 'Maker/checker control' app/Services/AssetMasterService.php
           grep -q 'VARCHAR(20)' database/migrations/2026_08_27_000059_normalize_user_status_semantics.php
           grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php
           grep -q 'CustomerAcquisitionService' app/Services/PublicRequestPipelineService.php
@@ -154,10 +162,16 @@ jobs:
           php artisan route:list --name=asset-master.index >/dev/null
           php artisan route:list --name=asset-master.show >/dev/null
           php artisan route:list --name=asset-master.verify >/dev/null
+          php artisan route:list --name=asset-master.transition >/dev/null
+          php artisan route:list --name=asset-master.locations.store >/dev/null
+          php artisan route:list --name=asset-master.assign-location >/dev/null
+          php artisan route:list --name=asset-master.commissioning.request >/dev/null
+          php artisan route:list --name=asset-master.commissioning.review >/dev/null
           php artisan route:list --name=asset-master.documents.store >/dev/null
           php artisan view:cache
           php artisan test \
             tests/Feature/ProfessionalAssetMasterTest.php \
+            tests/Feature/AssetLifecyclePhaseBTest.php \
             tests/Feature/PublicOfficialContactTest.php \
             tests/Feature/CustomerAcquisitionWorkflowTest.php \
             tests/Feature/CustomerPortalRbacPhase1Test.php \
