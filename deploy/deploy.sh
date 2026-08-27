@@ -15,19 +15,24 @@ echo "==> Validating current release foundation"
 for file in \
   resources/views/public/request.blade.php \
   resources/views/workflow/workspace.blade.php \
+  resources/views/customer/users-access.blade.php \
   routes/public.php \
   routes/public-asset-qr.php \
   routes/parts.php \
   database/migrations/2026_08_26_000050_link_public_requests_to_asset_registry.php \
   database/migrations/2026_08_26_000051_build_service_request_workflow_foundation.php \
+  database/migrations/2026_08_27_000052_add_customer_portal_rbac_scopes.php \
   database/seeders/WorkflowTestUsersSeeder.php \
   app/Http/Controllers/Workflow/WorkflowWorkspaceController.php \
+  app/Http/Controllers/CustomerPortalAccessAdminController.php \
+  app/Services/CustomerPortalAccessService.php \
   app/Services/ServiceRequestWorkflowService.php \
   app/Services/CustomerLifecycleService.php; do
   test -s "$file" || { echo "ERROR: required release file missing: $file"; exit 1; }
 done
 grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
-grep -q 'customer-portal-20260826-workflow-1' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer 360 workflow release marker missing"; exit 1; }
+grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal Phase 1 marker missing"; exit 1; }
+grep -q 'CustomerPortalAccessAdminController' routes/public.php || { echo "ERROR: Customer Users & Access routes missing"; exit 1; }
 grep -q 'WorkflowWorkspaceController' routes/web.php || { echo "ERROR: workflow workspace route missing"; exit 1; }
 
 echo "==> Installing dependencies"
@@ -61,34 +66,41 @@ php artisan unifco:bootstrap-warehouse-access
 php artisan brand:materialize
 php artisan storage:link || true
 
-echo "==> Verifying workflow test identities and password"
+echo "==> Verifying workflow and customer portal test identities"
 php -r '
 require "vendor/autoload.php";
 $app=require "bootstrap/app.php";
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 $expected=[
-"engineer@unifco.local"=>"MAINTENANCE_ENGINEER",
-"maintenance.manager@unifco.local"=>"MAINTENANCE_MANAGER",
-"procurement@unifco.local"=>"PROCUREMENT",
-"tenders@unifco.local"=>"TENDERS_CONTRACTS",
-"finance@unifco.local"=>"FINANCE",
-"projects.manager@unifco.local"=>"PROJECT_MANAGER",
-"ceo@unifco.local"=>"CEO",
-"workflow.customer@unifco.local"=>"CUSTOMER",
+"engineer@unifco.local"=>["MAINTENANCE_ENGINEER",null],
+"maintenance.manager@unifco.local"=>["MAINTENANCE_MANAGER",null],
+"procurement@unifco.local"=>["PROCUREMENT",null],
+"tenders@unifco.local"=>["TENDERS_CONTRACTS",null],
+"finance@unifco.local"=>["FINANCE",null],
+"projects.manager@unifco.local"=>["PROJECT_MANAGER",null],
+"ceo@unifco.local"=>["CEO",null],
+"workflow.customer@unifco.local"=>["CUSTOMER","CUSTOMER_ADMIN"],
+"workflow.site.manager@unifco.local"=>["CUSTOMER","SITE_MANAGER"],
+"workflow.finance@unifco.local"=>["CUSTOMER","FINANCE"],
+"workflow.viewer@unifco.local"=>["CUSTOMER","VIEWER"],
 ];
-foreach($expected as $email=>$role){
+foreach($expected as $email=>$expectedRole){
  $u=App\Models\User::where("email",$email)->first();
- if(!$u||$u->role!==$role||!Illuminate\Support\Facades\Hash::check("UnifcoWorkflow!2026",$u->password)){
-   fwrite(STDERR,"ERROR: workflow test user invalid: $email\n"); exit(1);
+ if(!$u||$u->role!==$expectedRole[0]||($expectedRole[1]!==null&&$u->customer_portal_role!==$expectedRole[1])||!Illuminate\Support\Facades\Hash::check("UnifcoWorkflow!2026",$u->password)){
+   fwrite(STDERR,"ERROR: test user invalid: $email\n"); exit(1);
  }
 }
-echo "Workflow test identities and passwords verified\n";
+if(!Illuminate\Support\Facades\Schema::hasTable("customer_portal_user_scopes")){fwrite(STDERR,"ERROR: customer portal scope table missing\n");exit(1);}
+echo "Workflow and Customer Portal identities verified\n";
 '
 
 echo "==> Verifying critical runtime routes and commands"
 php artisan route:list --name=workflow.workspace >/dev/null
 php artisan route:list --name=workflow.approvals.index >/dev/null
 php artisan route:list --name=customer.portal >/dev/null
+php artisan route:list --name=customer.access.index >/dev/null
+php artisan route:list --name=customer.access.store >/dev/null
+php artisan route:list --name=customer.requests.store >/dev/null
 php artisan route:list --name=public.request.store >/dev/null
 php artisan route:list --name=public.asset.lookup >/dev/null
 php artisan list | grep -q 'unifco:check-approval-sla'
