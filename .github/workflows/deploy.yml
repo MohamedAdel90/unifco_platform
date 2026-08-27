@@ -71,6 +71,8 @@ jobs:
           php -l app/Services/ServiceRequestWorkflowService.php
           php -l app/Services/CustomerLifecycleService.php
           php -l app/Services/ApprovalService.php
+          php -l app/Support/UnifcoContact.php
+          php -l app/Http/Middleware/PublicContactPresentation.php
           php -l app/Http/Middleware/WorkflowRoleHomeRedirect.php
           php -l app/Http/Middleware/WorkflowRoleNavigationPresentation.php
           php -l app/Http/Middleware/CustomerPortalDashboardPresentation.php
@@ -86,14 +88,19 @@ jobs:
           php -l routes/public.php
           php -l routes/customer-phase2.php
           php -l routes/customer-acquisition.php
+          grep -q '0599402090' app/Support/UnifcoContact.php
+          grep -q '966599402090' app/Support/UnifcoContact.php
+          grep -q 'info@unifco.com' app/Support/UnifcoContact.php
           grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php
           grep -q 'CustomerPortalAccessAdminController' routes/public.php
           grep -q 'customer.access.index' routes/public.php
           grep -q 'customer.actions' routes/customer-phase2.php
           grep -q 'workflow.customer-actions.index' routes/customer-phase2.php
+          grep -q "name('review-duplicate')" routes/customer-acquisition.php
           grep -q "name('request-conversion')" routes/customer-acquisition.php
           grep -q "name('review-onboarding')" routes/customer-acquisition.php
           grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php
+          grep -q 'CustomerAcquisitionService' app/Services/PublicRequestPipelineService.php
           grep -q 'assigned_role' app/Http/Controllers/CustomerPortalPhase2ActionController.php
           grep -q 'workflow.site.manager@unifco.local' database/seeders/WorkflowTestUsersSeeder.php
           test -s resources/views/customer/users-access.blade.php
@@ -127,11 +134,13 @@ jobs:
           php artisan route:list --name=workflow.customer-actions.index >/dev/null
           php artisan route:list --name=crm.acquisition.index >/dev/null
           php artisan route:list --name=crm.acquisition.follow-up >/dev/null
+          php artisan route:list --name=crm.acquisition.review-duplicate >/dev/null
           php artisan route:list --name=crm.acquisition.request-conversion >/dev/null
           php artisan route:list --name=crm.acquisition.review-conversion >/dev/null
           php artisan route:list --name=crm.acquisition.review-onboarding >/dev/null
           php artisan view:cache
           php artisan test \
+            tests/Feature/PublicOfficialContactTest.php \
             tests/Feature/CustomerAcquisitionWorkflowTest.php \
             tests/Feature/CustomerPortalRbacPhase1Test.php \
             tests/Feature/CustomerPortalPhase2ActionCenterTest.php \
