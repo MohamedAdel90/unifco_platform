@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer,CustomerPortalActionRequest,FinancialDocument,ServiceContract,User};
+use App\Models\{Customer,FinancialDocument,ServiceContract,User};
 use Database\Seeders\WorkflowTestUsersSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class CustomerPortalPhase2ActionCenterTest extends TestCase
@@ -25,6 +27,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
             'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED',
         ]);
 
+        $this->actingAs($admin)->get('/customer')->assertOk()->assertSee('Action Required From You');
         $this->actingAs($admin)->get('/customer/actions')->assertOk()->assertSee('Action Required From You')->assertSee('PH2-INV-001');
         $this->actingAs($finance)->get('/customer/actions')->assertOk()->assertSee('Phase 2 customer workflow center')->assertSee('PH2-INV-001');
     }
@@ -66,16 +69,34 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
         $finance=User::where('email','workflow.finance@unifco.local')->firstOrFail();
         $site=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
         $customer=Customer::findOrFail($finance->customer_id);
-        $invoice=FinancialDocument::create([
-            'tenant_id'=>$finance->tenant_id,'organization_id'=>$finance->organization_id,'customer_id'=>$customer->id,
-            'document_no'=>'PH2-QUERY-INV','document_type'=>'AR_INVOICE','counterparty_name'=>$customer->name,
-            'document_date'=>today(),'due_date'=>today()->addDays(7),'currency'=>'SAR','amount'=>3000,'open_amount'=>3000,
-            'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED',
-        ]);
+        $invoice=$this->invoice($finance,$customer,'PH2-QUERY-INV');
 
         $this->actingAs($finance)->post('/customer/invoices/'.$invoice->id.'/query',['notes'=>'Please confirm payment allocation'])->assertRedirect();
         $this->assertDatabaseHas('customer_portal_action_requests',['customer_id'=>$customer->id,'action_type'=>'INVOICE_QUERY','reference_id'=>$invoice->id]);
         $this->actingAs($site)->post('/customer/invoices/'.$invoice->id.'/query',['notes'=>'Should be blocked'])->assertForbidden();
+    }
+
+    public function test_payment_proof_reaches_internal_finance_and_can_be_resolved(): void
+    {
+        Storage::fake('local');
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $customerFinance=User::where('email','workflow.finance@unifco.local')->firstOrFail();
+        $internalFinance=User::where('email','finance@unifco.local')->firstOrFail();
+        $customer=Customer::findOrFail($customerFinance->customer_id);
+        $invoice=$this->invoice($customerFinance,$customer,'PH2-PROOF-INV');
+
+        $this->actingAs($customerFinance)->post('/customer/invoices/'.$invoice->id.'/payment-proof',[
+            'proof'=>UploadedFile::fake()->create('payment.pdf',200,'application/pdf'),'notes'=>'Bank transfer reference 123',
+        ])->assertRedirect();
+
+        $action=\App\Models\CustomerPortalActionRequest::where('action_type','PAYMENT_PROOF')->firstOrFail();
+        Storage::disk('local')->assertExists($action->attachment_path);
+        $this->actingAs($internalFinance)->get('/workflow/customer-actions')->assertOk()->assertSee('PAYMENT PROOF')->assertSee('payment.pdf');
+        $this->actingAs($internalFinance)->post('/workflow/customer-actions/'.$action->id.'/resolve',[
+            'decision'=>'RESOLVED','resolution_notes'=>'Payment proof verified and sent for allocation.',
+        ])->assertRedirect();
+        $this->assertDatabaseHas('customer_portal_action_requests',['id'=>$action->id,'status'=>'RESOLVED']);
+        $this->assertDatabaseHas('customer_activity_events',['customer_id'=>$customer->id,'event_type'=>'CUSTOMER_ACTION_RESOLVED']);
     }
 
     public function test_viewer_cannot_accept_completed_work(): void
@@ -83,5 +104,15 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
         $this->seed(WorkflowTestUsersSeeder::class);
         $viewer=User::where('email','workflow.viewer@unifco.local')->firstOrFail();
         $this->actingAs($viewer)->get('/customer/work-acceptance')->assertForbidden();
+    }
+
+    private function invoice(User $user,Customer $customer,string $number): FinancialDocument
+    {
+        return FinancialDocument::create([
+            'tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'customer_id'=>$customer->id,
+            'document_no'=>$number,'document_type'=>'AR_INVOICE','counterparty_name'=>$customer->name,
+            'document_date'=>today(),'due_date'=>today()->addDays(7),'currency'=>'SAR','amount'=>3000,'open_amount'=>3000,
+            'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED',
+        ]);
     }
 }
