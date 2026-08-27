@@ -37,6 +37,7 @@ class AssetMasterController extends Controller
             'assets'=>$assets,
             'customers'=>Customer::where('tenant_id',$user->tenant_id)->orderBy('name')->get(),
             'sites'=>CustomerSite::whereHas('customer',fn($q)=>$q->where('tenant_id',$user->tenant_id))->orderBy('name')->get(),
+            'locations'=>AssetLocation::where('tenant_id',$user->tenant_id)->where('active',true)->with(['site','parent'])->orderBy('customer_site_id')->orderBy('location_type')->orderBy('name')->get(),
             'templates'=>AssetCategoryTemplate::where('tenant_id',$user->tenant_id)->where('active',true)->orderBy('category')->orderBy('asset_type')->get(),
             'criticalities'=>AssetMasterService::CRITICALITY,'ownershipTypes'=>AssetMasterService::OWNERSHIP,'strategies'=>AssetMasterService::STRATEGIES,
             'canVerify'=>in_array($user->role,self::VERIFY_ROLES,true),
