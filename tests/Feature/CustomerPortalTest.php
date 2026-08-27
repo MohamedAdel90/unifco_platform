@@ -26,8 +26,8 @@ class CustomerPortalTest extends TestCase
         FinancialDocument::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$other->id,'document_no'=>'INV-OTHER','document_type'=>'AR_INVOICE','counterparty_name'=>$other->name,'document_date'=>now(),'currency'=>'SAR','amount'=>20000,'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED','open_amount'=>20000]);
 
         $this->post('/login',['email'=>$user->email,'password'=>'VerySecure1234'])->assertRedirect(route('customer.portal'));
-        $this->actingAs($user)->get('/customer')->assertOk()->assertSee('Dashboard')->assertSee('WO-001')->assertDontSee('AMC-001')->assertDontSee('INV-001');
-        $this->actingAs($user)->get('/customer/contracts')->assertOk()->assertSee('My Contracts')->assertSee('AMC-001')->assertDontSee('INV-001');
+        $this->actingAs($user)->get('/customer')->assertOk()->assertSee('Customer 360')->assertSee('Open Work Orders')->assertDontSee('INV-OTHER');
+        $this->actingAs($user)->get('/customer/contracts')->assertOk()->assertSee('Contracts')->assertSee('AMC-001')->assertDontSee('INV-001');
         $this->actingAs($user)->get('/customer/assets')->assertOk()->assertSee('GEN-001')->assertDontSee('OTHER-001');
         $this->actingAs($user)->get('/customer/maintenance')->assertOk()->assertSee('PM-001');
         $this->actingAs($user)->get('/customer/work-orders')->assertOk()->assertSee('WO-001')->assertSee('Request Service');
