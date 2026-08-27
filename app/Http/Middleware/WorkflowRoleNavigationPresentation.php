@@ -41,7 +41,7 @@ class WorkflowRoleNavigationPresentation
 
         $items=match($role){
             'MAINTENANCE_ENGINEER'=>[
-                ['⚙','My Workspace',$home],['✓','My Technical Approvals',$approvals],['⚑','Customer Revisit Requests',$customerActions],['▣','Work Orders',route('maintenance.work-orders.index')],['◇','Assets & EAM',route('eam.assets.index')],['⌁','Maintenance Overview',route('modules.index','maintenance')],
+                ['⚙','My Workspace',$home],['✓','My Technical Approvals',$approvals],['▣','Work Orders',route('maintenance.work-orders.index')],['◇','Assets & EAM',route('eam.assets.index')],['⌁','Maintenance Overview',route('modules.index','maintenance')],
             ],
             'MAINTENANCE_MANAGER'=>[
                 ['⚙','Manager Workspace',$home],['✓','My Approvals',$approvals],['⚑','Customer Revisit Requests',$customerActions],['▣','Work Orders',route('maintenance.work-orders.index')],['⌁','Maintenance Operations',route('maintenance.operations.index')],['◇','Assets & EAM',route('eam.assets.index')],['▥','Executive Reports',route('reporting.executive')],
@@ -56,10 +56,10 @@ class WorkflowRoleNavigationPresentation
                 ['◉','Finance Workspace',$home],['✓','My Financial Approvals',$approvals],['⚑','Customer Finance Actions',$customerActions],['▥','Finance Core',route('finance.core.index')],['▤','Journals',route('finance.journals.index')],['▥','Executive Reports',route('reporting.executive')],['◎','Customer Context',route('crm.customers.index')],
             ],
             'PROJECT_MANAGER'=>[
-                ['▱','Projects Workspace',$home],['✓','My Execution Approvals',$approvals],['⚑','Customer Revisit Requests',$customerActions],['▱','Projects',route('projects.projects.index')],['▣','Work Orders',route('maintenance.work-orders.index')],['◎','Customer Context',route('crm.customers.index')],['▥','Executive Reports',route('reporting.executive')],
+                ['▱','Projects Workspace',$home],['✓','My Execution Approvals',$approvals],['▱','Projects',route('projects.projects.index')],['▣','Work Orders',route('maintenance.work-orders.index')],['◎','Customer Context',route('crm.customers.index')],['▥','Executive Reports',route('reporting.executive')],
             ],
             'CEO'=>[
-                ['★','Executive Workspace',$home],['✓','Executive Approvals',$approvals],['⚑','Customer Renewal Exceptions',$customerActions],['▥','Executive Reports',route('reporting.executive')],['◉','Finance Overview',route('finance.core.index')],['▱','Projects Overview',route('projects.projects.index')],['▤','Procurement Overview',route('procurement.purchase-orders.index')],
+                ['★','Executive Workspace',$home],['✓','Executive Approvals',$approvals],['▥','Executive Reports',route('reporting.executive')],['◉','Finance Overview',route('finance.core.index')],['▱','Projects Overview',route('projects.projects.index')],['▤','Procurement Overview',route('procurement.purchase-orders.index')],
             ],
         };
 
