@@ -45,7 +45,7 @@ class CustomerPortalPhase2ActionController extends Controller
         $action=$existing ?: $this->createAction($user,[
             'action_type'=>'CONTRACT_RENEWAL','assigned_role'=>'TENDERS_CONTRACTS','priority'=>'NORMAL',
             'reference_type'=>ServiceContract::class,'reference_id'=>$contract->id,
-        ],['notes'=>$data['notes']??null,'due_at'=>now()->addBusinessDays(5)]);
+        ],['notes'=>$data['notes']??null,'due_at'=>now()->addWeekdays(5)]);
 
         if(!$existing) $this->event($user,'CONTRACT_RENEWAL_REQUESTED',ServiceContract::class,$contract->id,'Contract renewal requested: '.$contract->contract_no,$data['notes']??null,$action->id);
         return back()->with('status',$existing?'A renewal request is already open for this contract.':'Contract renewal request submitted to UNIFCO.');
@@ -60,7 +60,7 @@ class CustomerPortalPhase2ActionController extends Controller
 
         $action=$this->createAction($user,[
             'action_type'=>'INVOICE_QUERY','assigned_role'=>'FINANCE','priority'=>'NORMAL','reference_type'=>FinancialDocument::class,'reference_id'=>$invoice->id,
-        ],['notes'=>$data['notes'],'due_at'=>now()->addBusinessDays(2)]);
+        ],['notes'=>$data['notes'],'due_at'=>now()->addWeekdays(2)]);
 
         $this->event($user,'INVOICE_QUERY_SUBMITTED',FinancialDocument::class,$invoice->id,'Invoice query submitted: '.$invoice->document_no,$data['notes'],$action->id);
         return back()->with('status','Invoice query submitted to UNIFCO Finance.');
@@ -82,7 +82,7 @@ class CustomerPortalPhase2ActionController extends Controller
             'action_type'=>'PAYMENT_PROOF','assigned_role'=>'FINANCE','priority'=>'HIGH','reference_type'=>FinancialDocument::class,'reference_id'=>$invoice->id,
         ],[
             'notes'=>$data['notes']??null,'attachment_path'=>$path,'attachment_name'=>$file->getClientOriginalName(),
-            'attachment_mime'=>$file->getClientMimeType(),'due_at'=>now()->addBusinessDay(),
+            'attachment_mime'=>$file->getClientMimeType(),'due_at'=>now()->addWeekday(),
         ]);
 
         $this->event($user,'PAYMENT_PROOF_SUBMITTED',FinancialDocument::class,$invoice->id,'Payment proof submitted: '.$invoice->document_no,$data['notes']??null,$action->id);
