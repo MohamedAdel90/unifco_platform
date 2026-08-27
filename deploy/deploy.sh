@@ -15,16 +15,24 @@ echo "==> Validating current release foundation"
 for file in \
   resources/views/public/request.blade.php \
   resources/views/workflow/workspace.blade.php \
+  resources/views/workflow/customer-actions.blade.php \
   resources/views/customer/users-access.blade.php \
+  resources/views/customer/action-center.blade.php \
   routes/public.php \
+  routes/customer-phase2.php \
   routes/public-asset-qr.php \
   routes/parts.php \
   database/migrations/2026_08_26_000050_link_public_requests_to_asset_registry.php \
   database/migrations/2026_08_26_000051_build_service_request_workflow_foundation.php \
   database/migrations/2026_08_27_000052_add_customer_portal_rbac_scopes.php \
+  database/migrations/2026_08_27_000053_add_customer_portal_action_requests.php \
+  database/migrations/2026_08_27_000054_add_customer_action_attachments.php \
   database/seeders/WorkflowTestUsersSeeder.php \
   app/Http/Controllers/Workflow/WorkflowWorkspaceController.php \
+  app/Http/Controllers/Workflow/CustomerActionInboxController.php \
   app/Http/Controllers/CustomerPortalAccessAdminController.php \
+  app/Http/Controllers/CustomerActionCenterController.php \
+  app/Http/Controllers/CustomerPortalPhase2ActionController.php \
   app/Services/CustomerPortalAccessService.php \
   app/Services/ServiceRequestWorkflowService.php \
   app/Services/CustomerLifecycleService.php; do
@@ -32,6 +40,8 @@ for file in \
 done
 grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
 grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal Phase 1 marker missing"; exit 1; }
+grep -q 'customer.actions' routes/customer-phase2.php || { echo "ERROR: Customer Portal Phase 2 action route missing"; exit 1; }
+grep -q 'workflow.customer-actions.index' routes/customer-phase2.php || { echo "ERROR: internal customer action inbox route missing"; exit 1; }
 grep -q 'CustomerPortalAccessAdminController' routes/public.php || { echo "ERROR: Customer Users & Access routes missing"; exit 1; }
 grep -q 'WorkflowWorkspaceController' routes/web.php || { echo "ERROR: workflow workspace route missing"; exit 1; }
 
@@ -90,17 +100,21 @@ foreach($expected as $email=>$expectedRole){
    fwrite(STDERR,"ERROR: test user invalid: $email\n"); exit(1);
  }
 }
-if(!Illuminate\Support\Facades\Schema::hasTable("customer_portal_user_scopes")){fwrite(STDERR,"ERROR: customer portal scope table missing\n");exit(1);}
+foreach(["customer_portal_user_scopes","customer_portal_action_requests"] as $table){if(!Illuminate\Support\Facades\Schema::hasTable($table)){fwrite(STDERR,"ERROR: required customer portal table missing: $table\n");exit(1);}}
 echo "Workflow and Customer Portal identities verified\n";
 '
 
 echo "==> Verifying critical runtime routes and commands"
 php artisan route:list --name=workflow.workspace >/dev/null
 php artisan route:list --name=workflow.approvals.index >/dev/null
+php artisan route:list --name=workflow.customer-actions.index >/dev/null
 php artisan route:list --name=customer.portal >/dev/null
+php artisan route:list --name=customer.actions >/dev/null
 php artisan route:list --name=customer.access.index >/dev/null
 php artisan route:list --name=customer.access.store >/dev/null
 php artisan route:list --name=customer.requests.store >/dev/null
+php artisan route:list --name=customer.invoices.payment-proof >/dev/null
+php artisan route:list --name=customer.work-orders.revisit >/dev/null
 php artisan route:list --name=public.request.store >/dev/null
 php artisan route:list --name=public.asset.lookup >/dev/null
 php artisan list | grep -q 'unifco:check-approval-sla'
