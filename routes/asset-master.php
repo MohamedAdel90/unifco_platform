@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Maintenance\AssetMasterController;
+use App\Http\Controllers\Maintenance\{AssetMasterController,AssetMaintenanceIntelligenceController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(function(){
@@ -17,4 +17,8 @@ Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(
     Route::post('/{asset}/commissioning/{record}/review',[AssetMasterController::class,'reviewCommissioning'])->name('commissioning.review');
     Route::post('/{asset}/documents',[AssetMasterController::class,'document'])->name('documents.store');
     Route::get('/documents/{document}/download',[AssetMasterController::class,'download'])->name('documents.download');
+
+    Route::get('/{asset}/intelligence',[AssetMaintenanceIntelligenceController::class,'show'])->name('intelligence.show');
+    Route::post('/{asset}/intelligence/meter',[AssetMaintenanceIntelligenceController::class,'meter'])->name('intelligence.meter');
+    Route::post('/{asset}/intelligence/recalculate',[AssetMaintenanceIntelligenceController::class,'recalculate'])->name('intelligence.recalculate');
 });
