@@ -57,8 +57,12 @@ jobs:
           php -l app/Http/Controllers/CustomerPortalPhase2ActionController.php
           php -l app/Http/Controllers/CustomerWorkAcceptanceController.php
           php -l app/Http/Controllers/CustomerAssetReadController.php
+          php -l app/Http/Controllers/CRM/CustomerAcquisitionController.php
           php -l app/Http/Controllers/Workflow/CustomerActionInboxController.php
           php -l app/Models/CustomerPortalActionRequest.php
+          php -l app/Models/CrmLead.php
+          php -l app/Models/Customer.php
+          php -l app/Services/CustomerAcquisitionService.php
           php -l app/Services/CustomerPortalAccessService.php
           php -l app/Http/Controllers/Workflow/ApprovalController.php
           php -l app/Http/Controllers/Workflow/WorkflowWorkspaceController.php
@@ -75,24 +79,27 @@ jobs:
           php -l database/migrations/2026_08_27_000053_add_customer_portal_action_requests.php
           php -l database/migrations/2026_08_27_000054_add_customer_action_attachments.php
           php -l database/migrations/2026_08_27_000055_add_assignment_sla_to_customer_actions.php
+          php -l database/migrations/2026_08_27_000056_add_customer_acquisition_lifecycle.php
+          php -l database/migrations/2026_08_27_000057_add_acquisition_governance_fields.php
           php -l bootstrap/app.php
           php -l routes/web.php
           php -l routes/public.php
           php -l routes/customer-phase2.php
+          php -l routes/customer-acquisition.php
           grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php
           grep -q 'CustomerPortalAccessAdminController' routes/public.php
           grep -q 'customer.access.index' routes/public.php
           grep -q 'customer.actions' routes/customer-phase2.php
-          grep -q 'customer.contracts.renewal-request' routes/customer-phase2.php
-          grep -q 'customer.invoices.query' routes/customer-phase2.php
-          grep -q 'customer.invoices.payment-proof' routes/customer-phase2.php
-          grep -q 'customer.work-orders.revisit' routes/customer-phase2.php
           grep -q 'workflow.customer-actions.index' routes/customer-phase2.php
+          grep -q 'crm.acquisition.request-conversion' routes/customer-acquisition.php
+          grep -q 'crm.acquisition.review-onboarding' routes/customer-acquisition.php
+          grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php
           grep -q 'assigned_role' app/Http/Controllers/CustomerPortalPhase2ActionController.php
           grep -q 'workflow.site.manager@unifco.local' database/seeders/WorkflowTestUsersSeeder.php
           test -s resources/views/customer/users-access.blade.php
           test -s resources/views/customer/action-center.blade.php
           test -s resources/views/workflow/customer-actions.blade.php
+          test -s resources/views/crm/acquisition.blade.php
 
       - name: Laravel release preflight
         shell: bash
@@ -118,8 +125,14 @@ jobs:
           php artisan route:list --name=customer.invoices.payment-proof >/dev/null
           php artisan route:list --name=customer.work-orders.revisit >/dev/null
           php artisan route:list --name=workflow.customer-actions.index >/dev/null
+          php artisan route:list --name=crm.acquisition.index >/dev/null
+          php artisan route:list --name=crm.acquisition.follow-up >/dev/null
+          php artisan route:list --name=crm.acquisition.request-conversion >/dev/null
+          php artisan route:list --name=crm.acquisition.review-conversion >/dev/null
+          php artisan route:list --name=crm.acquisition.review-onboarding >/dev/null
           php artisan view:cache
           php artisan test \
+            tests/Feature/CustomerAcquisitionWorkflowTest.php \
             tests/Feature/CustomerPortalRbacPhase1Test.php \
             tests/Feature/CustomerPortalPhase2ActionCenterTest.php \
             tests/Feature/CustomerPortalAdvancedOperationsTest.php \
