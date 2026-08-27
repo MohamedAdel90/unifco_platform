@@ -19,7 +19,10 @@ class CustomerPortalAccessService
 
     public function role(User $user): string
     {
-        $role=strtoupper((string)($user->customer_portal_role ?: 'VIEWER'));
+        // Existing CUSTOMER accounts predate customer_portal_role. Preserve their historical
+        // full portal behavior until an administrator explicitly assigns a scoped role.
+        $role=strtoupper(trim((string)$user->customer_portal_role));
+        if($role==='') return 'CUSTOMER_ADMIN';
         return in_array($role,self::ROLES,true)?$role:'VIEWER';
     }
 
