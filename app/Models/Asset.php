@@ -25,7 +25,7 @@ class Asset extends Model
         return [
             'acquisition_cost'=>'decimal:2','replacement_value'=>'decimal:2','salvage_value'=>'decimal:2','accumulated_depreciation'=>'decimal:2','net_book_value'=>'decimal:2',
             'meter_value'=>'decimal:4','latitude'=>'decimal:7','longitude'=>'decimal:7','manufacture_date'=>'date','installation_date'=>'date','commission_date'=>'date',
-            'warranty_start'=>'date','warranty_expiry'=>'date','expected_replacement_date'=>'date','technical_specifications'=>'array','verified_at'=>'datetime',
+            'warranty_start'=>'date','expected_replacement_date'=>'date','technical_specifications'=>'array','verified_at'=>'datetime',
             'commissioning_requested_at'=>'datetime','commissioning_approved_at'=>'datetime','last_health_calculated_at'=>'datetime','disposed_at'=>'datetime'
         ];
     }
