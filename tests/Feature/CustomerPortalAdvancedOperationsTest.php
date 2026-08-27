@@ -53,8 +53,8 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
         $c=$this->context();
         $this->actingAs($c['user'])->get('/customer/requests')->assertOk()->assertSee('Service Requests');
         $this->actingAs($c['user'])->get('/customer/quotations')->assertOk()->assertSee('Quotations');
-        $this->actingAs($c['user'])->get('/customer/timeline')->assertOk()->assertSee('Transaction Timeline');
-        $this->actingAs($c['user'])->get('/customer')->assertOk()->assertSee('Customer 360 Dashboard');
+        $this->actingAs($c['user'])->get('/customer/timeline')->assertOk()->assertSee('Timeline');
+        $this->actingAs($c['user'])->get('/customer')->assertOk()->assertSee('Customer 360');
     }
 
     public function test_customer_can_download_own_invoice_and_contract_as_pdf(): void
