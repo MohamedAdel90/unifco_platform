@@ -57,6 +57,7 @@ jobs:
           php -l app/Http/Controllers/CustomerPortalPhase2ActionController.php
           php -l app/Http/Controllers/CustomerWorkAcceptanceController.php
           php -l app/Http/Controllers/CustomerAssetReadController.php
+          php -l app/Http/Controllers/Workflow/CustomerActionInboxController.php
           php -l app/Models/CustomerPortalActionRequest.php
           php -l app/Services/CustomerPortalAccessService.php
           php -l app/Http/Controllers/Workflow/ApprovalController.php
@@ -68,9 +69,11 @@ jobs:
           php -l app/Services/ApprovalService.php
           php -l app/Http/Middleware/WorkflowRoleHomeRedirect.php
           php -l app/Http/Middleware/WorkflowRoleNavigationPresentation.php
+          php -l app/Http/Middleware/CustomerPortalDashboardPresentation.php
           php -l database/seeders/WorkflowTestUsersSeeder.php
           php -l database/migrations/2026_08_27_000052_add_customer_portal_rbac_scopes.php
           php -l database/migrations/2026_08_27_000053_add_customer_portal_action_requests.php
+          php -l database/migrations/2026_08_27_000054_add_customer_action_attachments.php
           php -l bootstrap/app.php
           php -l routes/web.php
           php -l routes/public.php
@@ -81,9 +84,13 @@ jobs:
           grep -q 'customer.actions' routes/customer-phase2.php
           grep -q 'customer.contracts.renewal-request' routes/customer-phase2.php
           grep -q 'customer.invoices.query' routes/customer-phase2.php
+          grep -q 'customer.invoices.payment-proof' routes/customer-phase2.php
+          grep -q 'customer.work-orders.revisit' routes/customer-phase2.php
+          grep -q 'workflow.customer-actions.index' routes/customer-phase2.php
           grep -q 'workflow.site.manager@unifco.local' database/seeders/WorkflowTestUsersSeeder.php
           test -s resources/views/customer/users-access.blade.php
           test -s resources/views/customer/action-center.blade.php
+          test -s resources/views/workflow/customer-actions.blade.php
 
       - name: Laravel release preflight
         shell: bash
@@ -106,6 +113,9 @@ jobs:
           php artisan route:list --name=customer.actions >/dev/null
           php artisan route:list --name=customer.contracts.renewal-request >/dev/null
           php artisan route:list --name=customer.invoices.query >/dev/null
+          php artisan route:list --name=customer.invoices.payment-proof >/dev/null
+          php artisan route:list --name=customer.work-orders.revisit >/dev/null
+          php artisan route:list --name=workflow.customer-actions.index >/dev/null
           php artisan view:cache
           php artisan test \
             tests/Feature/CustomerPortalRbacPhase1Test.php \
