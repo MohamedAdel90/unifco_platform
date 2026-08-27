@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{CustomerActivityEvent,CustomerPortalActionRequest,FinancialDocument,ServiceContract};
+use App\Models\{Asset,CustomerActivityEvent,CustomerPortalActionRequest,FinancialDocument,ServiceContract,WorkOrder};
 use App\Services\CustomerPortalAccessService;
 use Illuminate\Http\{RedirectResponse,Request};
+use Illuminate\Support\Facades\Storage;
 
 class CustomerPortalPhase2ActionController extends Controller
 {
@@ -13,6 +14,15 @@ class CustomerPortalPhase2ActionController extends Controller
         $user=$request->user();
         abort_unless($user && $user->role==='CUSTOMER' && $user->customer_id,403);
         return $user;
+    }
+
+    private function event(\App\Models\User $user,string $type,string $referenceType,int $referenceId,string $title,?string $description,int $actionId): void
+    {
+        CustomerActivityEvent::create([
+            'tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'customer_id'=>$user->customer_id,
+            'event_type'=>$type,'reference_type'=>$referenceType,'reference_id'=>$referenceId,
+            'title'=>$title,'description'=>$description,'visibility'=>'BOTH','metadata'=>['portal_action_request_id'=>$actionId],
+        ]);
     }
 
     public function requestContractRenewal(Request $request, ServiceContract $contract, CustomerPortalAccessService $access): RedirectResponse
@@ -31,13 +41,7 @@ class CustomerPortalPhase2ActionController extends Controller
             'notes'=>$data['notes']??null,'submitted_at'=>now(),
         ]);
 
-        CustomerActivityEvent::create([
-            'tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'customer_id'=>$user->customer_id,
-            'event_type'=>'CONTRACT_RENEWAL_REQUESTED','reference_type'=>ServiceContract::class,'reference_id'=>$contract->id,
-            'title'=>'Contract renewal requested: '.$contract->contract_no,'description'=>$data['notes']??null,'visibility'=>'BOTH',
-            'metadata'=>['portal_action_request_id'=>$action->id],
-        ]);
-
+        $this->event($user,'CONTRACT_RENEWAL_REQUESTED',ServiceContract::class,$contract->id,'Contract renewal requested: '.$contract->contract_no,$data['notes']??null,$action->id);
         return back()->with('status','Contract renewal request submitted to UNIFCO.');
     }
 
@@ -54,13 +58,50 @@ class CustomerPortalPhase2ActionController extends Controller
             'notes'=>$data['notes'],'submitted_at'=>now(),
         ]);
 
-        CustomerActivityEvent::create([
-            'tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'customer_id'=>$user->customer_id,
-            'event_type'=>'INVOICE_QUERY_SUBMITTED','reference_type'=>FinancialDocument::class,'reference_id'=>$invoice->id,
-            'title'=>'Invoice query submitted: '.$invoice->document_no,'description'=>$data['notes'],'visibility'=>'BOTH',
-            'metadata'=>['portal_action_request_id'=>$action->id],
+        $this->event($user,'INVOICE_QUERY_SUBMITTED',FinancialDocument::class,$invoice->id,'Invoice query submitted: '.$invoice->document_no,$data['notes'],$action->id);
+        return back()->with('status','Invoice query submitted to UNIFCO Finance.');
+    }
+
+    public function paymentProof(Request $request, FinancialDocument $invoice, CustomerPortalAccessService $access): RedirectResponse
+    {
+        $user=$this->customerUser($request);
+        abort_unless(in_array($access->role($user),['CUSTOMER_ADMIN','FINANCE'],true),403);
+        abort_unless((int)$invoice->customer_id===(int)$user->customer_id && $invoice->document_type==='AR_INVOICE',403);
+        $data=$request->validate([
+            'proof'=>['required','file','mimes:pdf,jpg,jpeg,png','max:10240'],
+            'notes'=>['nullable','string','max:2000'],
+        ]);
+        $file=$data['proof'];
+        $path=$file->store('customer-portal/payment-proofs/'.$user->customer_id,'local');
+
+        $action=CustomerPortalActionRequest::create([
+            'tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'customer_id'=>$user->customer_id,'user_id'=>$user->id,
+            'action_type'=>'PAYMENT_PROOF','reference_type'=>FinancialDocument::class,'reference_id'=>$invoice->id,'status'=>'OPEN',
+            'notes'=>$data['notes']??null,'attachment_path'=>$path,'attachment_name'=>$file->getClientOriginalName(),
+            'attachment_mime'=>$file->getClientMimeType(),'submitted_at'=>now(),
         ]);
 
-        return back()->with('status','Invoice query submitted to UNIFCO Finance.');
+        $this->event($user,'PAYMENT_PROOF_SUBMITTED',FinancialDocument::class,$invoice->id,'Payment proof submitted: '.$invoice->document_no,$data['notes']??null,$action->id);
+        return back()->with('status','Payment proof uploaded and sent to UNIFCO Finance.');
+    }
+
+    public function requestRevisit(Request $request, WorkOrder $workOrder, CustomerPortalAccessService $access): RedirectResponse
+    {
+        $user=$this->customerUser($request);
+        abort_unless($access->canAcceptWork($user),403);
+        $access->assertAsset($user,(int)$workOrder->asset_id);
+        abort_unless(Asset::whereKey($workOrder->asset_id)->where('customer_id',$user->customer_id)->exists(),403);
+        abort_unless($workOrder->status==='COMPLETED',422,'Only completed work can be returned for revisit.');
+        $data=$request->validate(['notes'=>['required','string','max:2000']]);
+
+        $action=CustomerPortalActionRequest::firstOrCreate([
+            'customer_id'=>$user->customer_id,'action_type'=>'WORK_REVISIT','reference_type'=>WorkOrder::class,'reference_id'=>$workOrder->id,'status'=>'OPEN',
+        ],[
+            'tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'user_id'=>$user->id,'notes'=>$data['notes'],'submitted_at'=>now(),
+        ]);
+
+        $workOrder->update(['customer_rejected_at'=>now(),'customer_accepted_at'=>null,'customer_acceptance_notes'=>$data['notes']]);
+        $this->event($user,'WORK_REVISIT_REQUESTED',WorkOrder::class,$workOrder->id,'Revisit requested: '.$workOrder->work_order_no,$data['notes'],$action->id);
+        return back()->with('status','Revisit request submitted to UNIFCO Maintenance.');
     }
 }
