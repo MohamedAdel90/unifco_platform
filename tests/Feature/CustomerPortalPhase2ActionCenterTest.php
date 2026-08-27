@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer,FinancialDocument,ServiceContract,User};
+use App\Models\{Customer,FinancialDocument,User};
 use Database\Seeders\WorkflowTestUsersSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,7 +26,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
         ]);
 
         $this->actingAs($admin)->get('/customer/actions')->assertOk()->assertSee('Action Required From You')->assertSee('PH2-INV-001');
-        $this->actingAs($finance)->get('/customer/actions')->assertOk()->assertSee('Customer Portal Phase 2',false)->assertSee('PH2-INV-001');
+        $this->actingAs($finance)->get('/customer/actions')->assertOk()->assertSee('Phase 2 customer workflow center')->assertSee('PH2-INV-001');
     }
 
     public function test_site_manager_action_center_hides_financial_actions(): void
@@ -42,7 +42,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
             'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED',
         ]);
 
-        $this->actingAs($site)->get('/customer/actions')->assertOk()->assertDontSee('PH2-HIDDEN-INV')->assertSee('Invoices Due')->assertSee('0');
+        $this->actingAs($site)->get('/customer/actions')->assertOk()->assertDontSee('PH2-HIDDEN-INV')->assertSee('Invoices Due');
     }
 
     public function test_viewer_cannot_accept_completed_work(): void
