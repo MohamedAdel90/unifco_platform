@@ -89,6 +89,7 @@ jobs:
           php -l database/migrations/2026_08_27_000056_add_customer_acquisition_lifecycle.php
           php -l database/migrations/2026_08_27_000057_add_acquisition_governance_fields.php
           php -l database/migrations/2026_08_27_000058_build_professional_asset_master.php
+          php -l database/migrations/2026_08_27_000059_normalize_user_status_semantics.php
           php -l bootstrap/app.php
           php -l routes/web.php
           php -l routes/public.php
@@ -107,6 +108,7 @@ jobs:
           grep -q "name('review-onboarding')" routes/customer-acquisition.php
           grep -q "name('verify')" routes/asset-master.php
           grep -q 'data_completeness_score' app/Services/AssetMasterService.php
+          grep -q 'VARCHAR(20)' database/migrations/2026_08_27_000059_normalize_user_status_semantics.php
           grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php
           grep -q 'CustomerAcquisitionService' app/Services/PublicRequestPipelineService.php
           grep -q 'assigned_role' app/Http/Controllers/CustomerPortalPhase2ActionController.php
@@ -128,6 +130,7 @@ jobs:
           cp -n .env.example .env || true
           php artisan key:generate --force
           php artisan migrate:fresh --force
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); $c=Illuminate\Support\Facades\DB::selectOne("SELECT DATA_TYPE data_type FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=\"users\" AND COLUMN_NAME=\"status\""); if(!$c || $c->data_type!=="varchar"){fwrite(STDERR,"users.status is not varchar\n");exit(1);} echo "users.status semantics verified\n";'
           php artisan brand:materialize
           test -s public/images/unifco-logo.webp
           php artisan route:list --name=customer.portal >/dev/null
