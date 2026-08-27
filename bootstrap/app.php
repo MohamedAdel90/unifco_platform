@@ -35,7 +35,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['permission'=>RequirePermission::class,'api.token'=>AuthenticateApiToken::class,'jwt'=>AuthenticateJwt::class]);
         $middleware->web(append: [EnsureUserSessionValid::class,WorkflowRoleHomeRedirect::class,WorkflowRoleNavigationPresentation::class,LegacyFormCompatibility::class,CustomerPortalDashboardPresentation::class,BrandingPresentation::class,PublicRequestHeaderMatch::class,PublicRequestAttachmentsPresentation::class,PublicAssetQrInsecureFallback::class,PublicAssetQrPresentation::class,PublicRequestCompactDesign::class,PublicServiceLinks::class]);
-        $middleware->validateCsrfTokens(except: ['login']);
+        // Public service intake is an anonymous, throttled endpoint. Keeping it behind
+        // a session-bound CSRF token caused valid submissions to fail with HTTP 419
+        // whenever the mobile/browser session rotated or an old form remained open.
+        // Authenticated customer and internal POST routes remain CSRF protected.
+        $middleware->validateCsrfTokens(except: ['login','service-requests']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
     })->create();
