@@ -164,7 +164,7 @@ class AssetMasterController extends Controller
             'title'=>['required','string','max:180'],'file'=>['required','file','max:15360'],'version'=>['nullable','string','max:30'],'issued_at'=>['nullable','date'],'expires_at'=>['nullable','date'],
         ]);
         $file=$request->file('file'); $path=$file->store('asset-master/'.$asset->id,'local');
-        AssetDocument::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'asset_id'=>$asset->id,'document_type'=>$data['document_type'],'title'=>$data['title'],'path'=>$path,'original_name'=>$file->getClientOriginalName(),'mime_type'=>$file->getMimeType(),'version'=>$data['version']??null,'issued_at'=>$data['issued_at']??null,'expires_at'=>$data['expires_at']??null,'uploaded_by'=>$user->id]);
+        AssetDocument::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'asset_id'=>$asset->id,'document_type'=>$data['document_type'],'title'=>$data['title'],'path'=>$path,'file_path'=>$path,'original_name'=>$file->getClientOriginalName(),'mime_type'=>$file->getMimeType(),'version'=>$data['version']??null,'issued_at'=>$data['issued_at']??null,'expires_at'=>$data['expires_at']??null,'uploaded_by'=>$user->id]);
         return back()->with('status','Asset document uploaded.');
     }
 
@@ -172,8 +172,9 @@ class AssetMasterController extends Controller
     {
         $user=$this->user($request);
         abort_unless((int)$document->tenant_id===(int)$user->tenant_id,404);
-        abort_unless(Storage::disk('local')->exists($document->path),404);
-        return Storage::disk('local')->download($document->path,$document->original_name);
+        $path=$document->path ?: $document->file_path;
+        abort_unless($path && Storage::disk('local')->exists($path),404);
+        return Storage::disk('local')->download($path,$document->original_name);
     }
 
     private function validated(Request $request,int $tenantId,?Asset $asset=null): array
