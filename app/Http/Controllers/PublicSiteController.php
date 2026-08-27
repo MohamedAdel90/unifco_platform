@@ -22,8 +22,21 @@ class PublicSiteController extends Controller
         return response(str_replace('</head>',$cairo.'</head>',$html))->header('X-UNIFCO-Release','home-electrical-20260821-12')->header('Cache-Control','no-cache, no-store, must-revalidate');
     }
 
-    public function quote(): View { return view('public.request',['type'=>'QUOTATION']); }
-    public function emergency(): View { return view('public.request',['type'=>'EMERGENCY_MAINTENANCE']); }
+    public function quote(): Response
+    {
+        return response(view('public.request',['type'=>'QUOTATION'])->render())
+            ->header('Cache-Control','no-cache, no-store, must-revalidate')
+            ->header('Pragma','no-cache')
+            ->header('Expires','0');
+    }
+
+    public function emergency(): Response
+    {
+        return response(view('public.request',['type'=>'EMERGENCY_MAINTENANCE'])->render())
+            ->header('Cache-Control','no-cache, no-store, must-revalidate')
+            ->header('Pragma','no-cache')
+            ->header('Expires','0');
+    }
 
     public function assetLookup(Request $request): JsonResponse
     {
