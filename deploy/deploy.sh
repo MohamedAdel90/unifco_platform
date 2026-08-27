@@ -36,6 +36,7 @@ for file in \
   database/migrations/2026_08_27_000056_add_customer_acquisition_lifecycle.php \
   database/migrations/2026_08_27_000057_add_acquisition_governance_fields.php \
   database/migrations/2026_08_27_000058_build_professional_asset_master.php \
+  database/migrations/2026_08_27_000059_normalize_user_status_semantics.php \
   database/seeders/WorkflowTestUsersSeeder.php \
   app/Http/Controllers/CRM/CustomerAcquisitionController.php \
   app/Http/Controllers/Maintenance/AssetMasterController.php \
@@ -65,6 +66,7 @@ grep -q "name('request-conversion')" routes/customer-acquisition.php || { echo "
 grep -q "name('review-onboarding')" routes/customer-acquisition.php || { echo "ERROR: acquisition onboarding review route missing"; exit 1; }
 grep -q "name('verify')" routes/asset-master.php || { echo "ERROR: asset verification route missing"; exit 1; }
 grep -q 'data_completeness_score' app/Services/AssetMasterService.php || { echo "ERROR: asset completeness governance missing"; exit 1; }
+grep -q 'VARCHAR(20)' database/migrations/2026_08_27_000059_normalize_user_status_semantics.php || { echo "ERROR: user lifecycle status normalization missing"; exit 1; }
 grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php || { echo "ERROR: acquisition conversion governance missing"; exit 1; }
 grep -q 'CustomerAcquisitionService' app/Services/PublicRequestPipelineService.php || { echo "ERROR: public website intake is not using acquisition engine"; exit 1; }
 
@@ -104,6 +106,8 @@ php -r '
 require "vendor/autoload.php";
 $app=require "bootstrap/app.php";
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$c=Illuminate\Support\Facades\DB::selectOne("SELECT DATA_TYPE data_type FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=\"users\" AND COLUMN_NAME=\"status\"");
+if(!$c||$c->data_type!=="varchar"){fwrite(STDERR,"ERROR: users.status must use lifecycle strings\n");exit(1);}
 $expected=[
 "engineer@unifco.local"=>["MAINTENANCE_ENGINEER",null],
 "maintenance.manager@unifco.local"=>["MAINTENANCE_MANAGER",null],
@@ -119,7 +123,7 @@ $expected=[
 ];
 foreach($expected as $email=>$expectedRole){
  $u=App\Models\User::where("email",$email)->first();
- if(!$u||$u->role!==$expectedRole[0]||($expectedRole[1]!==null&&$u->customer_portal_role!==$expectedRole[1])||!Illuminate\Support\Facades\Hash::check("UnifcoWorkflow!2026",$u->password)){
+ if(!$u||$u->status!=="ACTIVE"||$u->role!==$expectedRole[0]||($expectedRole[1]!==null&&$u->customer_portal_role!==$expectedRole[1])||!Illuminate\Support\Facades\Hash::check("UnifcoWorkflow!2026",$u->password)){
    fwrite(STDERR,"ERROR: test user invalid: $email\n"); exit(1);
  }
 }
