@@ -42,9 +42,11 @@ class CustomerLifecycleService
                     'country' => 'Saudi Arabia',
                     'status' => 'ONBOARDING',
                     'onboarding_status' => 'PENDING',
+                    'acquisition_source' => 'WEBSITE',
+                    'first_touch_at' => now(),
                 ]);
 
-                $this->record($customer, 'CUSTOMER_ONBOARDING_STARTED', 'Customer onboarding started', 'Created automatically from the first public service request.');
+                $this->record($customer, 'CUSTOMER_ONBOARDING_STARTED', 'Customer onboarding started', 'Created automatically from the first public service request.', null, ['acquisition_source'=>'WEBSITE']);
             }
 
             return $customer;
