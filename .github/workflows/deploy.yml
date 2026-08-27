@@ -58,10 +58,15 @@ jobs:
           php -l app/Http/Controllers/CustomerWorkAcceptanceController.php
           php -l app/Http/Controllers/CustomerAssetReadController.php
           php -l app/Http/Controllers/CRM/CustomerAcquisitionController.php
+          php -l app/Http/Controllers/Maintenance/AssetMasterController.php
           php -l app/Http/Controllers/Workflow/CustomerActionInboxController.php
           php -l app/Models/CustomerPortalActionRequest.php
           php -l app/Models/CrmLead.php
           php -l app/Models/Customer.php
+          php -l app/Models/Asset.php
+          php -l app/Models/AssetCategoryTemplate.php
+          php -l app/Models/AssetDocument.php
+          php -l app/Services/AssetMasterService.php
           php -l app/Services/CustomerAcquisitionService.php
           php -l app/Services/CustomerPortalAccessService.php
           php -l app/Http/Controllers/Workflow/ApprovalController.php
@@ -83,22 +88,25 @@ jobs:
           php -l database/migrations/2026_08_27_000055_add_assignment_sla_to_customer_actions.php
           php -l database/migrations/2026_08_27_000056_add_customer_acquisition_lifecycle.php
           php -l database/migrations/2026_08_27_000057_add_acquisition_governance_fields.php
+          php -l database/migrations/2026_08_27_000058_build_professional_asset_master.php
           php -l bootstrap/app.php
           php -l routes/web.php
           php -l routes/public.php
           php -l routes/customer-phase2.php
           php -l routes/customer-acquisition.php
+          php -l routes/asset-master.php
           grep -q '0599402090' app/Support/UnifcoContact.php
           grep -q '966599402090' app/Support/UnifcoContact.php
           grep -q 'info@unifco.com' app/Support/UnifcoContact.php
           grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php
           grep -q 'CustomerPortalAccessAdminController' routes/public.php
-          grep -q 'customer.access.index' routes/public.php
           grep -q 'customer.actions' routes/customer-phase2.php
           grep -q 'workflow.customer-actions.index' routes/customer-phase2.php
           grep -q "name('review-duplicate')" routes/customer-acquisition.php
           grep -q "name('request-conversion')" routes/customer-acquisition.php
           grep -q "name('review-onboarding')" routes/customer-acquisition.php
+          grep -q "name('verify')" routes/asset-master.php
+          grep -q 'data_completeness_score' app/Services/AssetMasterService.php
           grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php
           grep -q 'CustomerAcquisitionService' app/Services/PublicRequestPipelineService.php
           grep -q 'assigned_role' app/Http/Controllers/CustomerPortalPhase2ActionController.php
@@ -107,6 +115,8 @@ jobs:
           test -s resources/views/customer/action-center.blade.php
           test -s resources/views/workflow/customer-actions.blade.php
           test -s resources/views/crm/acquisition.blade.php
+          test -s resources/views/maintenance/asset-master/index.blade.php
+          test -s resources/views/maintenance/asset-master/show.blade.php
 
       - name: Laravel release preflight
         shell: bash
@@ -138,8 +148,13 @@ jobs:
           php artisan route:list --name=crm.acquisition.request-conversion >/dev/null
           php artisan route:list --name=crm.acquisition.review-conversion >/dev/null
           php artisan route:list --name=crm.acquisition.review-onboarding >/dev/null
+          php artisan route:list --name=asset-master.index >/dev/null
+          php artisan route:list --name=asset-master.show >/dev/null
+          php artisan route:list --name=asset-master.verify >/dev/null
+          php artisan route:list --name=asset-master.documents.store >/dev/null
           php artisan view:cache
           php artisan test \
+            tests/Feature/ProfessionalAssetMasterTest.php \
             tests/Feature/PublicOfficialContactTest.php \
             tests/Feature/CustomerAcquisitionWorkflowTest.php \
             tests/Feature/CustomerPortalRbacPhase1Test.php \
