@@ -24,7 +24,7 @@ return new class extends Migration {
                 $table->boolean('active')->default(true);
                 $table->timestamps();
                 $table->unique(['tenant_id','customer_site_id','code'],'asset_location_code_unique');
-                $table->index(['tenant_id','customer_id','customer_site_id','parent_id']);
+                $table->index(['tenant_id','customer_id','customer_site_id','parent_id'],'asset_location_scope_idx');
             });
         }
 
@@ -36,8 +36,8 @@ return new class extends Migration {
             $table->unsignedBigInteger('commissioning_approved_by')->nullable()->after('commissioning_requested_at');
             $table->timestamp('commissioning_approved_at')->nullable()->after('commissioning_approved_by');
             $table->text('commissioning_notes')->nullable()->after('commissioning_approved_at');
-            $table->index(['tenant_id','commissioning_status']);
-            $table->index(['tenant_id','asset_location_id']);
+            $table->index(['tenant_id','commissioning_status'],'asset_commissioning_status_idx');
+            $table->index(['tenant_id','asset_location_id'],'asset_location_idx');
         });
 
         Schema::create('asset_lifecycle_events', function (Blueprint $table) {
@@ -54,8 +54,8 @@ return new class extends Migration {
             $table->unsignedBigInteger('performed_by')->nullable();
             $table->timestamp('performed_at');
             $table->timestamps();
-            $table->index(['tenant_id','asset_id','performed_at']);
-            $table->index(['tenant_id','event_type']);
+            $table->index(['tenant_id','asset_id','performed_at'],'asset_lifecycle_timeline_idx');
+            $table->index(['tenant_id','event_type'],'asset_lifecycle_type_idx');
         });
 
         Schema::create('asset_commissioning_records', function (Blueprint $table) {
@@ -72,7 +72,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('approved_by')->nullable();
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
-            $table->index(['tenant_id','asset_id','status']);
+            $table->index(['tenant_id','asset_id','status'],'asset_commissioning_record_idx');
         });
     }
 
@@ -81,8 +81,8 @@ return new class extends Migration {
         Schema::dropIfExists('asset_commissioning_records');
         Schema::dropIfExists('asset_lifecycle_events');
         Schema::table('assets', function (Blueprint $table) {
-            $table->dropIndex(['tenant_id','commissioning_status']);
-            $table->dropIndex(['tenant_id','asset_location_id']);
+            $table->dropIndex('asset_commissioning_status_idx');
+            $table->dropIndex('asset_location_idx');
             $table->dropColumn(['asset_location_id','commissioning_status','commissioning_requested_by','commissioning_requested_at','commissioning_approved_by','commissioning_approved_at','commissioning_notes']);
         });
         Schema::dropIfExists('asset_locations');
