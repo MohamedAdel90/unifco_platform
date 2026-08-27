@@ -5,6 +5,7 @@ namespace App\Http\Controllers\CRM;
 use App\Http\Controllers\Controller;
 use App\Models\{CrmLead,Customer,User};
 use App\Services\CustomerAcquisitionService;
+use App\Support\UnifcoContact;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -45,6 +46,7 @@ class CustomerAcquisitionController extends Controller
             'pendingConversions'=>(clone $base)->where('conversion_approval_status','PENDING')->count(),
             'overdueFollowUps'=>(clone $base)->whereNotIn('lifecycle_stage',['CONVERTED','DISQUALIFIED'])->whereNotNull('next_follow_up_at')->where('next_follow_up_at','<',now())->count(),
             'pendingOnboarding'=>Customer::where('tenant_id',$user->tenant_id)->where('status','ONBOARDING')->where('onboarding_review_status','PENDING')->count(),
+            'officialWhatsapp'=>UnifcoContact::WHATSAPP_DISPLAY,'officialEmail'=>UnifcoContact::EMAIL,
         ]);
     }
 
@@ -58,6 +60,8 @@ class CustomerAcquisitionController extends Controller
             'service_interest'=>['nullable','string','max:120'],'city'=>['nullable','string','max:100'],'inquiry_notes'=>['nullable','string','max:3000'],
             'assigned_to'=>['nullable','integer'],'next_follow_up_at'=>['nullable','date'],
         ]);
+        if(empty($data['source_detail']) && $data['source_channel']==='WHATSAPP') $data['source_detail']='UNIFCO WhatsApp '.UnifcoContact::WHATSAPP_DISPLAY;
+        if(empty($data['source_detail']) && $data['source_channel']==='EMAIL') $data['source_detail']='UNIFCO Email '.UnifcoContact::EMAIL;
         if(!empty($data['assigned_to'])) User::where('tenant_id',$user->tenant_id)->whereIn('role',self::ROLES)->findOrFail($data['assigned_to']);
         $result=$service->capture((int)$user->tenant_id,(int)$user->organization_id,(int)$user->id,$data);
         if($result['type']==='CUSTOMER') return back()->with('status','Existing customer matched: '.$result['customer']->customer_code.' · '.$result['customer']->name);
