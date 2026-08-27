@@ -29,7 +29,7 @@ class AssetMasterController extends Controller
         return view('maintenance.asset-master.index',[
             'assets'=>$assets,
             'customers'=>Customer::where('tenant_id',$user->tenant_id)->orderBy('name')->get(),
-            'sites'=>CustomerSite::where('tenant_id',$user->tenant_id)->orderBy('name')->get(),
+            'sites'=>CustomerSite::whereHas('customer',fn($q)=>$q->where('tenant_id',$user->tenant_id))->orderBy('name')->get(),
             'templates'=>AssetCategoryTemplate::where('tenant_id',$user->tenant_id)->where('active',true)->orderBy('category')->orderBy('asset_type')->get(),
             'criticalities'=>AssetMasterService::CRITICALITY,'ownershipTypes'=>AssetMasterService::OWNERSHIP,'strategies'=>AssetMasterService::STRATEGIES,
             'canVerify'=>in_array($user->role,self::VERIFY_ROLES,true),
@@ -49,7 +49,7 @@ class AssetMasterController extends Controller
     public function store(Request $request,AssetMasterService $service): RedirectResponse
     {
         $user=$this->user($request);
-        $data=$this->validated($request,$user->tenant_id);
+        $data=$this->validated($request,(int)$user->tenant_id);
         $asset=$service->create((int)$user->tenant_id,(int)$user->organization_id,(int)$user->id,$data);
         return redirect()->route('asset-master.show',$asset)->with('status','Asset '.$asset->asset_code.' created and sent for verification.');
     }
@@ -58,7 +58,7 @@ class AssetMasterController extends Controller
     {
         $user=$this->user($request);
         abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404);
-        $asset=$service->update($asset,$this->validated($request,$user->tenant_id,$asset));
+        $asset=$service->update($asset,$this->validated($request,(int)$user->tenant_id,$asset));
         return back()->with('status','Asset master updated. Completeness: '.$asset->data_completeness_score.'%.');
     }
 
@@ -117,7 +117,7 @@ class AssetMasterController extends Controller
     {
         $data=$request->validate([
             'customer_id'=>['required',Rule::exists('customers','id')->where(fn($q)=>$q->where('tenant_id',$tenantId))],
-            'customer_site_id'=>['required',Rule::exists('customer_sites','id')->where(fn($q)=>$q->where('tenant_id',$tenantId))],
+            'customer_site_id'=>['required',Rule::exists('customer_sites','id')],
             'parent_asset_id'=>['nullable',Rule::exists('assets','id')->where(fn($q)=>$q->where('tenant_id',$tenantId))],
             'asset_category_template_id'=>['nullable',Rule::exists('asset_category_templates','id')->where(fn($q)=>$q->where('tenant_id',$tenantId))],
             'customer_asset_code'=>['nullable','string','max:100'],'name'=>['required','string','max:180'],'serial_no'=>['nullable','string','max:120'],
@@ -133,8 +133,8 @@ class AssetMasterController extends Controller
         ]);
         if(isset($data['technical_specifications'])) $data['technical_specifications']=json_decode($data['technical_specifications'],true);
         if($asset && !empty($data['parent_asset_id']) && (int)$data['parent_asset_id']===(int)$asset->id) abort(422,'An asset cannot be its own parent.');
-        $site=CustomerSite::where('tenant_id',$tenantId)->findOrFail($data['customer_site_id']);
-        abort_unless((int)$site->customer_id===(int)$data['customer_id'],422,'Selected site does not belong to the selected customer.');
+        $site=CustomerSite::with('customer')->findOrFail($data['customer_site_id']);
+        abort_unless($site->customer && (int)$site->customer->tenant_id===$tenantId && (int)$site->customer_id===(int)$data['customer_id'],422,'Selected site does not belong to the selected customer.');
         return $data;
     }
 }
