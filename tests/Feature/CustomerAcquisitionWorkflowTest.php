@@ -40,7 +40,7 @@ class CustomerAcquisitionWorkflowTest extends TestCase
 
         $this->assertDatabaseHas('crm_leads',[
             'company'=>'Field Prospect LLC','source_channel'=>'FIELD_MARKETING','lifecycle_stage'=>'LEAD','assigned_to'=>$sales->id,
-            'conversion_approval_status'=>'NOT_REQUESTED',
+            'conversion_approval_status'=>'NOT_REQUESTED','duplicate_review_status'=>'CLEAR',
         ]);
         $this->assertDatabaseMissing('customers',['name'=>'Field Prospect LLC']);
     }
@@ -67,6 +67,53 @@ class CustomerAcquisitionWorkflowTest extends TestCase
             'name'=>'Existing Contact','company'=>'Existing Co','commercial_registration'=>'1010999999','source_channel'=>'PHONE',
         ])->assertRedirect()->assertSessionHas('status',fn($value)=>str_contains($value,'Existing customer matched'));
         $this->assertSame(0,CrmLead::where('tenant_id',$user->tenant_id)->count());
+    }
+
+    public function test_company_name_only_collision_requires_duplicate_review_and_reviewer_can_keep_separate(): void
+    {
+        $admin=$this->admin();
+        $sales=$this->userFor($admin,'SALES','sales.duplicate@example.test');
+        $existing=Customer::create([
+            'tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,'customer_code'=>'CUS-SAME-NAME','name'=>'Shared Facilities Company',
+            'commercial_registration'=>'1010007777','email'=>'old@shared.test','phone'=>'0507770000','status'=>'ACTIVE','onboarding_status'=>'ACTIVE','onboarding_review_status'=>'APPROVED',
+        ]);
+
+        $this->actingAs($sales)->post('/crm/acquisition/leads',[
+            'name'=>'New Contact','company'=>'Shared Facilities Company','commercial_registration'=>'1010008888',
+            'email'=>'new@shared.test','mobile'=>'0508880000','source_channel'=>'EMAIL',
+        ])->assertRedirect();
+
+        $lead=CrmLead::where('commercial_registration','1010008888')->firstOrFail();
+        $this->assertSame('REVIEW',$lead->duplicate_review_status);
+        $this->assertSame($existing->id,(int)$lead->duplicate_customer_id);
+
+        $this->actingAs($sales)->post('/crm/acquisition/leads/'.$lead->id.'/review-duplicate',['decision'=>'KEEP_SEPARATE'])->assertForbidden();
+        $this->actingAs($admin)->post('/crm/acquisition/leads/'.$lead->id.'/review-duplicate',['decision'=>'KEEP_SEPARATE'])->assertRedirect();
+        $lead->refresh();
+        $this->assertSame('CLEAR',$lead->duplicate_review_status);
+        $this->assertNull($lead->duplicate_customer_id);
+    }
+
+    public function test_reviewer_can_link_potential_duplicate_to_existing_customer(): void
+    {
+        $admin=$this->admin();
+        $customer=Customer::create([
+            'tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,'customer_code'=>'CUS-LINK','name'=>'Link Candidate Co',
+            'commercial_registration'=>'1010001212','status'=>'ACTIVE','onboarding_status'=>'ACTIVE','onboarding_review_status'=>'APPROVED',
+        ]);
+        $this->actingAs($admin)->post('/crm/acquisition/leads',[
+            'name'=>'Different Contact','company'=>'Link Candidate Co','commercial_registration'=>'1010003434','email'=>'candidate@link.test','source_channel'=>'REFERRAL',
+        ])->assertRedirect();
+        $lead=CrmLead::where('commercial_registration','1010003434')->firstOrFail();
+        $this->assertSame('REVIEW',$lead->duplicate_review_status);
+
+        $this->actingAs($admin)->post('/crm/acquisition/leads/'.$lead->id.'/review-duplicate',['decision'=>'LINK_CUSTOMER'])->assertRedirect();
+        $lead->refresh();
+        $this->assertSame('CONVERTED',$lead->lifecycle_stage);
+        $this->assertSame('LINKED_CUSTOMER',$lead->duplicate_review_status);
+        $this->assertSame($customer->id,(int)$lead->converted_customer_id);
+        $this->assertSame('SYSTEM_APPROVED',$lead->conversion_approval_status);
+        $this->assertSame(1,Customer::where('tenant_id',$admin->tenant_id)->count());
     }
 
     public function test_qualified_lead_requires_approval_then_converts_once_and_preserves_source(): void
