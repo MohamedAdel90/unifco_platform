@@ -53,6 +53,8 @@ jobs:
           php -l app/Http/Controllers/CustomerPortalController.php
           php -l app/Http/Controllers/CustomerPortalOperationsController.php
           php -l app/Http/Controllers/CustomerPortalAccessAdminController.php
+          php -l app/Http/Controllers/CustomerActionCenterController.php
+          php -l app/Http/Controllers/CustomerWorkAcceptanceController.php
           php -l app/Http/Controllers/CustomerAssetReadController.php
           php -l app/Services/CustomerPortalAccessService.php
           php -l app/Http/Controllers/Workflow/ApprovalController.php
@@ -69,11 +71,14 @@ jobs:
           php -l bootstrap/app.php
           php -l routes/web.php
           php -l routes/public.php
+          php -l routes/customer-phase2.php
           grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php
           grep -q 'CustomerPortalAccessAdminController' routes/public.php
           grep -q 'customer.access.index' routes/public.php
+          grep -q 'customer.actions' routes/customer-phase2.php
           grep -q 'workflow.site.manager@unifco.local' database/seeders/WorkflowTestUsersSeeder.php
           test -s resources/views/customer/users-access.blade.php
+          test -s resources/views/customer/action-center.blade.php
 
       - name: Laravel release preflight
         shell: bash
@@ -93,9 +98,11 @@ jobs:
           php artisan route:list --name=customer.access.index >/dev/null
           php artisan route:list --name=customer.access.store >/dev/null
           php artisan route:list --name=customer.access.update >/dev/null
+          php artisan route:list --name=customer.actions >/dev/null
           php artisan view:cache
           php artisan test \
             tests/Feature/CustomerPortalRbacPhase1Test.php \
+            tests/Feature/CustomerPortalPhase2ActionCenterTest.php \
             tests/Feature/CustomerPortalAdvancedOperationsTest.php \
             tests/Feature/CustomerPortalTest.php \
             tests/Feature/ServiceRequestWorkflowTest.php \
