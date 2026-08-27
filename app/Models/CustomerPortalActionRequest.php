@@ -11,7 +11,7 @@ class CustomerPortalActionRequest extends Model
 
     protected $fillable=[
         'tenant_id','organization_id','customer_id','user_id','action_type','reference_type','reference_id','status',
-        'notes','submitted_at','resolved_at','resolved_by','resolution_notes',
+        'notes','attachment_path','attachment_name','attachment_mime','submitted_at','resolved_at','resolved_by','resolution_notes',
     ];
 
     protected function casts(): array
