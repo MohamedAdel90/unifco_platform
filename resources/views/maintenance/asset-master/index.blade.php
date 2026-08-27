@@ -8,7 +8,7 @@
 <div class="am-grid">
 <section class="box"><h3>Register Customer Asset</h3><form class="form" method="POST" action="{{ route('asset-master.store') }}">@csrf
 <div class="field"><label>Customer</label><select name="customer_id" required><option value="">Select</option>@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->customer_code }} · {{ $c->name }}</option>@endforeach</select></div>
-<div class="field"><label>Site</label><select name="customer_site_id" required><option value="">Select</option>@foreach($sites as $s)<option value="{{ $s->id }}">{{ $s->code ?? '' }} {{ $s->name }}</option>@endforeach</select></div>
+<div class="field"><label>Site</label><select name="customer_site_id" required><option value="">Select</option>@foreach($sites as $s)<option value="{{ $s->id }}">{{ $s->site_code ?? '' }} {{ $s->name }}</option>@endforeach</select></div>
 <div class="field"><label>Asset Name</label><input name="name" required placeholder="Transformer TR-01"></div><div class="field"><label>Customer Asset Code</label><input name="customer_asset_code"></div>
 <div class="field"><label>Category</label><input name="asset_category" required placeholder="Electrical"></div><div class="field"><label>Asset Type</label><input name="asset_type" required placeholder="Distribution Transformer"></div>
 <div class="field"><label>Subcategory</label><input name="asset_subcategory"></div><div class="field"><label>Specification Template</label><select name="asset_category_template_id"><option value="">None</option>@foreach($templates as $t)<option value="{{ $t->id }}">{{ $t->category }} → {{ $t->asset_type }}</option>@endforeach</select></div>
