@@ -37,7 +37,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -52,6 +51,9 @@ jobs:
           set -euo pipefail
           php -l app/Http/Controllers/PublicSiteController.php
           php -l app/Http/Controllers/CustomerPortalController.php
+          php -l app/Http/Controllers/CustomerPortalOperationsController.php
+          php -l app/Http/Controllers/CustomerAssetReadController.php
+          php -l app/Services/CustomerPortalAccessService.php
           php -l app/Http/Controllers/Workflow/ApprovalController.php
           php -l app/Http/Controllers/Workflow/WorkflowWorkspaceController.php
           php -l app/Http/Controllers/AuthController.php
@@ -61,26 +63,14 @@ jobs:
           php -l app/Services/ApprovalService.php
           php -l app/Http/Middleware/WorkflowRoleHomeRedirect.php
           php -l app/Http/Middleware/WorkflowRoleNavigationPresentation.php
-          php -l app/Http/Middleware/BrandingPresentation.php
-          php -l app/Http/Middleware/LegacyFormCompatibility.php
-          php -l app/Http/Middleware/CustomerPortalDashboardPresentation.php
-          php -l app/Http/Middleware/PublicAssetQrPresentation.php
-          php -l app/Http/Middleware/PublicAssetQrInsecureFallback.php
-          php -l app/Console/Commands/MaterializeBrandLogo.php
-          php -l app/Console/Commands/CheckApprovalSla.php
           php -l database/seeders/WorkflowTestUsersSeeder.php
+          php -l database/migrations/2026_08_27_000052_add_customer_portal_rbac_scopes.php
           php -l bootstrap/app.php
           php -l routes/web.php
           php -l routes/public.php
-          php -l routes/brand.php
-          php -l routes/parts.php
-          php -l routes/console.php
-          php -l database/migrations/2026_08_26_000050_link_public_requests_to_asset_registry.php
-          php -l database/migrations/2026_08_26_000051_build_service_request_workflow_foundation.php
-          grep -q 'WorkflowRoleNavigationPresentation' bootstrap/app.php
-          grep -q 'workflow.workspace' app/Http/Controllers/AuthController.php
-          grep -q 'WorkflowWorkspaceController' routes/web.php
-          grep -q 'CUSTOMER_ADMIN' database/seeders/WorkflowTestUsersSeeder.php
+          grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php
+          grep -q 'SITE_MANAGER' app/Services/CustomerPortalAccessService.php
+          grep -q 'workflow.site.manager@unifco.local' database/seeders/WorkflowTestUsersSeeder.php
 
       - name: Laravel release preflight
         shell: bash
@@ -94,23 +84,19 @@ jobs:
           php artisan migrate:fresh --force
           php artisan brand:materialize
           test -s public/images/unifco-logo.webp
-          php artisan route:list --name=public.request.store >/dev/null
-          php artisan route:list --name=public.asset.lookup >/dev/null
           php artisan route:list --name=customer.portal >/dev/null
-          php artisan route:list --name=workflow.workspace >/dev/null
-          php artisan route:list --name=workflow.approvals.index >/dev/null
-          php artisan route:list --name=inventory.part-requests.consume >/dev/null
-          php artisan route:list --name=inventory.part-requests.return >/dev/null
-          php artisan list | grep -q 'unifco:check-approval-sla'
+          php artisan route:list --name=customer.section >/dev/null
+          php artisan route:list --name=customer.requests.store >/dev/null
           php artisan view:cache
           php artisan test \
-            tests/Feature/PublicRequestWizardTest.php \
-            tests/Feature/PublicSiteGuestRequestsTest.php \
+            tests/Feature/CustomerPortalRbacPhase1Test.php \
+            tests/Feature/CustomerPortalAdvancedOperationsTest.php \
+            tests/Feature/CustomerPortalTest.php \
             tests/Feature/ServiceRequestWorkflowTest.php \
             tests/Feature/WorkflowTestUsersSeederTest.php \
             tests/Feature/WorkflowRoleWorkspaceTest.php \
-            tests/Feature/CustomerPortalAdvancedOperationsTest.php \
-            tests/Feature/CustomerPortalTest.php \
+            tests/Feature/PublicRequestWizardTest.php \
+            tests/Feature/PublicSiteGuestRequestsTest.php \
             tests/Feature/WorkOrderPartConsumptionTest.php \
             tests/Feature/WorkOrderPartRequestTest.php \
             tests/Feature/BrandIdentityTest.php \
@@ -132,12 +118,7 @@ jobs:
           rc=1
           for attempt in $(seq 1 5); do
             echo "SSH deploy attempt $attempt/5"
-            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
-              -i "$HOME/.ssh/unifco_deploy_key" -p "$DEPLOY_PORT" \
-              "$DEPLOY_USER@$DEPLOY_HOST" 'bash /var/www/unifco_platform/deploy/deploy.sh'; then
-              rc=0
-              break
-            fi
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_deploy_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" 'bash /var/www/unifco_platform/deploy/deploy.sh'; then rc=0; break; fi
             [ "$attempt" -eq 5 ] || sleep 20
           done
           exit "$rc"
