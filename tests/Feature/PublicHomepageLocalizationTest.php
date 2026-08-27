@@ -11,7 +11,7 @@ class PublicHomepageLocalizationTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('حلول متكاملة للمرافق والمشاريع والتشغيل والصيانة')
-            ->assertSee('English');
+            ->assertSee('EN');
     }
 
     public function test_homepage_can_switch_to_english_and_back_to_arabic(): void
@@ -19,7 +19,7 @@ class PublicHomepageLocalizationTest extends TestCase
         $this->get('/?lang=en')
             ->assertOk()
             ->assertSee('Integrated Facility, Projects, Operations & Maintenance Solutions', false)
-            ->assertSee('العربية');
+            ->assertSee('AR');
 
         $this->get('/')
             ->assertOk()
