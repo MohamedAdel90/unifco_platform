@@ -60,6 +60,8 @@ class CustomerAcquisitionService
             'commercial_registration'=>$data['commercial_registration']??null,'source'=>$source,'source_channel'=>$source,'source_detail'=>$data['source_detail']??null,
             'status'=>'NEW','lifecycle_stage'=>'LEAD','service_interest'=>$data['service_interest']??null,'city'=>$data['city']??null,
             'inquiry_notes'=>$data['inquiry_notes']??null,'first_touch_at'=>now(),'first_touch_user_id'=>$userId,'created_by'=>$userId,
+            'assigned_to'=>$data['assigned_to']??$userId,'next_follow_up_at'=>$data['next_follow_up_at']??null,
+            'duplicate_review_status'=>'CLEAR','conversion_approval_status'=>'NOT_REQUESTED',
         ]);
         return ['type'=>'LEAD','customer'=>null,'lead'=>$lead,'created'=>true];
     }
@@ -71,7 +73,36 @@ class CustomerAcquisitionService
         abort_if($lead->lifecycle_stage==='CONVERTED',422,'Converted leads cannot be moved back.');
         $changes=['lifecycle_stage'=>$stage,'status'=>$stage];
         if($stage==='QUALIFIED' && !$lead->qualified_at) $changes+=['qualified_at'=>now(),'qualified_by'=>$userId];
+        if(!in_array($stage,['QUALIFIED','OPPORTUNITY'],true)) $changes['conversion_approval_status']='NOT_REQUESTED';
         $lead->update($changes);
+        return $lead->refresh();
+    }
+
+    public function assignFollowUp(CrmLead $lead,?int $assignedTo,?string $nextFollowUpAt): CrmLead
+    {
+        abort_if($lead->lifecycle_stage==='CONVERTED',422,'Converted leads cannot be reassigned.');
+        $lead->update(['assigned_to'=>$assignedTo,'next_follow_up_at'=>$nextFollowUpAt]);
+        return $lead->refresh();
+    }
+
+    public function requestConversion(CrmLead $lead,int $userId,?string $notes=null): CrmLead
+    {
+        abort_unless(in_array($lead->lifecycle_stage,['QUALIFIED','OPPORTUNITY'],true),422,'Lead must be qualified before requesting conversion.');
+        abort_if($lead->duplicate_review_status==='REVIEW',422,'Duplicate review must be resolved before conversion.');
+        $lead->update([
+            'conversion_approval_status'=>'PENDING','conversion_requested_by'=>$userId,'conversion_requested_at'=>now(),
+            'conversion_approved_by'=>null,'conversion_approved_at'=>null,'conversion_review_notes'=>$notes,
+        ]);
+        return $lead->refresh();
+    }
+
+    public function reviewConversion(CrmLead $lead,int $reviewerId,bool $approve,?string $notes=null): CrmLead
+    {
+        abort_unless($lead->conversion_approval_status==='PENDING',422,'Conversion approval is not pending.');
+        $lead->update([
+            'conversion_approval_status'=>$approve?'APPROVED':'REJECTED',
+            'conversion_approved_by'=>$reviewerId,'conversion_approved_at'=>now(),'conversion_review_notes'=>$notes,
+        ]);
         return $lead->refresh();
     }
 
@@ -79,6 +110,7 @@ class CustomerAcquisitionService
     {
         if($lead->converted_customer_id) return Customer::findOrFail($lead->converted_customer_id);
         abort_unless(in_array($lead->lifecycle_stage,['QUALIFIED','OPPORTUNITY'],true),422,'Lead must be qualified before customer conversion.');
+        abort_unless($lead->conversion_approval_status==='APPROVED',422,'Customer conversion requires approved conversion review.');
 
         return DB::transaction(function() use($lead,$userId){
             $lead=CrmLead::lockForUpdate()->findOrFail($lead->id);
@@ -93,13 +125,25 @@ class CustomerAcquisitionService
                     'tenant_id'=>$lead->tenant_id,'organization_id'=>$lead->organization_id,'customer_code'=>'CUS-'.str_pad((string)$next,6,'0',STR_PAD_LEFT),
                     'name'=>$lead->company ?: $lead->name,'commercial_registration'=>$lead->commercial_registration,'email'=>$lead->email,
                     'contact_name'=>$lead->name,'phone'=>$lead->mobile,'city'=>$lead->city,'country'=>'Saudi Arabia','status'=>'ONBOARDING','onboarding_status'=>'PENDING',
-                    'acquisition_source'=>$lead->source_channel ?: $lead->source,'origin_lead_id'=>$lead->id,'first_touch_at'=>$lead->first_touch_at,
+                    'onboarding_review_status'=>'PENDING','acquisition_source'=>$lead->source_channel ?: $lead->source,'origin_lead_id'=>$lead->id,'first_touch_at'=>$lead->first_touch_at,
                     'converted_by'=>$userId,'converted_at'=>now(),
                 ]);
             }
             $lead->update(['lifecycle_stage'=>'CONVERTED','status'=>'CONVERTED','converted_customer_id'=>$customer->id,'converted_at'=>now(),'converted_by'=>$userId]);
             return $customer;
         });
+    }
+
+    public function reviewOnboarding(Customer $customer,int $reviewerId,string $decision,?string $notes=null): Customer
+    {
+        $decision=strtoupper($decision);
+        abort_unless(in_array($decision,['APPROVED','NEEDS_INFO','REJECTED'],true),422,'Invalid onboarding review decision.');
+        $changes=['onboarding_review_status'=>$decision,'onboarding_reviewed_by'=>$reviewerId,'onboarding_reviewed_at'=>now(),'onboarding_review_notes'=>$notes];
+        if($decision==='APPROVED') $changes+=['onboarding_status'=>'ACTIVE','status'=>'ACTIVE'];
+        elseif($decision==='REJECTED') $changes+=['onboarding_status'=>'REJECTED','status'=>'INACTIVE'];
+        else $changes['onboarding_status']='PENDING';
+        $customer->update($changes);
+        return $customer->refresh();
     }
 
     private function clean(?string $value): ?string { $value=trim((string)$value); return $value===''?null:$value; }
