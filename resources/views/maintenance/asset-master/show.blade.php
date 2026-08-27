@@ -1,22 +1,252 @@
 @extends('layouts.app')
-@section('title',$asset->asset_code.' · Asset 360')
-@section('heading','Asset 360')
+
+@section('title', $asset->asset_code.' · Asset 360')
+@section('heading', 'Asset 360')
+
 @section('content')
-<style>.hero,.card{background:#fff;border:1px solid #e1e6ee;border-radius:12px;padding:16px}.hero{display:flex;justify-content:space-between;gap:16px;margin-bottom:14px}.hero h2{margin:6px 0;color:#071f4d}.meta{font-size:10px;color:#748298;line-height:1.7}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#edf3fb;color:#285f99;font-size:8px;font-weight:850}.pill.warn{background:#fff4dc;color:#8b5c00}.pill.ok{background:#e7f6ec;color:#176940}.score{font-size:30px;font-weight:950;color:#0a2a5c}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card h3{margin:0 0 10px;font-size:12px;color:#0a2856}.kv{display:grid;grid-template-columns:130px 1fr;gap:6px;padding:5px 0;border-bottom:1px solid #eef1f5;font-size:9px}.kv:last-child{border:0}.kv b{color:#68778c}.btn{border:0;border-radius:7px;background:#06275c;color:#fff;padding:8px 10px;font-size:9px;font-weight:850;cursor:pointer}.green{background:#137346}.red{background:#a93434}.amber{background:#9d5a00}.form{display:grid;grid-template-columns:1fr 1fr;gap:7px}.form input,.form select,.form textarea{padding:7px;border:1px solid #d7e0eb;border-radius:6px;font-size:9px}.wide{grid-column:1/-1}.doc,.row{padding:8px 0;border-bottom:1px solid #edf1f5;font-size:9px}.timeline{border-left:2px solid #dfe7f1;margin-left:5px;padding-left:12px}.event{padding:0 0 12px}.event b{font-size:9px;color:#0b2857}.event small{display:block;font-size:8px;color:#7b8798;margin-top:3px}.notice{background:#e9f7ef;color:#176940;padding:10px;border-radius:8px;margin-bottom:12px;font-size:10px}.errors{background:#fff0f0;color:#962f2f;padding:10px;border-radius:8px;margin-bottom:12px;font-size:10px}@media(max-width:1000px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:650px){.hero{display:block}.grid,.form{grid-template-columns:1fr}.wide{grid-column:auto}}</style>
-@if(session('status'))<div class="notice">{{ session('status') }}</div>@endif
-@if($errors->any())<div class="errors">@foreach($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>@endif
-<div class="hero"><div><span class="pill">{{ $asset->asset_code }}</span><h2>{{ $asset->name }}</h2><div class="meta">{{ $asset->customer?->name }} → {{ $asset->site?->name }} → {{ $asset->location?->name ?: trim(($asset->building.' '.$asset->floor.' '.$asset->zone.' '.$asset->room)) }}<br>{{ $asset->asset_category }} → {{ $asset->asset_type ?: $asset->asset_subcategory }} · {{ $asset->manufacturer }} {{ $asset->model_no }} · S/N {{ $asset->serial_no ?: '-' }}</div></div><div><div class="score">{{ $asset->data_completeness_score }}%</div><div class="meta">Data completeness<br>{{ $asset->verification_status }} · {{ $asset->lifecycle_status }}<br>Commissioning: {{ str_replace('_',' ',$asset->commissioning_status ?? 'NOT_STARTED') }}</div></div></div>
+<style>
+.hero,.card{background:#fff;border:1px solid #e1e6ee;border-radius:12px;padding:16px}
+.hero{display:flex;justify-content:space-between;gap:16px;margin-bottom:14px}
+.hero h2{margin:6px 0;color:#071f4d}.meta{font-size:10px;color:#748298;line-height:1.7}
+.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#edf3fb;color:#285f99;font-size:8px;font-weight:850}
+.pill.warn{background:#fff4dc;color:#8b5c00}.score{font-size:30px;font-weight:950;color:#0a2a5c}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card h3{margin:0 0 10px;font-size:12px;color:#0a2856}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px;padding:5px 0;border-bottom:1px solid #eef1f5;font-size:9px}.kv:last-child{border:0}.kv b{color:#68778c}
+.btn{border:0;border-radius:7px;background:#06275c;color:#fff;padding:8px 10px;font-size:9px;font-weight:850;cursor:pointer}.green{background:#137346}.red{background:#a93434}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:7px}.form input,.form select,.form textarea{padding:7px;border:1px solid #d7e0eb;border-radius:6px;font-size:9px}.wide{grid-column:1/-1}
+.doc,.row{padding:8px 0;border-bottom:1px solid #edf1f5;font-size:9px}.timeline{border-left:2px solid #dfe7f1;margin-left:5px;padding-left:12px}.event{padding:0 0 12px}.event b{font-size:9px;color:#0b2857}.event small{display:block;font-size:8px;color:#7b8798;margin-top:3px}
+.notice{background:#e9f7ef;color:#176940;padding:10px;border-radius:8px;margin-bottom:12px;font-size:10px}.errors{background:#fff0f0;color:#962f2f;padding:10px;border-radius:8px;margin-bottom:12px;font-size:10px}
+@media(max-width:1000px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:650px){.hero{display:block}.grid,.form{grid-template-columns:1fr}.wide{grid-column:auto}}
+</style>
+
+@if (session('status'))
+    <div class="notice">{{ session('status') }}</div>
+@endif
+
+@if ($errors->any())
+    <div class="errors">
+        @foreach ($errors->all() as $error)
+            <div>{{ $error }}</div>
+        @endforeach
+    </div>
+@endif
+
+<div class="hero">
+    <div>
+        <span class="pill">{{ $asset->asset_code }}</span>
+        <h2>{{ $asset->name }}</h2>
+        <div class="meta">
+            {{ $asset->customer?->name }} → {{ $asset->site?->name }} → {{ $asset->location?->name ?: trim($asset->building.' '.$asset->floor.' '.$asset->zone.' '.$asset->room) }}<br>
+            {{ $asset->asset_category }} → {{ $asset->asset_type ?: $asset->asset_subcategory }} · {{ $asset->manufacturer }} {{ $asset->model_no }} · S/N {{ $asset->serial_no ?: '-' }}
+        </div>
+    </div>
+    <div>
+        <div class="score">{{ $asset->data_completeness_score }}%</div>
+        <div class="meta">
+            Data completeness<br>
+            {{ $asset->verification_status }} · {{ $asset->lifecycle_status }}<br>
+            Commissioning: {{ str_replace('_', ' ', $asset->commissioning_status ?? 'NOT_STARTED') }}
+        </div>
+    </div>
+</div>
+
 <div class="grid">
-<section class="card"><h3>Identity & Location</h3>@foreach(['Customer Asset Code'=>$asset->customer_asset_code,'Serial Number'=>$asset->serial_no,'Manufacturer'=>$asset->manufacturer,'Model'=>$asset->model_no,'Criticality'=>$asset->criticality,'Ownership'=>$asset->ownership_type,'Location Node'=>$asset->location?->code.' '.$asset->location?->name,'Physical Location'=>$asset->physical_location,'GPS'=>($asset->latitude&&$asset->longitude?$asset->latitude.', '.$asset->longitude:null)] as $k=>$v)<div class="kv"><b>{{ $k }}</b><span>{{ $v ?: '-' }}</span></div>@endforeach@if($locations->isNotEmpty())<form class="form" method="POST" action="{{ route('asset-master.assign-location',$asset) }}" style="margin-top:9px">@csrf<select class="wide" name="asset_location_id" required>@foreach($locations as $loc)<option value="{{ $loc->id }}" @selected($asset->asset_location_id==$loc->id)>{{ $loc->location_type }} · {{ $loc->code }} · {{ $loc->name }}</option>@endforeach</select><button class="btn wide">Assign Location Node</button></form>@endif</section>
-<section class="card"><h3>Lifecycle & Warranty</h3>@foreach(['Lifecycle'=>$asset->lifecycle_status,'Operational Status'=>$asset->operational_status,'Maintenance Strategy'=>$asset->maintenance_strategy,'Installed'=>$asset->installation_date?->format('Y-m-d'),'Commissioned'=>$asset->commission_date?->format('Y-m-d'),'Warranty Start'=>$asset->warranty_start?->format('Y-m-d'),'Warranty End'=>$asset->warranty_expiry,'Warranty Provider'=>$asset->warranty_provider] as $k=>$v)<div class="kv"><b>{{ $k }}</b><span>{{ $v ?: '-' }}</span></div>@endforeach @if($canVerify && !in_array($asset->lifecycle_status,['PENDING_VERIFICATION','DISPOSED'],true))<form class="form" method="POST" action="{{ route('asset-master.transition',$asset) }}" style="margin-top:9px">@csrf<select name="to_status">@foreach($lifecycleStatuses as $status)<option value="{{ $status }}">{{ str_replace('_',' ',$status) }}</option>@endforeach</select><input name="notes" placeholder="Reason / notes"><button class="btn wide">Apply Controlled Transition</button></form>@endif</section>
-<section class="card"><h3>Technical Specifications</h3>@forelse(($asset->technical_specifications ?? []) as $k=>$v)<div class="kv"><b>{{ str_replace('_',' ',ucwords($k,'_')) }}</b><span>{{ is_array($v)?json_encode($v):$v }}</span></div>@empty<div class="meta">No technical specifications recorded.</div>@endforelse</section>
-<section class="card"><h3>Commissioning</h3><div class="kv"><b>Status</b><span>{{ str_replace('_',' ',$asset->commissioning_status ?? 'NOT_STARTED') }}</span></div><div class="kv"><b>Requested At</b><span>{{ $asset->commissioning_requested_at?->format('Y-m-d H:i') ?: '-' }}</span></div><div class="kv"><b>Approved At</b><span>{{ $asset->commissioning_approved_at?->format('Y-m-d H:i') ?: '-' }}</span></div><div class="kv"><b>Notes</b><span>{{ $asset->commissioning_notes ?: '-' }}</span></div>@if($asset->verification_status==='VERIFIED' && $asset->commissioning_status!=='COMMISSIONED' && $asset->commissioning_status!=='PENDING_APPROVAL')<form class="form" method="POST" action="{{ route('asset-master.commissioning.request',$asset) }}" style="margin-top:9px">@csrf<input type="date" name="inspection_date" value="{{ now()->toDateString() }}" required><select name="inspection_result"><option>PASS</option><option>PASS_WITH_NOTES</option><option>FAIL</option></select><textarea class="wide" name="checklist" placeholder='{"electrical_test":"PASS","safety_check":"PASS"}'></textarea><textarea class="wide" name="notes" placeholder="Commissioning inspection notes"></textarea><button class="btn green wide">Submit Commissioning</button></form>@endif @foreach($asset->commissioningRecords->where('status','PENDING_APPROVAL') as $record)<div class="row"><span class="pill warn">PENDING APPROVAL</span> Record #{{ $record->id }} · {{ $record->inspection_date?->format('Y-m-d') }} · {{ $record->inspection_result }}@if($canVerify)<form method="POST" action="{{ route('asset-master.commissioning.review',[$asset,$record]) }}" style="margin-top:7px">@csrf<input name="notes" placeholder="Checker notes"><button class="btn green" name="decision" value="APPROVE">Approve</button> <button class="btn red" name="decision" value="REJECT">Reject</button></form>@endif</div>@endforeach</section>
-<section class="card"><h3>Asset Hierarchy</h3><div class="kv"><b>Parent</b><span>{{ $asset->parent?->asset_code }} {{ $asset->parent?->name }}</span></div>@forelse($asset->children as $child)<div class="row"><a href="{{ route('asset-master.show',$child) }}">{{ $child->asset_code }} · {{ $child->name }}</a></div>@empty<div class="meta">No child assets/components.</div>@endforelse</section>
-<section class="card"><h3>Work Orders</h3>@forelse($workOrders as $wo)<div class="row"><b>{{ $wo->work_order_no }}</b> · {{ $wo->status }} · {{ $wo->priority }}</div>@empty<div class="meta">No work orders.</div>@endforelse</section>
-<section class="card"><h3>Installed Parts & Components</h3>@forelse($parts as $part)<div class="row">{{ $part->part_no ?? $part->item_id ?? 'Component' }} · {{ $part->status ?? 'INSTALLED' }}</div>@empty<div class="meta">No installed component history.</div>@endforelse</section>
-<section class="card"><h3>Lifecycle Timeline</h3><div class="timeline">@forelse($asset->lifecycleEvents as $event)<div class="event"><b>{{ $event->title }}</b><small>{{ $event->performed_at?->format('Y-m-d H:i') }} · {{ $event->event_type }}@if($event->from_status || $event->to_status) · {{ $event->from_status ?: '-' }} → {{ $event->to_status ?: '-' }}@endif</small>@if($event->notes)<small>{{ $event->notes }}</small>@endif</div>@empty<div class="meta">No lifecycle events recorded.</div>@endforelse</div></section>
-<section class="card"><h3>Documents & Photos</h3>@forelse($asset->documents as $doc)<div class="doc"><span class="pill">{{ str_replace('_',' ',$doc->document_type) }}</span> {{ $doc->title }} · <a href="{{ route('asset-master.documents.download',$doc) }}">Download</a></div>@empty<div class="meta">No documents uploaded.</div>@endforelse<hr><form class="form" method="POST" enctype="multipart/form-data" action="{{ route('asset-master.documents.store',$asset) }}">@csrf<select name="document_type" required><option>PRIMARY_PHOTO</option><option>NAMEPLATE_PHOTO</option><option>PHOTO</option><option>DATASHEET</option><option>MAINTENANCE_MANUAL</option><option>COMMISSIONING_REPORT</option><option>WARRANTY_CERTIFICATE</option><option>INSPECTION_CERTIFICATE</option><option>CALIBRATION_CERTIFICATE</option><option>DRAWING</option><option>TEST_REPORT</option><option>OTHER</option></select><input name="title" required placeholder="Document title"><input class="wide" type="file" name="file" required><button class="btn wide">Upload Document</button></form></section>
-<section class="card"><h3>QR & Field Identity</h3><div class="kv"><b>QR Token</b><span style="word-break:break-all">{{ $asset->qr_token }}</span></div><div class="meta">QR remains bound to the immutable Asset ID and feeds the existing public request / field service flow.</div></section>
-<section class="card"><h3>Verification</h3><div class="kv"><b>Status</b><span>{{ $asset->verification_status }}</span></div><div class="kv"><b>Verified At</b><span>{{ $asset->verified_at?->format('Y-m-d H:i') ?: '-' }}</span></div><div class="kv"><b>Notes</b><span>{{ $asset->verification_notes ?: '-' }}</span></div>@if($canVerify && $asset->verification_status!=='VERIFIED')<form method="POST" action="{{ route('asset-master.verify',$asset) }}">@csrf<textarea name="notes" style="width:100%;margin:8px 0;padding:7px" placeholder="Verification notes"></textarea><button class="btn green">Verify & Activate</button></form>@endif</section>
+    <section class="card">
+        <h3>Identity & Location</h3>
+        <div class="kv"><b>Customer Asset Code</b><span>{{ $asset->customer_asset_code ?: '-' }}</span></div>
+        <div class="kv"><b>Serial Number</b><span>{{ $asset->serial_no ?: '-' }}</span></div>
+        <div class="kv"><b>Manufacturer</b><span>{{ $asset->manufacturer ?: '-' }}</span></div>
+        <div class="kv"><b>Model</b><span>{{ $asset->model_no ?: '-' }}</span></div>
+        <div class="kv"><b>Criticality</b><span>{{ $asset->criticality ?: '-' }}</span></div>
+        <div class="kv"><b>Ownership</b><span>{{ $asset->ownership_type ?: '-' }}</span></div>
+        <div class="kv"><b>Location Node</b><span>{{ $asset->location ? trim($asset->location->code.' '.$asset->location->name) : '-' }}</span></div>
+        <div class="kv"><b>Physical Location</b><span>{{ $asset->physical_location ?: '-' }}</span></div>
+        <div class="kv"><b>GPS</b><span>{{ ($asset->latitude && $asset->longitude) ? $asset->latitude.', '.$asset->longitude : '-' }}</span></div>
+
+        @if ($locations->isNotEmpty())
+            <form class="form" method="POST" action="{{ route('asset-master.assign-location', $asset) }}" style="margin-top:9px">
+                @csrf
+                <select class="wide" name="asset_location_id" required>
+                    @foreach ($locations as $location)
+                        <option value="{{ $location->id }}" @selected($asset->asset_location_id == $location->id)>
+                            {{ $location->location_type }} · {{ $location->code }} · {{ $location->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <button class="btn wide">Assign Location Node</button>
+            </form>
+        @endif
+    </section>
+
+    <section class="card">
+        <h3>Lifecycle & Warranty</h3>
+        <div class="kv"><b>Lifecycle</b><span>{{ $asset->lifecycle_status ?: '-' }}</span></div>
+        <div class="kv"><b>Operational Status</b><span>{{ $asset->operational_status ?: '-' }}</span></div>
+        <div class="kv"><b>Maintenance Strategy</b><span>{{ $asset->maintenance_strategy ?: '-' }}</span></div>
+        <div class="kv"><b>Installed</b><span>{{ $asset->installation_date?->format('Y-m-d') ?: '-' }}</span></div>
+        <div class="kv"><b>Commissioned</b><span>{{ $asset->commission_date?->format('Y-m-d') ?: '-' }}</span></div>
+        <div class="kv"><b>Warranty Start</b><span>{{ $asset->warranty_start?->format('Y-m-d') ?: '-' }}</span></div>
+        <div class="kv"><b>Warranty End</b><span>{{ $asset->warranty_expiry ?: '-' }}</span></div>
+        <div class="kv"><b>Warranty Provider</b><span>{{ $asset->warranty_provider ?: '-' }}</span></div>
+
+        @if ($canVerify && !in_array($asset->lifecycle_status, ['PENDING_VERIFICATION', 'DISPOSED'], true))
+            <form class="form" method="POST" action="{{ route('asset-master.transition', $asset) }}" style="margin-top:9px">
+                @csrf
+                <select name="to_status" required>
+                    @foreach ($lifecycleStatuses as $status)
+                        <option value="{{ $status }}">{{ str_replace('_', ' ', $status) }}</option>
+                    @endforeach
+                </select>
+                <input name="notes" placeholder="Reason / notes">
+                <button class="btn wide">Apply Controlled Transition</button>
+            </form>
+        @endif
+    </section>
+
+    <section class="card">
+        <h3>Technical Specifications</h3>
+        @forelse (($asset->technical_specifications ?? []) as $key => $value)
+            <div class="kv">
+                <b>{{ str_replace('_', ' ', ucwords($key, '_')) }}</b>
+                <span>{{ is_array($value) ? json_encode($value) : $value }}</span>
+            </div>
+        @empty
+            <div class="meta">No technical specifications recorded.</div>
+        @endforelse
+    </section>
+
+    <section class="card">
+        <h3>Commissioning</h3>
+        <div class="kv"><b>Status</b><span>{{ str_replace('_', ' ', $asset->commissioning_status ?? 'NOT_STARTED') }}</span></div>
+        <div class="kv"><b>Requested At</b><span>{{ $asset->commissioning_requested_at?->format('Y-m-d H:i') ?: '-' }}</span></div>
+        <div class="kv"><b>Approved At</b><span>{{ $asset->commissioning_approved_at?->format('Y-m-d H:i') ?: '-' }}</span></div>
+        <div class="kv"><b>Notes</b><span>{{ $asset->commissioning_notes ?: '-' }}</span></div>
+
+        @if ($asset->verification_status === 'VERIFIED' && $asset->commissioning_status !== 'COMMISSIONED' && $asset->commissioning_status !== 'PENDING_APPROVAL')
+            <form class="form" method="POST" action="{{ route('asset-master.commissioning.request', $asset) }}" style="margin-top:9px">
+                @csrf
+                <input type="date" name="inspection_date" value="{{ now()->toDateString() }}" required>
+                <select name="inspection_result" required>
+                    <option value="PASS">PASS</option>
+                    <option value="PASS_WITH_NOTES">PASS WITH NOTES</option>
+                    <option value="FAIL">FAIL</option>
+                </select>
+                <textarea class="wide" name="checklist" placeholder='{"electrical_test":"PASS","safety_check":"PASS"}'></textarea>
+                <textarea class="wide" name="notes" placeholder="Commissioning inspection notes"></textarea>
+                <button class="btn green wide">Submit Commissioning</button>
+            </form>
+        @endif
+
+        @foreach ($asset->commissioningRecords->where('status', 'PENDING_APPROVAL') as $record)
+            <div class="row">
+                <span class="pill warn">PENDING APPROVAL</span>
+                Record #{{ $record->id }} · {{ $record->inspection_date?->format('Y-m-d') }} · {{ $record->inspection_result }}
+
+                @if ($canVerify)
+                    <form method="POST" action="{{ route('asset-master.commissioning.review', [$asset, $record]) }}" style="margin-top:7px">
+                        @csrf
+                        <input name="notes" placeholder="Checker notes">
+                        <button class="btn green" name="decision" value="APPROVE">Approve</button>
+                        <button class="btn red" name="decision" value="REJECT">Reject</button>
+                    </form>
+                @endif
+            </div>
+        @endforeach
+    </section>
+
+    <section class="card">
+        <h3>Asset Hierarchy</h3>
+        <div class="kv"><b>Parent</b><span>{{ $asset->parent ? trim($asset->parent->asset_code.' '.$asset->parent->name) : '-' }}</span></div>
+        @forelse ($asset->children as $child)
+            <div class="row"><a href="{{ route('asset-master.show', $child) }}">{{ $child->asset_code }} · {{ $child->name }}</a></div>
+        @empty
+            <div class="meta">No child assets/components.</div>
+        @endforelse
+    </section>
+
+    <section class="card">
+        <h3>Work Orders</h3>
+        @forelse ($workOrders as $workOrder)
+            <div class="row"><b>{{ $workOrder->work_order_no }}</b> · {{ $workOrder->status }} · {{ $workOrder->priority }}</div>
+        @empty
+            <div class="meta">No work orders.</div>
+        @endforelse
+    </section>
+
+    <section class="card">
+        <h3>Installed Parts & Components</h3>
+        @forelse ($parts as $part)
+            <div class="row">{{ $part->part_no ?? $part->item_id ?? 'Component' }} · {{ $part->status ?? 'INSTALLED' }}</div>
+        @empty
+            <div class="meta">No installed component history.</div>
+        @endforelse
+    </section>
+
+    <section class="card">
+        <h3>Lifecycle Timeline</h3>
+        <div class="timeline">
+            @forelse ($asset->lifecycleEvents as $event)
+                <div class="event">
+                    <b>{{ $event->title }}</b>
+                    <small>
+                        {{ $event->performed_at?->format('Y-m-d H:i') }} · {{ $event->event_type }}
+                        @if ($event->from_status || $event->to_status)
+                            · {{ $event->from_status ?: '-' }} → {{ $event->to_status ?: '-' }}
+                        @endif
+                    </small>
+                    @if ($event->notes)
+                        <small>{{ $event->notes }}</small>
+                    @endif
+                </div>
+            @empty
+                <div class="meta">No lifecycle events recorded.</div>
+            @endforelse
+        </div>
+    </section>
+
+    <section class="card">
+        <h3>Documents & Photos</h3>
+        @forelse ($asset->documents as $document)
+            <div class="doc">
+                <span class="pill">{{ str_replace('_', ' ', $document->document_type) }}</span>
+                {{ $document->title }} · <a href="{{ route('asset-master.documents.download', $document) }}">Download</a>
+            </div>
+        @empty
+            <div class="meta">No documents uploaded.</div>
+        @endforelse
+        <hr>
+        <form class="form" method="POST" enctype="multipart/form-data" action="{{ route('asset-master.documents.store', $asset) }}">
+            @csrf
+            <select name="document_type" required>
+                <option>PRIMARY_PHOTO</option><option>NAMEPLATE_PHOTO</option><option>PHOTO</option><option>DATASHEET</option>
+                <option>MAINTENANCE_MANUAL</option><option>COMMISSIONING_REPORT</option><option>WARRANTY_CERTIFICATE</option>
+                <option>INSPECTION_CERTIFICATE</option><option>CALIBRATION_CERTIFICATE</option><option>DRAWING</option><option>TEST_REPORT</option><option>OTHER</option>
+            </select>
+            <input name="title" required placeholder="Document title">
+            <input class="wide" type="file" name="file" required>
+            <button class="btn wide">Upload Document</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h3>QR & Field Identity</h3>
+        <div class="kv"><b>QR Token</b><span style="word-break:break-all">{{ $asset->qr_token }}</span></div>
+        <div class="meta">QR remains bound to the immutable Asset ID and feeds the existing public request / field service flow.</div>
+    </section>
+
+    <section class="card">
+        <h3>Verification</h3>
+        <div class="kv"><b>Status</b><span>{{ $asset->verification_status }}</span></div>
+        <div class="kv"><b>Verified At</b><span>{{ $asset->verified_at?->format('Y-m-d H:i') ?: '-' }}</span></div>
+        <div class="kv"><b>Notes</b><span>{{ $asset->verification_notes ?: '-' }}</span></div>
+
+        @if ($canVerify && $asset->verification_status !== 'VERIFIED')
+            <form method="POST" action="{{ route('asset-master.verify', $asset) }}">
+                @csrf
+                <textarea name="notes" style="width:100%;margin:8px 0;padding:7px" placeholder="Verification notes"></textarea>
+                <button class="btn green">Verify & Activate</button>
+            </form>
+        @endif
+    </section>
 </div>
 @endsection
