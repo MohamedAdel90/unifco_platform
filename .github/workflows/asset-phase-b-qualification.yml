@@ -1,0 +1,75 @@
+name: Asset Phase B Qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/Models/Asset*.php'
+      - 'app/Services/AssetMasterService.php'
+      - 'app/Http/Controllers/Maintenance/AssetMasterController.php'
+      - 'database/migrations/2026_08_27_000060_build_asset_lifecycle_commissioning.php'
+      - 'resources/views/maintenance/asset-master/**'
+      - 'routes/asset-master.php'
+      - 'tests/Feature/AssetLifecyclePhaseBTest.php'
+      - '.github/workflows/asset-phase-b-qualification.yml'
+  workflow_dispatch:
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: unifco_testing
+      DB_USERNAME: unifco_test
+      DB_PASSWORD: Unifco_Test!2026
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: unifco_testing
+          MYSQL_USER: unifco_test
+          MYSQL_PASSWORD: Unifco_Test!2026
+          MYSQL_ROOT_PASSWORD: Unifco_Root!2026
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uunifco_test -pUnifco_Test!2026 --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql
+          coverage: none
+      - name: Validate Phase B source
+        run: |
+          set -euo pipefail
+          php -l app/Models/Asset.php
+          php -l app/Models/AssetLocation.php
+          php -l app/Models/AssetLifecycleEvent.php
+          php -l app/Models/AssetCommissioningRecord.php
+          php -l app/Services/AssetMasterService.php
+          php -l app/Http/Controllers/Maintenance/AssetMasterController.php
+          php -l database/migrations/2026_08_27_000060_build_asset_lifecycle_commissioning.php
+          php -l routes/asset-master.php
+          grep -q "name('commissioning.request')" routes/asset-master.php
+          grep -q "name('commissioning.review')" routes/asset-master.php
+          grep -q "name('transition')" routes/asset-master.php
+          grep -q 'Maker/checker control' app/Services/AssetMasterService.php
+          grep -q 'Lifecycle Timeline' resources/views/maintenance/asset-master/show.blade.php
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate:fresh --force
+          php artisan route:list --name=asset-master.transition >/dev/null
+          php artisan route:list --name=asset-master.commissioning.request >/dev/null
+          php artisan route:list --name=asset-master.commissioning.review >/dev/null
+          php artisan route:list --name=asset-master.locations.store >/dev/null
+          php artisan view:cache
+      - name: Run Phase A and B asset tests
+        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AssetLifecyclePhaseBTest.php
