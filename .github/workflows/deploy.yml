@@ -54,8 +54,10 @@ jobs:
           php -l app/Http/Controllers/CustomerPortalOperationsController.php
           php -l app/Http/Controllers/CustomerPortalAccessAdminController.php
           php -l app/Http/Controllers/CustomerActionCenterController.php
+          php -l app/Http/Controllers/CustomerPortalPhase2ActionController.php
           php -l app/Http/Controllers/CustomerWorkAcceptanceController.php
           php -l app/Http/Controllers/CustomerAssetReadController.php
+          php -l app/Models/CustomerPortalActionRequest.php
           php -l app/Services/CustomerPortalAccessService.php
           php -l app/Http/Controllers/Workflow/ApprovalController.php
           php -l app/Http/Controllers/Workflow/WorkflowWorkspaceController.php
@@ -68,6 +70,7 @@ jobs:
           php -l app/Http/Middleware/WorkflowRoleNavigationPresentation.php
           php -l database/seeders/WorkflowTestUsersSeeder.php
           php -l database/migrations/2026_08_27_000052_add_customer_portal_rbac_scopes.php
+          php -l database/migrations/2026_08_27_000053_add_customer_portal_action_requests.php
           php -l bootstrap/app.php
           php -l routes/web.php
           php -l routes/public.php
@@ -76,6 +79,8 @@ jobs:
           grep -q 'CustomerPortalAccessAdminController' routes/public.php
           grep -q 'customer.access.index' routes/public.php
           grep -q 'customer.actions' routes/customer-phase2.php
+          grep -q 'customer.contracts.renewal-request' routes/customer-phase2.php
+          grep -q 'customer.invoices.query' routes/customer-phase2.php
           grep -q 'workflow.site.manager@unifco.local' database/seeders/WorkflowTestUsersSeeder.php
           test -s resources/views/customer/users-access.blade.php
           test -s resources/views/customer/action-center.blade.php
@@ -99,6 +104,8 @@ jobs:
           php artisan route:list --name=customer.access.store >/dev/null
           php artisan route:list --name=customer.access.update >/dev/null
           php artisan route:list --name=customer.actions >/dev/null
+          php artisan route:list --name=customer.contracts.renewal-request >/dev/null
+          php artisan route:list --name=customer.invoices.query >/dev/null
           php artisan view:cache
           php artisan test \
             tests/Feature/CustomerPortalRbacPhase1Test.php \
