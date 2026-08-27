@@ -17,7 +17,14 @@ class PublicContactPresentation
         }
 
         $route = $request->route()?->getName();
-        if (! in_array($route, ['public.home','public.request','public.request.received','public.service.detail'], true)) {
+        if (! in_array($route, [
+            'public.home',
+            'public.quote',
+            'public.request-service',
+            'public.emergency',
+            'public.request.received',
+            'public.service.detail',
+        ], true)) {
             return $response;
         }
 
