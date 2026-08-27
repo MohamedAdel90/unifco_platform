@@ -10,6 +10,7 @@ class CustomerAcquisitionService
     public const SOURCES=['FIELD_MARKETING','WEBSITE','WHATSAPP','EMAIL','PHONE','REFERRAL','TENDER','SOCIAL_MEDIA','PARTNER','WALK_IN','EXISTING_RELATIONSHIP'];
     public const STAGES=['LEAD','CONTACTED','QUALIFIED','OPPORTUNITY','NURTURE','DISQUALIFIED','CONVERTED'];
 
+    /** Strong identity match only. Company name is deliberately excluded because names are not unique identifiers. */
     public function findCustomer(int $tenantId,array $data): ?Customer
     {
         $base=Customer::where('tenant_id',$tenantId);
@@ -22,10 +23,6 @@ class CustomerAcquisitionService
         if($phone=$this->phone($data['mobile']??$data['phone']??null)){
             $customers=(clone $base)->whereNotNull('phone')->get();
             if($customer=$customers->first(fn($c)=>$this->phone($c->phone)===$phone)) return $customer;
-        }
-        if($company=$this->name($data['company']??$data['company_name']??null)){
-            $customers=(clone $base)->whereNotNull('name')->get();
-            if($customer=$customers->first(fn($c)=>$this->name($c->name)===$company)) return $customer;
         }
         return null;
     }
@@ -46,11 +43,25 @@ class CustomerAcquisitionService
         return null;
     }
 
+    private function potentialDuplicates(int $tenantId,array $data): array
+    {
+        $company=$this->name($data['company']??$data['company_name']??null);
+        if(!$company) return [null,null];
+
+        $customer=Customer::where('tenant_id',$tenantId)->whereNotNull('name')->get()
+            ->first(fn($c)=>$this->name($c->name)===$company);
+        $lead=CrmLead::where('tenant_id',$tenantId)->whereNotIn('lifecycle_stage',['DISQUALIFIED','CONVERTED'])->whereNotNull('company')->get()
+            ->first(fn($l)=>$this->name($l->company)===$company);
+        return [$customer,$lead];
+    }
+
     public function capture(int $tenantId,int $organizationId,?int $userId,array $data): array
     {
         if($customer=$this->findCustomer($tenantId,$data)) return ['type'=>'CUSTOMER','customer'=>$customer,'lead'=>null,'created'=>false];
         if($lead=$this->findLead($tenantId,$data)) return ['type'=>'LEAD','customer'=>null,'lead'=>$lead,'created'=>false];
 
+        [$duplicateCustomer,$duplicateLead]=$this->potentialDuplicates($tenantId,$data);
+        $needsDuplicateReview=(bool)($duplicateCustomer||$duplicateLead);
         $source=strtoupper($data['source_channel']??'FIELD_MARKETING');
         abort_unless(in_array($source,self::SOURCES,true),422,'Unsupported acquisition source.');
         $next=((int)CrmLead::where('tenant_id',$tenantId)->max('id'))+1;
@@ -61,17 +72,46 @@ class CustomerAcquisitionService
             'status'=>'NEW','lifecycle_stage'=>'LEAD','service_interest'=>$data['service_interest']??null,'city'=>$data['city']??null,
             'inquiry_notes'=>$data['inquiry_notes']??null,'first_touch_at'=>now(),'first_touch_user_id'=>$userId,'created_by'=>$userId,
             'assigned_to'=>$data['assigned_to']??$userId,'next_follow_up_at'=>$data['next_follow_up_at']??null,
-            'duplicate_review_status'=>'CLEAR','conversion_approval_status'=>'NOT_REQUESTED',
+            'duplicate_review_status'=>$needsDuplicateReview?'REVIEW':'CLEAR','duplicate_customer_id'=>$duplicateCustomer?->id,'duplicate_lead_id'=>$duplicateLead?->id,
+            'conversion_approval_status'=>'NOT_REQUESTED',
         ]);
         return ['type'=>'LEAD','customer'=>null,'lead'=>$lead,'created'=>true];
+    }
+
+    public function reviewDuplicate(CrmLead $lead,string $decision,int $reviewerId): CrmLead
+    {
+        abort_unless($lead->duplicate_review_status==='REVIEW',422,'This lead has no pending duplicate review.');
+        $decision=strtoupper($decision);
+        abort_unless(in_array($decision,['KEEP_SEPARATE','LINK_CUSTOMER','USE_EXISTING_LEAD'],true),422,'Invalid duplicate review decision.');
+
+        if($decision==='LINK_CUSTOMER'){
+            abort_unless($lead->duplicate_customer_id,422,'No candidate customer is linked to this review.');
+            $customer=Customer::where('tenant_id',$lead->tenant_id)->findOrFail($lead->duplicate_customer_id);
+            $lead->update(['duplicate_review_status'=>'LINKED_CUSTOMER']);
+            return $this->linkSystemCustomer($lead,$customer);
+        }
+
+        if($decision==='USE_EXISTING_LEAD'){
+            abort_unless($lead->duplicate_lead_id,422,'No candidate lead is linked to this review.');
+            CrmLead::where('tenant_id',$lead->tenant_id)->findOrFail($lead->duplicate_lead_id);
+            $lead->update([
+                'duplicate_review_status'=>'USE_EXISTING_LEAD','lifecycle_stage'=>'DISQUALIFIED','status'=>'DUPLICATE',
+                'conversion_approval_status'=>'NOT_REQUESTED','conversion_review_notes'=>'Duplicate reviewed by user #'.$reviewerId.'. Continue on lead #'.$lead->duplicate_lead_id.'.',
+            ]);
+            return $lead->refresh();
+        }
+
+        $lead->update(['duplicate_review_status'=>'CLEAR','duplicate_customer_id'=>null,'duplicate_lead_id'=>null]);
+        return $lead->refresh();
     }
 
     public function linkSystemCustomer(CrmLead $lead,Customer $customer): CrmLead
     {
         abort_unless((int)$lead->tenant_id===(int)$customer->tenant_id,422,'Lead and customer tenant mismatch.');
+        $duplicateStatus=$lead->duplicate_review_status==='REVIEW'?'LINKED_CUSTOMER':$lead->duplicate_review_status;
         $lead->update([
             'lifecycle_stage'=>'CONVERTED','status'=>'CONVERTED','converted_customer_id'=>$customer->id,
-            'converted_at'=>now(),'conversion_approval_status'=>'SYSTEM_APPROVED',
+            'converted_at'=>now(),'conversion_approval_status'=>'SYSTEM_APPROVED','duplicate_review_status'=>$duplicateStatus,
         ]);
         if(!$customer->origin_lead_id){
             $customer->update([
@@ -126,6 +166,7 @@ class CustomerAcquisitionService
     {
         if($lead->converted_customer_id) return Customer::findOrFail($lead->converted_customer_id);
         abort_unless(in_array($lead->lifecycle_stage,['QUALIFIED','OPPORTUNITY'],true),422,'Lead must be qualified before customer conversion.');
+        abort_if($lead->duplicate_review_status==='REVIEW',422,'Duplicate review must be resolved before customer conversion.');
         abort_unless($lead->conversion_approval_status==='APPROVED',422,'Customer conversion requires approved conversion review.');
 
         return DB::transaction(function() use($lead,$userId){
