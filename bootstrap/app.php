@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__.'/../routes/public.php',
             __DIR__.'/../routes/customer-phase2.php',
             __DIR__.'/../routes/customer-acquisition.php',
+            __DIR__.'/../routes/asset-master.php',
             __DIR__.'/../routes/public-asset-qr.php',
             __DIR__.'/../routes/services.php',
             __DIR__.'/../routes/brand.php',
