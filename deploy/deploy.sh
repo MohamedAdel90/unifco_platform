@@ -52,8 +52,8 @@ grep -q 'workflow.customer-actions.index' routes/customer-phase2.php || { echo "
 grep -q 'assigned_role' app/Http/Controllers/CustomerPortalPhase2ActionController.php || { echo "ERROR: customer action role assignment missing"; exit 1; }
 grep -q 'CustomerPortalAccessAdminController' routes/public.php || { echo "ERROR: Customer Users & Access routes missing"; exit 1; }
 grep -q 'WorkflowWorkspaceController' routes/web.php || { echo "ERROR: workflow workspace route missing"; exit 1; }
-grep -q 'crm.acquisition.request-conversion' routes/customer-acquisition.php || { echo "ERROR: acquisition conversion request route missing"; exit 1; }
-grep -q 'crm.acquisition.review-onboarding' routes/customer-acquisition.php || { echo "ERROR: acquisition onboarding review route missing"; exit 1; }
+grep -q "name('request-conversion')" routes/customer-acquisition.php || { echo "ERROR: acquisition conversion request route missing"; exit 1; }
+grep -q "name('review-onboarding')" routes/customer-acquisition.php || { echo "ERROR: acquisition onboarding review route missing"; exit 1; }
 grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php || { echo "ERROR: acquisition conversion governance missing"; exit 1; }
 
 echo "==> Installing dependencies"
