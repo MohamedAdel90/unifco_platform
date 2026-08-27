@@ -22,6 +22,7 @@ class CustomerPortalController extends Controller
         $allowedSections=$access->allowedSections($user);
         $canCreateRequest=$access->canCreateServiceRequest($user);
         $canDecideQuotation=$access->canDecideQuotation($user);
+        $canManageUsers=$access->canManageUsers($user);
         $readOnly=$access->isReadOnly($user);
 
         $scopedSiteIds=$access->accessibleSiteIds($user);
@@ -61,9 +62,7 @@ class CustomerPortalController extends Controller
         if($scopedContractIds!==null) $requestQuery->where(function($q)use($scopedContractIds){$q->whereNull('service_contract_id')->orWhereIn('service_contract_id',$scopedContractIds);});
         $requests=$requestQuery->when($contractFilter,fn($q)=>$q->where('service_contract_id',$contractFilter))->when($assetFilter,fn($q)=>$q->where('asset_id',$assetFilter))->latest()->limit(100)->get();
 
-        $quotationQuery=CrmQuotation::where('customer_id',$customer->id);
-        $quotations=$quotationQuery->latest('quotation_date')->limit(50)->get();
-
+        $quotations=CrmQuotation::where('customer_id',$customer->id)->latest('quotation_date')->limit(50)->get();
         $invoices=FinancialDocument::where('customer_id',$customer->id)->where('document_type','AR_INVOICE')->latest('document_date')->limit(100)->get();
         $payments=DB::table('payments')->join('financial_documents','financial_documents.id','=','payments.financial_document_id')->where('financial_documents.customer_id',$customer->id)->select('payments.*','financial_documents.document_no')->orderByDesc('payments.payment_date')->limit(100)->get();
         $materials=DB::table('maintenance_materials')->join('work_orders','work_orders.id','=','maintenance_materials.work_order_id')->join('assets','assets.id','=','work_orders.asset_id')->join('items','items.id','=','maintenance_materials.item_id')->whereIn('assets.id',$assetIds)->select('maintenance_materials.id','maintenance_materials.work_order_id','maintenance_materials.item_id','maintenance_materials.warehouse_code','maintenance_materials.quantity','maintenance_materials.created_at','work_orders.work_order_no','assets.asset_code','assets.name as asset_name','items.item_code','items.name as item_name','items.uom')->orderByDesc('maintenance_materials.created_at')->limit(100)->get();
@@ -91,7 +90,12 @@ class CustomerPortalController extends Controller
         $unreadInbox=0;$inboxReady=Schema::hasTable('customer_messages')&&Schema::hasTable('customer_conversations');
         if($inboxReady)$unreadInbox=DB::table('customer_messages')->join('customer_conversations','customer_conversations.id','=','customer_messages.conversation_id')->where('customer_conversations.customer_id',$customer->id)->where('customer_messages.sender_side','UNIFCO')->whereNull('customer_messages.read_at')->count();
 
-        $html=view('customer.section',compact('section','customer','contracts','assets','plans','workOrders','invoices','payments','materials','requests','quotations','timeline','visitReports','attachments','alerts','locations','warrantyParts','openInvoiceAmount','openWorkOrders','openRequestCount','pendingQuotationCount','activeContractCount','inProgressCount','completedCount','overdueCount','recentWorkOrders','recentRequests','upcomingPlans','slaPerformance','preventiveCount','correctiveCount','contractFilter','assetFilter','locationFilter','unreadInbox','inboxReady','portalRole','allowedSections','canCreateRequest','canDecideQuotation','readOnly'))->render();
+        $html=view('customer.section',compact('section','customer','contracts','assets','plans','workOrders','invoices','payments','materials','requests','quotations','timeline','visitReports','attachments','alerts','locations','warrantyParts','openInvoiceAmount','openWorkOrders','openRequestCount','pendingQuotationCount','activeContractCount','inProgressCount','completedCount','overdueCount','recentWorkOrders','recentRequests','upcomingPlans','slaPerformance','preventiveCount','correctiveCount','contractFilter','assetFilter','locationFilter','unreadInbox','inboxReady','portalRole','allowedSections','canCreateRequest','canDecideQuotation','canManageUsers','readOnly'))->render();
+
+        if($canManageUsers){
+            $accessLink='<a href="'.e(route('customer.access.index')).'"><span class="ico">♙</span><span>Users &amp; Access</span></a>';
+            $html=str_replace('<a href="'.e(route('customer.profile.edit')).'">',$accessLink.'<a href="'.e(route('customer.profile.edit')).'">',$html);
+        }
 
         return response($html)->header('X-UNIFCO-Customer-Portal-Release','customer-portal-rbac-phase1-20260827')->header('Cache-Control','no-cache, no-store, must-revalidate');
     }
