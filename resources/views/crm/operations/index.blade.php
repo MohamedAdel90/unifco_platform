@@ -6,8 +6,7 @@
 @if($errors->any())<div class="alert alert-danger"><ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>@endif
 
 <div class="grid">
-<section><h2>New Lead</h2><form method="post" action="{{ route('crm.operations.leads.store') }}">@csrf
-<input name="lead_no" placeholder="Lead No" required><input name="name" placeholder="Contact name" required><input name="company" placeholder="Company"><input name="email" type="email" placeholder="Email"><button>Create Lead</button></form></section>
+<section><h2>Customer Acquisition</h2><p>All field marketing, phone, WhatsApp, email and referral leads now enter through the controlled acquisition workflow with duplicate matching and source tracking.</p><a href="{{ route('crm.acquisition.index') }}"><button type="button">Open Customer Acquisition</button></a></section>
 <section><h2>New Opportunity</h2><form method="post" action="{{ route('crm.operations.opportunities.store') }}">@csrf
 <input name="opportunity_no" placeholder="Opportunity No" required><input name="name" placeholder="Opportunity" required><select name="stage"><option>QUALIFICATION</option><option>PROPOSAL</option><option>NEGOTIATION</option></select><input name="expected_value" type="number" step="0.01" min="0" placeholder="Expected value" required><input name="probability" type="number" min="0" max="99" value="25" required><input name="expected_close" type="date"><button>Create Opportunity</button></form></section>
 <section><h2>Issue Quotation</h2><form method="post" action="{{ route('crm.operations.quotations.store') }}">@csrf
