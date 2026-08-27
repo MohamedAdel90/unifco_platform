@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\{AuthenticateApiToken,AuthenticateJwt,BrandingPresentation,CustomerPortalDashboardPresentation,EnsureUserSessionValid,LegacyFormCompatibility,PublicAssetQrInsecureFallback,PublicAssetQrPresentation,PublicRequestAttachmentsPresentation,PublicRequestCompactDesign,PublicRequestHeaderMatch,PublicServiceLinks,RequirePermission,WorkflowRoleHomeRedirect,WorkflowRoleNavigationPresentation};
+use App\Http\Middleware\{AuthenticateApiToken,AuthenticateJwt,BrandingPresentation,CustomerPortalDashboardPresentation,CustomerPortalMobileLogoutPresentation,EnsureUserSessionValid,LegacyFormCompatibility,PublicAssetQrInsecureFallback,PublicAssetQrPresentation,PublicRequestAttachmentsPresentation,PublicRequestCompactDesign,PublicRequestHeaderMatch,PublicServiceLinks,RequirePermission,WorkflowRoleHomeRedirect,WorkflowRoleNavigationPresentation};
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -35,7 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['permission'=>RequirePermission::class,'api.token'=>AuthenticateApiToken::class,'jwt'=>AuthenticateJwt::class]);
-        $middleware->web(append: [EnsureUserSessionValid::class,WorkflowRoleHomeRedirect::class,WorkflowRoleNavigationPresentation::class,LegacyFormCompatibility::class,CustomerPortalDashboardPresentation::class,BrandingPresentation::class,PublicRequestHeaderMatch::class,PublicRequestAttachmentsPresentation::class,PublicAssetQrInsecureFallback::class,PublicAssetQrPresentation::class,PublicRequestCompactDesign::class,PublicServiceLinks::class]);
+        $middleware->web(append: [EnsureUserSessionValid::class,WorkflowRoleHomeRedirect::class,WorkflowRoleNavigationPresentation::class,LegacyFormCompatibility::class,CustomerPortalDashboardPresentation::class,CustomerPortalMobileLogoutPresentation::class,BrandingPresentation::class,PublicRequestHeaderMatch::class,PublicRequestAttachmentsPresentation::class,PublicAssetQrInsecureFallback::class,PublicAssetQrPresentation::class,PublicRequestCompactDesign::class,PublicServiceLinks::class]);
         $middleware->validateCsrfTokens(except: ['login','service-requests']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
