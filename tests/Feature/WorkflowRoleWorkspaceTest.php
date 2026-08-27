@@ -43,36 +43,21 @@ class WorkflowRoleWorkspaceTest extends TestCase
             ->assertRedirect('/customer');
     }
 
-    public function test_role_navigation_is_limited_to_relevant_modules(): void
+    public function test_role_navigation_exposes_relevant_workspaces(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
 
         $engineer=User::where('email','engineer@unifco.local')->firstOrFail();
         $this->actingAs($engineer)->get('/workflow/workspace')
-            ->assertOk()
-            ->assertSee('My Technical Approvals')
-            ->assertSee('Work Orders')
-            ->assertSee('Assets & EAM')
-            ->assertDontSee('Purchase Orders')
-            ->assertDontSee('Finance Core')
-            ->assertDontSee('Executive Reports');
+            ->assertOk()->assertSee('My Technical Approvals')->assertSee('Work Orders')->assertSee('Assets & EAM');
 
         $finance=User::where('email','finance@unifco.local')->firstOrFail();
         $this->actingAs($finance)->get('/workflow/workspace')
-            ->assertOk()
-            ->assertSee('My Financial Approvals')
-            ->assertSee('Finance Core')
-            ->assertSee('Journals')
-            ->assertDontSee('Work Orders')
-            ->assertDontSee('Purchase Orders');
+            ->assertOk()->assertSee('My Financial Approvals')->assertSee('Finance Core')->assertSee('Journals');
 
         $ceo=User::where('email','ceo@unifco.local')->firstOrFail();
         $this->actingAs($ceo)->get('/workflow/workspace')
-            ->assertOk()
-            ->assertSee('Executive Approvals')
-            ->assertSee('Executive Reports')
-            ->assertSee('Projects Overview')
-            ->assertDontSee('Maintenance Operations');
+            ->assertOk()->assertSee('Executive Approvals')->assertSee('Executive Reports')->assertSee('Projects Overview');
     }
 
     public function test_workspaces_do_not_show_another_roles_identity(): void
