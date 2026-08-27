@@ -45,7 +45,7 @@ class CustomerAcquisitionWorkflowTest extends TestCase
         $this->assertDatabaseMissing('customers',['name'=>'Field Prospect LLC']);
     }
 
-    public function test_whatsapp_duplicate_lead_is_reused(): void
+    public function test_whatsapp_duplicate_lead_is_reused_and_official_channel_is_recorded(): void
     {
         $user=$this->admin();
         foreach([1,2] as $attempt){
@@ -53,7 +53,9 @@ class CustomerAcquisitionWorkflowTest extends TestCase
                 'name'=>'Sara','company'=>'Message Prospect','mobile'=>'+966 50 222 3344','source_channel'=>'WHATSAPP','inquiry_notes'=>'WhatsApp inquiry '.$attempt,
             ])->assertRedirect();
         }
+        $lead=CrmLead::where('tenant_id',$user->tenant_id)->where('mobile','+966 50 222 3344')->firstOrFail();
         $this->assertSame(1,CrmLead::where('tenant_id',$user->tenant_id)->where('mobile','+966 50 222 3344')->count());
+        $this->assertSame('UNIFCO WhatsApp 0599402090',$lead->source_detail);
     }
 
     public function test_existing_customer_match_does_not_create_duplicate_lead(): void
