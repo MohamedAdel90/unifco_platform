@@ -46,7 +46,7 @@ class CustomerAcquisitionService
         return null;
     }
 
-    public function capture(int $tenantId,int $organizationId,int $userId,array $data): array
+    public function capture(int $tenantId,int $organizationId,?int $userId,array $data): array
     {
         if($customer=$this->findCustomer($tenantId,$data)) return ['type'=>'CUSTOMER','customer'=>$customer,'lead'=>null,'created'=>false];
         if($lead=$this->findLead($tenantId,$data)) return ['type'=>'LEAD','customer'=>null,'lead'=>$lead,'created'=>false];
@@ -64,6 +64,22 @@ class CustomerAcquisitionService
             'duplicate_review_status'=>'CLEAR','conversion_approval_status'=>'NOT_REQUESTED',
         ]);
         return ['type'=>'LEAD','customer'=>null,'lead'=>$lead,'created'=>true];
+    }
+
+    public function linkSystemCustomer(CrmLead $lead,Customer $customer): CrmLead
+    {
+        abort_unless((int)$lead->tenant_id===(int)$customer->tenant_id,422,'Lead and customer tenant mismatch.');
+        $lead->update([
+            'lifecycle_stage'=>'CONVERTED','status'=>'CONVERTED','converted_customer_id'=>$customer->id,
+            'converted_at'=>now(),'conversion_approval_status'=>'SYSTEM_APPROVED',
+        ]);
+        if(!$customer->origin_lead_id){
+            $customer->update([
+                'origin_lead_id'=>$lead->id,'acquisition_source'=>$lead->source_channel ?: $lead->source,
+                'first_touch_at'=>$lead->first_touch_at ?: now(),
+            ]);
+        }
+        return $lead->refresh();
     }
 
     public function stage(CrmLead $lead,string $stage,int $userId): CrmLead
