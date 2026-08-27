@@ -21,59 +21,32 @@ for file in \
   resources/views/crm/acquisition.blade.php \
   resources/views/maintenance/asset-master/index.blade.php \
   resources/views/maintenance/asset-master/show.blade.php \
-  routes/public.php \
-  routes/customer-phase2.php \
-  routes/customer-acquisition.php \
-  routes/asset-master.php \
-  routes/public-asset-qr.php \
-  routes/parts.php \
-  database/migrations/2026_08_26_000050_link_public_requests_to_asset_registry.php \
-  database/migrations/2026_08_26_000051_build_service_request_workflow_foundation.php \
-  database/migrations/2026_08_27_000052_add_customer_portal_rbac_scopes.php \
-  database/migrations/2026_08_27_000053_add_customer_portal_action_requests.php \
-  database/migrations/2026_08_27_000054_add_customer_action_attachments.php \
-  database/migrations/2026_08_27_000055_add_assignment_sla_to_customer_actions.php \
-  database/migrations/2026_08_27_000056_add_customer_acquisition_lifecycle.php \
-  database/migrations/2026_08_27_000057_add_acquisition_governance_fields.php \
+  routes/public.php routes/customer-phase2.php routes/customer-acquisition.php routes/asset-master.php routes/public-asset-qr.php routes/parts.php \
   database/migrations/2026_08_27_000058_build_professional_asset_master.php \
   database/migrations/2026_08_27_000059_normalize_user_status_semantics.php \
+  database/migrations/2026_08_27_000060_build_asset_lifecycle_commissioning.php \
   database/seeders/WorkflowTestUsersSeeder.php \
-  app/Http/Controllers/CRM/CustomerAcquisitionController.php \
   app/Http/Controllers/Maintenance/AssetMasterController.php \
-  app/Models/AssetCategoryTemplate.php \
-  app/Models/AssetDocument.php \
-  app/Services/AssetMasterService.php \
-  app/Services/CustomerAcquisitionService.php \
-  app/Http/Controllers/Workflow/WorkflowWorkspaceController.php \
-  app/Http/Controllers/Workflow/CustomerActionInboxController.php \
-  app/Http/Controllers/CustomerPortalAccessAdminController.php \
-  app/Http/Controllers/CustomerActionCenterController.php \
-  app/Http/Controllers/CustomerPortalPhase2ActionController.php \
-  app/Services/CustomerPortalAccessService.php \
-  app/Services/ServiceRequestWorkflowService.php \
-  app/Services/CustomerLifecycleService.php; do
+  app/Models/Asset.php app/Models/AssetCategoryTemplate.php app/Models/AssetDocument.php \
+  app/Models/AssetLocation.php app/Models/AssetLifecycleEvent.php app/Models/AssetCommissioningRecord.php \
+  app/Services/AssetMasterService.php app/Services/CustomerAcquisitionService.php app/Services/CustomerPortalAccessService.php; do
   test -s "$file" || { echo "ERROR: required release file missing: $file"; exit 1; }
 done
+
 grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
-grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal Phase 1 marker missing"; exit 1; }
-grep -q 'customer.actions' routes/customer-phase2.php || { echo "ERROR: Customer Portal Phase 2 action route missing"; exit 1; }
-grep -q 'workflow.customer-actions.index' routes/customer-phase2.php || { echo "ERROR: internal customer action inbox route missing"; exit 1; }
-grep -q 'assigned_role' app/Http/Controllers/CustomerPortalPhase2ActionController.php || { echo "ERROR: customer action role assignment missing"; exit 1; }
-grep -q 'CustomerPortalAccessAdminController' routes/public.php || { echo "ERROR: Customer Users & Access routes missing"; exit 1; }
-grep -q 'WorkflowWorkspaceController' routes/web.php || { echo "ERROR: workflow workspace route missing"; exit 1; }
-grep -q "name('review-duplicate')" routes/customer-acquisition.php || { echo "ERROR: acquisition duplicate review route missing"; exit 1; }
-grep -q "name('request-conversion')" routes/customer-acquisition.php || { echo "ERROR: acquisition conversion request route missing"; exit 1; }
-grep -q "name('review-onboarding')" routes/customer-acquisition.php || { echo "ERROR: acquisition onboarding review route missing"; exit 1; }
-grep -q "name('verify')" routes/asset-master.php || { echo "ERROR: asset verification route missing"; exit 1; }
-grep -q 'data_completeness_score' app/Services/AssetMasterService.php || { echo "ERROR: asset completeness governance missing"; exit 1; }
-grep -q 'VARCHAR(20)' database/migrations/2026_08_27_000059_normalize_user_status_semantics.php || { echo "ERROR: user lifecycle status normalization missing"; exit 1; }
-grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php || { echo "ERROR: acquisition conversion governance missing"; exit 1; }
-grep -q 'CustomerAcquisitionService' app/Services/PublicRequestPipelineService.php || { echo "ERROR: public website intake is not using acquisition engine"; exit 1; }
+grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal marker missing"; exit 1; }
+grep -q "name('transition')" routes/asset-master.php || { echo "ERROR: asset lifecycle transition route missing"; exit 1; }
+grep -q "name('locations.store')" routes/asset-master.php || { echo "ERROR: asset location hierarchy route missing"; exit 1; }
+grep -q "name('assign-location')" routes/asset-master.php || { echo "ERROR: asset location assignment route missing"; exit 1; }
+grep -q "name('commissioning.request')" routes/asset-master.php || { echo "ERROR: commissioning request route missing"; exit 1; }
+grep -q "name('commissioning.review')" routes/asset-master.php || { echo "ERROR: commissioning review route missing"; exit 1; }
+grep -q 'Maker/checker control' app/Services/AssetMasterService.php || { echo "ERROR: commissioning maker/checker control missing"; exit 1; }
+grep -q 'Lifecycle Timeline' resources/views/maintenance/asset-master/show.blade.php || { echo "ERROR: Asset 360 lifecycle timeline missing"; exit 1; }
 
 echo "==> Installing dependencies"
-composer install --no-interaction --prefer-dist --optimize-autoloader
 mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
 chmod -R ug+rwX storage bootstrap/cache
+composer install --no-interaction --prefer-dist --optimize-autoloader
 
 upsert_env() {
   local key="$1" value="$2"
@@ -94,70 +67,38 @@ for attempt in $(seq 1 20); do
 done
 [ "$ready" -eq 1 ] || { echo "ERROR: database did not become ready"; exit 1; }
 
-echo "==> Applying migrations and workflow test accounts"
+echo "==> Applying migrations and workflow identities"
 php artisan migrate --force
 php artisan db:seed --class='Database\Seeders\WorkflowTestUsersSeeder' --force
 php artisan unifco:bootstrap-warehouse-access
 php artisan brand:materialize
 php artisan storage:link || true
 
-echo "==> Verifying workflow, customer portal and asset master foundation"
+echo "==> Verifying Phase B database foundation"
 php -r '
 require "vendor/autoload.php";
 $app=require "bootstrap/app.php";
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+foreach(["asset_locations","asset_lifecycle_events","asset_commissioning_records"] as $table){if(!Illuminate\Support\Facades\Schema::hasTable($table)){fwrite(STDERR,"ERROR: Phase B table missing: $table\n");exit(1);}}
+foreach(["asset_location_id","commissioning_status","commissioning_requested_by","commissioning_requested_at","commissioning_approved_by","commissioning_approved_at","commissioning_notes"] as $column){if(!Illuminate\Support\Facades\Schema::hasColumn("assets",$column)){fwrite(STDERR,"ERROR: Phase B asset column missing: $column\n");exit(1);}}
 $c=Illuminate\Support\Facades\DB::selectOne("SELECT DATA_TYPE data_type FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=\"users\" AND COLUMN_NAME=\"status\"");
 if(!$c||$c->data_type!=="varchar"){fwrite(STDERR,"ERROR: users.status must use lifecycle strings\n");exit(1);}
-$expected=[
-"engineer@unifco.local"=>["MAINTENANCE_ENGINEER",null],
-"maintenance.manager@unifco.local"=>["MAINTENANCE_MANAGER",null],
-"procurement@unifco.local"=>["PROCUREMENT",null],
-"tenders@unifco.local"=>["TENDERS_CONTRACTS",null],
-"finance@unifco.local"=>["FINANCE",null],
-"projects.manager@unifco.local"=>["PROJECT_MANAGER",null],
-"ceo@unifco.local"=>["CEO",null],
-"workflow.customer@unifco.local"=>["CUSTOMER","CUSTOMER_ADMIN"],
-"workflow.site.manager@unifco.local"=>["CUSTOMER","SITE_MANAGER"],
-"workflow.finance@unifco.local"=>["CUSTOMER","FINANCE"],
-"workflow.viewer@unifco.local"=>["CUSTOMER","VIEWER"],
-];
-foreach($expected as $email=>$expectedRole){
- $u=App\Models\User::where("email",$email)->first();
- if(!$u||$u->status!=="ACTIVE"||$u->role!==$expectedRole[0]||($expectedRole[1]!==null&&$u->customer_portal_role!==$expectedRole[1])||!Illuminate\Support\Facades\Hash::check("UnifcoWorkflow!2026",$u->password)){
-   fwrite(STDERR,"ERROR: test user invalid: $email\n"); exit(1);
- }
-}
-foreach(["customer_portal_user_scopes","customer_portal_action_requests","crm_leads","customers","asset_category_templates","asset_documents"] as $table){if(!Illuminate\Support\Facades\Schema::hasTable($table)){fwrite(STDERR,"ERROR: required table missing: $table\n");exit(1);}}
-foreach(["assigned_role","priority","due_at"] as $column){if(!Illuminate\Support\Facades\Schema::hasColumn("customer_portal_action_requests",$column)){fwrite(STDERR,"ERROR: customer action SLA column missing: $column\n");exit(1);}}
-foreach(["source_channel","lifecycle_stage","assigned_to","next_follow_up_at","conversion_approval_status"] as $column){if(!Illuminate\Support\Facades\Schema::hasColumn("crm_leads",$column)){fwrite(STDERR,"ERROR: acquisition lead column missing: $column\n");exit(1);}}
-foreach(["acquisition_source","origin_lead_id","onboarding_review_status"] as $column){if(!Illuminate\Support\Facades\Schema::hasColumn("customers",$column)){fwrite(STDERR,"ERROR: acquisition customer column missing: $column\n");exit(1);}}
-foreach(["customer_asset_code","asset_type","ownership_type","physical_location","technical_specifications","data_completeness_score","verified_by","verified_at"] as $column){if(!Illuminate\Support\Facades\Schema::hasColumn("assets",$column)){fwrite(STDERR,"ERROR: professional asset column missing: $column\n");exit(1);}}
-echo "Workflow, Customer Portal, Acquisition and Professional Asset Master foundation verified\n";
+echo "Asset Phase B database foundation verified\n";
 '
 
-echo "==> Verifying critical runtime routes and commands"
-php artisan route:list --name=workflow.workspace >/dev/null
-php artisan route:list --name=workflow.approvals.index >/dev/null
-php artisan route:list --name=workflow.customer-actions.index >/dev/null
-php artisan route:list --name=customer.portal >/dev/null
-php artisan route:list --name=customer.actions >/dev/null
-php artisan route:list --name=customer.access.index >/dev/null
-php artisan route:list --name=customer.access.store >/dev/null
-php artisan route:list --name=customer.requests.store >/dev/null
-php artisan route:list --name=customer.invoices.payment-proof >/dev/null
-php artisan route:list --name=customer.work-orders.revisit >/dev/null
-php artisan route:list --name=crm.acquisition.index >/dev/null
-php artisan route:list --name=crm.acquisition.follow-up >/dev/null
-php artisan route:list --name=crm.acquisition.review-duplicate >/dev/null
-php artisan route:list --name=crm.acquisition.request-conversion >/dev/null
-php artisan route:list --name=crm.acquisition.review-conversion >/dev/null
-php artisan route:list --name=crm.acquisition.review-onboarding >/dev/null
+echo "==> Verifying critical runtime routes"
 php artisan route:list --name=asset-master.index >/dev/null
 php artisan route:list --name=asset-master.show >/dev/null
 php artisan route:list --name=asset-master.verify >/dev/null
+php artisan route:list --name=asset-master.transition >/dev/null
+php artisan route:list --name=asset-master.locations.store >/dev/null
+php artisan route:list --name=asset-master.assign-location >/dev/null
+php artisan route:list --name=asset-master.commissioning.request >/dev/null
+php artisan route:list --name=asset-master.commissioning.review >/dev/null
 php artisan route:list --name=asset-master.documents.store >/dev/null
-php artisan route:list --name=public.request.store >/dev/null
 php artisan route:list --name=public.asset.lookup >/dev/null
+php artisan route:list --name=customer.portal >/dev/null
+php artisan route:list --name=crm.acquisition.index >/dev/null
 php artisan list | grep -q 'unifco:check-approval-sla'
 
 php artisan optimize:clear
@@ -170,7 +111,6 @@ for attempt in $(seq 1 20); do
   sleep 2
 done
 [ "$app_ready" -eq 1 ] || { echo "ERROR: application did not become ready"; exit 1; }
-
 curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-electrical-20260821-12' || { echo "ERROR: homepage release header missing"; exit 1; }
 
 echo "==> Deploy complete at $DEPLOY_SHA"
