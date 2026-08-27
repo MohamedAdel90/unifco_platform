@@ -59,6 +59,10 @@ jobs:
           grep -q "name('transition')" routes/asset-master.php
           grep -q 'Maker/checker control' app/Services/AssetMasterService.php
           grep -q 'Lifecycle Timeline' resources/views/maintenance/asset-master/show.blade.php
+      - name: Prepare writable directories
+        run: |
+          mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs
+          chmod -R u+rwX bootstrap/cache storage
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
       - name: Prepare Laravel
