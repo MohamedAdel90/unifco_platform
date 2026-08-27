@@ -48,6 +48,11 @@ class CustomerPortalAccessService
         return in_array($this->role($user),['CUSTOMER_ADMIN','SITE_MANAGER'],true);
     }
 
+    public function canManageUsers(User $user): bool
+    {
+        return $this->role($user)==='CUSTOMER_ADMIN';
+    }
+
     public function isReadOnly(User $user): bool
     {
         return $this->role($user)==='VIEWER';
