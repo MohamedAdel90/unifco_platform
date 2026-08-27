@@ -43,6 +43,8 @@ class ProfessionalAssetMasterTest extends TestCase
         $this->assertSame('PENDING',$asset->verification_status);
         $this->assertGreaterThanOrEqual(70,$asset->data_completeness_score);
         $this->assertSame(1000,$asset->technical_specifications['rated_power_kva']);
+        $this->assertSame('2027-01-19',$asset->warranty_expiry);
+        $this->assertDatabaseHas('assets',['id'=>$asset->id,'warranty_expiry'=>'2027-01-19']);
         $this->assertNotEmpty($asset->qr_token);
     }
 
@@ -84,7 +86,7 @@ class ProfessionalAssetMasterTest extends TestCase
         $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))->assertRedirect();
         $asset=Asset::where('serial_no','SN-TR-0001')->firstOrFail();
         $this->actingAs($d['user'])->get('/asset-master/'.$asset->id)
-            ->assertOk()->assertSee('Asset 360')->assertSee('Transformer TR-01')->assertSee('SN-TR-0001')
+            ->assertOk()->assertSee('Asset 360')->assertSee('Transformer TR-01')->assertSee('SN-TR-0001')->assertSee('2027-01-19')
             ->assertSee('Technical Specifications')->assertSee('Installed Parts & Components')->assertSee('Documents & Photos')->assertSee('QR & Field Identity');
     }
 }
