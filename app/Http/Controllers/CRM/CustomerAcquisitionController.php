@@ -24,7 +24,7 @@ class CustomerAcquisitionController extends Controller
     private function reviewer(Request $request): User
     {
         $user=$this->user($request);
-        abort_unless(in_array($user->role,self::REVIEW_ROLES,true),403,'Only CRM reviewers can approve conversions or onboarding.');
+        abort_unless(in_array($user->role,self::REVIEW_ROLES,true),403,'Only CRM reviewers can approve duplicate reviews, conversions or onboarding.');
         return $user;
     }
 
@@ -41,6 +41,7 @@ class CustomerAcquisitionController extends Controller
             'stages'=>$stages,'recent'=>$recent,'customers'=>$customers,'assignees'=>$assignees,
             'sources'=>CustomerAcquisitionService::SOURCES,'allowedStages'=>array_values(array_filter(CustomerAcquisitionService::STAGES,fn($s)=>$s!=='CONVERTED')),
             'canReview'=>in_array($user->role,self::REVIEW_ROLES,true),
+            'pendingDuplicates'=>(clone $base)->where('duplicate_review_status','REVIEW')->count(),
             'pendingConversions'=>(clone $base)->where('conversion_approval_status','PENDING')->count(),
             'overdueFollowUps'=>(clone $base)->whereNotIn('lifecycle_stage',['CONVERTED','DISQUALIFIED'])->whereNotNull('next_follow_up_at')->where('next_follow_up_at','<',now())->count(),
             'pendingOnboarding'=>Customer::where('tenant_id',$user->tenant_id)->where('status','ONBOARDING')->where('onboarding_review_status','PENDING')->count(),
@@ -61,6 +62,7 @@ class CustomerAcquisitionController extends Controller
         $result=$service->capture((int)$user->tenant_id,(int)$user->organization_id,(int)$user->id,$data);
         if($result['type']==='CUSTOMER') return back()->with('status','Existing customer matched: '.$result['customer']->customer_code.' · '.$result['customer']->name);
         if(!$result['created']) return back()->with('status','Existing lead matched: '.$result['lead']->lead_no.' · no duplicate was created.');
+        if($result['lead']->duplicate_review_status==='REVIEW') return back()->with('status','Lead '.$result['lead']->lead_no.' created and flagged for duplicate review before conversion.');
         return back()->with('status','Lead '.$result['lead']->lead_no.' created from '.str_replace('_',' ',$result['lead']->source_channel).'.');
     }
 
@@ -81,6 +83,15 @@ class CustomerAcquisitionController extends Controller
         if(!empty($data['assigned_to'])) User::where('tenant_id',$user->tenant_id)->whereIn('role',self::ROLES)->findOrFail($data['assigned_to']);
         $service->assignFollowUp($lead,$data['assigned_to']??null,$data['next_follow_up_at']??null);
         return back()->with('status',$lead->lead_no.' ownership / follow-up updated.');
+    }
+
+    public function reviewDuplicate(Request $request,CrmLead $lead,CustomerAcquisitionService $service): RedirectResponse
+    {
+        $user=$this->reviewer($request);
+        abort_unless((int)$lead->tenant_id===(int)$user->tenant_id,404);
+        $data=$request->validate(['decision'=>['required',Rule::in(['KEEP_SEPARATE','LINK_CUSTOMER','USE_EXISTING_LEAD'])]]);
+        $service->reviewDuplicate($lead,$data['decision'],(int)$user->id);
+        return back()->with('status',$lead->lead_no.' duplicate review resolved: '.str_replace('_',' ',$data['decision']).'.');
     }
 
     public function requestConversion(Request $request,CrmLead $lead,CustomerAcquisitionService $service): RedirectResponse
