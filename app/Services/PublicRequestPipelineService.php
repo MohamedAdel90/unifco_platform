@@ -2,13 +2,17 @@
 
 namespace App\Services;
 
-use App\Models\{Asset,CrmLead,CrmOpportunity,CrmQuotation,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,WorkOrder};
+use App\Models\{Asset,CrmOpportunity,CrmQuotation,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,WorkOrder};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class PublicRequestPipelineService
 {
-    public function __construct(private CustomerLifecycleService $customers, private ServiceRequestWorkflowService $workflow) {}
+    public function __construct(
+        private CustomerLifecycleService $customers,
+        private ServiceRequestWorkflowService $workflow,
+        private CustomerAcquisitionService $acquisition,
+    ) {}
 
     public function convert(PublicServiceRequest $public): PublicServiceRequest
     {
@@ -18,8 +22,28 @@ class PublicRequestPipelineService
 
             $tenant=Tenant::firstOrCreate(['code'=>'UNIFCO'],['name'=>'UNIFCO','status'=>'ACTIVE']);
             $org=Organization::firstOrCreate(['tenant_id'=>$tenant->id,'code'=>'HQ'],['name'=>'UNIFCO HQ','status'=>'ACTIVE']);
+
+            // Capture prospect identity before customer materialization so all website leads use the
+            // same de-duplication and source-tracking engine as WhatsApp, phone, email and field leads.
+            $acquisition=$this->acquisition->capture((int)$tenant->id,(int)$org->id,null,[
+                'name'=>$public->responsible_person ?: $public->company_name,
+                'company'=>$public->company_name,
+                'email'=>$public->email,
+                'mobile'=>$public->mobile,
+                'commercial_registration'=>$public->commercial_registration,
+                'source_channel'=>'WEBSITE',
+                'source_detail'=>'PUBLIC_SERVICE_REQUEST',
+                'service_interest'=>$public->service_category ?: $public->request_type,
+                'city'=>$public->site_city,
+                'inquiry_notes'=>$public->subject,
+            ]);
+
             $customer=$this->customers->resolveForPublicRequest($public,$tenant,$org);
+            $lead=$acquisition['type']==='LEAD' ? $acquisition['lead'] : null;
+            if($lead && !$lead->converted_customer_id) $lead=$this->acquisition->linkSystemCustomer($lead,$customer);
+
             $links=['tenant_id'=>$tenant->id,'organization_id'=>$org->id];
+            if($lead) $links['crm_lead_id']=$lead->id;
 
             $requestType=match(strtoupper((string)$public->request_type)){'QUOTATION'=>'QUOTATION','CONSULTATION'=>'CONSULTATION',default=>'MAINTENANCE'};
             $priority=match($public->urgency){'EMERGENCY'=>'EMERGENCY','URGENT'=>'HIGH','PRIORITY'=>'MEDIUM',default=>'NORMAL'};
@@ -55,9 +79,11 @@ class PublicRequestPipelineService
             $this->customers->record($customer,'SERVICE_REQUEST_CREATED','Service request '.$serviceRequest->request_no.' created',$public->subject,$serviceRequest,['request_type'=>$requestType,'priority'=>$priority,'eligibility'=>$eligibility]);
 
             if(in_array($requestType,['QUOTATION','CONSULTATION'],true)||($requestType==='MAINTENANCE'&&!$contract&&$priority!=='EMERGENCY')) {
-                $lead=CrmLead::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'lead_no'=>'LEAD-'.$public->reference_no,'name'=>$public->responsible_person?:$public->company_name,'company'=>$public->company_name,'email'=>$public->email,'mobile'=>$public->mobile,'commercial_registration'=>$public->commercial_registration,'source'=>'PUBLIC_WEBSITE','status'=>'NEW']);
-                $opportunity=CrmOpportunity::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'lead_id'=>$lead->id,'opportunity_no'=>'OPP-'.$public->reference_no,'name'=>$public->subject,'stage'=>'QUALIFICATION','expected_value'=>0,'probability'=>10,'status'=>'OPEN']);
-                $links+=['crm_lead_id'=>$lead->id,'crm_opportunity_id'=>$opportunity->id];
+                $opportunity=CrmOpportunity::create([
+                    'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'lead_id'=>$lead?->id,'customer_id'=>$customer->id,
+                    'opportunity_no'=>'OPP-'.$public->reference_no,'name'=>$public->subject,'stage'=>'QUALIFICATION','expected_value'=>0,'probability'=>10,'status'=>'OPEN'
+                ]);
+                $links['crm_opportunity_id']=$opportunity->id;
                 $needsQuotation=$requestType==='QUOTATION'||($requestType==='MAINTENANCE'&&!$contract);
                 if($needsQuotation) {
                     $quotation=CrmQuotation::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'opportunity_id'=>$opportunity->id,'customer_id'=>$customer->id,'quotation_no'=>'QT-'.$public->reference_no,'revision_no'=>0,'quotation_date'=>now()->toDateString(),'currency'=>'SAR','amount'=>0,'cost_amount'=>0,'risk_level'=>'NORMAL','status'=>'DRAFT']);
