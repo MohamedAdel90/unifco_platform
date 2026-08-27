@@ -52,9 +52,11 @@ grep -q 'workflow.customer-actions.index' routes/customer-phase2.php || { echo "
 grep -q 'assigned_role' app/Http/Controllers/CustomerPortalPhase2ActionController.php || { echo "ERROR: customer action role assignment missing"; exit 1; }
 grep -q 'CustomerPortalAccessAdminController' routes/public.php || { echo "ERROR: Customer Users & Access routes missing"; exit 1; }
 grep -q 'WorkflowWorkspaceController' routes/web.php || { echo "ERROR: workflow workspace route missing"; exit 1; }
+grep -q "name('review-duplicate')" routes/customer-acquisition.php || { echo "ERROR: acquisition duplicate review route missing"; exit 1; }
 grep -q "name('request-conversion')" routes/customer-acquisition.php || { echo "ERROR: acquisition conversion request route missing"; exit 1; }
 grep -q "name('review-onboarding')" routes/customer-acquisition.php || { echo "ERROR: acquisition onboarding review route missing"; exit 1; }
 grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php || { echo "ERROR: acquisition conversion governance missing"; exit 1; }
+grep -q 'CustomerAcquisitionService' app/Services/PublicRequestPipelineService.php || { echo "ERROR: public website intake is not using acquisition engine"; exit 1; }
 
 echo "==> Installing dependencies"
 composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -131,6 +133,7 @@ php artisan route:list --name=customer.invoices.payment-proof >/dev/null
 php artisan route:list --name=customer.work-orders.revisit >/dev/null
 php artisan route:list --name=crm.acquisition.index >/dev/null
 php artisan route:list --name=crm.acquisition.follow-up >/dev/null
+php artisan route:list --name=crm.acquisition.review-duplicate >/dev/null
 php artisan route:list --name=crm.acquisition.request-conversion >/dev/null
 php artisan route:list --name=crm.acquisition.review-conversion >/dev/null
 php artisan route:list --name=crm.acquisition.review-onboarding >/dev/null
