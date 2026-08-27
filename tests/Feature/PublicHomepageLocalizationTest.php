@@ -18,12 +18,12 @@ class PublicHomepageLocalizationTest extends TestCase
     {
         $this->get('/?lang=en')
             ->assertOk()
-            ->assertSee('Integrated Facility, Projects, Operations & Maintenance Solutions', false)
+            ->assertSee('Integrated Facility, Projects, Operations & Maintenance Solutions')
             ->assertSee('AR');
 
         $this->get('/')
             ->assertOk()
-            ->assertSee('Integrated Facility, Projects, Operations & Maintenance Solutions', false);
+            ->assertSee('Integrated Facility, Projects, Operations & Maintenance Solutions');
 
         $this->get('/?lang=ar')
             ->assertOk()
