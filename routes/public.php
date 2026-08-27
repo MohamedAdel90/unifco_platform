@@ -4,6 +4,7 @@ use App\Http\Controllers\CRM\CustomerPortalAdminController;
 use App\Http\Controllers\CRM\CustomerPortalServiceAdminController;
 use App\Http\Controllers\CustomerAssetReadController;
 use App\Http\Controllers\CustomerInboxController;
+use App\Http\Controllers\CustomerPortalAccessAdminController;
 use App\Http\Controllers\CustomerPortalController;
 use App\Http\Controllers\CustomerPortalOperationsController;
 use App\Http\Controllers\CustomerProfileController;
@@ -69,6 +70,12 @@ Route::middleware('auth')->group(function () {
     Route::put('/customer/profile', [CustomerProfileController::class,'update'])->name('customer.profile.update');
     Route::post('/customer/profile/logo', [CustomerProfileController::class,'updateLogo'])->name('customer.profile.logo');
     Route::put('/customer/profile/password', [CustomerProfileController::class,'updatePassword'])->name('customer.profile.password');
+
+    Route::get('/customer/users-access', [CustomerPortalAccessAdminController::class,'index'])->name('customer.access.index');
+    Route::post('/customer/users-access', [CustomerPortalAccessAdminController::class,'store'])->name('customer.access.store');
+    Route::put('/customer/users-access/{user}', [CustomerPortalAccessAdminController::class,'update'])->name('customer.access.update');
+    Route::post('/customer/users-access/{user}/reset-password', [CustomerPortalAccessAdminController::class,'resetPassword'])->name('customer.access.reset-password');
+
     Route::get('/customer/{section}', CustomerPortalController::class)
         ->whereIn('section', ['dashboard','requests','quotations','timeline','contracts','assets','work-orders','maintenance','invoices','reports','sla','documents','notifications'])
         ->name('customer.section');
