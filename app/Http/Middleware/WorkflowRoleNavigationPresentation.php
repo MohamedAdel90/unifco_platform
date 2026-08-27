@@ -35,30 +35,31 @@ class WorkflowRoleNavigationPresentation
     {
         $home=route('workflow.workspace');
         $approvals=route('workflow.approvals.index');
+        $customerActions=route('workflow.customer-actions.index');
         $notifications=route('platform.notifications.index');
         $roleLabel=str_replace('_',' ',$role);
 
         $items=match($role){
             'MAINTENANCE_ENGINEER'=>[
-                ['⚙','My Workspace',$home],['✓','My Technical Approvals',$approvals],['▣','Work Orders',route('maintenance.work-orders.index')],['◇','Assets & EAM',route('eam.assets.index')],['⌁','Maintenance Overview',route('modules.index','maintenance')],
+                ['⚙','My Workspace',$home],['✓','My Technical Approvals',$approvals],['⚑','Customer Revisit Requests',$customerActions],['▣','Work Orders',route('maintenance.work-orders.index')],['◇','Assets & EAM',route('eam.assets.index')],['⌁','Maintenance Overview',route('modules.index','maintenance')],
             ],
             'MAINTENANCE_MANAGER'=>[
-                ['⚙','Manager Workspace',$home],['✓','My Approvals',$approvals],['▣','Work Orders',route('maintenance.work-orders.index')],['⌁','Maintenance Operations',route('maintenance.operations.index')],['◇','Assets & EAM',route('eam.assets.index')],['▥','Executive Reports',route('reporting.executive')],
+                ['⚙','Manager Workspace',$home],['✓','My Approvals',$approvals],['⚑','Customer Revisit Requests',$customerActions],['▣','Work Orders',route('maintenance.work-orders.index')],['⌁','Maintenance Operations',route('maintenance.operations.index')],['◇','Assets & EAM',route('eam.assets.index')],['▥','Executive Reports',route('reporting.executive')],
             ],
             'PROCUREMENT'=>[
                 ['▦','Procurement Workspace',$home],['✓','My Cost Approvals',$approvals],['▤','Purchase Orders',route('procurement.purchase-orders.index')],['◫','Stock Balances',route('inventory.stock.index')],['◎','Customer Context',route('crm.customers.index')],
             ],
             'TENDERS_CONTRACTS'=>[
-                ['▥','Commercial Workspace',$home],['✓','My Commercial Approvals',$approvals],['◎','CRM & Opportunities',route('modules.index','crm')],['▤','Customers & Contracts',route('crm.customers.index')],['▥','Commercial Reports',route('reporting.executive')],
+                ['▥','Commercial Workspace',$home],['✓','My Commercial Approvals',$approvals],['⚑','Customer Renewal Requests',$customerActions],['◎','CRM & Opportunities',route('modules.index','crm')],['▤','Customers & Contracts',route('crm.customers.index')],['▥','Commercial Reports',route('reporting.executive')],
             ],
             'FINANCE'=>[
-                ['◉','Finance Workspace',$home],['✓','My Financial Approvals',$approvals],['▥','Finance Core',route('finance.core.index')],['▤','Journals',route('finance.journals.index')],['▥','Executive Reports',route('reporting.executive')],['◎','Customer Context',route('crm.customers.index')],
+                ['◉','Finance Workspace',$home],['✓','My Financial Approvals',$approvals],['⚑','Customer Finance Actions',$customerActions],['▥','Finance Core',route('finance.core.index')],['▤','Journals',route('finance.journals.index')],['▥','Executive Reports',route('reporting.executive')],['◎','Customer Context',route('crm.customers.index')],
             ],
             'PROJECT_MANAGER'=>[
-                ['▱','Projects Workspace',$home],['✓','My Execution Approvals',$approvals],['▱','Projects',route('projects.projects.index')],['▣','Work Orders',route('maintenance.work-orders.index')],['◎','Customer Context',route('crm.customers.index')],['▥','Executive Reports',route('reporting.executive')],
+                ['▱','Projects Workspace',$home],['✓','My Execution Approvals',$approvals],['⚑','Customer Revisit Requests',$customerActions],['▱','Projects',route('projects.projects.index')],['▣','Work Orders',route('maintenance.work-orders.index')],['◎','Customer Context',route('crm.customers.index')],['▥','Executive Reports',route('reporting.executive')],
             ],
             'CEO'=>[
-                ['★','Executive Workspace',$home],['✓','Executive Approvals',$approvals],['▥','Executive Reports',route('reporting.executive')],['◉','Finance Overview',route('finance.core.index')],['▱','Projects Overview',route('projects.projects.index')],['▤','Procurement Overview',route('procurement.purchase-orders.index')],
+                ['★','Executive Workspace',$home],['✓','Executive Approvals',$approvals],['⚑','Customer Renewal Exceptions',$customerActions],['▥','Executive Reports',route('reporting.executive')],['◉','Finance Overview',route('finance.core.index')],['▱','Projects Overview',route('projects.projects.index')],['▤','Procurement Overview',route('procurement.purchase-orders.index')],
             ],
         };
 
