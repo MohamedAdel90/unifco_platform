@@ -23,8 +23,8 @@ class PublicOfficialContactTest extends TestCase
             ->assertDontSee('0599402090')
             ->assertSee('https://wa.me/966599402090',false)
             ->assertSee('mailto:info@unifco.com',false)
-            ->assertSee('/css/home-contact.css?v=20260828-2',false)
-            ->assertSee('/js/home-contact.js?v=20260828-2',false);
+            ->assertSee('/css/home-contact.css?v=20260828-4',false)
+            ->assertSee('/js/home-contact.js?v=20260828-4',false);
     }
 
     public function test_public_request_page_exposes_same_official_contact_channels(): void
