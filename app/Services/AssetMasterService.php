@@ -72,6 +72,8 @@ class AssetMasterService
     public function verify(Asset $asset,int $userId,?string $notes=null): Asset
     {
         abort_unless($asset->verification_status==='PENDING' && $asset->lifecycle_status==='PENDING_VERIFICATION',422,'Only an asset pending verification can be verified.');
+        $creatorId=(int)(AssetLifecycleEvent::where('asset_id',$asset->id)->where('event_type','ASSET_CREATED')->orderBy('id')->value('performed_by') ?? 0);
+        abort_if($creatorId>0 && $creatorId===$userId,422,'Maker/checker control: the user who created this asset cannot Verify & Activate it. Independent verification is required.');
         $asset=$this->refreshCompleteness($asset); $missing=$this->minimumVerificationMissing($asset); abort_if($missing,422,'Minimum Verification Data missing: '.implode(', ',$missing));
         abort_if($asset->data_completeness_score<70,422,'Asset profile must be at least 70% complete before activation.');
         $from=$asset->lifecycle_status; $asset->update(['verification_status'=>'VERIFIED','verified_by'=>$userId,'verified_at'=>now(),'verification_notes'=>$notes,'lifecycle_status'=>'ACTIVE','operational_status'=>$asset->operational_status==='STANDBY'?'ACTIVE':$asset->operational_status,'status'=>'ACTIVE']);
