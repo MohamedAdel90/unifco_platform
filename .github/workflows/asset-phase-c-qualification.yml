@@ -18,32 +18,54 @@ on:
 jobs:
   qualify:
     runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: unifco_testing
+      DB_USERNAME: unifco_test
+      DB_PASSWORD: Unifco_Test!2026
     services:
       mysql:
         image: mysql:8.0
-        env: { MYSQL_ROOT_PASSWORD: root, MYSQL_DATABASE: unifco_test }
+        env:
+          MYSQL_DATABASE: unifco_testing
+          MYSQL_USER: unifco_test
+          MYSQL_PASSWORD: Unifco_Test!2026
+          MYSQL_ROOT_PASSWORD: Unifco_Root!2026
         ports: ['3306:3306']
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
-          --health-interval=10s --health-timeout=5s --health-retries=10
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uunifco_test -pUnifco_Test!2026 --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
-        with: { php-version: '8.3', extensions: 'mbstring, pdo_mysql', coverage: none }
+        with: { php-version: '8.4', extensions: pdo_mysql, coverage: none }
+      - name: Validate Phase C source
+        run: |
+          set -euo pipefail
+          php -l app/Models/AssetCustody.php
+          php -l app/Models/AssetTransfer.php
+          php -l app/Services/AssetCustodyService.php
+          php -l app/Http/Controllers/Maintenance/AssetCustodyController.php
+          php -l database/migrations/2026_08_28_000070_build_asset_custody_transfers.php
+          php -l routes/asset-master.php
+          grep -q "name('custody.assign')" routes/asset-master.php
+          grep -q "name('transfers.review')" routes/asset-master.php
+          grep -q 'Maker/checker control' app/Services/AssetCustodyService.php
       - name: Prepare writable directories
-        run: mkdir -p bootstrap/cache storage/framework/{cache,sessions,views} storage/logs && chmod -R 777 bootstrap/cache storage
+        run: mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs && chmod -R u+rwX bootstrap/cache storage
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer install --no-interaction --prefer-dist --no-progress
       - name: Prepare Laravel
         run: |
           cp .env.example .env
           php artisan key:generate
-          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
-          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
-          sed -i 's/^DB_PORT=.*/DB_PORT=3306/' .env
-          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=unifco_test/' .env
-          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=root/' .env
-          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=root/' .env
-          php artisan migrate --force
+          php artisan migrate:fresh --force
+          php artisan route:list --name=asset-master.custody.show >/dev/null
+          php artisan route:list --name=asset-master.custody.assign >/dev/null
+          php artisan route:list --name=asset-master.transfers.request >/dev/null
+          php artisan route:list --name=asset-master.transfers.review >/dev/null
+          php artisan view:cache
       - name: Run Phase A B C asset tests
-        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetCustodyPhaseCTest.php
+        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php tests/Feature/AssetCustodyPhaseCTest.php
