@@ -57,7 +57,7 @@ return new class extends Migration {
 
         Schema::create('customer_asset_submission_events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_asset_submission_id')->constrained('customer_asset_submissions')->cascadeOnDelete();
+            $table->foreignId('customer_asset_submission_id')->constrained('customer_asset_submissions', indexName: 'cust_asset_sub_event_sub_fk')->cascadeOnDelete();
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
             $table->string('event_type',50);
             $table->string('from_status',30)->nullable();
