@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Asset,AssetCategoryTemplate,AssetCommissioningRecord,AssetDocument,AssetLocation,Customer,CustomerSite};
 use App\Services\AssetMasterService;
 use Illuminate\Http\{RedirectResponse,Request};
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{DB,Storage};
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -54,7 +54,26 @@ class AssetMasterController extends Controller
         return view('maintenance.asset-master.show',['asset'=>$asset,'workOrders'=>$workOrders,'parts'=>$parts,'locations'=>$locations,'canVerify'=>$canVerify,'createdByCurrentUser'=>$createdBy===(int)$user->id,'lifecycleStatuses'=>AssetMasterService::LIFECYCLE]);
     }
 
-    public function store(Request $request,AssetMasterService $service): RedirectResponse { $user=$this->creator($request); $data=$this->validated($request,(int)$user->tenant_id); $asset=$service->create((int)$user->tenant_id,(int)$user->organization_id,(int)$user->id,$data); return redirect()->route('asset-master.show',$asset)->with('status','New Asset → Pending Verification. Creation is complete; a different authorized user must Verify & Activate it.'); }
+    public function store(Request $request,AssetMasterService $service): RedirectResponse
+    {
+        $user=$this->creator($request);
+        $request->validate([
+            'primary_photo'=>['required','image','max:15360'],
+            'nameplate_photo'=>['required','image','max:15360'],
+        ]);
+        $data=$this->validated($request,(int)$user->tenant_id);
+        $asset=DB::transaction(function() use($request,$service,$user,$data){
+            $asset=$service->create((int)$user->tenant_id,(int)$user->organization_id,(int)$user->id,$data);
+            $this->storeRegistrationPhoto($request,$asset,'primary_photo','PRIMARY_PHOTO','Asset Photo (Primary)',(int)$user->id);
+            $this->storeRegistrationPhoto($request,$asset,'nameplate_photo','NAMEPLATE_PHOTO','Asset Nameplate Photo',(int)$user->id);
+            $asset=$service->refreshCompleteness($asset->fresh());
+            $missing=$service->profileMissingFields($asset);
+            abort_if($missing,422,'Complete the Engineer Asset Registration before sending to Maintenance Manager: '.implode(', ',$missing));
+            return $asset;
+        });
+        return redirect()->route('asset-master.show',$asset)->with('status','Engineer registration complete. Asset ID and QR generated → Pending Verification for an independent Maintenance Manager.');
+    }
+
     public function update(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $asset=$service->update($asset,$this->validated($request,(int)$user->tenant_id,$asset)); return back()->with('status','Asset master updated. Completeness: '.$asset->data_completeness_score.'%.'); }
     public function verify(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->checker($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['notes'=>['nullable','string','max:2000']]); $service->verify($asset,(int)$user->id,$data['notes']??null); return back()->with('status','Verify & Activate completed.'); }
     public function transition(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->checker($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['to_status'=>['required',Rule::in(AssetMasterService::LIFECYCLE)],'notes'=>['nullable','string','max:2000']]); $service->transition($asset,$data['to_status'],(int)$user->id,$data['notes']??null); return back()->with('status','Asset lifecycle moved to '.str_replace('_',' ',$data['to_status']).'.'); }
@@ -73,18 +92,26 @@ class AssetMasterController extends Controller
     public function document(Request $request,Asset $asset): RedirectResponse { $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['document_type'=>['required',Rule::in(['PRIMARY_PHOTO','NAMEPLATE_PHOTO','PHOTO','DATASHEET','USER_MANUAL','MAINTENANCE_MANUAL','COMMISSIONING_REPORT','WARRANTY_CERTIFICATE','INSPECTION_CERTIFICATE','CALIBRATION_CERTIFICATE','DRAWING','TEST_REPORT','OTHER'])],'title'=>['required','string','max:180'],'file'=>['required','file','max:15360'],'version'=>['nullable','string','max:30'],'issued_at'=>['nullable','date'],'expires_at'=>['nullable','date']]); $file=$request->file('file');$path=$file->store('asset-master/'.$asset->id,'local');AssetDocument::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'asset_id'=>$asset->id,'document_type'=>$data['document_type'],'title'=>$data['title'],'path'=>$path,'file_path'=>$path,'original_name'=>$file->getClientOriginalName(),'mime_type'=>$file->getMimeType(),'version'=>$data['version']??null,'issued_at'=>$data['issued_at']??null,'expires_at'=>$data['expires_at']??null,'uploaded_by'=>$user->id]); app(AssetMasterService::class)->refreshCompleteness($asset->fresh()); return back()->with('status','Asset document uploaded.'); }
     public function download(Request $request,AssetDocument $document) { $user=$this->user($request); abort_unless((int)$document->tenant_id===(int)$user->tenant_id,404); $path=$document->path ?: $document->file_path; abort_unless($path && Storage::disk('local')->exists($path),404); return Storage::disk('local')->download($path,$document->original_name); }
 
+    private function storeRegistrationPhoto(Request $request,Asset $asset,string $field,string $type,string $title,int $userId): void
+    {
+        $file=$request->file($field); abort_unless($file,422,$title.' is required.');
+        $path=$file->store('asset-master/'.$asset->id,'local');
+        AssetDocument::create(['tenant_id'=>$asset->tenant_id,'organization_id'=>$asset->organization_id,'asset_id'=>$asset->id,'document_type'=>$type,'title'=>$title,'path'=>$path,'file_path'=>$path,'original_name'=>$file->getClientOriginalName(),'mime_type'=>$file->getMimeType(),'uploaded_by'=>$userId]);
+    }
+
     private function validated(Request $request,int $tenantId,?Asset $asset=null): array
     {
+        $create=$asset===null;
         $data=$request->validate([
             'customer_id'=>['required',Rule::exists('customers','id')->where(fn($q)=>$q->where('tenant_id',$tenantId))],'customer_site_id'=>['required',Rule::exists('customer_sites','id')],
-            'parent_asset_id'=>['nullable',Rule::exists('assets','id')->where(fn($q)=>$q->where('tenant_id',$tenantId))],'asset_category_template_id'=>['nullable',Rule::exists('asset_category_templates','id')->where(fn($q)=>$q->where('tenant_id',$tenantId))],'asset_location_id'=>['nullable','integer'],
-            'customer_asset_code'=>['nullable','string','max:100'],'name'=>['required','string','max:180'],'serial_no'=>['nullable','string','max:120'],'asset_category'=>['required','string','max:100'],'asset_subcategory'=>['nullable','string','max:120'],'asset_type'=>['nullable','string','max:120'],'manufacturer'=>['nullable','string','max:160'],'model_no'=>['nullable','string','max:120'],
-            'criticality'=>['nullable',Rule::in(AssetMasterService::CRITICALITY)],'ownership_type'=>['nullable',Rule::in(AssetMasterService::OWNERSHIP)],'maintenance_strategy'=>['nullable',Rule::in(AssetMasterService::STRATEGIES)],
-            'location_code'=>['nullable','string','max:80'],'building'=>['nullable','string','max:120'],'floor'=>['nullable','string','max:80'],'zone'=>['nullable','string','max:120'],'room'=>['nullable','string','max:120'],'physical_location'=>['nullable','string','max:255'],'latitude'=>['nullable','numeric','between:-90,90'],'longitude'=>['nullable','numeric','between:-180,180'],
-            'manufacture_date'=>['nullable','date'],'installation_date'=>['nullable','date'],'commission_date'=>['nullable','date'],'warranty_start'=>['nullable','date'],'warranty_expiry'=>['nullable','date','after_or_equal:warranty_start'],'warranty_provider'=>['nullable','string','max:160'],'supplier_name'=>['nullable','string','max:160'],'installer_name'=>['nullable','string','max:160'],
-            'useful_life_months'=>['nullable','integer','min:1','max:1200'],'expected_replacement_date'=>['nullable','date'],'replacement_value'=>['nullable','numeric','min:0'],'technical_specifications'=>['nullable','json'],'operational_status'=>['nullable','string','max:30'],
+            'parent_asset_id'=>['nullable',Rule::exists('assets','id')->where(fn($q)=>$q->where('tenant_id',$tenantId))],'asset_category_template_id'=>[$create?'required':'nullable',Rule::exists('asset_category_templates','id')->where(fn($q)=>$q->where('tenant_id',$tenantId))],'asset_location_id'=>['nullable','integer'],
+            'customer_asset_code'=>['nullable','string','max:100'],'name'=>['required','string','max:180'],'serial_no'=>[$create?'required':'nullable','string','max:120'],'asset_category'=>['required','string','max:100'],'asset_subcategory'=>['nullable','string','max:120'],'asset_type'=>[$create?'required':'nullable','string','max:120'],'manufacturer'=>[$create?'required':'nullable','string','max:160'],'model_no'=>[$create?'required':'nullable','string','max:120'],
+            'criticality'=>[$create?'required':'nullable',Rule::in(AssetMasterService::CRITICALITY)],'ownership_type'=>[$create?'required':'nullable',Rule::in(AssetMasterService::OWNERSHIP)],'maintenance_strategy'=>[$create?'required':'nullable',Rule::in(AssetMasterService::STRATEGIES)],
+            'location_code'=>['nullable','string','max:80'],'building'=>['nullable','string','max:120'],'floor'=>['nullable','string','max:80'],'zone'=>['nullable','string','max:120'],'room'=>['nullable','string','max:120'],'physical_location'=>[$create?'required_without:asset_location_id':'nullable','string','max:255'],'latitude'=>['nullable','numeric','between:-90,90'],'longitude'=>['nullable','numeric','between:-180,180'],
+            'manufacture_date'=>['nullable','date'],'installation_date'=>[$create?'required':'nullable','date'],'commission_date'=>['nullable','date'],'warranty_start'=>['nullable','date'],'warranty_expiry'=>[$create?'required':'nullable','date','after_or_equal:warranty_start'],'warranty_provider'=>['nullable','string','max:160'],'supplier_name'=>['nullable','string','max:160'],'installer_name'=>['nullable','string','max:160'],
+            'useful_life_months'=>['nullable','integer','min:1','max:1200'],'expected_replacement_date'=>['nullable','date'],'replacement_value'=>['nullable','numeric','min:0'],'technical_specifications'=>[$create?'required':'nullable','json'],'operational_status'=>['nullable','string','max:30'],
         ]);
-        if(isset($data['technical_specifications']))$data['technical_specifications']=json_decode($data['technical_specifications'],true); if($asset && !empty($data['parent_asset_id']) && (int)$data['parent_asset_id']===(int)$asset->id)abort(422,'An asset cannot be its own parent.');
+        if(isset($data['technical_specifications']))$data['technical_specifications']=json_decode($data['technical_specifications'],true); if($create && empty($data['technical_specifications']))abort(422,'Technical Specifications are required before sending the asset to Maintenance Manager.'); if($asset && !empty($data['parent_asset_id']) && (int)$data['parent_asset_id']===(int)$asset->id)abort(422,'An asset cannot be its own parent.');
         $site=CustomerSite::with('customer')->findOrFail($data['customer_site_id']); abort_unless($site->customer && (int)$site->customer->tenant_id===$tenantId && (int)$site->customer_id===(int)$data['customer_id'],422,'Selected site does not belong to the selected customer.');
         if(!empty($data['asset_location_id'])){$location=AssetLocation::where('tenant_id',$tenantId)->findOrFail($data['asset_location_id']);abort_unless((int)$location->customer_id===(int)$data['customer_id'] && (int)$location->customer_site_id===(int)$data['customer_site_id'],422,'Selected location does not belong to the selected customer/site.');}
         return $data;
