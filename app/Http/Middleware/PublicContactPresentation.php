@@ -49,9 +49,9 @@ class PublicContactPresentation
         $waUrl = e(UnifcoContact::whatsappUrl('Hello UNIFCO, I would like to inquire about your services.'));
         $mailUrl = e(UnifcoContact::mailto());
 
-        return '<link rel="stylesheet" href="/css/home-contact.css?v=20260828-3" data-unifco-public-contact>'
+        return '<link rel="stylesheet" href="/css/home-contact.css?v=20260828-4" data-unifco-public-contact>'
             .'<script>document.documentElement.dataset.unifcoWhatsapp="'.$waUrl.'";document.documentElement.dataset.unifcoMail="'.$mailUrl.'";</script>'
-            .'<script src="/js/home-contact.js?v=20260828-3" defer></script>';
+            .'<script src="/js/home-contact.js?v=20260828-4" defer></script>';
     }
 
     private function floatingContactPresentation(): string
