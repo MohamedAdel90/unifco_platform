@@ -71,7 +71,7 @@ jobs:
           grep -q "Asset QR Code" resources/views/maintenance/asset-master/show.blade.php
           grep -q "Data Quality & Evidence" resources/views/maintenance/asset-master/show.blade.php
           grep -q "Maintenance & Risk Intelligence" resources/views/maintenance/asset-master/show.blade.php
-          grep -q "Installed Parts & Components" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Components & Parts" resources/views/maintenance/asset-master/show.blade.php
           grep -q "Governance & Independent Verification" resources/views/maintenance/asset-master/show.blade.php
           grep -q "Asset Timeline — Append Only" resources/views/maintenance/asset-master/show.blade.php
           grep -q "lifecycle history cannot be deleted" app/Models/AssetLifecycleEvent.php
