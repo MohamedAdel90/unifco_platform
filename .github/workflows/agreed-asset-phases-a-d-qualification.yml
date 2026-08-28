@@ -32,58 +32,74 @@ jobs:
           php-version: '8.4'
           extensions: pdo_mysql, zip, simplexml
           coverage: none
-      - name: Validate acceptance source
+      - name: Validate literal A-D acceptance source
         run: |
           set -euo pipefail
+          php -l app/Models/Asset.php
+          php -l app/Models/AssetLifecycleEvent.php
+          php -l app/Models/AssetPartInstallation.php
           php -l app/Services/AssetMasterService.php
+          php -l app/Services/AssetMaintenanceIntelligenceService.php
           php -l app/Services/AssetAcceptanceContractService.php
+          php -l app/Services/AgreedAssetIntelligenceService.php
           php -l app/Services/CustomerAssetGovernanceService.php
           php -l app/Http/Controllers/Maintenance/AssetMasterController.php
+          php -l app/Http/Controllers/Maintenance/AssetAcceptanceController.php
+          php -l app/Http/Controllers/Maintenance/AgreedAssetIntelligenceController.php
+          php -l app/Http/Controllers/CustomerAssetGovernanceController.php
+          php -l database/migrations/2026_08_28_000080_complete_agreed_asset_phases_b_d.php
+          php -l database/migrations/2026_08_28_000090_close_agreed_asset_a_d_gaps.php
           php -l database/migrations/2026_08_28_000100_close_asset_acceptance_contract.php
           php -l database/migrations/2026_08_28_000110_allow_staged_customer_pm_strategy.php
+          php -l tests/Feature/ProfessionalAssetMasterTest.php
+          php -l tests/Feature/AssetLifecyclePhaseBTest.php
+          php -l tests/Feature/AssetAcceptanceContractFinalTest.php
+          php -l tests/Feature/AssetCreationApprovalBulkDuplicateContractTest.php
           grep -q "AST-UNF-" app/Services/AssetMasterService.php
+          grep -q "DRAFT.*PENDING_VERIFICATION.*ACTIVE.*UNDER_MAINTENANCE.*OUT_OF_SERVICE.*DECOMMISSIONED.*DISPOSED" app/Services/AssetMasterService.php
+          grep -q "profileMissingFields" app/Services/AssetMasterService.php
           grep -q "Minimum Verification Data" app/Services/AssetMasterService.php
+          grep -q "Creation.*Approval" resources/views/customer-assets/governance.blade.php
+          grep -q "New Asset.*PENDING_VERIFICATION" resources/views/customer-assets/governance.blade.php
+          grep -q "Verify & Activate" resources/views/customer-assets/governance.blade.php
+          grep -q "up to 5,000 assets" resources/views/customer-assets/governance.blade.php
+          grep -q "Imported.*Validation Queue.*Duplicate Check.*Approved" resources/views/customer-assets/governance.blade.php
+          grep -q "Possible Duplicate Asset" app/Services/CustomerAssetGovernanceService.php
           grep -q "5000" app/Services/CustomerAssetGovernanceService.php
           grep -q "Impact × Probability" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Work Order Frequency" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Maintenance Compliance" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Spare Part Consumption" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Condition Readings" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Warranty expires in 30 days" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Asset approaching end of useful life" resources/views/maintenance/asset-master/show.blade.php
           grep -q "Full Component Traceability" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Asset Timeline — Append Only" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "lifecycle history cannot be deleted" app/Models/AssetLifecycleEvent.php
       - name: Prepare Laravel
         run: |
+          set -euo pipefail
           mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs
           chmod -R u+rwX bootstrap/cache storage
           composer install --no-interaction --prefer-dist --no-progress
           cp .env.example .env
           php artisan key:generate
           php artisan migrate:fresh --force
+          php artisan route:list --name=asset-master.acceptance-profile.update >/dev/null
+          php artisan route:list --name=asset-master.acceptance-documents.store >/dev/null
+          php artisan route:list --name=customer-assets.import >/dev/null
+          php artisan route:list --name=customer-assets.submissions.review >/dev/null
           php artisan view:cache
-      - name: Test Professional Asset Master
-        continue-on-error: true
-        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php
-      - name: Test Professional Coverage
-        continue-on-error: true
-        run: php artisan test tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php
-      - name: Test Lifecycle Phase B
-        continue-on-error: true
-        run: php artisan test tests/Feature/AssetLifecyclePhaseBTest.php
-      - name: Test Maintenance Intelligence
-        continue-on-error: true
-        run: php artisan test tests/Feature/AssetMaintenanceIntelligenceTest.php
-      - name: Test Custody Phase C
-        continue-on-error: true
-        run: php artisan test tests/Feature/AssetCustodyPhaseCTest.php
-      - name: Test Warranty Phase D
-        continue-on-error: true
-        run: php artisan test tests/Feature/AssetWarrantyInsurancePhaseDTest.php
-      - name: Test Agreed A-D
-        continue-on-error: true
-        run: php artisan test tests/Feature/AgreedAssetPhasesABCDTest.php
-      - name: Test A-D Gap Closure
-        continue-on-error: true
-        run: php artisan test tests/Feature/AgreedAssetGapClosureABCDTest.php
-      - name: Test Final Acceptance Contract
-        continue-on-error: true
-        run: php artisan test tests/Feature/AssetAcceptanceContractFinalTest.php
-      - name: Test Creation Approval Bulk Duplicate Contract
-        continue-on-error: true
-        run: php artisan test tests/Feature/AssetCreationApprovalBulkDuplicateContractTest.php
-      - name: Final all A-D gate
-        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php tests/Feature/AssetCustodyPhaseCTest.php tests/Feature/AssetWarrantyInsurancePhaseDTest.php tests/Feature/AgreedAssetPhasesABCDTest.php tests/Feature/AgreedAssetGapClosureABCDTest.php tests/Feature/AssetAcceptanceContractFinalTest.php tests/Feature/AssetCreationApprovalBulkDuplicateContractTest.php
+      - name: Run strict isolated A-D qualification gate
+        run: |
+          set -euo pipefail
+          php artisan test tests/Feature/ProfessionalAssetMasterTest.php
+          php artisan test tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php
+          php artisan test tests/Feature/AssetLifecyclePhaseBTest.php
+          php artisan test tests/Feature/AssetMaintenanceIntelligenceTest.php
+          php artisan test tests/Feature/AssetCustodyPhaseCTest.php
+          php artisan test tests/Feature/AssetWarrantyInsurancePhaseDTest.php
+          php artisan test tests/Feature/AgreedAssetPhasesABCDTest.php
+          php artisan test tests/Feature/AgreedAssetGapClosureABCDTest.php
+          php artisan test tests/Feature/AssetAcceptanceContractFinalTest.php
+          php artisan test tests/Feature/AssetCreationApprovalBulkDuplicateContractTest.php
