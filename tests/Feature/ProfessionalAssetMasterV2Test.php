@@ -32,7 +32,7 @@ class ProfessionalAssetMasterV2Test extends TestCase
         $response->assertOk()
             ->assertSee('Register Customer Asset')
             ->assertSee('Maker / Checker control:')
-            ->assertSee('same user cannot Verify & Activate an asset they created')
+            ->assertSee('same user cannot Verify & Activate an asset they created',false)
             ->assertSee('Create Pending Verification Asset');
     }
 
@@ -46,9 +46,9 @@ class ProfessionalAssetMasterV2Test extends TestCase
             ->assertSee('Asset Photo (Primary)')
             ->assertSee('Asset QR Code')
             ->assertSee('Open / Download QR')
-            ->assertSee('Data Quality & Evidence')
-            ->assertSee('Maintenance & Risk Intelligence')
-            ->assertSee('Governance & Independent Verification')
+            ->assertSee('Data Quality & Evidence',false)
+            ->assertSee('Maintenance & Risk Intelligence',false)
+            ->assertSee('Governance & Independent Verification',false)
             ->assertSee('Health conclusion withheld:')
             ->assertSee('tab-overview',false)
             ->assertSee('tab-documents',false)
