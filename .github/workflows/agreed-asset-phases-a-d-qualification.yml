@@ -4,15 +4,18 @@ on:
   push:
     branches: [main, agreed-asset-phases-a-d]
     paths:
+      - 'app/Models/Asset.php'
       - 'app/Http/Controllers/CustomerAssetGovernanceController.php'
       - 'app/Http/Controllers/Maintenance/AgreedAssetIntelligenceController.php'
       - 'app/Services/AgreedAssetIntelligenceService.php'
       - 'app/Services/CustomerAssetGovernanceService.php'
       - 'database/migrations/2026_08_28_000080_complete_agreed_asset_phases_b_d.php'
+      - 'database/migrations/2026_08_28_000090_close_agreed_asset_a_d_gaps.php'
       - 'resources/views/customer-assets/governance.blade.php'
       - 'routes/asset-master.php'
       - 'tests/Feature/AgreedAssetPhasesABCDTest.php'
       - 'tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php'
+      - 'tests/Feature/AgreedAssetGapClosureABCDTest.php'
       - '.github/workflows/agreed-asset-phases-a-d-qualification.yml'
   workflow_dispatch:
 
@@ -45,16 +48,25 @@ jobs:
           php-version: '8.4'
           extensions: pdo_mysql, zip, simplexml
           coverage: none
-      - name: Validate agreed source
+      - name: Validate literal A-D agreement source
         run: |
           set -euo pipefail
+          php -l app/Models/Asset.php
           php -l app/Services/AgreedAssetIntelligenceService.php
           php -l app/Services/CustomerAssetGovernanceService.php
           php -l app/Http/Controllers/Maintenance/AgreedAssetIntelligenceController.php
           php -l app/Http/Controllers/CustomerAssetGovernanceController.php
           php -l database/migrations/2026_08_28_000080_complete_agreed_asset_phases_b_d.php
+          php -l database/migrations/2026_08_28_000090_close_agreed_asset_a_d_gaps.php
           php -l tests/Feature/AgreedAssetPhasesABCDTest.php
           php -l tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php
+          php -l tests/Feature/AgreedAssetGapClosureABCDTest.php
+          grep -q "STANDARD_TEMPLATES" app/Services/AgreedAssetIntelligenceService.php
+          grep -q "manufacturer_asset_number" app/Models/Asset.php
+          grep -q "contract_reference" app/Models/Asset.php
+          grep -q "operating_hours" app/Models/Asset.php
+          grep -q "pm_template" app/Models/Asset.php
+          grep -q "health_score" app/Models/Asset.php
           grep -q "intelligence.pm" routes/asset-master.php
           grep -q "CustomerAssetGovernanceController::class,'import'" routes/asset-master.php
           grep -q "CUSTOMER_OWNED assets" app/Services/CustomerAssetGovernanceService.php
@@ -75,5 +87,5 @@ jobs:
           php artisan route:list --name=customer-assets.import >/dev/null
           php artisan route:list --name=customer-assets.submissions.review >/dev/null
           php artisan view:cache
-      - name: Run agreed A-D qualification and regressions
-        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php tests/Feature/AssetCustodyPhaseCTest.php tests/Feature/AssetWarrantyInsurancePhaseDTest.php tests/Feature/AgreedAssetPhasesABCDTest.php
+      - name: Run literal A-D agreement qualification and regressions
+        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php tests/Feature/AssetCustodyPhaseCTest.php tests/Feature/AssetWarrantyInsurancePhaseDTest.php tests/Feature/AgreedAssetPhasesABCDTest.php tests/Feature/AgreedAssetGapClosureABCDTest.php
