@@ -72,16 +72,25 @@ class CustomerAssetGovernanceService
     {
         $base=Asset::where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)->where('customer_site_id',$siteId);
         $serial=mb_strtolower(trim((string)($data['serial_no']??''))); $manufacturer=mb_strtolower(trim((string)($data['manufacturer']??''))); $model=mb_strtolower(trim((string)($data['model_no']??''))); $code=mb_strtolower(trim((string)($data['customer_asset_code']??'')));
-        $assetDuplicate=(clone $base)->where(function($q) use($serial,$manufacturer,$model,$code){
-            if($code!=='') $q->orWhereRaw('LOWER(customer_asset_code)=?',[$code]);
-            if($serial!=='') $q->orWhere(function($x) use($serial,$manufacturer,$model){ $x->whereRaw('LOWER(serial_no)=?',[$serial]); if($manufacturer!=='')$x->whereRaw('LOWER(manufacturer)=?',[$manufacturer]); if($model!=='')$x->whereRaw('LOWER(model_no)=?',[$model]); });
-        })->first();
-        abort_if($assetDuplicate,422,'Possible Duplicate Asset: '.$assetDuplicate->asset_code.' · '.$assetDuplicate->name);
 
-        $pending=DB::table('customer_asset_submissions')->where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)->where('customer_site_id',$siteId)->whereIn('status',['PENDING_VERIFICATION','APPROVED'])->where(function($q) use($serial,$manufacturer,$model,$code){
-            if($code!=='') $q->orWhereRaw('LOWER(customer_asset_code)=?',[$code]);
-            if($serial!=='') $q->orWhere(function($x) use($serial,$manufacturer,$model){ $x->whereRaw('LOWER(serial_no)=?',[$serial]); if($manufacturer!=='')$x->whereRaw('LOWER(manufacturer)=?',[$manufacturer]); if($model!=='')$x->whereRaw('LOWER(model_no)=?',[$model]); });
-        })->first();
+        $assetDuplicate=null;
+        if($code!=='' || $serial!==''){
+            $assetDuplicate=(clone $base)->where(function($q) use($serial,$manufacturer,$model,$code){
+                if($code!=='') $q->orWhereRaw('LOWER(customer_asset_code)=?',[$code]);
+                if($serial!=='') $q->orWhere(function($x) use($serial,$manufacturer,$model){ $x->whereRaw('LOWER(serial_no)=?',[$serial]); if($manufacturer!=='')$x->whereRaw('LOWER(manufacturer)=?',[$manufacturer]); if($model!=='')$x->whereRaw('LOWER(model_no)=?',[$model]); });
+            })->first();
+        }
+        if($assetDuplicate){
+            abort(422,'Possible Duplicate Asset: '.$assetDuplicate->asset_code.' · '.$assetDuplicate->name);
+        }
+
+        $pending=null;
+        if($code!=='' || $serial!==''){
+            $pending=DB::table('customer_asset_submissions')->where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)->where('customer_site_id',$siteId)->whereIn('status',['PENDING_VERIFICATION','APPROVED'])->where(function($q) use($serial,$manufacturer,$model,$code){
+                if($code!=='') $q->orWhereRaw('LOWER(customer_asset_code)=?',[$code]);
+                if($serial!=='') $q->orWhere(function($x) use($serial,$manufacturer,$model){ $x->whereRaw('LOWER(serial_no)=?',[$serial]); if($manufacturer!=='')$x->whereRaw('LOWER(manufacturer)=?',[$manufacturer]); if($model!=='')$x->whereRaw('LOWER(model_no)=?',[$model]); });
+            })->first();
+        }
         abort_if($pending,422,'Possible Duplicate Asset: matching customer/site identity is already pending or approved.');
     }
 
