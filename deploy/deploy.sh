@@ -42,7 +42,7 @@ grep -q "name('assign-location')" routes/asset-master.php || { echo "ERROR: asse
 grep -q "name('commissioning.request')" routes/asset-master.php || { echo "ERROR: commissioning request route missing"; exit 1; }
 grep -q "name('commissioning.review')" routes/asset-master.php || { echo "ERROR: commissioning review route missing"; exit 1; }
 grep -q 'Maker/checker control' app/Services/AssetMasterService.php || { echo "ERROR: commissioning maker/checker control missing"; exit 1; }
-grep -q 'Lifecycle Timeline' resources/views/maintenance/asset-master/show.blade.php || { echo "ERROR: Asset 360 lifecycle timeline missing"; exit 1; }
+grep -q 'Asset Timeline — Append Only' resources/views/maintenance/asset-master/show.blade.php || { echo "ERROR: Asset 360 append-only timeline missing"; exit 1; }
 
 echo "==> Installing dependencies"
 mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
