@@ -70,11 +70,17 @@ class ProfessionalAssetMasterTest extends TestCase
         $this->assertSame($manager->id,(int)$asset->verified_by);
     }
 
-    public function test_manager_cannot_create_asset_because_creation_and_approval_are_separated(): void
+    public function test_manager_can_create_asset_but_cannot_verify_own_asset(): void
     {
         $d=$this->setupData('MAINTENANCE_MANAGER');
-        $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))->assertForbidden();
-        $this->assertDatabaseMissing('assets',['serial_no'=>'SN-TR-0001']);
+        $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))->assertRedirect();
+        $asset=Asset::where('serial_no','SN-TR-0001')->firstOrFail();
+        $this->assertSame('PENDING_VERIFICATION',$asset->lifecycle_status);
+        $this->assertSame('PENDING',$asset->verification_status);
+        $this->actingAs($d['user'])->post('/asset-master/'.$asset->id.'/verify')->assertStatus(422);
+        $asset->refresh();
+        $this->assertSame('PENDING',$asset->verification_status);
+        $this->assertSame('PENDING_VERIFICATION',$asset->lifecycle_status);
     }
 
     public function test_engineer_cannot_verify_asset(): void
@@ -85,11 +91,25 @@ class ProfessionalAssetMasterTest extends TestCase
         $this->actingAs($d['user'])->post('/asset-master/'.$asset->id.'/verify')->assertForbidden();
     }
 
-    public function test_asset_360_shows_professional_identity_and_tabbed_acceptance_sections(): void
+    public function test_asset_360_shows_visual_identity_photo_qr_and_real_tabs(): void
     {
         $d=$this->setupData();
         $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))->assertRedirect();
         $asset=Asset::where('serial_no','SN-TR-0001')->firstOrFail();
-        $this->actingAs($d['user'])->get('/asset-master/'.$asset->id)->assertOk()->assertSee('Asset 360')->assertSee('Transformer TR-01')->assertSee('SN-TR-0001')->assertSee('2027-01-19')->assertSee('Technical')->assertSee('Full Component Traceability')->assertSee('Documents & Asset Photos',false)->assertSee('QR Code')->assertSee('Overview')->assertSee('Maintenance')->assertSee('History')->assertSee('Costs');
+        $this->actingAs($d['user'])->get('/asset-master/'.$asset->id)
+            ->assertOk()
+            ->assertSee('Asset 360')
+            ->assertSee('Transformer TR-01')
+            ->assertSee('SN-TR-0001')
+            ->assertSee('Asset Photo (Primary)')
+            ->assertSee('Asset QR Code')
+            ->assertSee('Open / Download QR')
+            ->assertSee('Data Quality & Evidence')
+            ->assertSee('Maintenance & Risk Intelligence')
+            ->assertSee('Documents & Asset Photos',false)
+            ->assertSee('Governance & Independent Verification')
+            ->assertSee('tab-overview',false)
+            ->assertSee('tab-documents',false)
+            ->assertSee('2027-01-19');
     }
 }
