@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Maintenance\{AssetMasterController,AssetMaintenanceIntelligenceController,AssetCustodyController};
+use App\Http\Controllers\Maintenance\{AssetMasterController,AssetMaintenanceIntelligenceController,AssetCustodyController,AssetWarrantyInsuranceController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(function(){
@@ -23,6 +23,12 @@ Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(
     Route::post('/{asset}/custody/{custody}/return',[AssetCustodyController::class,'return'])->name('custody.return');
     Route::post('/{asset}/transfers',[AssetCustodyController::class,'requestTransfer'])->name('transfers.request');
     Route::post('/{asset}/transfers/{transfer}/review',[AssetCustodyController::class,'review'])->name('transfers.review');
+
+    Route::get('/{asset}/coverage',[AssetWarrantyInsuranceController::class,'show'])->name('coverage.show');
+    Route::post('/{asset}/coverage',[AssetWarrantyInsuranceController::class,'store'])->name('coverage.store');
+    Route::post('/{asset}/coverage/{coverage}/renew',[AssetWarrantyInsuranceController::class,'renew'])->name('coverage.renew');
+    Route::post('/{asset}/coverage/{coverage}/claims',[AssetWarrantyInsuranceController::class,'submitClaim'])->name('coverage.claims.store');
+    Route::post('/{asset}/coverage/claims/{claim}/review',[AssetWarrantyInsuranceController::class,'reviewClaim'])->name('coverage.claims.review');
 
     Route::get('/{asset}/intelligence',[AssetMaintenanceIntelligenceController::class,'show'])->name('intelligence.show');
     Route::post('/{asset}/intelligence/meter',[AssetMaintenanceIntelligenceController::class,'meter'])->name('intelligence.meter');
