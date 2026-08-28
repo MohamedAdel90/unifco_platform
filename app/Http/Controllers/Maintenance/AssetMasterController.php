@@ -7,6 +7,7 @@ use App\Models\{Asset,AssetCategoryTemplate,AssetCommissioningRecord,AssetDocume
 use App\Services\AssetMasterService;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -148,9 +149,10 @@ class AssetMasterController extends Controller
     {
         $user=$this->checker($request);
         $data=$request->validate(['category'=>['required','string','max:100'],'asset_type'=>['required','string','max:120'],'name'=>['required','string','max:160'],'specification_schema'=>['nullable','json']]);
+        $code='T'.$user->tenant_id.'-'.Str::upper(Str::slug($data['category'].'-'.$data['asset_type'],'_'));
         AssetCategoryTemplate::updateOrCreate(
             ['tenant_id'=>$user->tenant_id,'category'=>$data['category'],'asset_type'=>$data['asset_type']],
-            ['organization_id'=>$user->organization_id,'name'=>$data['name'],'specification_schema'=>isset($data['specification_schema'])?json_decode($data['specification_schema'],true):null,'active'=>true]
+            ['organization_id'=>$user->organization_id,'code'=>Str::limit($code,60,''),'system_group'=>Str::upper($data['category']),'name'=>$data['name'],'specification_schema'=>isset($data['specification_schema'])?json_decode($data['specification_schema'],true):null,'active'=>true,'status'=>'ACTIVE']
         );
         return back()->with('status','Asset specification template saved.');
     }
