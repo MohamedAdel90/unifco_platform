@@ -10,49 +10,32 @@ class ProfessionalAssetMasterV2Test extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_engineer_sees_dropdown_first_wizard_dynamic_specs_hierarchy_and_registry_filters(): void
+    public function test_engineer_sees_complete_dropdown_first_wizard_dynamic_specs_hierarchy_photos_and_registry_filters(): void
     {
         [$tenant,$org,$customer,$site]=$this->fixture();
         $engineer=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Engineer','email'=>'asset.v21@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_ENGINEER','status'=>'ACTIVE']);
         $response=$this->actingAs($engineer)->get('/asset-master');
         $response->assertOk()
-            ->assertSee('1 · Identification')->assertSee('2 · Location')->assertSee('3 · Technical')->assertSee('4 · Lifecycle')->assertSee('5 · Review')
-            ->assertSee('dropdown-first master data')->assertSee('Parent Asset')->assertSee('Managed Location')
-            ->assertSee('Transformer Standard')->assertSee('Structured fields appear automatically',false)
-            ->assertSee('Useful Life')->assertSee('Review before submission')->assertSee('Search ID, name, customer, site, serial…')
-            ->assertSee('Verification')->assertSee('Completeness');
+            ->assertSee('1 · Identification')->assertSee('2 · Location')->assertSee('3 · Technical & Evidence')->assertSee('4 · Lifecycle')->assertSee('5 · Review')
+            ->assertSee('Parent Asset')->assertSee('Managed Location')->assertSee('Transformer Standard')->assertSee('Structured fields appear automatically',false)
+            ->assertSee('Asset Photo (Primary)')->assertSee('Nameplate Photo')->assertSee('Useful Life')->assertSee('Complete Engineer Registration')->assertSee('Search ID, name, customer, site, serial…')
+            ->assertSee('Verification')->assertSee('Completeness')->assertSee('Complete Registration & Send for Verification',false);
     }
 
     public function test_maintenance_manager_can_register_assets_and_sees_independent_verification_control(): void
     {
         [$tenant,$org]=$this->fixture();
         $manager=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Maintenance Manager','email'=>'manager.asset@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_MANAGER','status'=>'ACTIVE']);
-
         $response=$this->actingAs($manager)->get('/asset-master');
-        $response->assertOk()
-            ->assertSee('Register Customer Asset')
-            ->assertSee('Maker / Checker control:')
-            ->assertSee('same user cannot Verify & Activate an asset they created',false)
-            ->assertSee('Create Pending Verification Asset');
+        $response->assertOk()->assertSee('Register Customer Asset')->assertSee('Maker / Checker control:')->assertSee('same user cannot Verify & Activate an asset they created',false)->assertSee('Complete Registration & Send for Verification',false);
     }
 
     public function test_asset_360_matches_visual_command_center_with_photo_qr_and_real_tabs(): void
     {
         [$tenant,$org,$customer,$site,$asset]=$this->fixture();
         $manager=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Asset Reviewer','email'=>'asset.reviewer@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_MANAGER','status'=>'ACTIVE']);
-
         $response=$this->actingAs($manager)->get('/asset-master/'.$asset->id);
-        $response->assertOk()
-            ->assertSee('Asset Photo (Primary)')
-            ->assertSee('Asset QR Code')
-            ->assertSee('Open / Download QR')
-            ->assertSee('Data Quality & Evidence',false)
-            ->assertSee('Maintenance & Risk Intelligence',false)
-            ->assertSee('Governance & Independent Verification',false)
-            ->assertSee('Health conclusion withheld:')
-            ->assertSee('tab-overview',false)
-            ->assertSee('tab-documents',false)
-            ->assertSee('api.qrserver.com',false);
+        $response->assertOk()->assertSee('Asset Photo (Primary)')->assertSee('Asset QR Code')->assertSee('Open / Download QR')->assertSee('Data Quality & Evidence',false)->assertSee('Maintenance & Risk Intelligence',false)->assertSee('Governance & Independent Verification',false)->assertSee('Health conclusion withheld:')->assertSee('tab-overview',false)->assertSee('tab-documents',false)->assertSee('api.qrserver.com',false);
     }
 
     private function fixture(): array
