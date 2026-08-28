@@ -92,8 +92,10 @@ class AssetAcceptanceContractFinalTest extends TestCase
     {
         $d=$this->fixture(); $a=$d['asset'];
         $this->actingAs($d['manager'])->get('/asset-master/'.$a->id)->assertOk()
-            ->assertSee('Overview')->assertSee('Technical')->assertSee('Maintenance')->assertSee('Work Orders')->assertSee('Components')->assertSee('Parts')->assertSee('Documents')->assertSee('History')->assertSee('Costs')
+            ->assertSee('Asset Photo (Primary)')->assertSee('Asset QR Code')->assertSee('Open / Download QR')
+            ->assertSee('Overview')->assertSee('Technical')->assertSee('Maintenance')->assertSee('Work Orders')->assertSee('Components')->assertSee('Parts')->assertSee('Documents')->assertSee('History')->assertSee('Costs')->assertSee('Governance')
             ->assertSee('Next PM')->assertSee('Open Work Orders')->assertSee('Lifetime Cost')->assertSee('Downtime YTD')->assertSee('Installed Parts')->assertSee('Last Inspection')
-            ->assertSee('Criticality Matrix')->assertSee('Impact × Probability',false)->assertSee('Purchase, Warranty & Lifecycle',false)->assertSee('Full Component Traceability')->assertSee('Asset Timeline — Append Only');
+            ->assertSee('Data Quality & Evidence',false)->assertSee('Maintenance & Risk Intelligence',false)->assertSee('Governance & Independent Verification',false)
+            ->assertSee('Purchase, Warranty & Lifecycle',false)->assertSee('Full Component Traceability')->assertSee('Asset Timeline — Append Only');
     }
 }
