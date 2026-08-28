@@ -27,26 +27,20 @@ class AssetMasterController extends Controller
         $assets=Asset::with(['customer','site','location','parent','template'])->where('tenant_id',$user->tenant_id)->orderByDesc('id')->limit(120)->get();
         $parents=Asset::where('tenant_id',$user->tenant_id)->whereNotIn('lifecycle_status',['DISPOSED'])->orderBy('name')->get(['id','customer_id','customer_site_id','asset_code','name','lifecycle_status']);
         $templates=AssetCategoryTemplate::where('tenant_id',$user->tenant_id)->where('active',true)->orderBy('category')->orderBy('asset_type')->get();
-        $stats=[
-            'total'=>$assets->count(),
-            'active'=>$assets->where('lifecycle_status','ACTIVE')->count(),
-            'pending'=>$assets->where('verification_status','PENDING')->count(),
-            'critical'=>$assets->where('criticality','CRITICAL')->count(),
-            'outOfService'=>$assets->whereIn('operational_status',['OUT_OF_SERVICE','DECOMMISSIONED','DISPOSED'])->count(),
-        ];
+        $locations=AssetLocation::where('tenant_id',$user->tenant_id)->where('active',true)->with(['site','parent'])->orderBy('customer_site_id')->orderBy('location_type')->orderBy('name')->get();
+        $categories=$templates->pluck('category')->merge($assets->pluck('asset_category'))->filter()->unique()->sort()->values();
+        $assetTypes=$templates->pluck('asset_type')->merge($assets->pluck('asset_type'))->filter()->unique()->sort()->values();
+        $subcategories=$assets->pluck('asset_subcategory')->filter()->unique()->sort()->values();
+        $manufacturers=$assets->pluck('manufacturer')->filter()->unique()->sort()->values();
+        $warrantyProviders=$assets->pluck('warranty_provider')->filter()->unique()->sort()->values();
+        $stats=['total'=>$assets->count(),'active'=>$assets->where('lifecycle_status','ACTIVE')->count(),'pending'=>$assets->where('verification_status','PENDING')->count(),'critical'=>$assets->where('criticality','CRITICAL')->count(),'outOfService'=>$assets->whereIn('operational_status',['OUT_OF_SERVICE','DECOMMISSIONED','DISPOSED'])->count()];
         return view('maintenance.asset-master.index',[
-            'assets'=>$assets,
-            'parents'=>$parents,
-            'stats'=>$stats,
+            'assets'=>$assets,'parents'=>$parents,'stats'=>$stats,
             'customers'=>Customer::where('tenant_id',$user->tenant_id)->orderBy('name')->get(),
             'sites'=>CustomerSite::whereHas('customer',fn($q)=>$q->where('tenant_id',$user->tenant_id))->orderBy('name')->get(),
-            'locations'=>AssetLocation::where('tenant_id',$user->tenant_id)->where('active',true)->with(['site','parent'])->orderBy('customer_site_id')->orderBy('location_type')->orderBy('name')->get(),
-            'templates'=>$templates,
-            'criticalities'=>AssetMasterService::CRITICALITY,
-            'ownershipTypes'=>AssetMasterService::OWNERSHIP,
-            'strategies'=>AssetMasterService::STRATEGIES,
-            'canVerify'=>in_array($user->role,self::VERIFY_ROLES,true),
-            'canCreate'=>in_array($user->role,self::CREATE_ROLES,true),
+            'locations'=>$locations,'templates'=>$templates,'categories'=>$categories,'assetTypes'=>$assetTypes,'subcategories'=>$subcategories,'manufacturers'=>$manufacturers,'warrantyProviders'=>$warrantyProviders,
+            'criticalities'=>AssetMasterService::CRITICALITY,'ownershipTypes'=>AssetMasterService::OWNERSHIP,'strategies'=>AssetMasterService::STRATEGIES,
+            'canVerify'=>in_array($user->role,self::VERIFY_ROLES,true),'canCreate'=>in_array($user->role,self::CREATE_ROLES,true),
         ]);
     }
 
@@ -58,38 +52,12 @@ class AssetMasterController extends Controller
         return view('maintenance.asset-master.show',['asset'=>$asset,'workOrders'=>$workOrders,'parts'=>$parts,'locations'=>$locations,'canVerify'=>in_array($user->role,self::VERIFY_ROLES,true),'lifecycleStatuses'=>AssetMasterService::LIFECYCLE]);
     }
 
-    public function store(Request $request,AssetMasterService $service): RedirectResponse
-    {
-        $user=$this->creator($request); $data=$this->validated($request,(int)$user->tenant_id); $asset=$service->create((int)$user->tenant_id,(int)$user->organization_id,(int)$user->id,$data);
-        return redirect()->route('asset-master.show',$asset)->with('status','New Asset → Pending Verification. Creation is complete; independent Verify & Activate is required.');
-    }
-
-    public function update(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse
-    {
-        $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $asset=$service->update($asset,$this->validated($request,(int)$user->tenant_id,$asset));
-        return back()->with('status','Asset master updated. Completeness: '.$asset->data_completeness_score.'%.');
-    }
-
-    public function verify(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse
-    {
-        $user=$this->checker($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['notes'=>['nullable','string','max:2000']]); $service->verify($asset,(int)$user->id,$data['notes']??null);
-        return back()->with('status','Verify & Activate completed.');
-    }
-
-    public function transition(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse
-    {
-        $user=$this->checker($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['to_status'=>['required',Rule::in(AssetMasterService::LIFECYCLE)],'notes'=>['nullable','string','max:2000']]); $service->transition($asset,$data['to_status'],(int)$user->id,$data['notes']??null); return back()->with('status','Asset lifecycle moved to '.str_replace('_',' ',$data['to_status']).'.');
-    }
-
-    public function requestCommissioning(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse
-    {
-        $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['inspection_date'=>['required','date'],'inspection_result'=>['required',Rule::in(['PASS','PASS_WITH_NOTES','FAIL'])],'checklist'=>['nullable','json'],'notes'=>['nullable','string','max:3000']]); if(isset($data['checklist']))$data['checklist']=json_decode($data['checklist'],true); $service->requestCommissioning($asset,(int)$user->id,$data); return back()->with('status','Commissioning submitted for independent approval.');
-    }
-
-    public function reviewCommissioning(Request $request,Asset $asset,AssetCommissioningRecord $record,AssetMasterService $service): RedirectResponse
-    {
-        $user=$this->checker($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id && (int)$record->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['decision'=>['required',Rule::in(['APPROVE','REJECT'])],'notes'=>['nullable','string','max:3000']]); $service->reviewCommissioning($asset,$record,(int)$user->id,$data['decision']==='APPROVE',$data['notes']??null); return back()->with('status','Commissioning review '.($data['decision']==='APPROVE'?'approved':'rejected').'.');
-    }
+    public function store(Request $request,AssetMasterService $service): RedirectResponse { $user=$this->creator($request); $data=$this->validated($request,(int)$user->tenant_id); $asset=$service->create((int)$user->tenant_id,(int)$user->organization_id,(int)$user->id,$data); return redirect()->route('asset-master.show',$asset)->with('status','New Asset → Pending Verification. Creation is complete; independent Verify & Activate is required.'); }
+    public function update(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $asset=$service->update($asset,$this->validated($request,(int)$user->tenant_id,$asset)); return back()->with('status','Asset master updated. Completeness: '.$asset->data_completeness_score.'%.'); }
+    public function verify(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->checker($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['notes'=>['nullable','string','max:2000']]); $service->verify($asset,(int)$user->id,$data['notes']??null); return back()->with('status','Verify & Activate completed.'); }
+    public function transition(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->checker($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['to_status'=>['required',Rule::in(AssetMasterService::LIFECYCLE)],'notes'=>['nullable','string','max:2000']]); $service->transition($asset,$data['to_status'],(int)$user->id,$data['notes']??null); return back()->with('status','Asset lifecycle moved to '.str_replace('_',' ',$data['to_status']).'.'); }
+    public function requestCommissioning(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['inspection_date'=>['required','date'],'inspection_result'=>['required',Rule::in(['PASS','PASS_WITH_NOTES','FAIL'])],'checklist'=>['nullable','json'],'notes'=>['nullable','string','max:3000']]); if(isset($data['checklist']))$data['checklist']=json_decode($data['checklist'],true); $service->requestCommissioning($asset,(int)$user->id,$data); return back()->with('status','Commissioning submitted for independent approval.'); }
+    public function reviewCommissioning(Request $request,Asset $asset,AssetCommissioningRecord $record,AssetMasterService $service): RedirectResponse { $user=$this->checker($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id && (int)$record->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['decision'=>['required',Rule::in(['APPROVE','REJECT'])],'notes'=>['nullable','string','max:3000']]); $service->reviewCommissioning($asset,$record,(int)$user->id,$data['decision']==='APPROVE',$data['notes']??null); return back()->with('status','Commissioning review '.($data['decision']==='APPROVE'?'approved':'rejected').'.'); }
 
     public function storeLocation(Request $request): RedirectResponse
     {
@@ -98,28 +66,10 @@ class AssetMasterController extends Controller
         if(!empty($data['parent_id'])){$parent=AssetLocation::where('tenant_id',$user->tenant_id)->findOrFail($data['parent_id']);abort_unless((int)$parent->customer_site_id===(int)$data['customer_site_id'],422,'Parent location must belong to the same site.');}
         AssetLocation::create([...$data,'tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'active'=>true]); return back()->with('status','Asset location node created.');
     }
-
-    public function assignLocation(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse
-    {
-        $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['asset_location_id'=>['required','integer']]); $location=AssetLocation::where('tenant_id',$user->tenant_id)->findOrFail($data['asset_location_id']); abort_unless((int)$location->customer_id===(int)$asset->customer_id && (int)$location->customer_site_id===(int)$asset->customer_site_id,422,'Location must belong to the same customer and site.'); $service->update($asset,['asset_location_id'=>$location->id,'customer_id'=>$asset->customer_id,'customer_site_id'=>$asset->customer_site_id]); return back()->with('status','Asset assigned to '.$location->name.'.');
-    }
-
-    public function storeTemplate(Request $request): RedirectResponse
-    {
-        $user=$this->checker($request); $data=$request->validate(['category'=>['required','string','max:100'],'asset_type'=>['required','string','max:120'],'name'=>['required','string','max:160'],'specification_schema'=>['nullable','json']]); $code='T'.$user->tenant_id.'-'.Str::upper(Str::slug($data['category'].'-'.$data['asset_type'],'_'));
-        AssetCategoryTemplate::updateOrCreate(['tenant_id'=>$user->tenant_id,'category'=>$data['category'],'asset_type'=>$data['asset_type']],['organization_id'=>$user->organization_id,'code'=>Str::limit($code,60,''),'system_group'=>Str::upper($data['category']),'name'=>$data['name'],'specification_schema'=>isset($data['specification_schema'])?json_decode($data['specification_schema'],true):null,'active'=>true,'status'=>'ACTIVE']); return back()->with('status','Asset specification template saved.');
-    }
-
-    public function document(Request $request,Asset $asset): RedirectResponse
-    {
-        $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['document_type'=>['required',Rule::in(['PRIMARY_PHOTO','NAMEPLATE_PHOTO','PHOTO','DATASHEET','USER_MANUAL','MAINTENANCE_MANUAL','COMMISSIONING_REPORT','WARRANTY_CERTIFICATE','INSPECTION_CERTIFICATE','CALIBRATION_CERTIFICATE','DRAWING','TEST_REPORT','OTHER'])],'title'=>['required','string','max:180'],'file'=>['required','file','max:15360'],'version'=>['nullable','string','max:30'],'issued_at'=>['nullable','date'],'expires_at'=>['nullable','date']]);
-        $file=$request->file('file');$path=$file->store('asset-master/'.$asset->id,'local');AssetDocument::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'asset_id'=>$asset->id,'document_type'=>$data['document_type'],'title'=>$data['title'],'path'=>$path,'file_path'=>$path,'original_name'=>$file->getClientOriginalName(),'mime_type'=>$file->getMimeType(),'version'=>$data['version']??null,'issued_at'=>$data['issued_at']??null,'expires_at'=>$data['expires_at']??null,'uploaded_by'=>$user->id]); $service=app(AssetMasterService::class);$service->refreshCompleteness($asset->fresh()); return back()->with('status','Asset document uploaded.');
-    }
-
-    public function download(Request $request,AssetDocument $document)
-    {
-        $user=$this->user($request); abort_unless((int)$document->tenant_id===(int)$user->tenant_id,404); $path=$document->path ?: $document->file_path; abort_unless($path && Storage::disk('local')->exists($path),404); return Storage::disk('local')->download($path,$document->original_name);
-    }
+    public function assignLocation(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['asset_location_id'=>['required','integer']]); $location=AssetLocation::where('tenant_id',$user->tenant_id)->findOrFail($data['asset_location_id']); abort_unless((int)$location->customer_id===(int)$asset->customer_id && (int)$location->customer_site_id===(int)$asset->customer_site_id,422,'Location must belong to the same customer and site.'); $service->update($asset,['asset_location_id'=>$location->id,'customer_id'=>$asset->customer_id,'customer_site_id'=>$asset->customer_site_id]); return back()->with('status','Asset assigned to '.$location->name.'.'); }
+    public function storeTemplate(Request $request): RedirectResponse { $user=$this->checker($request); $data=$request->validate(['category'=>['required','string','max:100'],'asset_type'=>['required','string','max:120'],'name'=>['required','string','max:160'],'specification_schema'=>['nullable','json']]); $code='T'.$user->tenant_id.'-'.Str::upper(Str::slug($data['category'].'-'.$data['asset_type'],'_')); AssetCategoryTemplate::updateOrCreate(['tenant_id'=>$user->tenant_id,'category'=>$data['category'],'asset_type'=>$data['asset_type']],['organization_id'=>$user->organization_id,'code'=>Str::limit($code,60,''),'system_group'=>Str::upper($data['category']),'name'=>$data['name'],'specification_schema'=>isset($data['specification_schema'])?json_decode($data['specification_schema'],true):null,'active'=>true,'status'=>'ACTIVE']); return back()->with('status','Asset specification template saved.'); }
+    public function document(Request $request,Asset $asset): RedirectResponse { $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['document_type'=>['required',Rule::in(['PRIMARY_PHOTO','NAMEPLATE_PHOTO','PHOTO','DATASHEET','USER_MANUAL','MAINTENANCE_MANUAL','COMMISSIONING_REPORT','WARRANTY_CERTIFICATE','INSPECTION_CERTIFICATE','CALIBRATION_CERTIFICATE','DRAWING','TEST_REPORT','OTHER'])],'title'=>['required','string','max:180'],'file'=>['required','file','max:15360'],'version'=>['nullable','string','max:30'],'issued_at'=>['nullable','date'],'expires_at'=>['nullable','date']]); $file=$request->file('file');$path=$file->store('asset-master/'.$asset->id,'local');AssetDocument::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'asset_id'=>$asset->id,'document_type'=>$data['document_type'],'title'=>$data['title'],'path'=>$path,'file_path'=>$path,'original_name'=>$file->getClientOriginalName(),'mime_type'=>$file->getMimeType(),'version'=>$data['version']??null,'issued_at'=>$data['issued_at']??null,'expires_at'=>$data['expires_at']??null,'uploaded_by'=>$user->id]); app(AssetMasterService::class)->refreshCompleteness($asset->fresh()); return back()->with('status','Asset document uploaded.'); }
+    public function download(Request $request,AssetDocument $document) { $user=$this->user($request); abort_unless((int)$document->tenant_id===(int)$user->tenant_id,404); $path=$document->path ?: $document->file_path; abort_unless($path && Storage::disk('local')->exists($path),404); return Storage::disk('local')->download($path,$document->original_name); }
 
     private function validated(Request $request,int $tenantId,?Asset $asset=null): array
     {
