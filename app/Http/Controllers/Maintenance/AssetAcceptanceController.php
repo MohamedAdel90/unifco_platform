@@ -29,7 +29,7 @@ class AssetAcceptanceController extends Controller
             'warranty_provider'=>['nullable','string','max:160'],'warranty_start'=>['nullable','date'],'warranty_expiry'=>['nullable','date','after_or_equal:warranty_start'],'warranty_terms'=>['nullable','string','max:5000'],
             'expected_replacement_date'=>['nullable','date'],'replacement_target_date'=>['nullable','date'],'replacement_cost_estimate'=>['nullable','numeric','min:0'],
             'operating_hours'=>['nullable','numeric','min:0'],'meter_unit'=>['nullable','string','max:30'],'design_capacity'=>['nullable','numeric','min:0'],'current_load'=>['nullable','numeric','min:0'],'failure_impact'=>['nullable',Rule::in(['LOW','MEDIUM','HIGH','CRITICAL'])],
-            'impact_safety'=>['nullable','integer','between:1,5'],'impact_operation'=>['nullable','integer','between:1,5'],'impact_financial'=>['nullable','integer','between:1,5'],'impact_customer'=>['nullable','integer','between:1,5'],'impact_environmental'=>['nullable','integer','between:1,5],
+            'impact_safety'=>['nullable','integer','between:1,5'],'impact_operation'=>['nullable','integer','between:1,5'],'impact_financial'=>['nullable','integer','between:1,5'],'impact_customer'=>['nullable','integer','between:1,5'],'impact_environmental'=>['nullable','integer','between:1,5'],
             'probability_failure'=>['nullable','integer','between:1,5'],'probability_condition'=>['nullable','integer','between:1,5'],'probability_age'=>['nullable','integer','between:1,5'],
         ]);
         $asset->update($data);
