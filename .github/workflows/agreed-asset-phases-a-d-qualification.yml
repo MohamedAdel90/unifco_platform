@@ -12,6 +12,7 @@ on:
       - 'resources/views/customer-assets/governance.blade.php'
       - 'routes/asset-master.php'
       - 'tests/Feature/AgreedAssetPhasesABCDTest.php'
+      - 'tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php'
       - '.github/workflows/agreed-asset-phases-a-d-qualification.yml'
   workflow_dispatch:
 
@@ -53,6 +54,7 @@ jobs:
           php -l app/Http/Controllers/CustomerAssetGovernanceController.php
           php -l database/migrations/2026_08_28_000080_complete_agreed_asset_phases_b_d.php
           php -l tests/Feature/AgreedAssetPhasesABCDTest.php
+          php -l tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php
           grep -q "intelligence.pm" routes/asset-master.php
           grep -q "CustomerAssetGovernanceController::class,'import'" routes/asset-master.php
           grep -q "CUSTOMER_OWNED assets" app/Services/CustomerAssetGovernanceService.php
@@ -74,4 +76,4 @@ jobs:
           php artisan route:list --name=customer-assets.submissions.review >/dev/null
           php artisan view:cache
       - name: Run agreed A-D qualification and regressions
-        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php tests/Feature/AssetCustodyPhaseCTest.php tests/Feature/AssetWarrantyInsurancePhaseDTest.php tests/Feature/AgreedAssetPhasesABCDTest.php
+        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php tests/Feature/AssetCustodyPhaseCTest.php tests/Feature/AssetWarrantyInsurancePhaseDTest.php tests/Feature/AgreedAssetPhasesABCDTest.php
