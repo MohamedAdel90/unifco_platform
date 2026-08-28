@@ -55,10 +55,10 @@ class AgreedAssetPhasesABCDTest extends TestCase
         $this->assertSame('MONITOR',$s['replacement_recommendation']); $this->assertSame(100000.0,$s['replacement_value']);
     }
 
-    public function test_phase_d_customer_adds_asset_then_unifco_verifies_approves_and_audits_with_ownership_boundary(): void
+    public function test_phase_d_customer_adds_asset_then_unifco_approves_then_independently_verifies_and_audits(): void
     {
         $d=$this->data();
-        $payload=['customer_site_id'=>$d['site']->id,'name'=>'Customer UPS','serial_no'=>'CUST-UPS-001','asset_category'=>'Electrical','asset_type'=>'UPS','manufacturer'=>'OEM','model_no'=>'U100','criticality'=>'HIGH','ownership_type'=>'CUSTOMER_OWNED','installation_date'=>today()->subYear()->toDateString(),'physical_location'=>'UPS Room','technical_specifications'=>'{"capacity":"100kVA"}'];
+        $payload=['customer_site_id'=>$d['site']->id,'name'=>'Customer UPS','serial_no'=>'CUST-UPS-001','asset_category'=>'Electrical','asset_type'=>'UPS','manufacturer'=>'OEM','model_no'=>'U100','criticality'=>'HIGH','ownership_type'=>'CUSTOMER_OWNED','maintenance_strategy'=>'PREVENTIVE','installation_date'=>today()->subYear()->toDateString(),'physical_location'=>'UPS Room','technical_specifications'=>'{"capacity":"100kVA"}'];
         $this->actingAs($d['customerUser'])->post('/customer-assets/submissions',$payload)->assertRedirect();
         $submission=DB::table('customer_asset_submissions')->where('serial_no','CUST-UPS-001')->first(); $this->assertNotNull($submission); $this->assertSame('PENDING_VERIFICATION',$submission->status);
 
@@ -71,9 +71,12 @@ class AgreedAssetPhasesABCDTest extends TestCase
         $this->actingAs($d['customerUser'])->post('/customer-assets/submissions',$wrongSite)->assertStatus(422);
 
         $this->actingAs($d['customerUser'])->post("/customer-assets/submissions/{$submission->id}/review",['decision'=>'APPROVE'])->assertForbidden();
-        $this->actingAs($d['manager'])->post("/customer-assets/submissions/{$submission->id}/review",['decision'=>'APPROVE','notes'=>'Identity, site and ownership verified.'])->assertRedirect();
+        $this->actingAs($d['manager'])->post("/customer-assets/submissions/{$submission->id}/review",['decision'=>'APPROVE','notes'=>'Accepted into Asset Master.'])->assertRedirect();
         $approved=DB::table('customer_asset_submissions')->where('id',$submission->id)->first(); $this->assertSame('APPROVED',$approved->status); $this->assertNotNull($approved->asset_id);
-        $this->assertDatabaseHas('assets',['id'=>$approved->asset_id,'serial_no'=>'CUST-UPS-001','ownership_type'=>'CUSTOMER_OWNED','verification_status'=>'VERIFIED','lifecycle_status'=>'ACTIVE']);
+        $this->assertDatabaseHas('assets',['id'=>$approved->asset_id,'serial_no'=>'CUST-UPS-001','ownership_type'=>'CUSTOMER_OWNED','verification_status'=>'PENDING','lifecycle_status'=>'PENDING_VERIFICATION']);
+
+        $this->actingAs($d['manager'])->post("/asset-master/{$approved->asset_id}/verify",['notes'=>'Independent Verify & Activate.'])->assertRedirect();
+        $this->assertDatabaseHas('assets',['id'=>$approved->asset_id,'verification_status'=>'VERIFIED','lifecycle_status'=>'ACTIVE']);
         $this->assertDatabaseHas('customer_asset_submission_events',['customer_asset_submission_id'=>$submission->id,'event_type'=>'SUBMITTED']);
         $this->assertDatabaseHas('customer_asset_submission_events',['customer_asset_submission_id'=>$submission->id,'event_type'=>'APPROVED']);
         $this->actingAs($d['customerUser'])->get("/customer-assets/submissions/{$submission->id}/audit")->assertOk()->assertJsonCount(2);
@@ -85,6 +88,8 @@ class AgreedAssetPhasesABCDTest extends TestCase
         $file=new UploadedFile($path,'assets.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',null,true);
         $this->actingAs($d['customerUser'])->post('/customer-assets/import',['file'=>$file])->assertRedirect()->assertSessionHas('status');
         $this->assertDatabaseHas('customer_asset_submissions',['serial_no'=>'XLSX-001','source'=>'EXCEL','status'=>'PENDING_VERIFICATION','ownership_type'=>'CUSTOMER_OWNED']);
+        $submission=DB::table('customer_asset_submissions')->where('serial_no','XLSX-001')->first();
+        $this->assertSame(['IMPORTED','VALIDATION_QUEUE','DUPLICATE_CHECK'],DB::table('customer_asset_submission_events')->where('customer_asset_submission_id',$submission->id)->orderBy('id')->pluck('event_type')->all());
         @unlink($path);
     }
 
