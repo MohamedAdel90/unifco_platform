@@ -2,20 +2,29 @@ name: Agreed Asset Phases A-D Qualification
 
 on:
   push:
-    branches: [main, agreed-asset-phases-a-d]
+    branches: [main, agreed-asset-phases-a-d, gap-closure-a-d-final]
     paths:
       - 'app/Models/Asset.php'
+      - 'app/Models/AssetLifecycleEvent.php'
+      - 'app/Models/AssetPartInstallation.php'
       - 'app/Http/Controllers/CustomerAssetGovernanceController.php'
       - 'app/Http/Controllers/Maintenance/AgreedAssetIntelligenceController.php'
+      - 'app/Http/Controllers/Maintenance/AssetAcceptanceController.php'
       - 'app/Services/AgreedAssetIntelligenceService.php'
+      - 'app/Services/AssetAcceptanceContractService.php'
+      - 'app/Services/AssetMaintenanceIntelligenceService.php'
+      - 'app/Services/AssetMasterService.php'
       - 'app/Services/CustomerAssetGovernanceService.php'
       - 'database/migrations/2026_08_28_000080_complete_agreed_asset_phases_b_d.php'
       - 'database/migrations/2026_08_28_000090_close_agreed_asset_a_d_gaps.php'
+      - 'database/migrations/2026_08_28_000100_close_asset_acceptance_contract.php'
+      - 'resources/views/maintenance/asset-master/show.blade.php'
       - 'resources/views/customer-assets/governance.blade.php'
       - 'routes/asset-master.php'
       - 'tests/Feature/AgreedAssetPhasesABCDTest.php'
       - 'tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php'
       - 'tests/Feature/AgreedAssetGapClosureABCDTest.php'
+      - 'tests/Feature/AssetAcceptanceContractFinalTest.php'
       - '.github/workflows/agreed-asset-phases-a-d-qualification.yml'
   workflow_dispatch:
 
@@ -48,30 +57,41 @@ jobs:
           php-version: '8.4'
           extensions: pdo_mysql, zip, simplexml
           coverage: none
-      - name: Validate literal A-D agreement source
+      - name: Validate literal A-D acceptance source
         run: |
           set -euo pipefail
           php -l app/Models/Asset.php
+          php -l app/Models/AssetLifecycleEvent.php
+          php -l app/Models/AssetPartInstallation.php
+          php -l app/Services/AssetMasterService.php
+          php -l app/Services/AssetMaintenanceIntelligenceService.php
+          php -l app/Services/AssetAcceptanceContractService.php
           php -l app/Services/AgreedAssetIntelligenceService.php
           php -l app/Services/CustomerAssetGovernanceService.php
+          php -l app/Http/Controllers/Maintenance/AssetAcceptanceController.php
           php -l app/Http/Controllers/Maintenance/AgreedAssetIntelligenceController.php
           php -l app/Http/Controllers/CustomerAssetGovernanceController.php
           php -l database/migrations/2026_08_28_000080_complete_agreed_asset_phases_b_d.php
           php -l database/migrations/2026_08_28_000090_close_agreed_asset_a_d_gaps.php
-          php -l tests/Feature/AgreedAssetPhasesABCDTest.php
-          php -l tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php
-          php -l tests/Feature/AgreedAssetGapClosureABCDTest.php
-          grep -q "STANDARD_TEMPLATES" app/Services/AgreedAssetIntelligenceService.php
-          grep -q "manufacturer_asset_number" app/Models/Asset.php
-          grep -q "contract_reference" app/Models/Asset.php
-          grep -q "operating_hours" app/Models/Asset.php
-          grep -q "pm_template" app/Models/Asset.php
-          grep -q "health_score" app/Models/Asset.php
-          grep -q "intelligence.pm" routes/asset-master.php
-          grep -q "CustomerAssetGovernanceController::class,'import'" routes/asset-master.php
+          php -l database/migrations/2026_08_28_000100_close_asset_acceptance_contract.php
+          php -l tests/Feature/AssetAcceptanceContractFinalTest.php
+          grep -q "AST-UNF-" app/Services/AssetMasterService.php
+          grep -q "Impact × Probability" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Work Order Frequency" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Maintenance Compliance" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Spare Part Consumption" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Condition Readings" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Warranty expires in 30 days" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Asset approaching end of useful life" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Full Component Traceability" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "PRIMARY_PHOTO" app/Http/Controllers/Maintenance/AssetAcceptanceController.php
+          grep -q "PURCHASE_DOCUMENT" app/Http/Controllers/Maintenance/AssetAcceptanceController.php
+          grep -q "Asset Timeline — Append Only" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "lifecycle history cannot be deleted" app/Models/AssetLifecycleEvent.php
+          grep -q "acceptance-profile.update" routes/asset-master.php
+          grep -q "acceptance-documents.store" routes/asset-master.php
           grep -q "CUSTOMER_OWNED assets" app/Services/CustomerAssetGovernanceService.php
           grep -q "Maker/checker control" app/Services/CustomerAssetGovernanceService.php
-          grep -q "signed-in customer and tenant" app/Services/CustomerAssetGovernanceService.php
       - name: Prepare writable directories
         run: mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs && chmod -R u+rwX bootstrap/cache storage
       - name: Install dependencies
@@ -81,11 +101,13 @@ jobs:
           cp .env.example .env
           php artisan key:generate
           php artisan migrate:fresh --force
+          php artisan route:list --name=asset-master.acceptance-profile.update >/dev/null
+          php artisan route:list --name=asset-master.acceptance-documents.store >/dev/null
           php artisan route:list --name=asset-master.intelligence.pm >/dev/null
           php artisan route:list --name=asset-master.intelligence.inspection >/dev/null
           php artisan route:list --name=asset-master.intelligence.failure >/dev/null
           php artisan route:list --name=customer-assets.import >/dev/null
           php artisan route:list --name=customer-assets.submissions.review >/dev/null
           php artisan view:cache
-      - name: Run literal A-D agreement qualification and regressions
-        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php tests/Feature/AssetCustodyPhaseCTest.php tests/Feature/AssetWarrantyInsurancePhaseDTest.php tests/Feature/AgreedAssetPhasesABCDTest.php tests/Feature/AgreedAssetGapClosureABCDTest.php
+      - name: Run literal A-D acceptance qualification and all regressions
+        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php tests/Feature/AssetCustodyPhaseCTest.php tests/Feature/AssetWarrantyInsurancePhaseDTest.php tests/Feature/AgreedAssetPhasesABCDTest.php tests/Feature/AgreedAssetGapClosureABCDTest.php tests/Feature/AssetAcceptanceContractFinalTest.php
