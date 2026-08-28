@@ -41,10 +41,10 @@ class WorkflowRoleNavigationPresentation
 
         $items=match($role){
             'MAINTENANCE_ENGINEER'=>[
-                ['⚙','My Workspace',$home],['✓','My Technical Approvals',$approvals],['▣','Work Orders',route('maintenance.work-orders.index')],['◇','Assets & EAM',route('eam.assets.index')],['⌁','Maintenance Overview',route('modules.index','maintenance')],
+                ['⚙','My Workspace',$home],['✓','My Technical Approvals',$approvals],['▣','Work Orders',route('maintenance.work-orders.index')],['◇','Assets & EAM',route('asset-master.index')],['⌁','Maintenance Overview',route('modules.index','maintenance')],
             ],
             'MAINTENANCE_MANAGER'=>[
-                ['⚙','Manager Workspace',$home],['✓','My Approvals',$approvals],['⚑','Customer Revisit Requests',$customerActions],['▣','Work Orders',route('maintenance.work-orders.index')],['⌁','Maintenance Operations',route('maintenance.operations.index')],['◇','Assets & EAM',route('eam.assets.index')],['▥','Executive Reports',route('reporting.executive')],
+                ['⚙','Manager Workspace',$home],['✓','My Approvals',$approvals],['⚑','Customer Revisit Requests',$customerActions],['▣','Work Orders',route('maintenance.work-orders.index')],['⌁','Maintenance Operations',route('maintenance.operations.index')],['◇','Assets & EAM',route('asset-master.index')],['▥','Executive Reports',route('reporting.executive')],
             ],
             'PROCUREMENT'=>[
                 ['▦','Procurement Workspace',$home],['✓','My Cost Approvals',$approvals],['▤','Purchase Orders',route('procurement.purchase-orders.index')],['◫','Stock Balances',route('inventory.stock.index')],['◎','Customer Context',route('crm.customers.index')],

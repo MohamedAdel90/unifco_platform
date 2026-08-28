@@ -25,6 +25,14 @@ class ProfessionalAssetMasterTest extends TestCase
         return array_merge(['customer_id'=>$customer->id,'customer_site_id'=>$site->id,'name'=>'Transformer TR-01','customer_asset_code'=>'TR-01','asset_category'=>'Electrical','asset_type'=>'Distribution Transformer','manufacturer'=>'ABB','model_no'=>'TX1000','serial_no'=>'SN-TR-0001','criticality'=>'CRITICAL','ownership_type'=>'CUSTOMER_OWNED','maintenance_strategy'=>'PREVENTIVE','physical_location'=>'Main Building · Electrical Room 01','installation_date'=>'2025-01-15','commission_date'=>'2025-01-20','warranty_start'=>'2025-01-20','warranty_expiry'=>'2027-01-19','warranty_provider'=>'ABB Service','technical_specifications'=>'{"rated_power_kva":1000,"primary_voltage":"13.8kV","secondary_voltage":"400V"}'],$extra);
     }
 
+    public function test_engineer_legacy_eam_create_route_redirects_to_professional_asset_master(): void
+    {
+        $d=$this->setupData('MAINTENANCE_ENGINEER');
+        $this->actingAs($d['user'])->get('/eam/assets/create')->assertRedirect(route('asset-master.index'));
+        $this->actingAs($d['user'])->get('/eam/assets')->assertRedirect(route('asset-master.index'));
+        $this->actingAs($d['user'])->get('/asset-master')->assertOk()->assertSee('Register Customer Asset')->assertSee('Create Pending Verification Asset');
+    }
+
     public function test_engineer_can_register_professional_asset_pending_verification(): void
     {
         $d=$this->setupData('MAINTENANCE_ENGINEER');

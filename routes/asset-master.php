@@ -4,6 +4,13 @@ use App\Http\Controllers\CustomerAssetGovernanceController;
 use App\Http\Controllers\Maintenance\{AssetMasterController,AssetMaintenanceIntelligenceController,AssetCustodyController,AssetWarrantyInsuranceController,AgreedAssetIntelligenceController,AssetAcceptanceController};
 use Illuminate\Support\Facades\Route;
 
+// Legacy EAM entry points are kept only as compatibility redirects. The Professional
+// Asset Master is the single governed asset system for creation and Asset 360.
+Route::middleware('auth')->group(function(){
+    Route::get('/eam/assets',fn()=>redirect()->route('asset-master.index'));
+    Route::get('/eam/assets/create',fn()=>redirect()->route('asset-master.index'));
+});
+
 Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(function(){
     Route::get('/',[AssetMasterController::class,'index'])->name('index');
     Route::post('/',[AssetMasterController::class,'store'])->name('store');
