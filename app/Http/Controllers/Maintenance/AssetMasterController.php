@@ -14,12 +14,12 @@ use Illuminate\View\View;
 class AssetMasterController extends Controller
 {
     private const ROLES=['ADMIN','MAINTENANCE_MANAGER','MAINTENANCE_ENGINEER','PROJECT_MANAGER'];
-    private const CREATE_ROLES=['ADMIN','MAINTENANCE_ENGINEER','PROJECT_MANAGER'];
+    private const CREATE_ROLES=['ADMIN','MAINTENANCE_MANAGER','MAINTENANCE_ENGINEER','PROJECT_MANAGER'];
     private const VERIFY_ROLES=['ADMIN','MAINTENANCE_MANAGER'];
 
     private function user(Request $request): \App\Models\User { $user=$request->user(); abort_unless($user && in_array($user->role,self::ROLES,true),403,'This role cannot manage customer assets.'); return $user; }
     private function checker(Request $request): \App\Models\User { $user=$this->user($request); abort_unless(in_array($user->role,self::VERIFY_ROLES,true),403,'This role cannot approve asset governance actions.'); return $user; }
-    private function creator(Request $request): \App\Models\User { $user=$this->user($request); abort_unless(in_array($user->role,self::CREATE_ROLES,true),403,'Creation is separated from approval; Maintenance Manager verifies and activates assets but does not create them.'); return $user; }
+    private function creator(Request $request): \App\Models\User { $user=$this->user($request); abort_unless(in_array($user->role,self::CREATE_ROLES,true),403,'This role cannot create customer assets.'); return $user; }
 
     public function index(Request $request): View
     {
@@ -40,7 +40,7 @@ class AssetMasterController extends Controller
             'sites'=>CustomerSite::whereHas('customer',fn($q)=>$q->where('tenant_id',$user->tenant_id))->orderBy('name')->get(),
             'locations'=>$locations,'templates'=>$templates,'categories'=>$categories,'assetTypes'=>$assetTypes,'subcategories'=>$subcategories,'manufacturers'=>$manufacturers,'warrantyProviders'=>$warrantyProviders,
             'criticalities'=>AssetMasterService::CRITICALITY,'ownershipTypes'=>AssetMasterService::OWNERSHIP,'strategies'=>AssetMasterService::STRATEGIES,
-            'canVerify'=>in_array($user->role,self::VERIFY_ROLES,true),'canCreate'=>in_array($user->role,self::CREATE_ROLES,true),
+            'canVerify'=>in_array($user->role,self::VERIFY_ROLES,true),'canCreate'=>in_array($user->role,self::CREATE_ROLES,true),'role'=>$user->role,
         ]);
     }
 
@@ -49,10 +49,12 @@ class AssetMasterController extends Controller
         $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $asset->load(['customer','site','location.parent','parent','children','template','documents','lifecycleEvents','commissioningRecords']);
         $workOrders=\App\Models\WorkOrder::where('asset_id',$asset->id)->latest()->limit(20)->get(); $parts=\App\Models\AssetPartInstallation::where('asset_id',$asset->id)->latest()->limit(30)->get();
         $locations=AssetLocation::where('tenant_id',$user->tenant_id)->where('customer_id',$asset->customer_id)->where('customer_site_id',$asset->customer_site_id)->where('active',true)->orderBy('location_type')->orderBy('name')->get();
-        return view('maintenance.asset-master.show',['asset'=>$asset,'workOrders'=>$workOrders,'parts'=>$parts,'locations'=>$locations,'canVerify'=>in_array($user->role,self::VERIFY_ROLES,true),'lifecycleStatuses'=>AssetMasterService::LIFECYCLE]);
+        $createdBy=(int)($asset->lifecycleEvents->firstWhere('event_type','ASSET_CREATED')?->performed_by ?? 0);
+        $canVerify=in_array($user->role,self::VERIFY_ROLES,true) && $createdBy!==(int)$user->id;
+        return view('maintenance.asset-master.show',['asset'=>$asset,'workOrders'=>$workOrders,'parts'=>$parts,'locations'=>$locations,'canVerify'=>$canVerify,'createdByCurrentUser'=>$createdBy===(int)$user->id,'lifecycleStatuses'=>AssetMasterService::LIFECYCLE]);
     }
 
-    public function store(Request $request,AssetMasterService $service): RedirectResponse { $user=$this->creator($request); $data=$this->validated($request,(int)$user->tenant_id); $asset=$service->create((int)$user->tenant_id,(int)$user->organization_id,(int)$user->id,$data); return redirect()->route('asset-master.show',$asset)->with('status','New Asset → Pending Verification. Creation is complete; independent Verify & Activate is required.'); }
+    public function store(Request $request,AssetMasterService $service): RedirectResponse { $user=$this->creator($request); $data=$this->validated($request,(int)$user->tenant_id); $asset=$service->create((int)$user->tenant_id,(int)$user->organization_id,(int)$user->id,$data); return redirect()->route('asset-master.show',$asset)->with('status','New Asset → Pending Verification. Creation is complete; a different authorized user must Verify & Activate it.'); }
     public function update(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->user($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $asset=$service->update($asset,$this->validated($request,(int)$user->tenant_id,$asset)); return back()->with('status','Asset master updated. Completeness: '.$asset->data_completeness_score.'%.'); }
     public function verify(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->checker($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['notes'=>['nullable','string','max:2000']]); $service->verify($asset,(int)$user->id,$data['notes']??null); return back()->with('status','Verify & Activate completed.'); }
     public function transition(Request $request,Asset $asset,AssetMasterService $service): RedirectResponse { $user=$this->checker($request); abort_unless((int)$asset->tenant_id===(int)$user->tenant_id,404); $data=$request->validate(['to_status'=>['required',Rule::in(AssetMasterService::LIFECYCLE)],'notes'=>['nullable','string','max:2000']]); $service->transition($asset,$data['to_status'],(int)$user->id,$data['notes']??null); return back()->with('status','Asset lifecycle moved to '.str_replace('_',' ',$data['to_status']).'.'); }
