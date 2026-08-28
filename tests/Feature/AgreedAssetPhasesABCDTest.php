@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\{Asset,AssetPartInstallation,Customer,CustomerSite,Item,Organization,Tenant,User,WorkOrder};
-use App\Services\{AgreedAssetIntelligenceService,CustomerAssetGovernanceService};
+use App\Services\AgreedAssetIntelligenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +37,7 @@ class AgreedAssetPhasesABCDTest extends TestCase
         $snapshot=app(AgreedAssetIntelligenceService::class)->phaseBSnapshot($a->fresh());
         $this->assertSame(1,$snapshot['pm_plans']); $this->assertSame(1,$snapshot['meter_readings']); $this->assertSame(1,$snapshot['inspections']);
         $this->assertSame(1,$snapshot['failureCount']); $this->assertGreaterThan(0,$snapshot['downtime']); $this->assertNotNull($snapshot['mttr']); $this->assertIsInt($snapshot['score']);
+        $this->assertArrayHasKey('mtbf',$snapshot); $this->assertArrayHasKey('band',$snapshot);
         $this->assertDatabaseHas('asset_lifecycle_events',['asset_id'=>$a->id,'event_type'=>'ASSET_FAILURE_RECORDED']);
     }
 
@@ -60,8 +61,15 @@ class AgreedAssetPhasesABCDTest extends TestCase
         $payload=['customer_site_id'=>$d['site']->id,'name'=>'Customer UPS','serial_no'=>'CUST-UPS-001','asset_category'=>'Electrical','asset_type'=>'UPS','manufacturer'=>'OEM','model_no'=>'U100','criticality'=>'HIGH','ownership_type'=>'CUSTOMER_OWNED','installation_date'=>today()->subYear()->toDateString(),'physical_location'=>'UPS Room','technical_specifications'=>'{"capacity":"100kVA"}'];
         $this->actingAs($d['customerUser'])->post('/customer-assets/submissions',$payload)->assertRedirect();
         $submission=DB::table('customer_asset_submissions')->where('serial_no','CUST-UPS-001')->first(); $this->assertNotNull($submission); $this->assertSame('PENDING_VERIFICATION',$submission->status);
+
         $bad=$payload; $bad['serial_no']='CUST-UPS-002'; $bad['ownership_type']='UNIFCO_MANAGED';
-        $this->actingAs($d['customerUser'])->post('/customer-assets/submissions',$bad)->assertStatus(422);
+        $this->actingAs($d['customerUser'])->post('/customer-assets/submissions',$bad)->assertRedirect()->assertSessionHasErrors('ownership_type');
+
+        $other=Customer::create(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'customer_code'=>'CUS-OTHER','name'=>'Other Customer','status'=>'ACTIVE','onboarding_status'=>'ACTIVE']);
+        $otherSite=CustomerSite::create(['customer_id'=>$other->id,'site_code'=>'OTHER-RUH','name'=>'Other Site','city'=>'Riyadh','status'=>'ACTIVE']);
+        $wrongSite=$payload; $wrongSite['serial_no']='CUST-UPS-003'; $wrongSite['customer_site_id']=$otherSite->id;
+        $this->actingAs($d['customerUser'])->post('/customer-assets/submissions',$wrongSite)->assertStatus(422);
+
         $this->actingAs($d['customerUser'])->post("/customer-assets/submissions/{$submission->id}/review",['decision'=>'APPROVE'])->assertForbidden();
         $this->actingAs($d['manager'])->post("/customer-assets/submissions/{$submission->id}/review",['decision'=>'APPROVE','notes'=>'Identity, site and ownership verified.'])->assertRedirect();
         $approved=DB::table('customer_asset_submissions')->where('id',$submission->id)->first(); $this->assertSame('APPROVED',$approved->status); $this->assertNotNull($approved->asset_id);
@@ -75,7 +83,7 @@ class AgreedAssetPhasesABCDTest extends TestCase
     {
         $d=$this->data(); $path=tempnam(sys_get_temp_dir(),'abcd').'.xlsx'; $this->makeXlsx($path,[$d['site']->id]);
         $file=new UploadedFile($path,'assets.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',null,true);
-        $this->actingAs($d['customerUser'])->post('/customer-assets/import',['file'=>$file])->assertRedirect();
+        $this->actingAs($d['customerUser'])->post('/customer-assets/import',['file'=>$file])->assertRedirect()->assertSessionHas('status');
         $this->assertDatabaseHas('customer_asset_submissions',['serial_no'=>'XLSX-001','source'=>'EXCEL','status'=>'PENDING_VERIFICATION','ownership_type'=>'CUSTOMER_OWNED']);
         @unlink($path);
     }
