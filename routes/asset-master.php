@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\Maintenance\{AssetMasterController,AssetMaintenanceIntelligenceController,AssetCustodyController,AssetWarrantyInsuranceController};
+use App\Http\Controllers\CustomerAssetGovernanceController;
+use App\Http\Controllers\Maintenance\{AssetMasterController,AssetMaintenanceIntelligenceController,AssetCustodyController,AssetWarrantyInsuranceController,AgreedAssetIntelligenceController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(function(){
@@ -33,4 +34,16 @@ Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(
     Route::get('/{asset}/intelligence',[AssetMaintenanceIntelligenceController::class,'show'])->name('intelligence.show');
     Route::post('/{asset}/intelligence/meter',[AssetMaintenanceIntelligenceController::class,'meter'])->name('intelligence.meter');
     Route::post('/{asset}/intelligence/recalculate',[AssetMaintenanceIntelligenceController::class,'recalculate'])->name('intelligence.recalculate');
+    Route::post('/{asset}/intelligence/pm',[AgreedAssetIntelligenceController::class,'pm'])->name('intelligence.pm');
+    Route::post('/{asset}/intelligence/inspection',[AgreedAssetIntelligenceController::class,'inspection'])->name('intelligence.inspection');
+    Route::post('/{asset}/intelligence/failure',[AgreedAssetIntelligenceController::class,'failure'])->name('intelligence.failure');
+    Route::get('/{asset}/intelligence/agreed-snapshot',[AgreedAssetIntelligenceController::class,'agreedSnapshot'])->name('intelligence.agreed-snapshot');
+});
+
+Route::middleware('auth')->prefix('customer-assets')->name('customer-assets.')->group(function(){
+    Route::get('/governance',[CustomerAssetGovernanceController::class,'index'])->name('governance');
+    Route::post('/submissions',[CustomerAssetGovernanceController::class,'store'])->name('submissions.store');
+    Route::post('/import',[CustomerAssetGovernanceController::class,'import'])->name('import');
+    Route::post('/submissions/{submission}/review',[CustomerAssetGovernanceController::class,'review'])->name('submissions.review');
+    Route::get('/submissions/{submission}/audit',[CustomerAssetGovernanceController::class,'audit'])->name('submissions.audit');
 });
