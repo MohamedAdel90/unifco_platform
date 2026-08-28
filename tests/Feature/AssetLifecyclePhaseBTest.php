@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Asset,AssetCommissioningRecord,AssetLocation,Customer,CustomerSite,Organization,Tenant,User};
+use App\Models\{Asset,AssetCategoryTemplate,AssetCommissioningRecord,AssetLocation,Customer,CustomerSite,Organization,Tenant,User};
 use App\Services\AssetMasterService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
@@ -14,22 +16,26 @@ class AssetLifecyclePhaseBTest extends TestCase
 
     private function setupData(): array
     {
+        Storage::fake('local');
         $tenant=Tenant::create(['name'=>'UNIFCO','code'=>'ASSET-B','status'=>'ACTIVE']);
         $org=Organization::create(['tenant_id'=>$tenant->id,'name'=>'HQ','code'=>'ASSET-B-HQ','status'=>'ACTIVE']);
         $customer=Customer::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_code'=>'CUS-B','name'=>'Phase B Customer','status'=>'ACTIVE','onboarding_status'=>'ACTIVE']);
         $site=CustomerSite::create(['customer_id'=>$customer->id,'site_code'=>'B-RUH','name'=>'Riyadh Plant','city'=>'Riyadh','status'=>'ACTIVE']);
+        $template=AssetCategoryTemplate::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'category'=>'Electrical','asset_type'=>'Diesel Generator','name'=>'Generator Standard','code'=>'GEN-STD','system_group'=>'ELECTRICAL','active'=>true,'status'=>'ACTIVE','specification_schema'=>['rating_kva'=>['label'=>'Rating kVA','type'=>'number'],'voltage'=>['label'=>'Voltage','type'=>'text']]]);
         $engineer=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Engineer','email'=>'phaseb.engineer@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_ENGINEER','status'=>'ACTIVE']);
         $manager=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Manager','email'=>'phaseb.manager@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_MANAGER','status'=>'ACTIVE']);
-        return compact('tenant','org','customer','site','engineer','manager');
+        return compact('tenant','org','customer','site','template','engineer','manager');
     }
 
     private function asset(array $d,string $serial='GEN-B-001',string $customerCode='GEN-01'): Asset
     {
         $this->actingAs($d['engineer'])->post('/asset-master',[
-            'customer_id'=>$d['customer']->id,'customer_site_id'=>$d['site']->id,'name'=>'Generator '.$customerCode,'customer_asset_code'=>$customerCode,
+            'customer_id'=>$d['customer']->id,'customer_site_id'=>$d['site']->id,'asset_category_template_id'=>$d['template']->id,'name'=>'Generator '.$customerCode,'customer_asset_code'=>$customerCode,
             'asset_category'=>'Electrical','asset_type'=>'Diesel Generator','manufacturer'=>'Caterpillar','model_no'=>'C18','serial_no'=>$serial,
             'criticality'=>'CRITICAL','ownership_type'=>'CUSTOMER_OWNED','maintenance_strategy'=>'PREVENTIVE','physical_location'=>'Generator Yard',
-            'installation_date'=>'2026-01-10','technical_specifications'=>'{"rating_kva":1000,"voltage":"400V"}',
+            'installation_date'=>'2026-01-10','commission_date'=>'2026-01-15','warranty_start'=>'2026-01-15','warranty_expiry'=>'2028-01-14','warranty_provider'=>'Caterpillar Service',
+            'technical_specifications'=>'{"rating_kva":1000,"voltage":"400V"}',
+            'primary_photo'=>UploadedFile::fake()->image('generator.jpg',900,600),'nameplate_photo'=>UploadedFile::fake()->image('generator-nameplate.jpg',900,600),
         ])->assertRedirect();
         return Asset::where('serial_no',$serial)->firstOrFail();
     }
