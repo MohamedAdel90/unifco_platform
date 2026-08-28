@@ -7,6 +7,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        if (Schema::hasTable('asset_category_templates') && !Schema::hasColumn('asset_category_templates','tenant_id')) {
+            Schema::table('asset_category_templates', function (Blueprint $table) {
+                $table->foreignId('tenant_id')->nullable()->after('id')->constrained()->cascadeOnDelete();
+                $table->foreignId('organization_id')->nullable()->after('tenant_id')->constrained()->nullOnDelete();
+                $table->string('category',100)->nullable()->after('organization_id');
+                $table->string('asset_type',120)->nullable()->after('category');
+                $table->json('specification_schema')->nullable()->after('asset_type');
+                $table->boolean('active')->default(true)->after('specification_schema');
+                $table->index(['tenant_id','active'],'asset_tpl_tenant_active_idx');
+                $table->index(['tenant_id','category','asset_type'],'asset_tpl_prof_identity_idx');
+            });
+        }
+
         Schema::create('asset_inspection_records', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
@@ -75,5 +88,14 @@ return new class extends Migration {
         Schema::dropIfExists('customer_asset_submission_events');
         Schema::dropIfExists('customer_asset_submissions');
         Schema::dropIfExists('asset_inspection_records');
+        if (Schema::hasTable('asset_category_templates') && Schema::hasColumn('asset_category_templates','tenant_id')) {
+            Schema::table('asset_category_templates', function (Blueprint $table) {
+                $table->dropIndex('asset_tpl_tenant_active_idx');
+                $table->dropIndex('asset_tpl_prof_identity_idx');
+                $table->dropConstrainedForeignId('organization_id');
+                $table->dropConstrainedForeignId('tenant_id');
+                $table->dropColumn(['category','asset_type','specification_schema','active']);
+            });
+        }
     }
 };
