@@ -7,8 +7,8 @@
 @if($errors->any())<div class="errors">@foreach($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>@endif
 <div class="am-grid">
 <section class="box"><h3>Register Customer Asset</h3><form class="form" method="POST" action="{{ route('asset-master.store') }}">@csrf
-<div class="field"><label>Customer</label><select name="customer_id" required><option value="">Select</option>@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->customer_code }} · {{ $c->name }}</option>@endforeach</select></div>
-<div class="field"><label>Site</label><select name="customer_site_id" required><option value="">Select</option>@foreach($sites as $s)<option value="{{ $s->id }}">{{ $s->site_code ?? '' }} {{ $s->name }}</option>@endforeach</select></div>
+<div class="field"><label>Customer</label><select id="asset-customer-select" name="customer_id" required><option value="">Select</option>@foreach($customers as $c)<option value="{{ $c->id }}" @selected((string)old('customer_id')===(string)$c->id)>{{ $c->customer_code }} · {{ $c->name }}</option>@endforeach</select></div>
+<div class="field"><label>Site</label><select id="asset-site-select" name="customer_site_id" required><option value="">Select customer first</option>@foreach($sites as $s)<option value="{{ $s->id }}" data-customer-id="{{ $s->customer_id }}" @selected((string)old('customer_site_id')===(string)$s->id)>{{ $s->site_code ?? '' }} {{ $s->name }}</option>@endforeach</select></div>
 <div class="field"><label>Asset Name</label><input name="name" required placeholder="Transformer TR-01"></div><div class="field"><label>Customer Asset Code</label><input name="customer_asset_code"></div>
 <div class="field"><label>Category</label><input name="asset_category" required placeholder="Electrical"></div><div class="field"><label>Asset Type</label><input name="asset_type" required placeholder="Distribution Transformer"></div>
 <div class="field"><label>Subcategory</label><input name="asset_subcategory"></div><div class="field"><label>Specification Template</label><select name="asset_category_template_id"><option value="">None</option>@foreach($templates as $t)<option value="{{ $t->id }}">{{ $t->category }} → {{ $t->asset_type }}</option>@endforeach</select></div>
@@ -21,4 +21,27 @@
 <section class="box"><h3>Asset Registry</h3>@forelse($assets as $asset)<div class="asset"><div><span class="pill">{{ $asset->asset_code }}</span><b style="display:block;margin-top:6px"><a href="{{ route('asset-master.show',$asset) }}">{{ $asset->name }}</a></b><small>{{ $asset->customer?->name ?: 'No customer' }} · {{ $asset->site?->name ?: 'No site' }}{{ $asset->location?' · '.$asset->location->name:'' }}</small><small>{{ $asset->asset_category }} → {{ $asset->asset_type ?: $asset->asset_subcategory ?: '-' }} · {{ $asset->manufacturer ?: '-' }} {{ $asset->model_no ?: '' }}</small><small>{{ $asset->lifecycle_status ?: $asset->status }} · {{ $asset->verification_status ?: 'PENDING' }} · Commissioning {{ str_replace('_',' ',$asset->commissioning_status ?? 'NOT_STARTED') }}</small></div><div style="text-align:right"><div class="score">{{ $asset->data_completeness_score ?? 0 }}%</div><small>complete</small></div></div>@empty<div style="font-size:10px;color:#77859a">No customer assets registered.</div>@endforelse</section>
 </div>
 @if($canVerify)<div class="am-grid" style="margin-top:14px"><section class="box"><h3>Location Hierarchy Node</h3><form class="form" method="POST" action="{{ route('asset-master.locations.store') }}">@csrf<div class="field"><label>Customer</label><select name="customer_id" required>@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select></div><div class="field"><label>Site</label><select name="customer_site_id" required>@foreach($sites as $s)<option value="{{ $s->id }}">{{ $s->site_code }} · {{ $s->name }}</option>@endforeach</select></div><div class="field"><label>Parent Location</label><select name="parent_id"><option value="">Top level</option>@foreach($locations as $loc)<option value="{{ $loc->id }}">{{ $loc->site?->site_code }} · {{ $loc->location_type }} · {{ $loc->code }} · {{ $loc->name }}</option>@endforeach</select></div><div class="field"><label>Location Type</label><select name="location_type"><option>SITE</option><option>BUILDING</option><option>FLOOR</option><option>ZONE</option><option>ROOM</option><option>AREA</option></select></div><div class="field"><label>Code</label><input name="code" required placeholder="BLD-A / EL-RM-01"></div><div class="field"><label>Name</label><input name="name" required placeholder="Main Building / Electrical Room 01"></div><div class="field wide"><label>Description</label><input name="description"></div><div class="wide"><button class="btn">Create Location Node</button></div></form><p style="font-size:9px;color:#77859a">Create Site → Building → Floor → Zone → Room/Area. Parent and site ownership are validated server-side.</p></section><section class="box"><h3>Asset Specification Template</h3><form class="form" method="POST" action="{{ route('asset-master.templates.store') }}">@csrf<div class="field"><label>Category</label><input name="category" required></div><div class="field"><label>Asset Type</label><input name="asset_type" required></div><div class="field wide"><label>Template Name</label><input name="name" required></div><div class="field wide"><label>Specification Schema (JSON)</label><textarea name="specification_schema" placeholder='{"rated_power_kva":{"label":"Rated Power kVA","type":"number"}}'></textarea></div><div class="wide"><button class="btn">Save Template</button></div></form></section></div>@endif
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    const customer=document.getElementById('asset-customer-select');
+    const site=document.getElementById('asset-site-select');
+    if(!customer||!site)return;
+    const options=Array.from(site.options).filter(option=>option.value);
+    const filterSites=function(){
+        const customerId=customer.value;
+        let selectedVisible=false;
+        options.forEach(function(option){
+            const matches=customerId!==''&&option.dataset.customerId===customerId;
+            option.hidden=!matches;
+            option.disabled=!matches;
+            if(matches&&option.selected)selectedVisible=true;
+        });
+        if(!selectedVisible)site.value='';
+        site.disabled=customerId==='';
+        site.options[0].textContent=customerId===''?'Select customer first':'Select site';
+    };
+    customer.addEventListener('change',filterSites);
+    filterSites();
+});
+</script>
 @endsection
