@@ -41,6 +41,8 @@ return new class extends Migration {
             $table->string('model_no',180)->nullable();
             $table->string('criticality',20)->default('MEDIUM');
             $table->string('ownership_type',30)->default('CUSTOMER_OWNED');
+            $table->string('maintenance_strategy',30)->default('PREVENTIVE');
+            $table->date('installation_date')->nullable();
             $table->string('physical_location',255)->nullable();
             $table->json('technical_specifications')->nullable();
             $table->string('status',30)->default('PENDING_VERIFICATION');
