@@ -2,7 +2,7 @@ name: Asset Phase C Qualification
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'implementation/**']
     paths:
       - 'app/Http/Controllers/Maintenance/AssetCustodyController.php'
       - 'app/Models/AssetCustody.php'
@@ -21,9 +21,7 @@ jobs:
     services:
       mysql:
         image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: unifco_test
+        env: { MYSQL_ROOT_PASSWORD: root, MYSQL_DATABASE: unifco_test }
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
@@ -31,10 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: mbstring, pdo_mysql
-          coverage: none
+        with: { php-version: '8.3', extensions: 'mbstring, pdo_mysql', coverage: none }
       - name: Prepare writable directories
         run: mkdir -p bootstrap/cache storage/framework/{cache,sessions,views} storage/logs && chmod -R 777 bootstrap/cache storage
       - name: Install dependencies
