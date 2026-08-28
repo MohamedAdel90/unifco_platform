@@ -16,7 +16,7 @@ class ProfessionalAssetMasterV2Test extends TestCase
         $engineer=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Engineer','email'=>'asset.v21@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_ENGINEER','status'=>'ACTIVE']);
         $response=$this->actingAs($engineer)->get('/asset-master');
         $response->assertOk()
-            ->assertSee('1 · Identification')->assertSee('2 · Location')->assertSee('3 · Technical & Evidence')->assertSee('4 · Lifecycle')->assertSee('5 · Review')
+            ->assertSee('1 · Identification')->assertSee('2 · Location')->assertSee('3 · Technical & Evidence',false)->assertSee('4 · Lifecycle')->assertSee('5 · Review')
             ->assertSee('Parent Asset')->assertSee('Managed Location')->assertSee('Transformer Standard')->assertSee('Structured fields appear automatically',false)
             ->assertSee('Asset Photo (Primary)')->assertSee('Nameplate Photo')->assertSee('Useful Life')->assertSee('Complete Engineer Registration')->assertSee('Search ID, name, customer, site, serial…')
             ->assertSee('Verification')->assertSee('Completeness')->assertSee('Complete Registration & Send for Verification',false);
