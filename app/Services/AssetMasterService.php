@@ -36,6 +36,7 @@ class AssetMasterService
     public function create(int $tenantId,int $organizationId,int $userId,array $data): Asset
     {
         if($duplicate=$this->findStrongDuplicate($tenantId,$data['customer_id']??null,$data)) abort(422,'Possible duplicate asset: '.$duplicate->asset_code.' · '.$duplicate->name);
+        $this->validateParent($tenantId,(int)($data['customer_id']??0),(int)($data['customer_site_id']??0),$data['parent_asset_id']??null);
         return DB::transaction(function() use($tenantId,$organizationId,$userId,$data){
             $next=((int)Asset::where('tenant_id',$tenantId)->max('id'))+1;
             $asset=Asset::create([
@@ -52,6 +53,13 @@ class AssetMasterService
     public function update(Asset $asset,array $data): Asset
     {
         if($duplicate=$this->findStrongDuplicate((int)$asset->tenant_id,$data['customer_id']??$asset->customer_id,$data,$asset->id)) abort(422,'Possible duplicate asset: '.$duplicate->asset_code.' · '.$duplicate->name);
+        $this->validateParent(
+            (int)$asset->tenant_id,
+            (int)($data['customer_id']??$asset->customer_id),
+            (int)($data['customer_site_id']??$asset->customer_site_id),
+            $data['parent_asset_id']??$asset->parent_asset_id,
+            $asset
+        );
         unset($data['asset_code']);
         $asset->update($data);
         return $this->refreshCompleteness($asset);
@@ -59,6 +67,7 @@ class AssetMasterService
 
     public function verify(Asset $asset,int $userId,?string $notes=null): Asset
     {
+        abort_unless($asset->verification_status==='PENDING' && $asset->lifecycle_status==='PENDING_VERIFICATION',422,'Only an asset pending verification can be verified.');
         $asset=$this->refreshCompleteness($asset);
         abort_if($asset->data_completeness_score<70,422,'Asset profile must be at least 70% complete before activation.');
         abort_if(!$asset->customer_id || !$asset->customer_site_id,422,'Customer and site are required before activation.');
@@ -87,6 +96,7 @@ class AssetMasterService
     public function requestCommissioning(Asset $asset,int $userId,array $data): AssetCommissioningRecord
     {
         abort_unless($asset->verification_status==='VERIFIED',422,'Asset must be verified before commissioning.');
+        abort_unless($asset->lifecycle_status==='ACTIVE',422,'Only an active asset can enter commissioning approval.');
         abort_if($asset->commissioning_status==='COMMISSIONED',422,'Asset is already commissioned.');
         abort_if(AssetCommissioningRecord::where('asset_id',$asset->id)->where('status','PENDING_APPROVAL')->exists(),422,'A commissioning review is already pending.');
         return DB::transaction(function() use($asset,$userId,$data){
@@ -105,14 +115,19 @@ class AssetMasterService
     {
         abort_unless((int)$record->asset_id===(int)$asset->id && $record->status==='PENDING_APPROVAL',422,'Commissioning review is not pending.');
         abort_if((int)$record->created_by===$reviewerId,422,'Maker/checker control: commissioning requester cannot approve their own record.');
-        return DB::transaction(function() use($asset,$record,$reviewerId,$approve,$notes){
+        if($approve){
+            abort_unless(in_array($record->inspection_result,['PASS','PASS_WITH_NOTES'],true),422,'A failed commissioning inspection cannot be approved.');
+            abort_unless($asset->verification_status==='VERIFIED' && $asset->lifecycle_status==='ACTIVE',422,'Asset lifecycle changed after commissioning request; approval requires a verified active asset.');
+        }
+        $from=$asset->lifecycle_status;
+        return DB::transaction(function() use($asset,$record,$reviewerId,$approve,$notes,$from){
             $record->update(['status'=>$approve?'APPROVED':'REJECTED','approved_by'=>$reviewerId,'approved_at'=>now(),'notes'=>$notes ?: $record->notes]);
             if($approve){
                 $asset->update(['commissioning_status'=>'COMMISSIONED','commission_date'=>$record->inspection_date ?: now()->toDateString(),'commissioning_approved_by'=>$reviewerId,'commissioning_approved_at'=>now(),'commissioning_notes'=>$notes ?: $record->notes,'operational_status'=>'ACTIVE','lifecycle_status'=>'ACTIVE','status'=>'ACTIVE']);
-                $this->event($asset,'COMMISSIONING_APPROVED',$asset->lifecycle_status,'ACTIVE','Asset commissioned and operational',$notes,$reviewerId,['commissioning_record_id'=>$record->id]);
+                $this->event($asset,'COMMISSIONING_APPROVED',$from,'ACTIVE','Asset commissioned and operational',$notes,$reviewerId,['commissioning_record_id'=>$record->id]);
             } else {
                 $asset->update(['commissioning_status'=>'REJECTED','commissioning_approved_by'=>$reviewerId,'commissioning_approved_at'=>now(),'commissioning_notes'=>$notes]);
-                $this->event($asset,'COMMISSIONING_REJECTED',$asset->lifecycle_status,$asset->lifecycle_status,'Commissioning rejected',$notes,$reviewerId,['commissioning_record_id'=>$record->id]);
+                $this->event($asset,'COMMISSIONING_REJECTED',$from,$from,'Commissioning rejected',$notes,$reviewerId,['commissioning_record_id'=>$record->id]);
             }
             return $asset->refresh();
         });
@@ -125,6 +140,24 @@ class AssetMasterService
         $score=(int)round(($filled/count($checks))*100);
         if((int)$asset->data_completeness_score!==$score) $asset->update(['data_completeness_score'=>$score]);
         return $asset->refresh();
+    }
+
+    private function validateParent(int $tenantId,int $customerId,int $siteId,mixed $parentId,?Asset $asset=null): void
+    {
+        if(!$parentId) return;
+        $parent=Asset::where('tenant_id',$tenantId)->find($parentId);
+        abort_unless($parent,422,'Parent asset must belong to the same tenant.');
+        abort_unless((int)$parent->customer_id===$customerId && (int)$parent->customer_site_id===$siteId,422,'Parent asset must belong to the same customer and site.');
+        if(!$asset) return;
+        abort_if((int)$parent->id===(int)$asset->id,422,'An asset cannot be its own parent.');
+        $cursor=$parent;
+        $visited=[];
+        while($cursor){
+            abort_if(isset($visited[$cursor->id]),422,'Asset hierarchy contains an existing cycle.');
+            $visited[$cursor->id]=true;
+            abort_if((int)$cursor->id===(int)$asset->id,422,'Asset hierarchy cannot contain a cycle.');
+            $cursor=$cursor->parent_asset_id ? Asset::where('tenant_id',$tenantId)->find($cursor->parent_asset_id) : null;
+        }
     }
 
     private function event(Asset $asset,string $type,?string $from,?string $to,string $title,?string $notes,?int $userId,array $metadata=[]): void
