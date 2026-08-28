@@ -1,0 +1,76 @@
+name: Agreed Asset Phases A-D Qualification
+
+on:
+  push:
+    branches: [main, agreed-asset-phases-a-d]
+    paths:
+      - 'app/Http/Controllers/CustomerAssetGovernanceController.php'
+      - 'app/Http/Controllers/Maintenance/AgreedAssetIntelligenceController.php'
+      - 'app/Services/AgreedAssetIntelligenceService.php'
+      - 'app/Services/CustomerAssetGovernanceService.php'
+      - 'database/migrations/2026_08_28_000080_complete_agreed_asset_phases_b_d.php'
+      - 'resources/views/customer-assets/governance.blade.php'
+      - 'routes/asset-master.php'
+      - 'tests/Feature/AgreedAssetPhasesABCDTest.php'
+      - '.github/workflows/agreed-asset-phases-a-d-qualification.yml'
+  workflow_dispatch:
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: unifco_testing
+      DB_USERNAME: unifco_test
+      DB_PASSWORD: Unifco_Test!2026
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: unifco_testing
+          MYSQL_USER: unifco_test
+          MYSQL_PASSWORD: Unifco_Test!2026
+          MYSQL_ROOT_PASSWORD: Unifco_Root!2026
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uunifco_test -pUnifco_Test!2026 --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, zip, simplexml
+          coverage: none
+      - name: Validate agreed source
+        run: |
+          set -euo pipefail
+          php -l app/Services/AgreedAssetIntelligenceService.php
+          php -l app/Services/CustomerAssetGovernanceService.php
+          php -l app/Http/Controllers/Maintenance/AgreedAssetIntelligenceController.php
+          php -l app/Http/Controllers/CustomerAssetGovernanceController.php
+          php -l database/migrations/2026_08_28_000080_complete_agreed_asset_phases_b_d.php
+          php -l tests/Feature/AgreedAssetPhasesABCDTest.php
+          grep -q "intelligence.pm" routes/asset-master.php
+          grep -q "customer-assets.import" routes/asset-master.php
+          grep -q "CUSTOMER_OWNED assets" app/Services/CustomerAssetGovernanceService.php
+          grep -q "Maker/checker control" app/Services/CustomerAssetGovernanceService.php
+      - name: Prepare writable directories
+        run: mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs && chmod -R u+rwX bootstrap/cache storage
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate:fresh --force
+          php artisan route:list --name=asset-master.intelligence.pm >/dev/null
+          php artisan route:list --name=asset-master.intelligence.inspection >/dev/null
+          php artisan route:list --name=asset-master.intelligence.failure >/dev/null
+          php artisan route:list --name=customer-assets.import >/dev/null
+          php artisan route:list --name=customer-assets.submissions.review >/dev/null
+          php artisan view:cache
+      - name: Run agreed A-D qualification and regressions
+        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php tests/Feature/AssetCustodyPhaseCTest.php tests/Feature/AssetWarrantyInsurancePhaseDTest.php tests/Feature/AgreedAssetPhasesABCDTest.php
