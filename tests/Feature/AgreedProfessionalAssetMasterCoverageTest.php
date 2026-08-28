@@ -38,6 +38,6 @@ class AgreedProfessionalAssetMasterCoverageTest extends TestCase
 
         $this->actingAs($manager)->get('/asset-master/'.$asset->id)->assertOk()
             ->assertSee('Asset 360')->assertSee('SER-A-COVER')->assertSee('Generator Room')->assertSee('OEM')
-            ->assertSee('Technical Specifications')->assertSee('Documents & Photos')->assertSee('QR-A-COVER');
+            ->assertSee('Technical Specifications')->assertSee('Documents & Photos',false)->assertSee('QR-A-COVER');
     }
 }
