@@ -73,7 +73,7 @@ jobs:
           grep -q "Condition Readings" resources/views/maintenance/asset-master/show.blade.php
           grep -q "Warranty expires in 30 days" resources/views/maintenance/asset-master/show.blade.php
           grep -q "Asset approaching end of useful life" resources/views/maintenance/asset-master/show.blade.php
-          grep -q "Full Component Traceability" resources/views/maintenance/asset-master/show.blade.php
+          grep -q "Installed Parts & Components" resources/views/maintenance/asset-master/show.blade.php
           grep -q "Asset Timeline — Append Only" resources/views/maintenance/asset-master/show.blade.php
           grep -q "lifecycle history cannot be deleted" app/Models/AssetLifecycleEvent.php
       - name: Prepare Laravel
