@@ -104,10 +104,10 @@ class ProfessionalAssetMasterTest extends TestCase
             ->assertSee('Asset Photo (Primary)')
             ->assertSee('Asset QR Code')
             ->assertSee('Open / Download QR')
-            ->assertSee('Data Quality & Evidence')
-            ->assertSee('Maintenance & Risk Intelligence')
+            ->assertSee('Data Quality & Evidence',false)
+            ->assertSee('Maintenance & Risk Intelligence',false)
             ->assertSee('Documents & Asset Photos',false)
-            ->assertSee('Governance & Independent Verification')
+            ->assertSee('Governance & Independent Verification',false)
             ->assertSee('tab-overview',false)
             ->assertSee('tab-documents',false)
             ->assertSee('2027-01-19');
