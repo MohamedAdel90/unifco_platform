@@ -1,0 +1,70 @@
+name: Asset Phase D Qualification
+
+on:
+  push:
+    branches: [main, 'phase-d-*', 'implementation/**']
+    paths:
+      - 'app/Http/Controllers/Maintenance/AssetWarrantyInsuranceController.php'
+      - 'app/Models/AssetCoverage.php'
+      - 'app/Models/AssetCoverageClaim.php'
+      - 'app/Services/AssetWarrantyInsuranceService.php'
+      - 'database/migrations/*warranty_insurance_phase_d*'
+      - 'resources/views/maintenance/asset-master/warranty-insurance.blade.php'
+      - 'routes/asset-master.php'
+      - 'tests/Feature/AssetWarrantyInsurancePhaseDTest.php'
+      - '.github/workflows/asset-phase-d-qualification.yml'
+  workflow_dispatch:
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: unifco_testing
+      DB_USERNAME: unifco_test
+      DB_PASSWORD: Unifco_Test!2026
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: unifco_testing
+          MYSQL_USER: unifco_test
+          MYSQL_PASSWORD: Unifco_Test!2026
+          MYSQL_ROOT_PASSWORD: Unifco_Root!2026
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uunifco_test -pUnifco_Test!2026 --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.4', extensions: pdo_mysql, coverage: none }
+      - name: Validate Phase D source
+        run: |
+          set -euo pipefail
+          php -l app/Models/AssetCoverage.php
+          php -l app/Models/AssetCoverageClaim.php
+          php -l app/Services/AssetWarrantyInsuranceService.php
+          php -l app/Http/Controllers/Maintenance/AssetWarrantyInsuranceController.php
+          php -l database/migrations/2026_08_28_000020_add_asset_warranty_insurance_phase_d.php
+          php -l routes/asset-master.php
+          grep -q "name('coverage.store')" routes/asset-master.php
+          grep -q "name('coverage.claims.review')" routes/asset-master.php
+          grep -q 'Maker/checker control' app/Services/AssetWarrantyInsuranceService.php
+      - name: Prepare writable directories
+        run: mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs && chmod -R u+rwX bootstrap/cache storage
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate:fresh --force
+          php artisan route:list --name=asset-master.coverage.show >/dev/null
+          php artisan route:list --name=asset-master.coverage.store >/dev/null
+          php artisan route:list --name=asset-master.coverage.claims.review >/dev/null
+          php artisan view:cache
+      - name: Run Phase A B C D asset tests
+        run: php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/AssetLifecyclePhaseBTest.php tests/Feature/AssetMaintenanceIntelligenceTest.php tests/Feature/AssetCustodyPhaseCTest.php tests/Feature/AssetWarrantyInsurancePhaseDTest.php
