@@ -86,16 +86,27 @@ class CustomerAssetGovernanceService
     private function xlsxRows(string $path): array
     {
         abort_unless(class_exists(ZipArchive::class),500,'XLSX support requires the PHP zip extension.');
+        abort_unless(class_exists(\DOMDocument::class),500,'XLSX support requires the PHP DOM extension.');
         $zip=new ZipArchive(); abort_unless($zip->open($path)===true,422,'Invalid XLSX file.');
         $shared=[];
         if(($raw=$zip->getFromName('xl/sharedStrings.xml'))!==false){
-            $sx=simplexml_load_string($raw); $ns=$sx?->getNamespaces(true); $root=$sx && isset($ns['']) ? $sx->children($ns['']) : $sx;
-            foreach($root?->si??[] as $si){ $node=isset($ns[''])?$si->children($ns['']):$si; $text=''; if(isset($node->t)) $text=(string)$node->t; else foreach($node->r??[] as $run){ $rn=isset($ns[''])?$run->children($ns['']):$run; $text.=(string)$rn->t; } $shared[]=$text; }
+            $doc=new \DOMDocument(); abort_unless(@$doc->loadXML($raw),422,'Invalid XLSX shared strings.'); $xp=new \DOMXPath($doc);
+            foreach($xp->query('//*[local-name()="si"]') as $si){ $text=''; foreach($xp->query('.//*[local-name()="t"]',$si) as $t) $text.=$t->textContent; $shared[]=$text; }
         }
         $sheetRaw=$zip->getFromName('xl/worksheets/sheet1.xml'); $zip->close(); abort_if($sheetRaw===false,422,'XLSX sheet1 is missing.');
-        $xml=simplexml_load_string($sheetRaw); $ns=$xml?->getNamespaces(true); $root=$xml && isset($ns[''])?$xml->children($ns['']):$xml; $matrix=[];
-        foreach($root?->sheetData?->row??[] as $row){ $rn=isset($ns[''])?$row->children($ns['']):$row; $cells=[]; foreach($rn->c??[] as $c){ $cn=isset($ns[''])?$c->children($ns['']):$c; $ref=(string)$c['r']; preg_match('/([A-Z]+)/',$ref,$m); $col=$this->columnIndex($m[1]??'A'); $v=(string)$cn->v; $cells[$col]=((string)$c['t']==='s')?($shared[(int)$v]??''):$v; } if($cells){ $width=max(array_keys($cells))+1; $matrix[]=array_values(array_replace(array_fill(0,$width,''),$cells)); } }
-        if(!$matrix) return []; $headers=array_shift($matrix); return array_map(fn($values)=>array_combine($headers,array_pad($values,count($headers),null)),$matrix);
+        $doc=new \DOMDocument(); abort_unless(@$doc->loadXML($sheetRaw),422,'Invalid XLSX worksheet.'); $xp=new \DOMXPath($doc); $matrix=[];
+        foreach($xp->query('//*[local-name()="sheetData"]/*[local-name()="row"]') as $row){
+            $cells=[];
+            foreach($xp->query('./*[local-name()="c"]',$row) as $c){
+                $ref=$c->attributes?->getNamedItem('r')?->nodeValue ?: 'A'; preg_match('/([A-Z]+)/',$ref,$m); $col=$this->columnIndex($m[1]??'A');
+                $valueNode=$xp->query('./*[local-name()="v"]',$c)->item(0); $v=$valueNode?->textContent ?? '';
+                $type=$c->attributes?->getNamedItem('t')?->nodeValue; $cells[$col]=$type==='s'?($shared[(int)$v]??''):$v;
+            }
+            if($cells){ $width=max(array_keys($cells))+1; $matrix[]=array_values(array_replace(array_fill(0,$width,''),$cells)); }
+        }
+        if(!$matrix) return []; $headers=array_map('trim',array_shift($matrix));
+        $rows=[]; foreach($matrix as $values){ $values=array_pad($values,count($headers),null); if(count($values)>count($headers)) $values=array_slice($values,0,count($headers)); $rows[]=array_combine($headers,$values); }
+        return $rows;
     }
 
     private function columnIndex(string $letters): int { $n=0; foreach(str_split($letters) as $c) $n=$n*26+(ord($c)-64); return $n-1; }
