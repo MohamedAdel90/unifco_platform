@@ -54,9 +54,10 @@ jobs:
           php -l database/migrations/2026_08_28_000080_complete_agreed_asset_phases_b_d.php
           php -l tests/Feature/AgreedAssetPhasesABCDTest.php
           grep -q "intelligence.pm" routes/asset-master.php
-          grep -q "customer-assets.import" routes/asset-master.php
+          grep -q "CustomerAssetGovernanceController::class,'import'" routes/asset-master.php
           grep -q "CUSTOMER_OWNED assets" app/Services/CustomerAssetGovernanceService.php
           grep -q "Maker/checker control" app/Services/CustomerAssetGovernanceService.php
+          grep -q "signed-in customer and tenant" app/Services/CustomerAssetGovernanceService.php
       - name: Prepare writable directories
         run: mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs && chmod -R u+rwX bootstrap/cache storage
       - name: Install dependencies
