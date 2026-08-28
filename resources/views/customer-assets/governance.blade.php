@@ -1,0 +1,17 @@
+@extends('layouts.app')
+@section('title','Customer Asset Governance')
+@section('heading','Customer Asset Governance')
+@section('content')
+<style>.card{background:#fff;border:1px solid #e1e6ee;border-radius:12px;padding:16px;margin-bottom:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form{display:grid;grid-template-columns:1fr 1fr;gap:7px}.form input,.form select,.form textarea{padding:8px;border:1px solid #d7e0eb;border-radius:6px}.wide{grid-column:1/-1}.btn{border:0;border-radius:7px;background:#06275c;color:#fff;padding:8px 10px;font-weight:800}.row{padding:9px 0;border-bottom:1px solid #edf1f5}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#edf3fb;color:#285f99;font-size:10px;font-weight:800}.notice{background:#e9f7ef;color:#176940;padding:10px;border-radius:8px;margin-bottom:12px}@media(max-width:800px){.grid,.form{grid-template-columns:1fr}.wide{grid-column:auto}}</style>
+@if(session('status'))<div class="notice">{{ session('status') }}</div>@endif
+<div class="grid">
+@if($isCustomer)
+<section class="card"><h3>Add Customer Asset</h3><form class="form" method="POST" action="{{ route('customer-assets.submissions.store') }}">@csrf
+<input name="customer_site_id" type="number" required placeholder="Customer Site ID"><input name="name" required placeholder="Asset name"><input name="customer_asset_code" placeholder="Customer asset code"><input name="serial_no" required placeholder="Serial number"><input name="asset_category" required placeholder="Category"><input name="asset_type" required placeholder="Type"><input name="manufacturer" required placeholder="Manufacturer"><input name="model_no" required placeholder="Model"><select name="criticality"><option>MEDIUM</option><option>LOW</option><option>HIGH</option><option>CRITICAL</option></select><input type="date" name="installation_date" required><input class="wide" name="physical_location" required placeholder="Physical location"><textarea class="wide" name="technical_specifications" placeholder='{"capacity":"1000 kVA"}'></textarea><input type="hidden" name="ownership_type" value="CUSTOMER_OWNED"><button class="btn wide">Submit for Verification</button></form></section>
+<section class="card"><h3>Bulk Excel Import</h3><p>CSV/XLSX headers: name, asset_category, customer_site_id, asset_type, manufacturer, model_no, serial_no, physical_location, installation_date, criticality.</p><form method="POST" enctype="multipart/form-data" action="{{ route('customer-assets.import') }}">@csrf<input type="file" name="file" accept=".csv,.xlsx" required><button class="btn">Import Excel</button></form></section>
+@endif
+<section class="card wide"><h3>Verification & Approval Queue</h3>@forelse($submissions as $s)<div class="row"><span class="pill">{{ $s->status }}</span> <b>{{ $s->name }}</b> · {{ $s->serial_no }} · {{ $s->ownership_type }} · {{ $s->source }}
+@if(!$isCustomer && $s->status==='PENDING_VERIFICATION')<form method="POST" action="{{ route('customer-assets.submissions.review',$s->id) }}" style="display:inline">@csrf<input name="notes" placeholder="Verification notes"><button class="btn" name="decision" value="APPROVE">Approve</button><button class="btn" name="decision" value="REJECT">Reject</button></form>@endif
+<a href="{{ route('customer-assets.submissions.audit',$s->id) }}">Audit trail</a></div>@empty<p>No submissions.</p>@endforelse</section>
+</div>
+@endsection
