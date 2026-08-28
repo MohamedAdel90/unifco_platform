@@ -53,9 +53,9 @@ class AssetAcceptanceContractFinalTest extends TestCase
         DB::table('maintenance_plans')->insert(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'asset_id'=>$a->id,'plan_no'=>'PM-FINAL','name'=>'Monthly PM','frequency_type'=>'MONTH','frequency_value'=>1,'next_due_date'=>today()->subDays(10),'priority'=>'HIGH','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
         DB::table('asset_inspection_records')->insert(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'asset_id'=>$a->id,'inspection_date'=>today(),'inspection_type'=>'CONDITION','condition_status'=>'POOR','findings'=>'High vibration','inspected_by'=>$d['engineer']->id,'created_at'=>now(),'updated_at'=>now()]);
         DB::table('asset_failures')->insert(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'asset_id'=>$a->id,'failure_mode'=>'Overheat','failed_at'=>now()->subHours(6),'restored_at'=>now(),'downtime_minutes'=>360,'severity'=>'HIGH','status'=>'RESTORED','reported_by'=>$d['engineer']->id,'created_at'=>now(),'updated_at'=>now()]);
-        WorkOrder::create(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'work_order_no'=>'WO-FINAL-1','asset_id'=>$a->id,'maintenance_type'=>'CORRECTIVE','priority'=>'HIGH','status'=>'OPEN','total_cost'=>500]);
+        $wo=WorkOrder::create(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'work_order_no'=>'WO-FINAL-1','asset_id'=>$a->id,'maintenance_type'=>'CORRECTIVE','priority'=>'HIGH','status'=>'OPEN','total_cost'=>500]);
         $item=Item::create(['tenant_id'=>$d['tenant']->id,'item_code'=>'BRG-6205','name'=>'Bearing','uom'=>'EA','status'=>'ACTIVE']);
-        AssetPartInstallation::create(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'asset_id'=>$a->id,'item_id'=>$item->id,'installed_part_number'=>'BRG-6205','installed_serial_number'=>'BRG-SN-1','installed_manufacturer'=>'Bearing Co','warehouse_code'=>'MAIN','quantity'=>1,'unit_cost'=>100,'total_cost'=>100,'installed_by'=>$d['engineer']->id,'installed_at'=>now(),'warranty_end'=>today()->addYear(),'component_status'=>'INSTALLED']);
+        AssetPartInstallation::create(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'work_order_id'=>$wo->id,'asset_id'=>$a->id,'item_id'=>$item->id,'installed_part_number'=>'BRG-6205','installed_serial_number'=>'BRG-SN-1','installed_manufacturer'=>'Bearing Co','warehouse_code'=>'MAIN','quantity'=>1,'unit_cost'=>100,'total_cost'=>100,'installed_by'=>$d['engineer']->id,'installed_at'=>now(),'warranty_end'=>today()->addYear(),'component_status'=>'INSTALLED']);
 
         $svc=app(AssetAcceptanceContractService::class); $a=$svc->recalculateCriticality($a->fresh()); $a=$svc->recalculateHealth($a->fresh()); $s=$svc->healthSnapshot($a);
         $this->assertSame('A',$a->criticality_class); $this->assertSame('CRITICAL',$a->criticality); $this->assertGreaterThan(0,(float)$a->criticality_matrix_score);
@@ -70,9 +70,10 @@ class AssetAcceptanceContractFinalTest extends TestCase
         $this->assertTrue($alerts['warranty_expires_in_30_days']); $this->assertTrue($alerts['approaching_end_of_useful_life']);
         $this->assertSame('PO-145',$a->po_number); $this->assertSame('Parts and labor coverage',$a->warranty_terms); $this->assertNotNull($a->replacement_target_date); $this->assertEquals(165000,(float)$a->replacement_cost_estimate);
 
+        $wo=WorkOrder::create(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'work_order_no'=>'WO-FINAL-COMPONENT','asset_id'=>$a->id,'maintenance_type'=>'CORRECTIVE','priority'=>'HIGH','status'=>'COMPLETED','total_cost'=>250]);
         $item=Item::create(['tenant_id'=>$d['tenant']->id,'item_code'=>'FAN-01','name'=>'Cooling Fan','uom'=>'EA','status'=>'ACTIVE']);
-        $part=AssetPartInstallation::create(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'asset_id'=>$a->id,'item_id'=>$item->id,'installed_part_number'=>'FAN-01','installed_serial_number'=>'FAN-SN-9','installed_manufacturer'=>'Fan Co','warehouse_code'=>'MAIN','quantity'=>1,'unit_cost'=>250,'total_cost'=>250,'installed_by'=>$d['engineer']->id,'installed_at'=>now()->subMonth(),'warranty_start'=>today()->subMonth(),'warranty_end'=>today()->addMonths(11),'component_status'=>'REPLACED','removed_at'=>now(),'removed_serial'=>'OLD-FAN','removed_disposition'=>'SCRAPPED']);
-        $this->assertSame('FAN-SN-9',$part->installed_serial_number); $this->assertSame('REPLACED',$part->component_status); $this->assertNotNull($part->removed_at);
+        $part=AssetPartInstallation::create(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'work_order_id'=>$wo->id,'asset_id'=>$a->id,'item_id'=>$item->id,'installed_part_number'=>'FAN-01','installed_serial_number'=>'FAN-SN-9','installed_manufacturer'=>'Fan Co','warehouse_code'=>'MAIN','quantity'=>1,'unit_cost'=>250,'total_cost'=>250,'installed_by'=>$d['engineer']->id,'installed_at'=>now()->subMonth(),'warranty_start'=>today()->subMonth(),'warranty_end'=>today()->addMonths(11),'component_status'=>'REPLACED','removed_at'=>now(),'removed_serial'=>'OLD-FAN','removed_disposition'=>'SCRAPPED']);
+        $this->assertSame('FAN-SN-9',$part->installed_serial_number); $this->assertSame('REPLACED',$part->component_status); $this->assertNotNull($part->removed_at); $this->assertSame($wo->id,$part->work_order_id);
     }
 
     public function test_document_center_photo_gallery_and_metadata_cover_literal_taxonomy(): void
@@ -93,6 +94,6 @@ class AssetAcceptanceContractFinalTest extends TestCase
         $this->actingAs($d['manager'])->get('/asset-master/'.$a->id)->assertOk()
             ->assertSee('Overview')->assertSee('Technical')->assertSee('Maintenance')->assertSee('Work Orders')->assertSee('Components')->assertSee('Parts')->assertSee('Documents')->assertSee('History')->assertSee('Costs')
             ->assertSee('Next PM')->assertSee('Open Work Orders')->assertSee('Lifetime Cost')->assertSee('Downtime YTD')->assertSee('Installed Parts')->assertSee('Last Inspection')
-            ->assertSee('Criticality Matrix')->assertSee('Impact × Probability',false)->assertSee('Purchase, Warranty & Lifecycle')->assertSee('Full Component Traceability')->assertSee('Asset Timeline — Append Only');
+            ->assertSee('Criticality Matrix')->assertSee('Impact × Probability',false)->assertSee('Purchase, Warranty & Lifecycle',false)->assertSee('Full Component Traceability')->assertSee('Asset Timeline — Append Only');
     }
 }
