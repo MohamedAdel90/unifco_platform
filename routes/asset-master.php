@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Maintenance\{AssetMasterController,AssetMaintenanceIntelligenceController};
+use App\Http\Controllers\Maintenance\{AssetMasterController,AssetMaintenanceIntelligenceController,AssetCustodyController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(function(){
@@ -17,6 +17,12 @@ Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(
     Route::post('/{asset}/commissioning/{record}/review',[AssetMasterController::class,'reviewCommissioning'])->name('commissioning.review');
     Route::post('/{asset}/documents',[AssetMasterController::class,'document'])->name('documents.store');
     Route::get('/documents/{document}/download',[AssetMasterController::class,'download'])->name('documents.download');
+
+    Route::get('/{asset}/custody',[AssetCustodyController::class,'show'])->name('custody.show');
+    Route::post('/{asset}/custody',[AssetCustodyController::class,'assign'])->name('custody.assign');
+    Route::post('/{asset}/custody/{custody}/return',[AssetCustodyController::class,'return'])->name('custody.return');
+    Route::post('/{asset}/transfers',[AssetCustodyController::class,'requestTransfer'])->name('transfers.request');
+    Route::post('/{asset}/transfers/{transfer}/review',[AssetCustodyController::class,'review'])->name('transfers.review');
 
     Route::get('/{asset}/intelligence',[AssetMaintenanceIntelligenceController::class,'show'])->name('intelligence.show');
     Route::post('/{asset}/intelligence/meter',[AssetMaintenanceIntelligenceController::class,'meter'])->name('intelligence.meter');
