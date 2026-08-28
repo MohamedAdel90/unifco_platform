@@ -70,6 +70,7 @@ jobs:
           php -l app/Models/AssetLifecycleEvent.php
           php -l app/Models/AssetCommissioningRecord.php
           php -l app/Services/AssetMasterService.php
+          php -l app/Services/AssetAcceptanceContractService.php
           php -l app/Services/CustomerAcquisitionService.php
           php -l app/Services/CustomerPortalAccessService.php
           php -l app/Http/Controllers/Workflow/ApprovalController.php
@@ -171,6 +172,7 @@ jobs:
           php artisan view:cache
           php artisan test \
             tests/Feature/ProfessionalAssetMasterTest.php \
+            tests/Feature/ProfessionalAssetMasterV2Test.php \
             tests/Feature/AssetLifecyclePhaseBTest.php \
             tests/Feature/PublicOfficialContactTest.php \
             tests/Feature/CustomerAcquisitionWorkflowTest.php \
