@@ -22,6 +22,7 @@ on:
       - 'resources/views/maintenance/asset-master/show.blade.php'
       - 'resources/views/customer-assets/governance.blade.php'
       - 'routes/asset-master.php'
+      - 'tests/Feature/ProfessionalAssetMasterTest.php'
       - 'tests/Feature/AgreedAssetPhasesABCDTest.php'
       - 'tests/Feature/AgreedProfessionalAssetMasterCoverageTest.php'
       - 'tests/Feature/AgreedAssetGapClosureABCDTest.php'
@@ -77,6 +78,7 @@ jobs:
           php -l database/migrations/2026_08_28_000080_complete_agreed_asset_phases_b_d.php
           php -l database/migrations/2026_08_28_000090_close_agreed_asset_a_d_gaps.php
           php -l database/migrations/2026_08_28_000100_close_asset_acceptance_contract.php
+          php -l tests/Feature/ProfessionalAssetMasterTest.php
           php -l tests/Feature/AssetAcceptanceContractFinalTest.php
           php -l tests/Feature/AssetCreationApprovalBulkDuplicateContractTest.php
           grep -q "AST-UNF-" app/Services/AssetMasterService.php
