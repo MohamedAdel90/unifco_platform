@@ -23,8 +23,31 @@ class AssetMasterController extends Controller
 
     public function index(Request $request): View
     {
-        $user=$this->user($request); $assets=Asset::with(['customer','site','location','parent','template'])->where('tenant_id',$user->tenant_id)->orderByDesc('id')->limit(120)->get();
-        return view('maintenance.asset-master.index',['assets'=>$assets,'customers'=>Customer::where('tenant_id',$user->tenant_id)->orderBy('name')->get(),'sites'=>CustomerSite::whereHas('customer',fn($q)=>$q->where('tenant_id',$user->tenant_id))->orderBy('name')->get(),'locations'=>AssetLocation::where('tenant_id',$user->tenant_id)->where('active',true)->with(['site','parent'])->orderBy('customer_site_id')->orderBy('location_type')->orderBy('name')->get(),'templates'=>AssetCategoryTemplate::where('tenant_id',$user->tenant_id)->where('active',true)->orderBy('category')->orderBy('asset_type')->get(),'criticalities'=>AssetMasterService::CRITICALITY,'ownershipTypes'=>AssetMasterService::OWNERSHIP,'strategies'=>AssetMasterService::STRATEGIES,'canVerify'=>in_array($user->role,self::VERIFY_ROLES,true),'canCreate'=>in_array($user->role,self::CREATE_ROLES,true)]);
+        $user=$this->user($request);
+        $assets=Asset::with(['customer','site','location','parent','template'])->where('tenant_id',$user->tenant_id)->orderByDesc('id')->limit(120)->get();
+        $parents=Asset::where('tenant_id',$user->tenant_id)->whereNotIn('lifecycle_status',['DISPOSED'])->orderBy('name')->get(['id','customer_id','customer_site_id','asset_code','name','lifecycle_status']);
+        $templates=AssetCategoryTemplate::where('tenant_id',$user->tenant_id)->where('active',true)->orderBy('category')->orderBy('asset_type')->get();
+        $stats=[
+            'total'=>$assets->count(),
+            'active'=>$assets->where('lifecycle_status','ACTIVE')->count(),
+            'pending'=>$assets->where('verification_status','PENDING')->count(),
+            'critical'=>$assets->where('criticality','CRITICAL')->count(),
+            'outOfService'=>$assets->whereIn('operational_status',['OUT_OF_SERVICE','DECOMMISSIONED','DISPOSED'])->count(),
+        ];
+        return view('maintenance.asset-master.index',[
+            'assets'=>$assets,
+            'parents'=>$parents,
+            'stats'=>$stats,
+            'customers'=>Customer::where('tenant_id',$user->tenant_id)->orderBy('name')->get(),
+            'sites'=>CustomerSite::whereHas('customer',fn($q)=>$q->where('tenant_id',$user->tenant_id))->orderBy('name')->get(),
+            'locations'=>AssetLocation::where('tenant_id',$user->tenant_id)->where('active',true)->with(['site','parent'])->orderBy('customer_site_id')->orderBy('location_type')->orderBy('name')->get(),
+            'templates'=>$templates,
+            'criticalities'=>AssetMasterService::CRITICALITY,
+            'ownershipTypes'=>AssetMasterService::OWNERSHIP,
+            'strategies'=>AssetMasterService::STRATEGIES,
+            'canVerify'=>in_array($user->role,self::VERIFY_ROLES,true),
+            'canCreate'=>in_array($user->role,self::CREATE_ROLES,true),
+        ]);
     }
 
     public function show(Request $request,Asset $asset): View
