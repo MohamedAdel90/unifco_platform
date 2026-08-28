@@ -22,9 +22,10 @@ class AgreedAssetPhasesABCDTest extends TestCase
         $site=CustomerSite::create(['customer_id'=>$customer->id,'site_code'=>'ABCD-RUH','name'=>'Riyadh Site','city'=>'Riyadh','status'=>'ACTIVE']);
         $engineer=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Engineer','email'=>'abcd.engineer@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_ENGINEER','status'=>'ACTIVE']);
         $manager=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Manager','email'=>'abcd.manager@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_MANAGER','status'=>'ACTIVE']);
+        $checker=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Independent Checker','email'=>'abcd.checker@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_MANAGER','status'=>'ACTIVE']);
         $customerUser=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'name'=>'Customer User','email'=>'abcd.customer@example.test','password'=>'StrongPassword123','role'=>'CUSTOMER','customer_portal_role'=>'ADMIN','status'=>'ACTIVE']);
         $asset=Asset::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'customer_site_id'=>$site->id,'asset_code'=>'AST-ABCD-001','name'=>'Generator 1','asset_category'=>'Electrical','asset_type'=>'Generator','manufacturer'=>'OEM','model_no'=>'G100','serial_no'=>'SN-ABCD-001','criticality'=>'CRITICAL','ownership_type'=>'CUSTOMER_OWNED','maintenance_strategy'=>'PREVENTIVE','physical_location'=>'Plant Room','installation_date'=>today()->subYears(2),'verification_status'=>'VERIFIED','lifecycle_status'=>'ACTIVE','operational_status'=>'ACTIVE','status'=>'ACTIVE','useful_life_months'=>120,'replacement_value'=>100000,'net_book_value'=>70000]);
-        return compact('tenant','org','customer','site','engineer','manager','customerUser','asset');
+        return compact('tenant','org','customer','site','engineer','manager','checker','customerUser','asset');
     }
 
     public function test_phase_b_pm_meter_inspection_failure_health_downtime_and_reliability_are_operational(): void
@@ -75,7 +76,7 @@ class AgreedAssetPhasesABCDTest extends TestCase
         $approved=DB::table('customer_asset_submissions')->where('id',$submission->id)->first(); $this->assertSame('APPROVED',$approved->status); $this->assertNotNull($approved->asset_id);
         $this->assertDatabaseHas('assets',['id'=>$approved->asset_id,'serial_no'=>'CUST-UPS-001','ownership_type'=>'CUSTOMER_OWNED','verification_status'=>'PENDING','lifecycle_status'=>'PENDING_VERIFICATION']);
 
-        $this->actingAs($d['manager'])->post("/asset-master/{$approved->asset_id}/verify",['notes'=>'Independent Verify & Activate.'])->assertRedirect();
+        $this->actingAs($d['checker'])->post("/asset-master/{$approved->asset_id}/verify",['notes'=>'Independent Verify & Activate.'])->assertRedirect();
         $this->assertDatabaseHas('assets',['id'=>$approved->asset_id,'verification_status'=>'VERIFIED','lifecycle_status'=>'ACTIVE']);
         $this->assertDatabaseHas('customer_asset_submission_events',['customer_asset_submission_id'=>$submission->id,'event_type'=>'SUBMITTED']);
         $this->assertDatabaseHas('customer_asset_submission_events',['customer_asset_submission_id'=>$submission->id,'event_type'=>'APPROVED']);
