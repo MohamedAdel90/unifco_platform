@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{Asset,User};
+use App\Models\{Asset,CustomerSite,User};
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -15,12 +15,14 @@ class CustomerAssetGovernanceService
         abort_unless($customerUser->customer_id,403,'Only a customer portal user can submit customer assets.');
         $customerId=(int)$customerUser->customer_id;
         abort_if(($data['ownership_type']??'CUSTOMER_OWNED')!=='CUSTOMER_OWNED',422,'Customer submissions can only declare CUSTOMER_OWNED assets.');
+        $site=CustomerSite::with('customer')->find($data['customer_site_id']??null);
+        abort_unless($site && (int)$site->customer_id===$customerId && $site->customer && (int)$site->customer->tenant_id===(int)$customerUser->tenant_id,422,'Customer asset site must belong to the signed-in customer and tenant.');
         if(!empty($data['serial_no'])){
             abort_if(Asset::where('customer_id',$customerId)->whereRaw('LOWER(serial_no)=?',[mb_strtolower(trim($data['serial_no']))])->exists(),422,'This serial number already exists in the customer asset register.');
             abort_if(DB::table('customer_asset_submissions')->where('customer_id',$customerId)->whereIn('status',['PENDING_VERIFICATION','APPROVED'])->whereRaw('LOWER(serial_no)=?',[mb_strtolower(trim($data['serial_no']))])->exists(),422,'This serial number already has a pending or approved submission.');
         }
         $id=DB::table('customer_asset_submissions')->insertGetId([
-            'tenant_id'=>$customerUser->tenant_id,'organization_id'=>$customerUser->organization_id,'customer_id'=>$customerId,'customer_site_id'=>$data['customer_site_id']??null,
+            'tenant_id'=>$customerUser->tenant_id,'organization_id'=>$customerUser->organization_id,'customer_id'=>$customerId,'customer_site_id'=>$site->id,
             'submitted_by'=>$customerUser->id,'source'=>$source,'import_batch'=>$batch,'name'=>$data['name'],'customer_asset_code'=>$data['customer_asset_code']??null,
             'serial_no'=>$data['serial_no']??null,'asset_category'=>$data['asset_category'],'asset_type'=>$data['asset_type']??null,'manufacturer'=>$data['manufacturer']??null,'model_no'=>$data['model_no']??null,
             'criticality'=>$data['criticality']??'MEDIUM','ownership_type'=>'CUSTOMER_OWNED','maintenance_strategy'=>$data['maintenance_strategy']??'PREVENTIVE','installation_date'=>$data['installation_date']??null,
@@ -85,10 +87,14 @@ class CustomerAssetGovernanceService
     {
         abort_unless(class_exists(ZipArchive::class),500,'XLSX support requires the PHP zip extension.');
         $zip=new ZipArchive(); abort_unless($zip->open($path)===true,422,'Invalid XLSX file.');
-        $shared=[]; if(($xml=$zip->getFromName('xl/sharedStrings.xml'))!==false){ $sx=simplexml_load_string($xml); foreach($sx->si as $si){ $text=''; if(isset($si->t)) $text=(string)$si->t; else foreach($si->r as $run) $text.=(string)$run->t; $shared[]=$text; } }
-        $sheet=$zip->getFromName('xl/worksheets/sheet1.xml'); $zip->close(); abort_if($sheet===false,422,'XLSX sheet1 is missing.');
-        $xml=simplexml_load_string($sheet); $matrix=[];
-        foreach($xml->sheetData->row as $row){ $cells=[]; foreach($row->c as $c){ $ref=(string)$c['r']; preg_match('/([A-Z]+)/',$ref,$m); $col=$this->columnIndex($m[1]??'A'); $v=(string)$c->v; $cells[$col]=((string)$c['t']==='s')?($shared[(int)$v]??''):$v; } if($cells){ $width=max(array_keys($cells))+1; $matrix[]=array_values(array_replace(array_fill(0,$width,''),$cells)); } }
+        $shared=[];
+        if(($raw=$zip->getFromName('xl/sharedStrings.xml'))!==false){
+            $sx=simplexml_load_string($raw); $ns=$sx?->getNamespaces(true); $root=$sx && isset($ns['']) ? $sx->children($ns['']) : $sx;
+            foreach($root?->si??[] as $si){ $node=isset($ns[''])?$si->children($ns['']):$si; $text=''; if(isset($node->t)) $text=(string)$node->t; else foreach($node->r??[] as $run){ $rn=isset($ns[''])?$run->children($ns['']):$run; $text.=(string)$rn->t; } $shared[]=$text; }
+        }
+        $sheetRaw=$zip->getFromName('xl/worksheets/sheet1.xml'); $zip->close(); abort_if($sheetRaw===false,422,'XLSX sheet1 is missing.');
+        $xml=simplexml_load_string($sheetRaw); $ns=$xml?->getNamespaces(true); $root=$xml && isset($ns[''])?$xml->children($ns['']):$xml; $matrix=[];
+        foreach($root?->sheetData?->row??[] as $row){ $rn=isset($ns[''])?$row->children($ns['']):$row; $cells=[]; foreach($rn->c??[] as $c){ $cn=isset($ns[''])?$c->children($ns['']):$c; $ref=(string)$c['r']; preg_match('/([A-Z]+)/',$ref,$m); $col=$this->columnIndex($m[1]??'A'); $v=(string)$cn->v; $cells[$col]=((string)$c['t']==='s')?($shared[(int)$v]??''):$v; } if($cells){ $width=max(array_keys($cells))+1; $matrix[]=array_values(array_replace(array_fill(0,$width,''),$cells)); } }
         if(!$matrix) return []; $headers=array_shift($matrix); return array_map(fn($values)=>array_combine($headers,array_pad($values,count($headers),null)),$matrix);
     }
 
