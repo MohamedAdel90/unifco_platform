@@ -34,66 +34,52 @@ class ProfessionalAssetMasterTest extends TestCase
     public function test_engineer_can_register_professional_asset_pending_verification(): void
     {
         $d=$this->setupData('MAINTENANCE_ENGINEER');
-        $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))
-            ->assertRedirect();
-
+        $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))->assertRedirect();
         $asset=Asset::where('serial_no','SN-TR-0001')->firstOrFail();
-        $this->assertStringStartsWith('AST-',$asset->asset_code);
-        $this->assertSame('PENDING_VERIFICATION',$asset->lifecycle_status);
-        $this->assertSame('PENDING',$asset->verification_status);
-        $this->assertGreaterThanOrEqual(70,$asset->data_completeness_score);
-        $this->assertSame(1000,$asset->technical_specifications['rated_power_kva']);
-        $this->assertSame('2027-01-19',$asset->warranty_expiry);
-        $this->assertDatabaseHas('assets',['id'=>$asset->id,'warranty_expiry'=>'2027-01-19']);
-        $this->assertNotEmpty($asset->qr_token);
+        $this->assertStringStartsWith('AST-UNF-',$asset->asset_code);
+        $this->assertSame('PENDING_VERIFICATION',$asset->lifecycle_status); $this->assertSame('PENDING',$asset->verification_status);
+        $this->assertGreaterThanOrEqual(70,$asset->data_completeness_score); $this->assertSame(1000,$asset->technical_specifications['rated_power_kva']);
+        $this->assertSame('2027-01-19',$asset->warranty_expiry); $this->assertDatabaseHas('assets',['id'=>$asset->id,'warranty_expiry'=>'2027-01-19']); $this->assertNotEmpty($asset->qr_token);
     }
 
-    public function test_duplicate_serial_for_same_customer_is_blocked(): void
+    public function test_duplicate_serial_for_same_customer_and_site_is_blocked(): void
     {
         $d=$this->setupData();
         $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))->assertRedirect();
-        $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site'],[
-            'name'=>'Transformer Duplicate','customer_asset_code'=>'TR-02',
-        ]))->assertStatus(422);
+        $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site'],['name'=>'Transformer Duplicate','customer_asset_code'=>'TR-02']))->assertStatus(422);
         $this->assertSame(1,Asset::where('tenant_id',$d['tenant']->id)->where('serial_no','SN-TR-0001')->count());
     }
 
-    public function test_manager_can_verify_complete_asset_and_activate_it(): void
+    public function test_manager_can_independently_verify_complete_asset_and_activate_it(): void
     {
-        $d=$this->setupData('MAINTENANCE_MANAGER');
+        $d=$this->setupData('MAINTENANCE_ENGINEER');
+        $manager=User::create(['tenant_id'=>$d['tenant']->id,'organization_id'=>$d['org']->id,'name'=>'Manager','email'=>'manager.verify.asset@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_MANAGER','status'=>'ACTIVE']);
         $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))->assertRedirect();
         $asset=Asset::where('serial_no','SN-TR-0001')->firstOrFail();
+        $this->actingAs($manager)->post('/asset-master/'.$asset->id.'/verify',['notes'=>'Nameplate, site and technical data checked.'])->assertRedirect();
+        $asset->refresh(); $this->assertSame('VERIFIED',$asset->verification_status); $this->assertSame('ACTIVE',$asset->lifecycle_status); $this->assertSame('ACTIVE',$asset->status); $this->assertSame($manager->id,(int)$asset->verified_by);
+    }
 
-        $this->actingAs($d['user'])->post('/asset-master/'.$asset->id.'/verify',['notes'=>'Nameplate, site and technical data checked.'])->assertRedirect();
-        $asset->refresh();
-        $this->assertSame('VERIFIED',$asset->verification_status);
-        $this->assertSame('ACTIVE',$asset->lifecycle_status);
-        $this->assertSame('ACTIVE',$asset->status);
-        $this->assertSame($d['user']->id,(int)$asset->verified_by);
+    public function test_manager_cannot_create_asset_because_creation_and_approval_are_separated(): void
+    {
+        $d=$this->setupData('MAINTENANCE_MANAGER');
+        $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))->assertForbidden();
+        $this->assertDatabaseMissing('assets',['serial_no'=>'SN-TR-0001']);
     }
 
     public function test_engineer_cannot_verify_asset(): void
     {
         $d=$this->setupData('MAINTENANCE_ENGINEER');
         $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))->assertRedirect();
-        $asset=Asset::where('serial_no','SN-TR-0001')->firstOrFail();
-        $this->actingAs($d['user'])->post('/asset-master/'.$asset->id.'/verify')->assertForbidden();
+        $asset=Asset::where('serial_no','SN-TR-0001')->firstOrFail(); $this->actingAs($d['user'])->post('/asset-master/'.$asset->id.'/verify')->assertForbidden();
     }
 
-    public function test_asset_360_shows_professional_identity_and_existing_maintenance_sections(): void
+    public function test_asset_360_shows_professional_identity_and_tabbed_acceptance_sections(): void
     {
         $d=$this->setupData();
         $this->actingAs($d['user'])->post('/asset-master',$this->payload($d['customer'],$d['site']))->assertRedirect();
         $asset=Asset::where('serial_no','SN-TR-0001')->firstOrFail();
-        $this->actingAs($d['user'])->get('/asset-master/'.$asset->id)
-            ->assertOk()
-            ->assertSee('Asset 360')
-            ->assertSee('Transformer TR-01')
-            ->assertSee('SN-TR-0001')
-            ->assertSee('2027-01-19')
-            ->assertSee('Technical Specifications')
-            ->assertSee('Installed Parts & Components', false)
-            ->assertSee('Documents & Photos', false)
-            ->assertSee('QR & Field Identity', false);
+        $this->actingAs($d['user'])->get('/asset-master/'.$asset->id)->assertOk()->assertSee('Asset 360')->assertSee('Transformer TR-01')->assertSee('SN-TR-0001')->assertSee('2027-01-19')
+            ->assertSee('Technical')->assertSee('Full Component Traceability')->assertSee('Documents & Asset Photos',false)->assertSee('QR Code')->assertSee('Overview')->assertSee('Maintenance')->assertSee('History')->assertSee('Costs');
     }
 }
