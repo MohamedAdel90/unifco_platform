@@ -36,23 +36,23 @@ class ProfessionalAssetMasterV2Test extends TestCase
             ->assertSee('Create Pending Verification Asset');
     }
 
-    public function test_asset_360_is_tabbed_evidence_aware_command_center(): void
+    public function test_asset_360_matches_visual_command_center_with_photo_qr_and_real_tabs(): void
     {
         [$tenant,$org,$customer,$site,$asset]=$this->fixture();
         $manager=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Asset Reviewer','email'=>'asset.reviewer@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_MANAGER','status'=>'ACTIVE']);
 
         $response=$this->actingAs($manager)->get('/asset-master/'.$asset->id);
         $response->assertOk()
-            ->assertSee('Customer Asset Command Center')
-            ->assertSee('Executive Asset Snapshot')
+            ->assertSee('Asset Photo (Primary)')
+            ->assertSee('Asset QR Code')
+            ->assertSee('Open / Download QR')
             ->assertSee('Data Quality & Evidence')
-            ->assertSee('Maintenance & Risk')
-            ->assertSee('Health conclusion withheld.')
-            ->assertSee('Criticality Assessment — Impact × Probability')
-            ->assertSee('Documents & Evidence Center')
+            ->assertSee('Maintenance & Risk Intelligence')
             ->assertSee('Governance & Independent Verification')
-            ->assertSee('pane-overview',false)
-            ->assertSee('pane-maintenance',false);
+            ->assertSee('Health conclusion withheld:')
+            ->assertSee('tab-overview',false)
+            ->assertSee('tab-documents',false)
+            ->assertSee('api.qrserver.com',false);
     }
 
     private function fixture(): array
