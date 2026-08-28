@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\CustomerAssetGovernanceController;
-use App\Http\Controllers\Maintenance\{AssetMasterController,AssetMaintenanceIntelligenceController,AssetCustodyController,AssetWarrantyInsuranceController,AgreedAssetIntelligenceController};
+use App\Http\Controllers\Maintenance\{AssetMasterController,AssetMaintenanceIntelligenceController,AssetCustodyController,AssetWarrantyInsuranceController,AgreedAssetIntelligenceController,AssetAcceptanceController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(function(){
@@ -17,6 +17,8 @@ Route::middleware('auth')->prefix('asset-master')->name('asset-master.')->group(
     Route::post('/{asset}/commissioning',[AssetMasterController::class,'requestCommissioning'])->name('commissioning.request');
     Route::post('/{asset}/commissioning/{record}/review',[AssetMasterController::class,'reviewCommissioning'])->name('commissioning.review');
     Route::post('/{asset}/documents',[AssetMasterController::class,'document'])->name('documents.store');
+    Route::post('/{asset}/acceptance-profile',[AssetAcceptanceController::class,'updateProfile'])->name('acceptance-profile.update');
+    Route::post('/{asset}/acceptance-documents',[AssetAcceptanceController::class,'document'])->name('acceptance-documents.store');
     Route::get('/documents/{document}/download',[AssetMasterController::class,'download'])->name('documents.download');
 
     Route::get('/{asset}/custody',[AssetCustodyController::class,'show'])->name('custody.show');
