@@ -24,7 +24,6 @@ class AgreedProfessionalAssetMasterCoverageTest extends TestCase
 
         $this->actingAs($manager)->post('/asset-master/templates',['category'=>'Electrical','asset_type'=>'Generator','name'=>'Generator Standard','specification_schema'=>'{"rated_kva":"number"}'])->assertRedirect();
         $this->assertDatabaseHas('asset_category_templates',['tenant_id'=>$tenant->id,'category'=>'Electrical','asset_type'=>'Generator','name'=>'Generator Standard']);
-
         $this->actingAs($manager)->post('/asset-master/locations',['customer_id'=>$customer->id,'customer_site_id'=>$site->id,'location_type'=>'ROOM','code'=>'GEN-ROOM','name'=>'Generator Room'])->assertRedirect();
         $this->assertDatabaseHas('asset_locations',['tenant_id'=>$tenant->id,'customer_id'=>$customer->id,'customer_site_id'=>$site->id,'code'=>'GEN-ROOM']);
 
@@ -36,8 +35,6 @@ class AgreedProfessionalAssetMasterCoverageTest extends TestCase
         $this->assertDatabaseHas('asset_documents',['asset_id'=>$asset->id,'document_type'=>'PRIMARY_PHOTO']);
         $this->assertDatabaseHas('asset_documents',['asset_id'=>$asset->id,'document_type'=>'DATASHEET']);
 
-        $this->actingAs($manager)->get('/asset-master/'.$asset->id)->assertOk()
-            ->assertSee('Asset 360')->assertSee('SER-A-COVER')->assertSee('Generator Room')->assertSee('OEM')
-            ->assertSee('Technical Specifications')->assertSee('Documents & Photos',false)->assertSee('QR-A-COVER');
+        $this->actingAs($manager)->get('/asset-master/'.$asset->id)->assertOk()->assertSee('Asset 360')->assertSee('SER-A-COVER')->assertSee('Generator Room')->assertSee('OEM')->assertSee('Technical')->assertSee('Documents & Asset Photos',false)->assertSee('QR-A-COVER')->assertSee('Overview')->assertSee('Maintenance')->assertSee('History')->assertSee('Costs');
     }
 }
