@@ -30,7 +30,9 @@
     <div class="emp-kpi alert"><small>Contracts Expiring</small><b>{{ $stats['contracts_expiring'] }}</b></div>
 </div>
 
-@php($quick = request('quick'))
+@php
+    $quick = request('quick');
+@endphp
 <section class="emp-toolbar">
     <div class="quick-filters">
         <a class="quick-filter {{ !$quick ? 'active' : '' }}" href="{{ route('hr.employees.index') }}">All</a>
