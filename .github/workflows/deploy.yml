@@ -1,21 +1,94 @@
 name: Deploy to Server
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - UNIFCO Laravel CI
+      - Agreed Asset Phases A-D Qualification
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
-  group: deploy-main
+  group: deploy-${{ github.event.workflow_run.head_sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  release-gate:
+    name: Require CI and A-D success for same SHA
     runs-on: ubuntu-latest
     env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - name: Verify required qualification workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          required_workflows=(
+            "UNIFCO Laravel CI"
+            "Agreed Asset Phases A-D Qualification"
+          )
+
+          api_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${TARGET_SHA}&branch=main&per_page=100"
+
+          for attempt in $(seq 1 60); do
+            payload="$(curl --fail --silent --show-error \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "$api_url")"
+
+            all_success=true
+            waiting=false
+
+            for workflow in "${required_workflows[@]}"; do
+              status="$(jq -r --arg name "$workflow" '
+                [.workflow_runs[] | select(.name == $name and .event == "push")]
+                | sort_by(.run_number)
+                | last
+                | if . == null then "missing" else (.conclusion // .status // "unknown") end
+              ' <<<"$payload")"
+
+              echo "$workflow => $status"
+
+              case "$status" in
+                success)
+                  ;;
+                failure|cancelled|timed_out|action_required|startup_failure|stale)
+                  echo "Required workflow failed for ${TARGET_SHA}: $workflow => $status" >&2
+                  exit 1
+                  ;;
+                *)
+                  all_success=false
+                  waiting=true
+                  ;;
+              esac
+            done
+
+            if [[ "$all_success" == true ]]; then
+              echo "Release gate passed for ${TARGET_SHA}."
+              exit 0
+            fi
+
+            if [[ "$waiting" == true && "$attempt" -lt 60 ]]; then
+              sleep 10
+            fi
+          done
+
+          echo "Timed out waiting for both required workflows to succeed for ${TARGET_SHA}." >&2
+          exit 1
+
+  deploy:
+    needs: release-gate
+    runs-on: ubuntu-latest
+    env:
+      TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
       DB_CONNECTION: mysql
       DB_HOST: 127.0.0.1
       DB_PORT: 3306
@@ -37,6 +110,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+
+      - name: Confirm gated release SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          echo "Deploying qualified SHA: $TARGET_SHA"
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
