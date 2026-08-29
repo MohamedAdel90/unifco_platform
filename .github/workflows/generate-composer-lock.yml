@@ -1,0 +1,38 @@
+name: Generate Composer Lock
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - composer.json
+      - .github/workflows/generate-composer-lock.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+          coverage: none
+      - name: Generate lock file
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer update --no-interaction --prefer-dist --no-progress
+          composer validate --no-interaction
+          test -s composer.lock
+      - name: Upload Composer lock
+        uses: actions/upload-artifact@v4
+        with:
+          name: composer-lock
+          path: composer.lock
+          if-no-files-found: error
+          retention-days: 1
