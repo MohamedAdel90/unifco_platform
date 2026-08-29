@@ -11,9 +11,9 @@ class Employee extends Model
     use BelongsToTenant;
 
     protected $fillable = [
-        'tenant_id','organization_id','job_position_id','manager_employee_id','work_schedule_id','employee_no','name','email','mobile','hire_date','status',
+        'tenant_id','organization_id','job_position_id','manager_employee_id','work_schedule_id','employee_no','name','first_name','middle_name','last_name','email','official_email','mobile','mobile_country_code','hire_date','status',
         'nationality','gender','date_of_birth','marital_status','national_id','iqama_no','iqama_expiry','passport_no','passport_expiry','gosi_no','gosi_status','gosi_registered_on',
-        'bank_name','iban','emergency_contact_name','emergency_contact_mobile','address_line','city','country','employment_type','contract_type',
+        'bank_name','iban','emergency_contact_name','emergency_contact_mobile','emergency_mobile_country_code','address_line','city','country','employment_type','contract_type',
         'probation_end_date','contract_end_date','basic_salary','housing_allowance','transport_allowance','other_allowances','work_location','notes',
     ];
 
