@@ -18,8 +18,9 @@ if ! git cat-file -e "${EXPECTED_SHA}^{commit}" 2>/dev/null; then
   echo "ERROR: qualified SHA is not available after fetching main: $EXPECTED_SHA" >&2
   exit 1
 fi
-if ! git merge-base --is-ancestor "$EXPECTED_SHA" origin/main; then
-  echo "ERROR: qualified SHA is not reachable from origin/main: $EXPECTED_SHA" >&2
+REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
+if [[ "$EXPECTED_SHA" != "$REMOTE_MAIN_SHA" ]]; then
+  echo "ERROR: refusing stale release: qualified SHA $EXPECTED_SHA is not current main $REMOTE_MAIN_SHA" >&2
   exit 1
 fi
 git reset --hard "$EXPECTED_SHA"
@@ -89,7 +90,9 @@ php artisan migrate --force
 php artisan db:seed --class='Database\Seeders\WorkflowTestUsersSeeder' --force
 php artisan unifco:bootstrap-warehouse-access
 php artisan brand:materialize
-php artisan storage:link || true
+if [[ ! -e public/storage && ! -L public/storage ]]; then
+  php artisan storage:link
+fi
 
 echo "==> Verifying Phase B database foundation"
 php -r '
