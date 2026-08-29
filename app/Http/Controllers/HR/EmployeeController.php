@@ -14,14 +14,46 @@ class EmployeeController extends Controller
 {
     public function index(Request $request): View
     {
-        $q=trim((string)$request->query('q')); $status=trim((string)$request->query('status')); $department=trim((string)$request->query('department'));
-        $query=Employee::with('position')->when($q,fn($x)=>$x->where(fn($y)=>$y->where('employee_no','like',"%{$q}%")->orWhere('name','like',"%{$q}%")->orWhere('email','like',"%{$q}%")->orWhere('official_email','like',"%{$q}%")->orWhere('mobile','like',"%{$q}%")))
+        $q=trim((string)$request->query('q'));
+        $status=trim((string)$request->query('status'));
+        $department=trim((string)$request->query('department'));
+        $positionId=trim((string)$request->query('position'));
+        $nationality=trim((string)$request->query('nationality'));
+        $quick=trim((string)$request->query('quick'));
+
+        $query=Employee::with(['position','manager','documents','contracts'=>fn($q)=>$q->latest('starts_on')])
+            ->when($q,fn($x)=>$x->where(fn($y)=>$y
+                ->where('employee_no','like',"%{$q}%")
+                ->orWhere('name','like',"%{$q}%")
+                ->orWhere('email','like',"%{$q}%")
+                ->orWhere('official_email','like',"%{$q}%")
+                ->orWhere('mobile','like',"%{$q}%")
+                ->orWhere('national_id','like',"%{$q}%")
+                ->orWhere('iqama_no','like',"%{$q}%")))
             ->when($status,fn($x)=>$x->where('status',$status))
-            ->when($department,fn($x)=>$x->whereHas('position',fn($p)=>$p->where('department',$department)));
-        $stats=['total'=>(clone $query)->count(),'active'=>(clone $query)->where('status','ACTIVE')->count(),'inactive'=>(clone $query)->where('status','!=','ACTIVE')->count()];
-        $employees=$query->orderBy('employee_no')->paginate(25)->withQueryString();
+            ->when($department,fn($x)=>$x->whereHas('position',fn($p)=>$p->where('department',$department)))
+            ->when($positionId,fn($x)=>$x->where('job_position_id',$positionId))
+            ->when($nationality,fn($x)=>$x->where('nationality',$nationality))
+            ->when($quick==='active',fn($x)=>$x->where('status','ACTIVE'))
+            ->when($quick==='on_leave',fn($x)=>$x->where('status','ON_LEAVE'))
+            ->when($quick==='new_joiners',fn($x)=>$x->whereDate('hire_date','>=',today()->subDays(90)))
+            ->when($quick==='expiring_documents',fn($x)=>$x->whereHas('documents',fn($d)=>$d->whereNotNull('expires_on')->whereBetween('expires_on',[today(),today()->addDays(90)])))
+            ->when($quick==='contract_ending',fn($x)=>$x->where(fn($q)=>$q->whereBetween('contract_end_date',[today(),today()->addDays(90)])->orWhereHas('contracts',fn($c)=>$c->whereBetween('ends_on',[today(),today()->addDays(90)]))));
+
+        $base=Employee::query();
+        $stats=[
+            'total'=>(clone $base)->count(),
+            'active'=>(clone $base)->where('status','ACTIVE')->count(),
+            'on_leave'=>(clone $base)->where('status','ON_LEAVE')->count(),
+            'documents_expiring'=>EmployeeDocument::whereNotNull('expires_on')->whereBetween('expires_on',[today(),today()->addDays(90)])->distinct('employee_id')->count('employee_id'),
+            'contracts_expiring'=>Employee::where(fn($q)=>$q->whereBetween('contract_end_date',[today(),today()->addDays(90)])->orWhereHas('contracts',fn($c)=>$c->whereBetween('ends_on',[today(),today()->addDays(90)])))->count(),
+        ];
+
+        $employees=$query->orderByRaw("CASE WHEN employee_no LIKE 'UN-%' THEN 0 ELSE 1 END")->orderBy('employee_no')->paginate(25)->withQueryString();
         $departments=JobPosition::whereNotNull('department')->select('department')->distinct()->orderBy('department')->pluck('department');
-        return view('hr.employees.index',compact('employees','stats','departments'));
+        $positions=JobPosition::where('status','ACTIVE')->orderBy('department')->orderBy('title')->get();
+        $nationalities=Employee::whereNotNull('nationality')->where('nationality','!=','')->select('nationality')->distinct()->orderBy('nationality')->pluck('nationality');
+        return view('hr.employees.index',compact('employees','stats','departments','positions','nationalities'));
     }
 
     public function show(Employee $employee): View
