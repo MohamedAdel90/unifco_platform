@@ -19,11 +19,19 @@ class Wave4BusinessWorkspacesTest extends TestCase
     public function test_hr_crm_and_projects_crud_are_tenant_scoped(): void
     {
         $user=$this->admin(); $this->actingAs($user);
-        $this->post('/hr/employees',['employee_no'=>'E-1','name'=>'Employee One','email'=>'e1@test.local'])->assertRedirect();
+        $this->post('/hr/employees',[
+            'first_name'=>'Employee',
+            'last_name'=>'One',
+            'email'=>'e1@test.local',
+            'mobile_country_code'=>'+966',
+            'emergency_mobile_country_code'=>'+966',
+            'nationality'=>'Saudi Arabian',
+            'status'=>'ACTIVE',
+        ])->assertRedirect();
         $this->post('/crm/customers',['customer_code'=>'C-1','name'=>'Customer One','email'=>'c1@test.local'])->assertRedirect();
         $customer=Customer::first();
         $this->post('/projects',['project_no'=>'P-1','name'=>'Project One','customer_id'=>$customer->id,'budget'=>1000])->assertRedirect();
-        $this->assertDatabaseHas('employees',['tenant_id'=>$user->tenant_id,'employee_no'=>'E-1']);
+        $this->assertDatabaseHas('employees',['tenant_id'=>$user->tenant_id,'employee_no'=>'UN-00001','name'=>'Employee One','email'=>'e1@test.local']);
         $this->assertDatabaseHas('customers',['tenant_id'=>$user->tenant_id,'customer_code'=>'C-1']);
         $this->assertDatabaseHas('projects',['tenant_id'=>$user->tenant_id,'project_no'=>'P-1','status'=>'DRAFT']);
         $this->assertDatabaseHas('audit_logs',['tenant_id'=>$user->tenant_id,'action'=>'projects.project.created']);
