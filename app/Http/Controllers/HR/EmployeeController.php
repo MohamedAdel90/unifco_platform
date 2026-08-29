@@ -107,6 +107,7 @@ class EmployeeController extends Controller
             'nextEmployeeNo'=>$employee?->employee_no ?: $this->previewNextEmployeeNumber(Auth::user()->tenant_id),
             'nationalities'=>$this->nationalities(),
             'phoneCountries'=>$this->phoneCountries(),
+            'saudiBanks'=>$this->saudiBanks(),
         ];
     }
 
@@ -186,5 +187,10 @@ class EmployeeController extends Controller
             ['code'=>'+91','flag'=>'🇮🇳','name'=>'India'],['code'=>'+92','flag'=>'🇵🇰','name'=>'Pakistan'],['code'=>'+880','flag'=>'🇧🇩','name'=>'Bangladesh'],['code'=>'+63','flag'=>'🇵🇭','name'=>'Philippines'],['code'=>'+977','flag'=>'🇳🇵','name'=>'Nepal'],['code'=>'+94','flag'=>'🇱🇰','name'=>'Sri Lanka'],
             ['code'=>'+62','flag'=>'🇮🇩','name'=>'Indonesia'],['code'=>'+251','flag'=>'🇪🇹','name'=>'Ethiopia'],['code'=>'+90','flag'=>'🇹🇷','name'=>'Turkey'],['code'=>'+44','flag'=>'🇬🇧','name'=>'United Kingdom'],['code'=>'+1','flag'=>'🇺🇸','name'=>'United States'],
         ];
+    }
+
+    private function saudiBanks(): array
+    {
+        return ['Saudi National Bank (SNB)','Al Rajhi Bank','Riyad Bank','Saudi Awwal Bank (SAB)','Banque Saudi Fransi','Arab National Bank (ANB)','Bank AlJazira','Bank Albilad','Alinma Bank','Gulf International Bank Saudi Arabia','Saudi Investment Bank'];
     }
 }
