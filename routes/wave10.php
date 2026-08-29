@@ -5,8 +5,18 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('hr')->name('hr.')->group(function () {
     Route::get('/dashboard',[HrDashboardController::class,'index'])->middleware('permission:hr.employee.read')->name('dashboard');
-    Route::get('/employees/{employee}',[EmployeeController::class,'show'])->middleware('permission:hr.employee.read')->name('employees.show');
+
+    // Keep the static employee CRUD routes in the same route file and before the
+    // dynamic /employees/{employee} route. This prevents "create" from ever being
+    // interpreted as an employee route key after route caching/deployment changes.
+    Route::get('/employees',[EmployeeController::class,'index'])->middleware('permission:hr.employee.read')->name('employees.index');
+    Route::get('/employees/create',[EmployeeController::class,'create'])->middleware('permission:hr.employee.manage')->name('employees.create');
+    Route::post('/employees',[EmployeeController::class,'store'])->middleware('permission:hr.employee.manage')->name('employees.store');
+    Route::get('/employees/{employee}/edit',[EmployeeController::class,'edit'])->middleware('permission:hr.employee.manage')->name('employees.edit');
+    Route::put('/employees/{employee}',[EmployeeController::class,'update'])->middleware('permission:hr.employee.manage')->name('employees.update');
+    Route::post('/employees/{employee}/deactivate',[EmployeeController::class,'deactivate'])->middleware('permission:hr.employee.manage')->name('employees.deactivate');
     Route::post('/employees/{employee}/activate',[EmployeeController::class,'activate'])->middleware('permission:hr.employee.manage')->name('employees.activate');
+    Route::get('/employees/{employee}',[EmployeeController::class,'show'])->middleware('permission:hr.employee.read')->name('employees.show');
     Route::post('/employees/{employee}/contracts',[EmployeeController::class,'storeContract'])->middleware('permission:hr.employee.manage')->name('employees.contracts.store');
     Route::post('/employees/{employee}/documents',[EmployeeController::class,'storeDocument'])->middleware('permission:hr.employee.manage')->name('employees.documents.store');
 
