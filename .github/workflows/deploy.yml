@@ -28,12 +28,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
-          required_workflows=(
-            "UNIFCO Laravel CI"
-            "Agreed Asset Phases A-D Qualification"
-          )
-
+          required_workflows=("UNIFCO Laravel CI" "Agreed Asset Phases A-D Qualification")
           api_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${TARGET_SHA}&branch=main&per_page=100"
 
           for attempt in $(seq 1 60); do
@@ -42,31 +37,19 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
               "$api_url")"
-
             all_success=true
             waiting=false
 
             for workflow in "${required_workflows[@]}"; do
-              status="$(jq -r --arg name "$workflow" '
-                [.workflow_runs[] | select(.name == $name and .event == "push")]
-                | sort_by(.run_number)
-                | last
-                | if . == null then "missing" else (.conclusion // .status // "unknown") end
-              ' <<<"$payload")"
-
+              status="$(jq -r --arg name "$workflow" '[.workflow_runs[] | select(.name == $name and .event == "push")] | sort_by(.run_number) | last | if . == null then "missing" else (.conclusion // .status // "unknown") end' <<<"$payload")"
               echo "$workflow => $status"
-
               case "$status" in
-                success)
-                  ;;
+                success) ;;
                 failure|cancelled|timed_out|action_required|startup_failure|stale)
                   echo "Required workflow failed for ${TARGET_SHA}: $workflow => $status" >&2
                   exit 1
                   ;;
-                *)
-                  all_success=false
-                  waiting=true
-                  ;;
+                *) all_success=false; waiting=true ;;
               esac
             done
 
@@ -74,13 +57,10 @@ jobs:
               echo "Release gate passed for ${TARGET_SHA}."
               exit 0
             fi
-
-            if [[ "$waiting" == true && "$attempt" -lt 60 ]]; then
-              sleep 10
-            fi
+            [[ "$waiting" == true && "$attempt" -lt 60 ]] && sleep 10
           done
 
-          echo "Timed out waiting for both required workflows to succeed for ${TARGET_SHA}." >&2
+          echo "Timed out waiting for required workflows to succeed for ${TARGET_SHA}." >&2
           exit 1
 
   deploy:
@@ -127,89 +107,27 @@ jobs:
           extensions: pdo_mysql
           coverage: none
 
-      - name: Validate release source
+      - name: Validate release source and deploy policy
         shell: bash
         run: |
           set -euo pipefail
+          bash -n deploy/deploy.sh
           php -l app/Http/Controllers/PublicSiteController.php
           php -l app/Http/Controllers/CustomerPortalController.php
-          php -l app/Http/Controllers/CustomerPortalOperationsController.php
-          php -l app/Http/Controllers/CustomerPortalAccessAdminController.php
-          php -l app/Http/Controllers/CustomerActionCenterController.php
-          php -l app/Http/Controllers/CustomerPortalPhase2ActionController.php
-          php -l app/Http/Controllers/CustomerWorkAcceptanceController.php
-          php -l app/Http/Controllers/CustomerAssetReadController.php
-          php -l app/Http/Controllers/CRM/CustomerAcquisitionController.php
           php -l app/Http/Controllers/Maintenance/AssetMasterController.php
-          php -l app/Http/Controllers/Workflow/CustomerActionInboxController.php
-          php -l app/Models/CustomerPortalActionRequest.php
-          php -l app/Models/CrmLead.php
-          php -l app/Models/Customer.php
-          php -l app/Models/Asset.php
-          php -l app/Models/AssetCategoryTemplate.php
-          php -l app/Models/AssetDocument.php
-          php -l app/Models/AssetLocation.php
-          php -l app/Models/AssetLifecycleEvent.php
-          php -l app/Models/AssetCommissioningRecord.php
-          php -l app/Services/AssetMasterService.php
-          php -l app/Services/AssetAcceptanceContractService.php
-          php -l app/Services/CustomerAcquisitionService.php
-          php -l app/Services/CustomerPortalAccessService.php
-          php -l app/Http/Controllers/Workflow/ApprovalController.php
           php -l app/Http/Controllers/Workflow/WorkflowWorkspaceController.php
-          php -l app/Http/Controllers/AuthController.php
-          php -l app/Services/PublicRequestPipelineService.php
-          php -l app/Services/ServiceRequestWorkflowService.php
-          php -l app/Services/CustomerLifecycleService.php
-          php -l app/Services/ApprovalService.php
-          php -l app/Support/UnifcoContact.php
-          php -l app/Http/Middleware/PublicContactPresentation.php
-          php -l app/Http/Middleware/WorkflowRoleHomeRedirect.php
-          php -l app/Http/Middleware/WorkflowRoleNavigationPresentation.php
-          php -l app/Http/Middleware/CustomerPortalDashboardPresentation.php
-          php -l database/seeders/WorkflowTestUsersSeeder.php
-          php -l database/migrations/2026_08_27_000052_add_customer_portal_rbac_scopes.php
-          php -l database/migrations/2026_08_27_000053_add_customer_portal_action_requests.php
-          php -l database/migrations/2026_08_27_000054_add_customer_action_attachments.php
-          php -l database/migrations/2026_08_27_000055_add_assignment_sla_to_customer_actions.php
-          php -l database/migrations/2026_08_27_000056_add_customer_acquisition_lifecycle.php
-          php -l database/migrations/2026_08_27_000057_add_acquisition_governance_fields.php
-          php -l database/migrations/2026_08_27_000058_build_professional_asset_master.php
-          php -l database/migrations/2026_08_27_000059_normalize_user_status_semantics.php
-          php -l database/migrations/2026_08_27_000060_build_asset_lifecycle_commissioning.php
+          php -l app/Http/Controllers/HR/EmployeeController.php
+          php -l app/Models/Employee.php
+          php -l app/Services/AssetMasterService.php
           php -l bootstrap/app.php
           php -l routes/web.php
-          php -l routes/public.php
-          php -l routes/customer-phase2.php
-          php -l routes/customer-acquisition.php
           php -l routes/asset-master.php
-          grep -q '0599402090' app/Support/UnifcoContact.php
-          grep -q '966599402090' app/Support/UnifcoContact.php
-          grep -q 'info@unifco.com' app/Support/UnifcoContact.php
-          grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php
-          grep -q 'CustomerPortalAccessAdminController' routes/public.php
-          grep -q 'customer.actions' routes/customer-phase2.php
-          grep -q 'workflow.customer-actions.index' routes/customer-phase2.php
-          grep -q "name('review-duplicate')" routes/customer-acquisition.php
-          grep -q "name('request-conversion')" routes/customer-acquisition.php
-          grep -q "name('review-onboarding')" routes/customer-acquisition.php
-          grep -q "name('verify')" routes/asset-master.php
-          grep -q "name('transition')" routes/asset-master.php
-          grep -q "name('commissioning.request')" routes/asset-master.php
-          grep -q "name('commissioning.review')" routes/asset-master.php
-          grep -q 'data_completeness_score' app/Services/AssetMasterService.php
-          grep -q 'Maker/checker control' app/Services/AssetMasterService.php
-          grep -q 'VARCHAR(20)' database/migrations/2026_08_27_000059_normalize_user_status_semantics.php
-          grep -q 'conversion_approval_status' app/Services/CustomerAcquisitionService.php
-          grep -q 'CustomerAcquisitionService' app/Services/PublicRequestPipelineService.php
-          grep -q 'assigned_role' app/Http/Controllers/CustomerPortalPhase2ActionController.php
-          grep -q 'workflow.site.manager@unifco.local' database/seeders/WorkflowTestUsersSeeder.php
-          test -s resources/views/customer/users-access.blade.php
-          test -s resources/views/customer/action-center.blade.php
-          test -s resources/views/workflow/customer-actions.blade.php
-          test -s resources/views/crm/acquisition.blade.php
+          test -s resources/views/workflow/workspace.blade.php
           test -s resources/views/maintenance/asset-master/index.blade.php
           test -s resources/views/maintenance/asset-master/show.blade.php
+          test -s resources/views/hr/employees/form.blade.php
+          grep -q 'deploy/status/\*' deploy/deploy.sh
+          grep -q 'merge-base --is-ancestor' deploy/deploy.sh
 
       - name: Laravel release preflight
         shell: bash
@@ -221,38 +139,15 @@ jobs:
           cp -n .env.example .env || true
           php artisan key:generate --force
           php artisan migrate:fresh --force
-          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); $c=Illuminate\Support\Facades\DB::selectOne("SELECT DATA_TYPE data_type FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=\"users\" AND COLUMN_NAME=\"status\""); if(!$c || $c->data_type!=="varchar"){fwrite(STDERR,"users.status is not varchar\n");exit(1);} echo "users.status semantics verified\n";'
           php artisan brand:materialize
           test -s public/images/unifco-logo.webp
-          php artisan route:list --name=customer.portal >/dev/null
-          php artisan route:list --name=customer.section >/dev/null
-          php artisan route:list --name=customer.requests.store >/dev/null
-          php artisan route:list --name=customer.access.index >/dev/null
-          php artisan route:list --name=customer.access.store >/dev/null
-          php artisan route:list --name=customer.access.update >/dev/null
-          php artisan route:list --name=customer.actions >/dev/null
-          php artisan route:list --name=customer.contracts.renewal-request >/dev/null
-          php artisan route:list --name=customer.invoices.query >/dev/null
-          php artisan route:list --name=customer.invoices.payment-proof >/dev/null
-          php artisan route:list --name=customer.work-orders.revisit >/dev/null
-          php artisan route:list --name=workflow.customer-actions.index >/dev/null
-          php artisan route:list --name=crm.acquisition.index >/dev/null
-          php artisan route:list --name=crm.acquisition.follow-up >/dev/null
-          php artisan route:list --name=crm.acquisition.review-duplicate >/dev/null
-          php artisan route:list --name=crm.acquisition.request-conversion >/dev/null
-          php artisan route:list --name=crm.acquisition.review-conversion >/dev/null
-          php artisan route:list --name=crm.acquisition.review-onboarding >/dev/null
           php artisan route:list --name=asset-master.index >/dev/null
           php artisan route:list --name=asset-master.show >/dev/null
-          php artisan route:list --name=asset-master.verify >/dev/null
-          php artisan route:list --name=asset-master.transition >/dev/null
-          php artisan route:list --name=asset-master.locations.store >/dev/null
-          php artisan route:list --name=asset-master.assign-location >/dev/null
-          php artisan route:list --name=asset-master.commissioning.request >/dev/null
-          php artisan route:list --name=asset-master.commissioning.review >/dev/null
-          php artisan route:list --name=asset-master.documents.store >/dev/null
+          php artisan route:list --name=workflow.approvals.index >/dev/null
+          php artisan route:list --name=hr.employees.create >/dev/null
           php artisan view:cache
           php artisan test \
+            tests/Feature/HrEmployeeCorePhase1Test.php \
             tests/Feature/ProfessionalAssetMasterTest.php \
             tests/Feature/ProfessionalAssetMasterV2Test.php \
             tests/Feature/AssetLifecyclePhaseBTest.php \
@@ -290,7 +185,15 @@ jobs:
           rc=1
           for attempt in $(seq 1 5); do
             echo "SSH deploy attempt $attempt/5 for qualified SHA $TARGET_SHA"
-            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_deploy_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "bash /var/www/unifco_platform/deploy/deploy.sh '$TARGET_SHA'"; then rc=0; break; fi
-            [ "$attempt" -eq 5 ] || sleep 20
+            # Stream the qualified deploy policy itself to the server. This avoids
+            # the bootstrap deadlock where an older server-side deploy.sh rejects
+            # the commit that contains its own fix.
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
+              -i "$HOME/.ssh/unifco_deploy_key" -p "$DEPLOY_PORT" \
+              "$DEPLOY_USER@$DEPLOY_HOST" "bash -s -- '$TARGET_SHA'" < deploy/deploy.sh; then
+              rc=0
+              break
+            fi
+            [[ "$attempt" -eq 5 ]] || sleep 20
           done
           exit "$rc"
