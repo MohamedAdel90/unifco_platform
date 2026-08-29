@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Workflow;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ApprovalRequest,CrmQuotation,FinancialDocument,PurchaseOrder,ServiceRequest,WorkOrder};
+use App\Models\{ApprovalRequest,Asset,CrmQuotation,FinancialDocument,PurchaseOrder,ServiceRequest,WorkOrder};
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -16,13 +16,14 @@ class WorkflowWorkspaceController extends Controller
     {
         $user=$request->user(); abort_unless($user && in_array($user->role,self::ROLES,true),403);
         $role=$user->role;
-        $pendingApprovals=ApprovalRequest::where('approval_role',$role)->where('status','PENDING')->orderBy('due_at')->limit(20)->get();
+        $approvalLimit=$role==='MAINTENANCE_ENGINEER'?5:20;
+        $pendingApprovals=ApprovalRequest::where('approval_role',$role)->where('status','PENDING')->orderBy('due_at')->limit($approvalLimit)->get();
         $waitingApprovals=ApprovalRequest::where('approval_role',$role)->where('status','WAITING')->count();
         $breachedApprovals=ApprovalRequest::where('approval_role',$role)->where('status','PENDING')->whereNotNull('due_at')->where('due_at','<',now())->count();
-        $recentDecisions=ApprovalRequest::where('approval_role',$role)->whereIn('status',['APPROVED','REJECTED','RETURNED'])->latest('decided_at')->limit(8)->get();
+        $recentDecisions=ApprovalRequest::where('approval_role',$role)->whereIn('status',['APPROVED','REJECTED','RETURNED'])->latest('decided_at')->limit($role==='MAINTENANCE_ENGINEER'?5:8)->get();
         $serviceRequestIds=$pendingApprovals->where('entity_type',ServiceRequest::class)->pluck('entity_id');
         $serviceRequests=ServiceRequest::whereIn('id',$serviceRequestIds)->latest()->get()->keyBy('id');
-        return view('workflow.workspace',['user'=>$user,'role'=>$role,'profile'=>$this->profile($role),'metrics'=>$this->metrics($role),'workQueue'=>$this->workQueue($role),'attention'=>$this->attention($role),'pendingApprovals'=>$pendingApprovals,'waitingApprovals'=>$waitingApprovals,'breachedApprovals'=>$breachedApprovals,'recentDecisions'=>$recentDecisions,'serviceRequests'=>$serviceRequests]);
+        return view('workflow.workspace',['user'=>$user,'role'=>$role,'profile'=>$this->profile($role),'metrics'=>$this->metrics($role),'workQueue'=>$this->workQueue($role),'todayExecution'=>$this->todayExecution($role),'attention'=>$this->attention($role),'pendingApprovals'=>$pendingApprovals,'waitingApprovals'=>$waitingApprovals,'breachedApprovals'=>$breachedApprovals,'recentDecisions'=>$recentDecisions,'serviceRequests'=>$serviceRequests]);
     }
 
     private function attention(string $role): array
@@ -42,12 +43,7 @@ class WorkflowWorkspaceController extends Controller
         $pending=fn()=>ApprovalRequest::where('approval_role',$role)->where('status','PENDING')->count();
         $breached=fn()=>ApprovalRequest::where('approval_role',$role)->where('status','PENDING')->whereNotNull('due_at')->where('due_at','<',now())->count();
         return match($role){
-            'MAINTENANCE_ENGINEER'=>[
-                ['label'=>'Awaiting My Review','value'=>$pending(),'hint'=>'Technical decisions requiring action'],
-                ['label'=>'SLA At Risk / Breached','value'=>$breached(),'hint'=>'Prioritize these first'],
-                ['label'=>'Emergency Open','value'=>ServiceRequest::where('priority','EMERGENCY')->whereNotIn('status',['CLOSED','REJECTED','CANCELLED'])->count(),'hint'=>'Open emergency service requests'],
-                ['label'=>'Work Orders In Progress','value'=>WorkOrder::whereNotIn('status',['COMPLETED','CLOSED','CANCELLED'])->count(),'hint'=>'Execution currently open'],
-            ],
+            'MAINTENANCE_ENGINEER'=>[['label'=>'Awaiting My Review','value'=>$pending(),'hint'=>'Technical decisions requiring action'],['label'=>'SLA At Risk / Breached','value'=>$breached(),'hint'=>'Prioritize these first'],['label'=>'Emergency Open','value'=>ServiceRequest::where('priority','EMERGENCY')->whereNotIn('status',['CLOSED','REJECTED','CANCELLED'])->count(),'hint'=>'Open emergency service requests'],['label'=>'Work Orders In Progress','value'=>WorkOrder::whereNotIn('status',['COMPLETED','CLOSED','CANCELLED'])->count(),'hint'=>'Execution currently open']],
             'MAINTENANCE_MANAGER'=>[['label'=>'Manager Approvals','value'=>$pending()],['label'=>'Requests Under Review','value'=>ServiceRequest::whereIn('workflow_stage',['MAINTENANCE_MANAGER','TECHNICAL_SCOPE_APPROVAL'])->count()],['label'=>'Open Work Orders','value'=>WorkOrder::whereNotIn('status',['COMPLETED','CLOSED','CANCELLED'])->count()],['label'=>'SLA Breaches','value'=>$breached()]],
             'PROCUREMENT'=>[['label'=>'Procurement Approvals','value'=>$pending()],['label'=>'Requests Needing Procurement','value'=>ServiceRequest::where('procurement_required',true)->whereNotIn('status',['CLOSED','REJECTED','CANCELLED'])->count()],['label'=>'Pending Purchase Orders','value'=>PurchaseOrder::whereIn('status',['DRAFT','PENDING','PENDING_APPROVAL','SUBMITTED'])->count()],['label'=>'SLA Breaches','value'=>$breached()]],
             'TENDERS_CONTRACTS'=>[['label'=>'Commercial Approvals','value'=>$pending()],['label'=>'Draft Quotations','value'=>CrmQuotation::whereIn('status',['DRAFT','UNDER_REVIEW','REVISION_REQUESTED'])->count()],['label'=>'Commercial Ready Requests','value'=>ServiceRequest::whereIn('workflow_stage',['COMMERCIAL_PREPARATION','COMMERCIAL_READY'])->count()],['label'=>'SLA Breaches','value'=>$breached()]],
@@ -59,18 +55,29 @@ class WorkflowWorkspaceController extends Controller
 
     private function workQueue(string $role): Collection
     {
+        if($role==='MAINTENANCE_ENGINEER'){
+            $requests=ServiceRequest::whereNotIn('status',['CLOSED','REJECTED','CANCELLED'])->where(fn($q)=>$q->where('workflow_stage','TECHNICAL_REVIEW')->orWhere('priority','EMERGENCY'))->get();
+            $assets=Asset::whereIn('id',$requests->pluck('asset_id')->filter())->with(['site','location'])->get()->keyBy('id');
+            return $requests->sortBy(function($r){$breached=$r->current_stage_due_at && $r->current_stage_due_at->isPast(); return ($breached?-100:0)+match($r->priority){'EMERGENCY'=>0,'CRITICAL'=>10,'HIGH'=>20,'MEDIUM'=>30,default=>40};})->take(12)->values()->map(function($r)use($assets){
+                $asset=$assets->get($r->asset_id); $due=$r->current_stage_due_at; $breached=$due&&$due->isPast(); $atRisk=$due&&!$breached&&now()->diffInMinutes($due)<=120; $emergency=$r->priority==='EMERGENCY'; $review=$r->workflow_stage==='TECHNICAL_REVIEW';
+                $sla=$breached?'SLA BREACHED · '.$due->diffForHumans():($atRisk?'SLA AT RISK · '.$due->diffForHumans():($due?'SLA · '.$due->diffForHumans():'SLA NOT SET'));
+                return ['type'=>'Service Request','request_no'=>$r->request_no,'subject'=>$r->subject,'company'=>$r->company_name,'request_type'=>str_replace('_',' ',$r->request_type),'priority'=>$r->priority,'eligibility'=>str_replace('_',' ',$r->eligibility),'state'=>str_replace('_',' ',$r->workflow_stage),'asset_code'=>$asset?->asset_code,'asset_name'=>$asset?->name,'site'=>$asset?->site?->name ?: $r->site_city,'location'=>$asset?->location?->name ?: $asset?->physical_location,'sla'=>$sla,'tone'=>$breached?'red':($atRisk?'amber':($emergency?'red':($review?'amber':'blue'))),'filter'=>$breached?'breached':($emergency?'emergency':'review'),'action'=>$review?'Review Request':'Inspect Emergency','url'=>route('workflow.approvals.index')];
+            });
+        }
         return match($role){
-            'MAINTENANCE_ENGINEER'=>ServiceRequest::whereNotIn('status',['CLOSED','REJECTED','CANCELLED'])->where(fn($q)=>$q->where('workflow_stage','TECHNICAL_REVIEW')->orWhere('priority','EMERGENCY'))->get()->sortBy(fn($r)=>match($r->priority){'EMERGENCY'=>0,'CRITICAL'=>1,'HIGH'=>2,'MEDIUM'=>3,default=>4})->take(12)->values()->map(function($r){
-                $emergency=$r->priority==='EMERGENCY'; $review=$r->workflow_stage==='TECHNICAL_REVIEW';
-                return ['type'=>'Service Request','request_no'=>$r->request_no,'subject'=>$r->subject,'company'=>$r->company_name,'request_type'=>str_replace('_',' ',$r->request_type),'priority'=>$r->priority,'eligibility'=>str_replace('_',' ',$r->eligibility),'state'=>str_replace('_',' ',$r->workflow_stage),'tone'=>$emergency?'red':($review?'amber':'blue'),'filter'=>$emergency?'emergency':'review','action'=>$review?'Review Request':'Inspect Emergency','url'=>route('workflow.approvals.index')];
-            }),
             'MAINTENANCE_MANAGER'=>ServiceRequest::whereIn('workflow_stage',['MAINTENANCE_MANAGER','TECHNICAL_SCOPE_APPROVAL'])->latest()->limit(8)->get()->map(fn($r)=>['type'=>'Technical Scope','title'=>$r->request_no.' · '.$r->subject,'meta'=>$r->company_name.' · '.$r->priority,'state'=>str_replace('_',' ',$r->workflow_stage),'url'=>route('workflow.approvals.index')]),
             'PROCUREMENT'=>PurchaseOrder::whereIn('status',['DRAFT','PENDING','PENDING_APPROVAL','SUBMITTED'])->latest()->limit(8)->get()->map(fn($po)=>['type'=>'Purchase Order','title'=>$po->po_number.' · '.$po->supplier_name,'meta'=>number_format((float)$po->total,2).' SAR','state'=>$po->status,'url'=>route('procurement.purchase-orders.index')]),
             'TENDERS_CONTRACTS'=>CrmQuotation::whereIn('status',['DRAFT','UNDER_REVIEW','REVISION_REQUESTED','SENT'])->latest('quotation_date')->limit(8)->get()->map(fn($q)=>['type'=>'Quotation','title'=>$q->quotation_no.' · R'.$q->revision_no,'meta'=>number_format((float)$q->amount,2).' '.$q->currency.' · Margin '.($q->margin_pct??'—').'%','state'=>str_replace('_',' ',$q->status),'url'=>route('modules.index','crm')]),
-            'FINANCE'=>CrmQuotation::where('payment_terms_days','>',30)->whereNotIn('status',['CUSTOMER_REJECTED','EXPIRED'])->latest('quotation_date')->limit(8)->get()->map(fn($q)=>['type'=>'Financial Terms','title'=>$q->quotation_no,'meta'=>number_format((float)$q->amount,2).' '.$q->currency.' · '.$q->payment_terms_days.' days','state'=>$q->risk_level,'url'=>route('finance.core.index')]),
+            'FINANCE'=>CrmQuotation::where('payment_terms_days','>',30')->whereNotIn('status',['CUSTOMER_REJECTED','EXPIRED'])->latest('quotation_date')->limit(8)->get()->map(fn($q)=>['type'=>'Financial Terms','title'=>$q->quotation_no,'meta'=>number_format((float)$q->amount,2).' '.$q->currency.' · '.$q->payment_terms_days.' days','state'=>$q->risk_level,'url'=>route('finance.core.index')]),
             'PROJECT_MANAGER'=>ServiceRequest::whereIn('workflow_stage',['EXECUTION_FEASIBILITY','QUALIFIED','PLANNING'])->latest()->limit(8)->get()->map(fn($r)=>['type'=>'Execution','title'=>$r->request_no.' · '.$r->subject,'meta'=>$r->company_name.' · '.$r->priority,'state'=>str_replace('_',' ',$r->workflow_stage),'url'=>route('projects.projects.index')]),
             'CEO'=>CrmQuotation::where(fn($q)=>$q->where('amount','>',250000)->orWhere('risk_level','HIGH')->orWhere('margin_pct','<',10)->orWhere('payment_terms_days','>',90))->whereNotIn('status',['CUSTOMER_REJECTED','EXPIRED'])->latest('quotation_date')->limit(8)->get()->map(fn($q)=>['type'=>'Executive Exception','title'=>$q->quotation_no.' · '.number_format((float)$q->amount,2).' '.$q->currency,'meta'=>'Risk '.$q->risk_level.' · Margin '.($q->margin_pct??'—').'% · Terms '.($q->payment_terms_days??0).' days','state'=>$q->status,'url'=>route('workflow.approvals.index')]),
         };
+    }
+
+    private function todayExecution(string $role): Collection
+    {
+        if($role!=='MAINTENANCE_ENGINEER') return collect();
+        return WorkOrder::with('asset')->whereNotIn('status',['COMPLETED','CLOSED','CANCELLED'])->whereNotNull('planned_start')->whereDate('planned_start',today())->orderBy('planned_start')->limit(8)->get()->map(fn($wo)=>['time'=>$wo->planned_start->format('H:i'),'number'=>$wo->work_order_no,'asset'=>$wo->asset?->asset_code.' · '.$wo->asset?->name,'type'=>str_replace('_',' ',$wo->maintenance_type),'priority'=>$wo->priority,'status'=>str_replace('_',' ',$wo->status),'url'=>'/eam/work-orders']);
     }
 
     private function profile(string $role): array
