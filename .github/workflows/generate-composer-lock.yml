@@ -26,8 +26,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          composer update --no-interaction --prefer-dist --no-progress
-          composer validate --no-interaction
+          composer update --no-interaction --prefer-dist --no-progress --no-scripts
+          composer validate --no-interaction --no-check-publish
           test -s composer.lock
       - name: Upload Composer lock
         uses: actions/upload-artifact@v4
