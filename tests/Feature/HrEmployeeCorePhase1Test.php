@@ -27,6 +27,17 @@ class HrEmployeeCorePhase1Test extends TestCase
         $this->actingAs($admin)->get('/hr/employees')->assertOk()->assertSee('Employee Directory',false)->assertSee('Employee 360',false)->assertSee('12,050.00 SAR',false);
     }
 
+    public function test_new_employee_route_renders_create_form_instead_of_dynamic_employee_404(): void
+    {
+        [,,$admin,$position]=$this->admin();
+        $this->actingAs($admin)->get('/hr/employees/create')
+            ->assertOk()
+            ->assertSee('Create Employee',false)
+            ->assertSee('Personal & Contact',false)
+            ->assertSee($position->title,false)
+            ->assertSee('Create Employee',false);
+    }
+
     public function test_employee_master_can_store_saudi_hr_fields_and_render_employee_360(): void
     {
         [$tenant,$org,$admin,$position]=$this->admin();
@@ -60,7 +71,14 @@ class HrEmployeeCorePhase1Test extends TestCase
     public function test_hr_phase1_routes_are_registered(): void
     {
         $this->assertTrue(\Route::has('hr.dashboard'));
+        $this->assertTrue(\Route::has('hr.employees.index'));
+        $this->assertTrue(\Route::has('hr.employees.create'));
+        $this->assertTrue(\Route::has('hr.employees.store'));
         $this->assertTrue(\Route::has('hr.employees.show'));
+        $this->assertTrue(\Route::has('hr.employees.edit'));
+        $this->assertTrue(\Route::has('hr.employees.update'));
+        $this->assertTrue(\Route::has('hr.employees.activate'));
+        $this->assertTrue(\Route::has('hr.employees.deactivate'));
         $this->assertTrue(\Route::has('hr.employees.contracts.store'));
         $this->assertTrue(\Route::has('hr.employees.documents.store'));
     }
