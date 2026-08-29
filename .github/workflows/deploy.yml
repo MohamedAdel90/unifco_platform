@@ -3,7 +3,6 @@ name: Deploy to Server
 on:
   workflow_run:
     workflows:
-      - UNIFCO Laravel CI
       - Agreed Asset Phases A-D Qualification
     types: [completed]
     branches: [main]
