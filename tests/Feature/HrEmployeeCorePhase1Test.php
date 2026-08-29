@@ -21,12 +21,32 @@ class HrEmployeeCorePhase1Test extends TestCase
         return [$tenant,$org,$admin,$position];
     }
 
-    public function test_hr_dashboard_and_employee_directory_render_new_ui(): void
+    public function test_hr_dashboard_and_employee_directory_render_hr_control_center(): void
     {
         [$tenant,$org,$admin,$position]=$this->admin();
-        Employee::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'job_position_id'=>$position->id,'employee_no'=>'EMP-100','name'=>'Alice Johnson','email'=>'alice@example.test','hire_date'=>'2021-01-10','status'=>'ACTIVE','basic_salary'=>9000,'housing_allowance'=>2250,'transport_allowance'=>800]);
+        Employee::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'job_position_id'=>$position->id,'employee_no'=>'UN-00001','name'=>'Alice Johnson','official_email'=>'alice@unifco.com','mobile_country_code'=>'+966','mobile'=>'501234567','nationality'=>'Saudi Arabian','hire_date'=>'2021-01-10','status'=>'ACTIVE','basic_salary'=>9000,'housing_allowance'=>2250,'transport_allowance'=>800]);
         $this->actingAs($admin)->get('/hr/dashboard')->assertOk()->assertSee('HR Command Center',false)->assertSee('Monthly Compensation',false)->assertSee('/hr/attendance',false)->assertSee('/hr/leave',false)->assertSee('/hr/payroll',false)->assertSee('/hr/missions',false);
-        $this->actingAs($admin)->get('/hr/employees')->assertOk()->assertSee('Employee Directory',false)->assertSee('Employee 360',false)->assertSee('12,050.00 SAR',false);
+        $this->actingAs($admin)->get('/hr/employees')->assertOk()
+            ->assertSee('Employee Directory',false)
+            ->assertSee('Employee No',false)
+            ->assertSee('Employee Name',false)
+            ->assertSee('Documents Expiring',false)
+            ->assertSee('Contracts Expiring',false)
+            ->assertSee('Compliance',false)
+            ->assertSee('View Employee 360',false)
+            ->assertSee('UN-00001',false)
+            ->assertSee('Alice Johnson',false)
+            ->assertSee('12,050.00 SAR',false)
+            ->assertSee('Missing Docs',false);
+    }
+
+    public function test_employee_directory_can_search_private_identifiers_without_exposing_them_as_columns(): void
+    {
+        [$tenant,$org,$admin,$position]=$this->admin();
+        Employee::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'job_position_id'=>$position->id,'employee_no'=>'UN-00009','name'=>'Search Target','nationality'=>'Saudi Arabian','national_id'=>'1099999999','iqama_no'=>'2999999999','status'=>'ACTIVE']);
+        Employee::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'employee_no'=>'UN-00010','name'=>'Other Employee','nationality'=>'Saudi Arabian','status'=>'ACTIVE']);
+        $this->actingAs($admin)->get('/hr/employees?q=1099999999')->assertOk()->assertSee('Search Target',false)->assertDontSee('Other Employee',false);
+        $this->actingAs($admin)->get('/hr/employees?q=2999999999')->assertOk()->assertSee('Search Target',false)->assertDontSee('Other Employee',false);
     }
 
     public function test_new_employee_route_renders_structured_registration_form(): void
@@ -56,7 +76,7 @@ class HrEmployeeCorePhase1Test extends TestCase
             'nationality'=>'Saudi Arabian','gender'=>'MALE','date_of_birth'=>'1990-01-01','marital_status'=>'MARRIED','national_id'=>'1000000000','gosi_no'=>'GOSI-200',
             'emergency_contact_name'=>'Mohammed Ali','emergency_mobile_country_code'=>'+966','emergency_contact_mobile'=>'509999999','address_line'=>'Riyadh Birth Address','city'=>'Riyadh',
             'employment_type'=>'FULL_TIME','contract_type'=>'INDEFINITE','basic_salary'=>10000,'housing_allowance'=>2500,'transport_allowance'=>1000,'other_allowances'=>500,
-            'bank_name'=>'Test Bank','iban'=>'SA0000000000000000000000','work_location'=>'Riyadh HQ',
+            'bank_name'=>'Al Rajhi Bank','iban'=>'SA0000000000000000000000','work_location'=>'Riyadh HQ',
             'national_id_document'=>UploadedFile::fake()->image('national-id.jpg'),
             'contract_document'=>UploadedFile::fake()->create('contract.pdf',100,'application/pdf'),
             'iban_document'=>UploadedFile::fake()->create('iban.pdf',50,'application/pdf'),
