@@ -12,17 +12,38 @@ fi
 
 cd "$APP_DIR"
 
-echo "==> Fetching main and checking out qualified SHA: $EXPECTED_SHA"
+echo "==> Fetching main and checking qualified SHA: $EXPECTED_SHA"
 git fetch origin main
 if ! git cat-file -e "${EXPECTED_SHA}^{commit}" 2>/dev/null; then
   echo "ERROR: qualified SHA is not available after fetching main: $EXPECTED_SHA" >&2
   exit 1
 fi
 REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
+
+# Qualification workflows intentionally write [skip ci] evidence under deploy/status/.
+# Those bookkeeping commits must not invalidate an already-qualified functional SHA.
+# We still refuse any stale release when main contains another functional change.
 if [[ "$EXPECTED_SHA" != "$REMOTE_MAIN_SHA" ]]; then
-  echo "ERROR: refusing stale release: qualified SHA $EXPECTED_SHA is not current main $REMOTE_MAIN_SHA" >&2
-  exit 1
+  if ! git merge-base --is-ancestor "$EXPECTED_SHA" "$REMOTE_MAIN_SHA"; then
+    echo "ERROR: refusing stale release: qualified SHA $EXPECTED_SHA is not an ancestor of current main $REMOTE_MAIN_SHA" >&2
+    exit 1
+  fi
+
+  mapfile -t changed_files < <(git diff --name-only "$EXPECTED_SHA..$REMOTE_MAIN_SHA")
+  disallowed=()
+  for file in "${changed_files[@]}"; do
+    [[ "$file" == deploy/status/* ]] || disallowed+=("$file")
+  done
+
+  if (( ${#disallowed[@]} > 0 )); then
+    echo "ERROR: refusing stale release: current main $REMOTE_MAIN_SHA contains functional changes after qualified SHA $EXPECTED_SHA" >&2
+    printf '  - %s\n' "${disallowed[@]}" >&2
+    exit 1
+  fi
+
+  echo "==> Current main only adds qualification bookkeeping; deploying qualified functional SHA $EXPECTED_SHA"
 fi
+
 git reset --hard "$EXPECTED_SHA"
 DEPLOY_SHA="$(git rev-parse HEAD)"
 [[ "$DEPLOY_SHA" == "$EXPECTED_SHA" ]] || { echo "ERROR: server checkout mismatch: expected $EXPECTED_SHA got $DEPLOY_SHA" >&2; exit 1; }
