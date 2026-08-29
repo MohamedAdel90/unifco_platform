@@ -5,15 +5,156 @@
 <style>
 .emp-hero{background:linear-gradient(135deg,#132137,#1e315b);color:#fff;border-radius:16px;padding:20px 22px;margin-bottom:14px;display:flex;justify-content:space-between;gap:16px;align-items:center}.emp-hero small{display:block;color:#aebbd0;font-size:9px;text-transform:uppercase;letter-spacing:.12em;font-weight:800}.emp-hero h1{font-size:23px;margin:5px 0}.emp-hero p{margin:0;color:#d9e2ef;font-size:11px}.emp-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}.emp-kpi{background:#fff;border:1px solid #e3e8ef;border-radius:12px;padding:14px}.emp-kpi small{font-size:8px;color:#7d8a9d;text-transform:uppercase;font-weight:800}.emp-kpi b{display:block;font-size:24px;color:#132137;margin-top:5px}.emp-kpi.alert b{color:#a86100}.emp-toolbar{background:#fff;border:1px solid #e3e8ef;border-radius:12px;padding:11px;margin-bottom:12px}.quick-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}.quick-filter{display:inline-flex;padding:6px 10px;border:1px solid #dde5ee;border-radius:999px;font-size:8px;font-weight:850;color:#51647d;background:#fff;text-decoration:none}.quick-filter.active{background:#102f5e;color:#fff;border-color:#102f5e}.emp-filters{display:grid;grid-template-columns:2fr repeat(4,1fr) auto;gap:8px;align-items:end}.emp-filters label{font-size:9px;color:#68778b;font-weight:700}.emp-filters input,.emp-filters select{width:100%;min-height:38px}.emp-table-wrap{background:#fff;border:1px solid #e3e8ef;border-radius:12px;overflow:hidden}.emp-table{display:table;margin:0;border-radius:0;width:100%}.emp-table th{font-size:8px;text-transform:uppercase;background:#f7f9fc;color:#68768a;white-space:nowrap}.emp-table td{font-size:10px;vertical-align:middle}.emp-no{font-weight:900;color:#17345e;white-space:nowrap}.emp-user{display:flex;align-items:center;gap:8px}.emp-avatar{width:32px;height:32px;border-radius:50%;background:#eaf0f7;color:#1e315b;display:flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto}.emp-user b,.emp-user small{display:block}.emp-user small{color:#7e8b9d;margin-top:2px}.stack b,.stack small{display:block}.stack small{color:#7e8b9d;margin-top:3px}.state{display:inline-flex;padding:4px 7px;border-radius:999px;background:#eaf6ef;color:#17734b;font-size:8px;font-weight:800}.state.off{background:#f5eeee;color:#924657}.state.leave{background:#fff4dc;color:#966300}.comp{font-weight:850;color:#1e315b;white-space:nowrap}.compliance{display:flex;gap:5px;flex-wrap:wrap;max-width:180px}.compliance-pill{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:7.5px;font-weight:850}.compliance-pill.ok{background:#eaf6ef;color:#17734b}.compliance-pill.warn{background:#fff3db;color:#9a6500}.compliance-pill.bad{background:#fde9ed;color:#ac2840}.row-actions{display:flex;align-items:center;gap:6px;white-space:nowrap}.row-actions>a{font-size:8px;padding:6px 8px}.more{position:relative}.more summary{list-style:none;cursor:pointer;border:1px solid #dce4ed;border-radius:7px;padding:6px 9px;font-weight:900;color:#3c506b;background:#fff}.more summary::-webkit-details-marker{display:none}.more-menu{position:absolute;right:0;top:34px;z-index:20;min-width:165px;background:#fff;border:1px solid #dfe6ef;border-radius:9px;box-shadow:0 12px 30px #0d23461f;padding:6px}.more-menu a,.more-menu button{display:block;width:100%;text-align:left;background:none;border:0;padding:8px;border-radius:6px;font-size:8px;color:#334a67;text-decoration:none}.more-menu a:hover,.more-menu button:hover{background:#f5f8fb}.more-menu .danger{color:#a92c43}.directory-footer{padding:10px 12px}@media(max-width:1150px){.emp-kpis{grid-template-columns:repeat(3,1fr)}.emp-filters{grid-template-columns:repeat(3,1fr)}.emp-table{display:block;overflow-x:auto}}@media(max-width:700px){.emp-hero{display:block}.emp-hero .btn{margin-top:10px}.emp-kpis,.emp-filters{grid-template-columns:1fr}}
 </style>
-@if(session('status'))<div class="notice">{{ session('status') }}</div>@endif
-<section class="emp-hero"><div><small>People / HR · Employee Core</small><h1>Employee Directory</h1><p>HR control center for employee identity, employment, compensation and compliance status.</p></div><div style="display:flex;gap:7px;flex-wrap:wrap"><a class="btn" href="{{ route('hr.employees.create') }}">+ New Employee</a><a class="btn secondary" href="{{ route('hr.dashboard') }}">HR Dashboard</a></div></section>
-<div class="emp-kpis"><div class="emp-kpi"><small>Total Employees</small><b>{{ $stats['total'] }}</b></div><div class="emp-kpi"><small>Active</small><b>{{ $stats['active'] }}</b></div><div class="emp-kpi"><small>On Leave</small><b>{{ $stats['on_leave'] }}</b></div><div class="emp-kpi alert"><small>Documents Expiring</small><b>{{ $stats['documents_expiring'] }}</b></div><div class="emp-kpi alert"><small>Contracts Expiring</small><b>{{ $stats['contracts_expiring'] }}</b></div></div>
-<section class="emp-toolbar"><div class="quick-filters">@php($quick=request('quick'))<a class="quick-filter {{ !$quick?'active':'' }}" href="{{ route('hr.employees.index') }}">All</a><a class="quick-filter {{ $quick==='active'?'active':'' }}" href="{{ request()->fullUrlWithQuery(['quick'=>'active','page'=>null]) }}">Active</a><a class="quick-filter {{ $quick==='on_leave'?'active':'' }}" href="{{ request()->fullUrlWithQuery(['quick'=>'on_leave','page'=>null]) }}">On Leave</a><a class="quick-filter {{ $quick==='new_joiners'?'active':'' }}" href="{{ request()->fullUrlWithQuery(['quick'=>'new_joiners','page'=>null]) }}">New Joiners</a><a class="quick-filter {{ $quick==='expiring_documents'?'active':'' }}" href="{{ request()->fullUrlWithQuery(['quick'=>'expiring_documents','page'=>null]) }}">Expiring Documents</a><a class="quick-filter {{ $quick==='contract_ending'?'active':'' }}" href="{{ request()->fullUrlWithQuery(['quick'=>'contract_ending','page'=>null]) }}">Contract Ending</a></div><form class="emp-filters" method="GET"><input type="hidden" name="quick" value="{{ request('quick') }}"><label>Search<input name="q" value="{{ request('q') }}" placeholder="Employee no, name, email, mobile, national ID or iqama"></label><label>Status<select name="status"><option value="">All statuses</option>@foreach(['ACTIVE','INACTIVE','ON_LEAVE','TERMINATED'] as $s)<option value="{{ $s }}" @selected(request('status')===$s)>{{ $s }}</option>@endforeach</select></label><label>Department<select name="department"><option value="">All departments</option>@foreach($departments as $department)<option value="{{ $department }}" @selected(request('department')===$department)>{{ $department }}</option>@endforeach</select></label><label>Position<select name="position"><option value="">All positions</option>@foreach($positions as $position)<option value="{{ $position->id }}" @selected((string)request('position')===(string)$position->id)>{{ $position->title }}</option>@endforeach</select></label><label>Nationality<select name="nationality"><option value="">All nationalities</option>@foreach($nationalities as $nationality)<option value="{{ $nationality }}" @selected(request('nationality')===$nationality)>{{ $nationality }}</option>@endforeach</select></label><div style="display:flex;gap:6px"><button class="btn">Apply</button><a class="btn secondary" href="{{ route('hr.employees.index') }}">Reset</a></div></form></section>
-<section class="emp-table-wrap"><table class="emp-table"><thead><tr><th>Employee No</th><th>Employee Name</th><th>Position & Department</th><th>Contact</th><th>Employment</th><th>Monthly Compensation</th><th>Compliance</th><th>Status</th><th>Actions</th></tr></thead><tbody>@if($employees->count())@foreach($employees as $e)@php
-$documentTypes=$e->documents->pluck('document_type')->unique();
-$required=$e->nationality==='Saudi Arabian'?collect(['NATIONAL_ID','EMPLOYMENT_CONTRACT','IBAN_CERTIFICATE']):collect(['IQAMA','PASSPORT','EMPLOYMENT_CONTRACT','IBAN_CERTIFICATE']);
-$missing=$required->diff($documentTypes);
-$expired=$e->documents->filter(fn($d)=>$d->expires_on && $d->expires_on->isPast());
-$expiring=$e->documents->filter(fn($d)=>$d->expires_on && !$d->expires_on->isPast() && $d->expires_on->lte(today()->addDays(90)));
-@endphp<tr><td><span class="emp-no">{{ $e->employee_no }}</span></td><td><div class="emp-user"><span class="emp-avatar">{{ strtoupper(substr($e->name,0,1)) }}</span><span><b>{{ $e->name }}</b><small>{{ $e->official_email ?: $e->email ?: 'No email' }}</small></span></div></td><td><div class="stack"><b>{{ $e->position?->title ?? 'Unassigned' }}</b><small>{{ $e->position?->department ?? 'No department' }}</small></div></td><td><div class="stack"><b>{{ $e->official_email ?: $e->email ?: 'No official email' }}</b><small>@if($e->mobile){{ $e->mobile_country_code ?: '+966' }} {{ $e->mobile }}@else No mobile @endif</small></div></td><td><div class="stack"><b>{{ $e->hire_date?->format('d M Y') ?? 'Hire date not set' }}</b><small>Manager: {{ $e->manager?->name ?? 'Not assigned' }}</small></div></td><td><span class="comp">{{ number_format($e->grossMonthlyCompensation(),2) }} SAR</span></td><td><div class="compliance">@if($expired->isNotEmpty())<span class="compliance-pill bad">{{ $expired->count() }} Expired</span>@elseif($missing->isNotEmpty())<span class="compliance-pill warn">{{ $missing->count() }} Missing Docs</span>@elseif($expiring->isNotEmpty())<span class="compliance-pill warn">{{ $expiring->count() }} Expiring</span>@else<span class="compliance-pill ok">Documents Complete</span>@endif</div></td><td><span class="state {{ $e->status==='ON_LEAVE'?'leave':($e->status==='ACTIVE'?'':'off') }}">{{ str_replace('_',' ',$e->status) }}</span></td><td><div class="row-actions"><a class="btn secondary" href="{{ route('hr.employees.show',$e) }}">View Employee 360 →</a><details class="more"><summary>⋮</summary><div class="more-menu"><a href="{{ route('hr.employees.edit',$e) }}">Edit Employee</a><a href="{{ route('hr.employees.show',$e) }}#documents">Documents</a><a href="{{ route('hr.employees.show',$e) }}#employment">Employment & Contract</a><a href="{{ route('hr.employees.show',$e) }}#compensation">Compensation</a>@if($e->status==='ACTIVE')<form method="POST" action="{{ route('hr.employees.deactivate',$e) }}">@csrf<button class="danger">Deactivate Employee</button></form>@else<form method="POST" action="{{ route('hr.employees.activate',$e) }}">@csrf<button>Activate Employee</button></form>@endif</div></details></div></td></tr>@endforeach@else<tr><td colspan="9" style="padding:30px;text-align:center;color:#7d8999">No employees match the selected filters.</td></tr>@endif</tbody></table><div class="directory-footer">{{ $employees->links() }}</div></section>
+
+@if(session('status'))
+    <div class="notice">{{ session('status') }}</div>
+@endif
+
+<section class="emp-hero">
+    <div>
+        <small>People / HR · Employee Core</small>
+        <h1>Employee Directory</h1>
+        <p>HR control center for employee identity, employment, compensation and compliance status.</p>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <a class="btn" href="{{ route('hr.employees.create') }}">+ New Employee</a>
+        <a class="btn secondary" href="{{ route('hr.dashboard') }}">HR Dashboard</a>
+    </div>
+</section>
+
+<div class="emp-kpis">
+    <div class="emp-kpi"><small>Total Employees</small><b>{{ $stats['total'] }}</b></div>
+    <div class="emp-kpi"><small>Active</small><b>{{ $stats['active'] }}</b></div>
+    <div class="emp-kpi"><small>On Leave</small><b>{{ $stats['on_leave'] }}</b></div>
+    <div class="emp-kpi alert"><small>Documents Expiring</small><b>{{ $stats['documents_expiring'] }}</b></div>
+    <div class="emp-kpi alert"><small>Contracts Expiring</small><b>{{ $stats['contracts_expiring'] }}</b></div>
+</div>
+
+@php($quick = request('quick'))
+<section class="emp-toolbar">
+    <div class="quick-filters">
+        <a class="quick-filter {{ !$quick ? 'active' : '' }}" href="{{ route('hr.employees.index') }}">All</a>
+        <a class="quick-filter {{ $quick === 'active' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['quick'=>'active','page'=>null]) }}">Active</a>
+        <a class="quick-filter {{ $quick === 'on_leave' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['quick'=>'on_leave','page'=>null]) }}">On Leave</a>
+        <a class="quick-filter {{ $quick === 'new_joiners' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['quick'=>'new_joiners','page'=>null]) }}">New Joiners</a>
+        <a class="quick-filter {{ $quick === 'expiring_documents' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['quick'=>'expiring_documents','page'=>null]) }}">Expiring Documents</a>
+        <a class="quick-filter {{ $quick === 'contract_ending' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['quick'=>'contract_ending','page'=>null]) }}">Contract Ending</a>
+    </div>
+
+    <form class="emp-filters" method="GET">
+        <input type="hidden" name="quick" value="{{ request('quick') }}">
+        <label>Search<input name="q" value="{{ request('q') }}" placeholder="Employee no, name, email, mobile, national ID or iqama"></label>
+        <label>Status
+            <select name="status">
+                <option value="">All statuses</option>
+                @foreach(['ACTIVE','INACTIVE','ON_LEAVE','TERMINATED'] as $s)
+                    <option value="{{ $s }}" @selected(request('status') === $s)>{{ $s }}</option>
+                @endforeach
+            </select>
+        </label>
+        <label>Department
+            <select name="department">
+                <option value="">All departments</option>
+                @foreach($departments as $department)
+                    <option value="{{ $department }}" @selected(request('department') === $department)>{{ $department }}</option>
+                @endforeach
+            </select>
+        </label>
+        <label>Position
+            <select name="position">
+                <option value="">All positions</option>
+                @foreach($positions as $position)
+                    <option value="{{ $position->id }}" @selected((string) request('position') === (string) $position->id)>{{ $position->title }}</option>
+                @endforeach
+            </select>
+        </label>
+        <label>Nationality
+            <select name="nationality">
+                <option value="">All nationalities</option>
+                @foreach($nationalities as $nationality)
+                    <option value="{{ $nationality }}" @selected(request('nationality') === $nationality)>{{ $nationality }}</option>
+                @endforeach
+            </select>
+        </label>
+        <div style="display:flex;gap:6px">
+            <button class="btn">Apply</button>
+            <a class="btn secondary" href="{{ route('hr.employees.index') }}">Reset</a>
+        </div>
+    </form>
+</section>
+
+<section class="emp-table-wrap">
+    <table class="emp-table">
+        <thead>
+            <tr>
+                <th>Employee No</th><th>Employee Name</th><th>Position & Department</th><th>Contact</th><th>Employment</th><th>Monthly Compensation</th><th>Compliance</th><th>Status</th><th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if($employees->count())
+                @foreach($employees as $e)
+                    @php
+                        $documentTypes = $e->documents->pluck('document_type')->unique();
+                        $required = $e->nationality === 'Saudi Arabian'
+                            ? collect(['NATIONAL_ID','EMPLOYMENT_CONTRACT','IBAN_CERTIFICATE'])
+                            : collect(['IQAMA','PASSPORT','EMPLOYMENT_CONTRACT','IBAN_CERTIFICATE']);
+                        $missing = $required->diff($documentTypes);
+                        $expired = $e->documents->filter(fn($d) => $d->expires_on && $d->expires_on->isPast());
+                        $expiring = $e->documents->filter(fn($d) => $d->expires_on && !$d->expires_on->isPast() && $d->expires_on->lte(today()->addDays(90)));
+                    @endphp
+                    <tr>
+                        <td><span class="emp-no">{{ $e->employee_no }}</span></td>
+                        <td><div class="emp-user"><span class="emp-avatar">{{ strtoupper(substr($e->name,0,1)) }}</span><span><b>{{ $e->name }}</b><small>{{ $e->official_email ?: $e->email ?: 'No email' }}</small></span></div></td>
+                        <td><div class="stack"><b>{{ $e->position?->title ?? 'Unassigned' }}</b><small>{{ $e->position?->department ?? 'No department' }}</small></div></td>
+                        <td><div class="stack"><b>{{ $e->official_email ?: $e->email ?: 'No official email' }}</b><small>@if($e->mobile){{ $e->mobile_country_code ?: '+966' }} {{ $e->mobile }}@else No mobile @endif</small></div></td>
+                        <td><div class="stack"><b>{{ $e->hire_date?->format('d M Y') ?? 'Hire date not set' }}</b><small>Manager: {{ $e->manager?->name ?? 'Not assigned' }}</small></div></td>
+                        <td><span class="comp">{{ number_format($e->grossMonthlyCompensation(),2) }} SAR</span></td>
+                        <td>
+                            <div class="compliance">
+                                @if($expired->isNotEmpty())
+                                    <span class="compliance-pill bad">{{ $expired->count() }} Expired</span>
+                                @elseif($missing->isNotEmpty())
+                                    <span class="compliance-pill warn">{{ $missing->count() }} Missing Docs</span>
+                                @elseif($expiring->isNotEmpty())
+                                    <span class="compliance-pill warn">{{ $expiring->count() }} Expiring</span>
+                                @else
+                                    <span class="compliance-pill ok">Documents Complete</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td><span class="state {{ $e->status === 'ON_LEAVE' ? 'leave' : ($e->status === 'ACTIVE' ? '' : 'off') }}">{{ str_replace('_',' ',$e->status) }}</span></td>
+                        <td>
+                            <div class="row-actions">
+                                <a class="btn secondary" href="{{ route('hr.employees.show',$e) }}">View Employee 360 →</a>
+                                <details class="more">
+                                    <summary>⋮</summary>
+                                    <div class="more-menu">
+                                        <a href="{{ route('hr.employees.edit',$e) }}">Edit Employee</a>
+                                        <a href="{{ route('hr.employees.show',$e) }}#documents">Documents</a>
+                                        <a href="{{ route('hr.employees.show',$e) }}#employment">Employment & Contract</a>
+                                        <a href="{{ route('hr.employees.show',$e) }}#compensation">Compensation</a>
+                                        @if($e->status === 'ACTIVE')
+                                            <form method="POST" action="{{ route('hr.employees.deactivate',$e) }}">
+                                                @csrf
+                                                <button class="danger">Deactivate Employee</button>
+                                            </form>
+                                        @else
+                                            <form method="POST" action="{{ route('hr.employees.activate',$e) }}">
+                                                @csrf
+                                                <button>Activate Employee</button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </details>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            @else
+                <tr><td colspan="9" style="padding:30px;text-align:center;color:#7d8999">No employees match the selected filters.</td></tr>
+            @endif
+        </tbody>
+    </table>
+    <div class="directory-footer">{{ $employees->links() }}</div>
+</section>
 @endsection
