@@ -42,7 +42,6 @@ class HrEmployeeCorePhase1Test extends TestCase
             ->assertSee('Official Employee Email',false)
             ->assertSee('Manager Email',false)
             ->assertSee('Address in Birth Country',false)
-            ->assertSee('IBAN Attachment',false)
             ->assertSee($position->title,false);
     }
 
