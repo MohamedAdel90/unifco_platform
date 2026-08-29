@@ -3,12 +3,28 @@ set -euo pipefail
 
 APP_DIR="/var/www/unifco_platform"
 APP_NAME="unifco-app"
+EXPECTED_SHA="${1:-}"
+
+if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "ERROR: deploy requires an explicit 40-character qualified SHA" >&2
+  exit 1
+fi
+
 cd "$APP_DIR"
 
-echo "==> Fetching and checking out latest main"
+echo "==> Fetching main and checking out qualified SHA: $EXPECTED_SHA"
 git fetch origin main
-git reset --hard origin/main
+if ! git cat-file -e "${EXPECTED_SHA}^{commit}" 2>/dev/null; then
+  echo "ERROR: qualified SHA is not available after fetching main: $EXPECTED_SHA" >&2
+  exit 1
+fi
+if ! git merge-base --is-ancestor "$EXPECTED_SHA" origin/main; then
+  echo "ERROR: qualified SHA is not reachable from origin/main: $EXPECTED_SHA" >&2
+  exit 1
+fi
+git reset --hard "$EXPECTED_SHA"
 DEPLOY_SHA="$(git rev-parse HEAD)"
+[[ "$DEPLOY_SHA" == "$EXPECTED_SHA" ]] || { echo "ERROR: server checkout mismatch: expected $EXPECTED_SHA got $DEPLOY_SHA" >&2; exit 1; }
 echo "==> Server checkout: $DEPLOY_SHA"
 
 echo "==> Validating current release foundation"
