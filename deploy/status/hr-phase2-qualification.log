@@ -1,26 +1,6 @@
-  - Downloading brick/math (0.18.0)
-  - Downloading ramsey/uuid (4.9.3)
-  - Downloading psr/simple-cache (3.0.0)
-  - Downloading symfony/translation-contracts (v3.7.1)
-  - Downloading symfony/translation (v8.1.5)
-  - Downloading psr/clock (1.0.0)
-  - Downloading symfony/clock (v8.1.0)
-  - Downloading carbonphp/carbon-doctrine-types (3.2.0)
-  - Downloading nesbot/carbon (3.13.2)
-  - Downloading monolog/monolog (3.10.0)
-  - Downloading league/uri-interfaces (7.8.1)
-  - Downloading league/uri (7.8.1)
-  - Downloading league/mime-type-detection (1.17.0)
-  - Downloading league/flysystem-local (3.35.3)
-  - Downloading league/flysystem (3.35.3)
-  - Downloading nette/utils (v4.1.5)
-  - Downloading nette/schema (v1.3.6)
-  - Downloading dflydev/dot-access-data (v3.0.3)
-  - Downloading league/config (v1.2.0)
-  - Downloading league/commonmark (2.10.0)
-  - Downloading laravel/serializable-closure (v2.0.15)
-  - Downloading laravel/prompts (v0.3.23)
-  - Downloading laravel/framework (v13.26.1)
+  - Downloading laravel/serializable-closure (v2.0.16)
+  - Downloading laravel/prompts (v0.3.24)
+  - Downloading laravel/framework (v13.29.0)
   - Downloading laravel/pail (v1.2.7)
   - Downloading laravel/agent-detector (v2.0.2)
   - Downloading laravel/pao (v1.1.4)
@@ -41,13 +21,13 @@
   - Downloading sebastian/global-state (8.0.3)
   - Downloading sebastian/exporter (7.0.3)
   - Downloading sebastian/environment (8.1.2)
-  - Downloading sebastian/diff (7.0.0)
+  - Downloading sebastian/diff (7.0.1)
   - Downloading sebastian/comparator (7.1.8)
   - Downloading sebastian/cli-parser (4.2.1)
   - Downloading phpunit/php-timer (8.0.0)
   - Downloading phpunit/php-text-template (5.0.0)
   - Downloading phpunit/php-invoker (6.0.0)
-  - Downloading phpunit/php-file-iterator (6.0.1)
+  - Downloading phpunit/php-file-iterator (6.0.2)
   - Downloading theseer/tokenizer (2.0.1)
   - Downloading sebastian/lines-of-code (4.0.1)
   - Downloading sebastian/complexity (5.0.0)
@@ -55,7 +35,7 @@
   - Downloading phar-io/version (3.2.1)
   - Downloading phar-io/manifest (2.0.4)
   - Downloading myclabs/deep-copy (1.14.0)
-  - Downloading phpunit/phpunit (12.5.33)
+  - Downloading phpunit/phpunit (12.5.34)
   - Installing doctrine/inflector (2.1.0): Extracting archive
   - Installing doctrine/lexer (3.0.1): Extracting archive
   - Installing dragonmantank/cron-expression (v3.6.0): Extracting archive
@@ -127,9 +107,9 @@
   - Installing dflydev/dot-access-data (v3.0.3): Extracting archive
   - Installing league/config (v1.2.0): Extracting archive
   - Installing league/commonmark (2.10.0): Extracting archive
-  - Installing laravel/serializable-closure (v2.0.15): Extracting archive
-  - Installing laravel/prompts (v0.3.23): Extracting archive
-  - Installing laravel/framework (v13.26.1): Extracting archive
+  - Installing laravel/serializable-closure (v2.0.16): Extracting archive
+  - Installing laravel/prompts (v0.3.24): Extracting archive
+  - Installing laravel/framework (v13.29.0): Extracting archive
   - Installing laravel/pail (v1.2.7): Extracting archive
   - Installing laravel/agent-detector (v2.0.2): Extracting archive
   - Installing laravel/pao (v1.1.4): Extracting archive
@@ -150,13 +130,13 @@
   - Installing sebastian/global-state (8.0.3): Extracting archive
   - Installing sebastian/exporter (7.0.3): Extracting archive
   - Installing sebastian/environment (8.1.2): Extracting archive
-  - Installing sebastian/diff (7.0.0): Extracting archive
+  - Installing sebastian/diff (7.0.1): Extracting archive
   - Installing sebastian/comparator (7.1.8): Extracting archive
   - Installing sebastian/cli-parser (4.2.1): Extracting archive
   - Installing phpunit/php-timer (8.0.0): Extracting archive
   - Installing phpunit/php-text-template (5.0.0): Extracting archive
   - Installing phpunit/php-invoker (6.0.0): Extracting archive
-  - Installing phpunit/php-file-iterator (6.0.1): Extracting archive
+  - Installing phpunit/php-file-iterator (6.0.2): Extracting archive
   - Installing theseer/tokenizer (2.0.1): Extracting archive
   - Installing sebastian/lines-of-code (4.0.1): Extracting archive
   - Installing sebastian/complexity (5.0.0): Extracting archive
@@ -164,7 +144,7 @@
   - Installing phar-io/version (3.2.1): Extracting archive
   - Installing phar-io/manifest (2.0.4): Extracting archive
   - Installing myclabs/deep-copy (1.14.0): Extracting archive
-  - Installing phpunit/phpunit (12.5.33): Extracting archive
+  - Installing phpunit/phpunit (12.5.34): Extracting archive
 45 package suggestions were added by new dependencies, use `composer suggest` to see details.
 Generating optimized autoload files
 > Illuminate\Foundation\ComposerScripts::postAutoloadDump
@@ -200,56 +180,76 @@ No syntax errors detected in database/migrations/2026_08_23_000038_build_hr_atte
 
    INFO  Preparing database.  
 
-  Creating migration table ..................................... 114.28ms DONE
+  Creating migration table ..................................... 208.15ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables ........................ 6s DONE
-  2026_08_14_000002_add_controls_and_transactions .................... 5s DONE
-  2026_08_14_000003_add_operational_integration ...................... 1s DONE
-  2026_08_14_000005_create_platform_services_tables .................. 1s DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ....... 919.68ms DONE
-  2026_08_15_000008_add_finance_core ................................. 3s DONE
-  2026_08_15_000009_add_procurement_inventory_operations ............. 5s DONE
-  2026_08_15_000010_add_hr_operations ................................ 3s DONE
-  2026_08_15_000011_add_crm_projects_operations ...................... 2s DONE
-  2026_08_15_000012_add_manufacturing_expansion ...................... 1s DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .................... 5s DONE
-  2026_08_18_000014_add_public_site_requests ................... 272.83ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines ....... 4s DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ................. 3s DONE
-  2026_08_18_000017_expand_customer_portal_operations ................ 3s DONE
-  2026_08_19_000018_close_field_service_baseline_gaps ................ 5s DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  842.99ms DONE
-  2026_08_21_000020_add_emergency_request_details .............. 935.52ms DONE
-  2026_08_21_000021_add_customer_onboarding .......................... 2s DONE
-  2026_08_21_000022_expand_customer_success_partner_profile .... 779.01ms DONE
-  2026_08_21_000023_create_customer_messaging .................. 899.27ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 1.84ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ..................... 3s DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation ................ 1s DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility ........ 270.85ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability ......... 1s DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  766.66ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ...... 183.23ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation ....... 7s DONE
-  2026_08_22_000032_add_work_order_part_requests ..................... 2s DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ........... 1s DONE
-  2026_08_22_000034_add_user_permission_overrides .............. 841.29ms DONE
-  2026_08_22_000035_add_user_security_metadata ....................... 1s DONE
-  2026_08_22_000036_add_user_session_version ................... 370.35ms DONE
-  2026_08_23_000037_expand_hr_employee_core .......................... 5s DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ................. 3s DONE
-  2026_08_23_000039_build_hr_payroll_phase3 .......................... 4s DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ................... 4s DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ................... 2s DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ..................... 10s DONE
-  2026_08_23_000043_build_hr_performance_phase7 ...................... 2s DONE
-  2026_08_23_000044_build_hr_documents_phase9 ........................ 3s DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ...................... 3s DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................. 461.76ms DONE
-  2026_08_23_000047_create_branding_settings ................... 270.25ms DONE
-  2026_08_24_000048_upgrade_public_request_experience ................ 3s DONE
+  2026_08_14_000001_create_unifco_core_tables ........................ 1s DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 602.94ms DONE
+  2026_08_14_000003_add_operational_integration ................ 477.37ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 157.57ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ....... 125.34ms DONE
+  2026_08_15_000008_add_finance_core ........................... 456.92ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 809.90ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 501.85ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 264.80ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 290.10ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 618.76ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 27.07ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 538.17ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 563.83ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 715.35ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 729.55ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  189.28ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 246.32ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 314.17ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 153.07ms DONE
+  2026_08_21_000023_create_customer_messaging .................. 111.15ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.77ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 973.79ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 494.85ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 74.17ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 865.88ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  303.62ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 52.50ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 888.60ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 511.82ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 475.79ms DONE
+  2026_08_22_000034_add_user_permission_overrides .............. 101.57ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 344.17ms DONE
+  2026_08_22_000036_add_user_session_version .................... 78.54ms DONE
+  2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 690.66ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .......................... 1s DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 473.98ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 426.47ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 808.62ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 872.49ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 360.00ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 590.08ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 139.49ms DONE
+  2026_08_23_000047_create_branding_settings .................... 29.46ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 190.41ms DONE
+  2026_08_25_000049_rebuild_public_request_single_page ......... 380.29ms DONE
+  2026_08_26_000050_link_public_requests_to_asset_registry ..... 114.41ms DONE
+  2026_08_26_000051_build_service_request_workflow_foundation .. 655.43ms DONE
+  2026_08_27_000052_add_customer_portal_rbac_scopes ............. 44.54ms DONE
+  2026_08_27_000053_add_customer_portal_action_requests ......... 53.57ms DONE
+  2026_08_27_000054_add_customer_action_attachments ............. 75.00ms DONE
+  2026_08_27_000055_add_assignment_sla_to_customer_actions ...... 71.40ms DONE
+  2026_08_27_000056_add_customer_acquisition_lifecycle ......... 672.74ms DONE
+  2026_08_27_000057_add_acquisition_governance_fields .......... 590.76ms DONE
+  2026_08_27_000058_build_professional_asset_master .................. 1s DONE
+  2026_08_27_000059_normalize_user_status_semantics ............ 143.75ms DONE
+  2026_08_27_000060_build_asset_lifecycle_commissioning ........ 674.13ms DONE
+  2026_08_27_000061_normalize_asset_documents_for_professional_master  191.33ms DONE
+  2026_08_28_000020_add_asset_warranty_insurance_phase_d ....... 420.96ms DONE
+  2026_08_28_000070_build_asset_custody_transfers .............. 371.90ms DONE
+  2026_08_28_000080_complete_agreed_asset_phases_b_d ........... 796.56ms DONE
+  2026_08_28_000090_close_agreed_asset_a_d_gaps ...................... 1s DONE
+  2026_08_28_000100_close_asset_acceptance_contract .................. 1s DONE
+  2026_08_28_000110_allow_staged_customer_pm_strategy ........... 27.47ms DONE
+  2026_08_28_000120_normalize_asset_warranty_expiry_date ....... 110.70ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -260,21 +260,21 @@ No syntax errors detected in database/migrations/2026_08_23_000038_build_hr_atte
 
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrAttendanceLeavePhase2Test[39m
-  [32;1m✓[39;22m[90m [39m[90mattendance workspace calculates late minutes and overtime[39m[90m          [39m [90m95.49s[39m  
-  [32;1m✓[39;22m[90m [39m[90mramadan schedule uses reduced daily target[39m[90m                          [39m [90m0.31s[39m  
-  [32;1m✓[39;22m[90m [39m[90mleave policy balance accrual request and approval[39m[90m                   [39m [90m0.40s[39m  
+  [32;1m✓[39;22m[90m [39m[90mattendance workspace calculates late minutes and overtime[39m[90m          [39m [90m31.37s[39m  
+  [32;1m✓[39;22m[90m [39m[90mramadan schedule uses reduced daily target[39m[90m                          [39m [90m0.27s[39m  
+  [32;1m✓[39;22m[90m [39m[90mleave policy balance accrual request and approval[39m[90m                   [39m [90m0.31s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase2 routes are registered[39m[90m                                        [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEmployeeCorePhase1Test[39m
-  [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render new ui[39m[90m                   [39m [90m0.26s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee master can store saudi hr fields and render employee 360[39m[90m   [39m [90m0.28s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.41s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render new ui[39m[90m                   [39m [90m0.30s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee master can store saudi hr fields and render employee 360[39m[90m   [39m [90m0.29s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.29s[39m  
   [32;1m✓[39;22m[90m [39m[90mhr phase1 routes are registered[39m[90m                                     [39m [90m0.01s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\Wave10HrOperationsTest[39m
-  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.47s[39m  
-  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.57s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.54s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.55s[39m  
 
   [90mTests:[39m    [32;1m10 passed[39;22m[90m (78 assertions)[39m
-  [90mDuration:[39m [39m98.27s[39m
+  [90mDuration:[39m [39m34.03s[39m
 
