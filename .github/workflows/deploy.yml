@@ -13,7 +13,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: deploy-${{ github.event.workflow_run.head_sha || github.sha }}
+  group: production-deploy
   cancel-in-progress: true
 
 jobs:
