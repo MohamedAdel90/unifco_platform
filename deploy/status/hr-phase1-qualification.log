@@ -16,7 +16,7 @@ Failed asserting that 500 is identical to 200.
 
 The following exception occurred during the last request:
 
-ParseError: syntax error, unexpected token "endforeach", expecting end of file in /home/runner/work/unifco_platform/unifco_platform/storage/framework/views/0421c37d9a67fe03d81e349c7522356b.php:17
+ParseError: syntax error, unexpected token "endforeach", expecting end of file in /home/runner/work/unifco_platform/unifco_platform/storage/framework/views/0421c37d9a67fe03d81e349c7522356b.php:151
 Stack trace:
 #0 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php(124): Illuminate\Filesystem\Filesystem::{closure:Illuminate\Filesystem\Filesystem::getRequire():120}()
 #1 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(57): Illuminate\Filesystem\Filesystem->getRequire()
@@ -118,7 +118,7 @@ Stack trace:
 #97 /home/runner/work/unifco_platform/unifco_platform/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
 #98 {main}
 
-Next Illuminate\View\ViewException: syntax error, unexpected token "endforeach", expecting end of file (View: /home/runner/work/unifco_platform/unifco_platform/resources/views/hr/employees/index.blade.php) in /home/runner/work/unifco_platform/unifco_platform/storage/framework/views/0421c37d9a67fe03d81e349c7522356b.php:17
+Next Illuminate\View\ViewException: syntax error, unexpected token "endforeach", expecting end of file (View: /home/runner/work/unifco_platform/unifco_platform/resources/views/hr/employees/index.blade.php) in /home/runner/work/unifco_platform/unifco_platform/storage/framework/views/0421c37d9a67fe03d81e349c7522356b.php:151
 Stack trace:
 #0 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php(59): Illuminate\View\Engines\CompilerEngine->handleViewException()
 #1 /home/runner/work/unifco_platform/unifco_platform/vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php(76): Illuminate\View\Engines\PhpEngine->evaluatePath()
@@ -236,5 +236,5 @@ syntax error, unexpected token "endforeach", expecting end of file (View: /home/
 
 
   [90mTests:[39m    [31;1m2 failed[39;22m[90m,[39m[39m [39m[32;1m6 passed[39;22m[90m (68 assertions)[39m
-  [90mDuration:[39m [39m32.08s[39m
+  [90mDuration:[39m [39m56.27s[39m
 
