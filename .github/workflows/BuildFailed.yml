@@ -1,0 +1,19 @@
+name: Actions Registry Recovery Probe
+
+'on':
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/BuildFailed.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm workflow registry is healthy
+        run: echo "GitHub Actions workflow registry is executing jobs."
