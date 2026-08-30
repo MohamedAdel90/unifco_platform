@@ -3,16 +3,6 @@ name: HR Phase 1 Qualification
 on:
   push:
     branches: [main]
-    paths:
-      - 'app/Http/Controllers/HR/**'
-      - 'app/Models/Employee.php'
-      - 'app/Models/EmploymentContract.php'
-      - 'app/Models/EmployeeDocument.php'
-      - 'resources/views/hr/**'
-      - 'routes/wave10.php'
-      - 'database/migrations/2026_08_23_000037_expand_hr_employee_core.php'
-      - 'tests/Feature/HrEmployeeCorePhase1Test.php'
-      - '.github/workflows/hr-phase1-qualification.yml'
   workflow_dispatch:
 
 permissions:
