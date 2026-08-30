@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   workflow_run:
     workflows:
-      - Agreed Asset Phases A-D Qualification
+      - UNIFCO Laravel CI
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -18,27 +18,108 @@ concurrency:
 
 jobs:
   release-gate:
-    name: Require CI and A-D success for same SHA
+    name: Fast Deploy release gate
     runs-on: ubuntu-latest
+    outputs:
+      scope: ${{ steps.scope.outputs.scope }}
+      target_sha: ${{ steps.target.outputs.sha }}
     env:
       GH_TOKEN: ${{ github.token }}
-      TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
-      - name: Verify required qualification workflows
+      - name: Resolve release SHA
+        id: target
         shell: bash
         run: |
           set -euo pipefail
-          required_workflows=("UNIFCO Laravel CI" "Agreed Asset Phases A-D Qualification")
-          api_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${TARGET_SHA}&branch=main&per_page=100"
+          sha='${{ github.event.workflow_run.head_sha || github.sha }}'
+          test -n "$sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Fast Deploy candidate: $sha"
 
-          for attempt in $(seq 1 60); do
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.target.outputs.sha }}
+          fetch-depth: 2
+
+      - name: Classify change scope
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='${{ steps.target.outputs.sha }}'
+          parent="$(git rev-parse "${target}^" 2>/dev/null || true)"
+          if [[ -z "$parent" ]]; then
+            echo 'scope=shared' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git diff --name-only "$parent" "$target" | tee /tmp/changed-files.txt
+          hr=false
+          asset=false
+          shared=false
+
+          while IFS= read -r path; do
+            [[ -z "$path" ]] && continue
+            case "$path" in
+              deploy/status/*) ;;
+              app/Http/Controllers/HR/*|app/Models/Employee.php|app/Models/EmploymentContract.php|app/Models/EmployeeDocument.php|resources/views/hr/*|routes/wave10.php|database/migrations/*hr*|tests/Feature/Hr*|tests/Feature/Wave10HrOperationsTest.php|.github/workflows/hr-phase*-qualification.yml)
+                hr=true ;;
+              app/Http/Controllers/Maintenance/*|app/Services/AssetMasterService.php|resources/views/maintenance/*|routes/asset-master.php|tests/Feature/ProfessionalAssetMasterTest.php|tests/Feature/ProfessionalAssetMasterV2Test.php|tests/Feature/AssetLifecyclePhaseBTest.php|tests/Feature/WorkOrderPartConsumptionTest.php|tests/Feature/WorkOrderPartRequestTest.php|.github/workflows/asset-phase-*-qualification.yml|.github/workflows/agreed-asset-phases-a-d-qualification.yml)
+                asset=true ;;
+              .github/workflows/deploy.yml|.github/workflows/ci.yml|deploy/*|composer.json|composer.lock|bootstrap/*|config/*|database/migrations/*|routes/web.php|app/Providers/*)
+                shared=true ;;
+              *) shared=true ;;
+            esac
+          done < /tmp/changed-files.txt
+
+          if [[ "$shared" == true || ( "$hr" == true && "$asset" == true ) ]]; then
+            scope=shared
+          elif [[ "$hr" == true ]]; then
+            scope=hr
+          elif [[ "$asset" == true ]]; then
+            scope=asset
+          else
+            scope=shared
+          fi
+
+          echo "scope=$scope" >> "$GITHUB_OUTPUT"
+          echo "Fast Deploy scope: $scope"
+
+      - name: Verify scope-aware release gates
+        shell: bash
+        env:
+          TARGET_SHA: ${{ steps.target.outputs.sha }}
+          RELEASE_SCOPE: ${{ steps.scope.outputs.scope }}
+        run: |
+          set -euo pipefail
+
+          required_workflows=("UNIFCO Laravel CI")
+          case "$RELEASE_SCOPE" in
+            hr)
+              required_workflows+=("HR Phase 1 Qualification")
+              ;;
+            asset)
+              required_workflows+=("Agreed Asset Phases A-D Qualification")
+              ;;
+            shared)
+              required_workflows+=("HR Phase 1 Qualification" "Agreed Asset Phases A-D Qualification")
+              ;;
+            *)
+              echo "Unknown release scope: $RELEASE_SCOPE" >&2
+              exit 1
+              ;;
+          esac
+
+          api_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${TARGET_SHA}&branch=main&per_page=100"
+          echo "Required gates for $RELEASE_SCOPE: ${required_workflows[*]}"
+
+          for attempt in $(seq 1 90); do
             payload="$(curl --fail --silent --show-error \
               -H "Authorization: Bearer ${GH_TOKEN}" \
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
               "$api_url")"
             all_success=true
-            waiting=false
 
             for workflow in "${required_workflows[@]}"; do
               status="$(jq -r --arg name "$workflow" '[.workflow_runs[] | select(.name == $name and .event == "push")] | sort_by(.run_number) | last | if . == null then "missing" else (.conclusion // .status // "unknown") end' <<<"$payload")"
@@ -49,25 +130,26 @@ jobs:
                   echo "Required workflow failed for ${TARGET_SHA}: $workflow => $status" >&2
                   exit 1
                   ;;
-                *) all_success=false; waiting=true ;;
+                *) all_success=false ;;
               esac
             done
 
             if [[ "$all_success" == true ]]; then
-              echo "Release gate passed for ${TARGET_SHA}."
+              echo "Fast Deploy release gate passed for ${TARGET_SHA} (${RELEASE_SCOPE})."
               exit 0
             fi
-            [[ "$waiting" == true && "$attempt" -lt 60 ]] && sleep 10
+            [[ "$attempt" -lt 90 ]] && sleep 10
           done
 
-          echo "Timed out waiting for required workflows to succeed for ${TARGET_SHA}." >&2
+          echo "Timed out waiting for scope-aware gates for ${TARGET_SHA}." >&2
           exit 1
 
   deploy:
     needs: release-gate
     runs-on: ubuntu-latest
     env:
-      TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      TARGET_SHA: ${{ needs.release-gate.outputs.target_sha }}
+      RELEASE_SCOPE: ${{ needs.release-gate.outputs.scope }}
       DB_CONNECTION: mysql
       DB_HOST: 127.0.0.1
       DB_PORT: 3306
@@ -98,6 +180,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$TARGET_SHA"
           echo "Deploying qualified SHA: $TARGET_SHA"
+          echo "Release scope: $RELEASE_SCOPE"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -112,24 +195,39 @@ jobs:
         run: |
           set -euo pipefail
           bash -n deploy/deploy.sh
-          php -l app/Http/Controllers/PublicSiteController.php
-          php -l app/Http/Controllers/CustomerPortalController.php
-          php -l app/Http/Controllers/Maintenance/AssetMasterController.php
-          php -l app/Http/Controllers/Workflow/WorkflowWorkspaceController.php
-          php -l app/Http/Controllers/HR/EmployeeController.php
-          php -l app/Models/Employee.php
-          php -l app/Services/AssetMasterService.php
           php -l bootstrap/app.php
           php -l routes/web.php
-          php -l routes/asset-master.php
-          test -s resources/views/workflow/workspace.blade.php
-          test -s resources/views/maintenance/asset-master/index.blade.php
-          test -s resources/views/maintenance/asset-master/show.blade.php
-          test -s resources/views/hr/employees/form.blade.php
           grep -q 'deploy/status/\*' deploy/deploy.sh
           grep -q 'merge-base --is-ancestor' deploy/deploy.sh
 
-      - name: Laravel release preflight
+          case "$RELEASE_SCOPE" in
+            hr)
+              php -l app/Http/Controllers/HR/EmployeeController.php
+              php -l app/Models/Employee.php
+              php -l routes/wave10.php
+              test -s resources/views/hr/employees/form.blade.php
+              ;;
+            asset)
+              php -l app/Http/Controllers/Maintenance/AssetMasterController.php
+              php -l app/Services/AssetMasterService.php
+              php -l routes/asset-master.php
+              test -s resources/views/maintenance/asset-master/index.blade.php
+              test -s resources/views/maintenance/asset-master/show.blade.php
+              ;;
+            shared)
+              php -l app/Http/Controllers/HR/EmployeeController.php
+              php -l app/Models/Employee.php
+              php -l app/Http/Controllers/Maintenance/AssetMasterController.php
+              php -l app/Services/AssetMasterService.php
+              php -l routes/wave10.php
+              php -l routes/asset-master.php
+              test -s resources/views/hr/employees/form.blade.php
+              test -s resources/views/maintenance/asset-master/index.blade.php
+              test -s resources/views/maintenance/asset-master/show.blade.php
+              ;;
+          esac
+
+      - name: Fast Laravel release preflight
         shell: bash
         run: |
           set -euo pipefail
@@ -139,36 +237,20 @@ jobs:
           cp -n .env.example .env || true
           php artisan key:generate --force
           php artisan migrate:fresh --force
-          php artisan brand:materialize
-          test -s public/images/unifco-logo.webp
-          php artisan route:list --name=asset-master.index >/dev/null
-          php artisan route:list --name=asset-master.show >/dev/null
-          php artisan route:list --name=workflow.approvals.index >/dev/null
-          php artisan route:list --name=hr.employees.create >/dev/null
+          php artisan route:list >/dev/null
           php artisan view:cache
-          php artisan test \
-            tests/Feature/HrEmployeeCorePhase1Test.php \
-            tests/Feature/ProfessionalAssetMasterTest.php \
-            tests/Feature/ProfessionalAssetMasterV2Test.php \
-            tests/Feature/AssetLifecyclePhaseBTest.php \
-            tests/Feature/PublicOfficialContactTest.php \
-            tests/Feature/CustomerAcquisitionWorkflowTest.php \
-            tests/Feature/CustomerPortalRbacPhase1Test.php \
-            tests/Feature/CustomerPortalPhase2ActionCenterTest.php \
-            tests/Feature/CustomerPortalAdvancedOperationsTest.php \
-            tests/Feature/CustomerPortalAlertsAndReportsTest.php \
-            tests/Feature/CustomerPortalTest.php \
-            tests/Feature/PublicHomepageLocalizationTest.php \
-            tests/Feature/ServiceRequestWorkflowTest.php \
-            tests/Feature/WorkflowTestUsersSeederTest.php \
-            tests/Feature/WorkflowRoleWorkspaceTest.php \
-            tests/Feature/PublicRequestWizardTest.php \
-            tests/Feature/PublicSiteGuestRequestsTest.php \
-            tests/Feature/WorkOrderPartConsumptionTest.php \
-            tests/Feature/WorkOrderPartRequestTest.php \
-            tests/Feature/BrandIdentityTest.php \
-            tests/Feature/BrandReleaseQualificationTest.php \
-            tests/Feature/BrandingSettingsTest.php
+
+          case "$RELEASE_SCOPE" in
+            hr)
+              php artisan test tests/Feature/HrEmployeeCorePhase1Test.php
+              ;;
+            asset)
+              php artisan test tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/ProfessionalAssetMasterV2Test.php tests/Feature/AssetLifecyclePhaseBTest.php
+              ;;
+            shared)
+              php artisan test tests/Feature/HrEmployeeCorePhase1Test.php tests/Feature/ProfessionalAssetMasterTest.php tests/Feature/ProfessionalAssetMasterV2Test.php tests/Feature/AssetLifecyclePhaseBTest.php
+              ;;
+          esac
 
       - name: Deploy via SSH
         shell: bash
@@ -184,10 +266,7 @@ jobs:
           chmod 600 "$HOME/.ssh/unifco_deploy_key"
           rc=1
           for attempt in $(seq 1 5); do
-            echo "SSH deploy attempt $attempt/5 for qualified SHA $TARGET_SHA"
-            # Stream the qualified deploy policy itself to the server. This avoids
-            # the bootstrap deadlock where an older server-side deploy.sh rejects
-            # the commit that contains its own fix.
+            echo "SSH deploy attempt $attempt/5 for $RELEASE_SCOPE SHA $TARGET_SHA"
             if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
               -i "$HOME/.ssh/unifco_deploy_key" -p "$DEPLOY_PORT" \
               "$DEPLOY_USER@$DEPLOY_HOST" "bash -s -- '$TARGET_SHA'" < deploy/deploy.sh; then
