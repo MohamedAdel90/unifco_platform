@@ -57,3 +57,5 @@ jobs:
         run: php artisan migrate --force
       - name: Run tests
         run: composer test
+
+# retrigger registered CI after startup-failure cleanup
