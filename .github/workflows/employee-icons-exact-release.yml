@@ -1,0 +1,20 @@
+name: Employee Icons Exact Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/employee-icons-exact-release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate workflow registry
+        run: echo "employee icons release workflow registered"
