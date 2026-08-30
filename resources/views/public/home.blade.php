@@ -47,7 +47,7 @@ $home = [
     'more' => 'المزيد',
     'all_services' => 'عرض جميع الخدمات',
     'process_kicker' => 'كيف نعمل',
-    'process_title' => 'طريقة عمل واضحة من البداية للنهاية',
+    'process_title' => 'طريقة عمل واضحة من البداية إلى النهاية -- من التقييم إلى التحسين',
     'process' => [
         ['01', 'التقييم', 'فهم الموقع والأصول والمخاطر ومتطلبات الخدمة.'],
         ['02', 'التخطيط', 'إعداد خطة العمل والجداول والموارد ومستويات الخدمة.'],
@@ -100,3 +100,10 @@ $home = [
 ];
 @endphp
 @include('public.partials.home-reference-layout', ['home' => $home])
+<style id="unifco-arabic-home-hierarchy">
+html[dir="rtl"] .kicker{font-size:17px;line-height:1.5;margin-bottom:8px;font-weight:900}
+html[dir="rtl"] .process{direction:rtl}
+html[dir="rtl"] .process-step{direction:rtl}
+html[dir="rtl"] .process-step:not(:last-child):after{content:"←";right:auto;left:-27px}
+@media(max-width:700px){html[dir="rtl"] .kicker{font-size:15px}}
+</style>
