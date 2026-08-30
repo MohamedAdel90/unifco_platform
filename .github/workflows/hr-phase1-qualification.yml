@@ -80,17 +80,38 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p deploy/status
           rc='${{ steps.test.outputs.rc }}'
           if [ "${rc:-999}" = '0' ]; then result=success; else result=failure; fi
-          printf 'source_sha=%s\nverified_at=%s\nresult=%s\ntest_rc=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "${rc:-not-run}" > deploy/status/hr-phase1-latest.txt
-          tail -n 240 /tmp/hr-phase1.log > deploy/status/hr-phase1-qualification.log || true
+
+          mkdir -p /tmp/hr-phase1-status
+          printf 'source_sha=%s\nverified_at=%s\nresult=%s\ntest_rc=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$result" "${rc:-not-run}" > /tmp/hr-phase1-status/hr-phase1-latest.txt
+          tail -n 240 /tmp/hr-phase1.log > /tmp/hr-phase1-status/hr-phase1-qualification.log || true
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add deploy/status/hr-phase1-latest.txt deploy/status/hr-phase1-qualification.log
-          git commit -m 'Record HR Phase 1 qualification [skip ci]' || true
-          git pull --rebase origin main || true
-          git push origin HEAD:main
+
+          # Qualification workflows can finish concurrently and all write bookkeeping
+          # under deploy/status. Rebase/pull can race and reject an otherwise valid
+          # qualification. Always rebuild the bookkeeping commit on the latest main
+          # and retry the push without touching functional source files.
+          for attempt in $(seq 1 8); do
+            echo "Qualification record push attempt ${attempt}/8"
+            git fetch origin main
+            git reset --hard origin/main
+            mkdir -p deploy/status
+            cp /tmp/hr-phase1-status/hr-phase1-latest.txt deploy/status/hr-phase1-latest.txt
+            cp /tmp/hr-phase1-status/hr-phase1-qualification.log deploy/status/hr-phase1-qualification.log
+            git add deploy/status/hr-phase1-latest.txt deploy/status/hr-phase1-qualification.log
+            git commit -m 'Record HR Phase 1 qualification [skip ci]' || true
+            if git push origin HEAD:main; then
+              echo "HR Phase 1 qualification record published."
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+
+          echo "Unable to publish HR Phase 1 qualification record after retries." >&2
+          exit 1
       - name: Fail when qualification failed
         if: always() && steps.test.outputs.rc != '0'
         run: exit 1
