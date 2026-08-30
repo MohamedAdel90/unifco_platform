@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
 
-# Pipeline retrigger marker after a GitHub Actions startup failure.
+# Pipeline retrigger marker after transient GitHub Actions startup failures.
 jobs:
   test:
     runs-on: ubuntu-latest
