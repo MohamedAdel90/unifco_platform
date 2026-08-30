@@ -61,7 +61,7 @@ $home = [
         ['/images/home/industry-photo-v14-02.webp', 'المرافق الصحية'],
         ['/images/home/industry-photo-v14-03.webp', 'المستودعات والخدمات اللوجستية'],
         ['/images/home/industry-photo-v14-04.webp', 'القطاع الصناعي'],
-        ['/images/home/industry-photo-v14-05.webp', 'الضيافة'],
+        ['/images/home/industry-photo-v14-05.webp', 'مرافق الضيافة'],
         ['/images/home/industry-photo-v14-06.webp', 'الجهات الحكومية'],
     ],
     'all_industries' => 'عرض جميع القطاعات',
