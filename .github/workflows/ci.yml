@@ -5,8 +5,8 @@ on:
     branches: [main, 'implementation/**']
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
-# Pipeline retrigger marker after transient GitHub Actions startup failures.
 jobs:
   test:
     runs-on: ubuntu-latest
