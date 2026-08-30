@@ -128,9 +128,15 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
         run: |
           set -euo pipefail
+          for secret_name in DEPLOY_HOST DEPLOY_USER DEPLOY_SSH_KEY DEPLOY_PORT; do
+            if [ -z "${!secret_name}" ]; then
+              echo "Missing required GitHub secret: ${secret_name}" >&2
+              exit 1
+            fi
+          done
           install -m 700 -d "$HOME/.ssh"
           printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_deploy_key"
           chmod 600 "$HOME/.ssh/unifco_deploy_key"
