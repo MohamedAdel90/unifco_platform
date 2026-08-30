@@ -138,3 +138,5 @@ jobs:
             [[ "$attempt" -eq 5 ]] || sleep 20
           done
           exit "$rc"
+
+# retrigger after removing temporary BuildFailed registry probe
