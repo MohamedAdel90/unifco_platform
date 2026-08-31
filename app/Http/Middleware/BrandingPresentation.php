@@ -21,16 +21,17 @@ class BrandingPresentation
         if ($request->routeIs('public.home')) {
             $isArabic = str_contains($html, '<html lang="ar"');
             $labels = $isArabic ? [
-                'home'=>'الرئيسية','about'=>'من نحن','services'=>'الخدمات','clients'=>'عملاؤنا','projects'=>'المشاريع','careers'=>'الوظائف','contact'=>'تواصل معنا',
+                'home'=>'الرئيسية','about'=>'من نحن','services'=>'الخدمات','clients'=>'عملاؤنا','projects'=>'المشاريع','careers'=>'الوظائف','goals'=>'أهدافنا','contact'=>'تواصل معنا',
             ] : [
-                'home'=>'Home','about'=>'About Us','services'=>'Services','clients'=>'Our Clients','projects'=>'Projects','careers'=>'Careers','contact'=>'Contact us',
+                'home'=>'Home','about'=>'About Us','services'=>'Services','clients'=>'Our Clients','projects'=>'Projects','careers'=>'Careers','goals'=>'Our Goals','contact'=>'Contact us',
             ];
             $icons = $this->navigationIcons();
             $item = static fn (string $href, string $key) => '<a href="'.$href.'"><span class="nav-icon">'.$icons[$key].'</span><span class="nav-label">'.$labels[$key].'</span></a>';
             $navigation = '<nav class="nav-links public-primary-nav">'
                 .$item('#home','home').$item('#about','about').$item('#services','services').$item('#industries','clients')
-                .$item('#projects','projects').$item('#careers','careers').$item('#contact','contact').'</nav>';
+                .$item('#projects','projects').$item('#careers','careers').$item('#goals','goals').$item('#contact','contact').'</nav>';
             $html = preg_replace('/<nav class="nav-links">.*?<\/nav>/s', $navigation, $html, 1) ?? $html;
+            $html = str_replace('<section class="section"><div class="wrap"><div class="section-head"><h2>', '<section class="section" id="goals"><div class="wrap"><div class="section-head"><h2>', $html);
         }
 
         // v2 remains a supported compatibility endpoint for older clients and release checks.
@@ -79,6 +80,7 @@ HTML;
             'clients'=>'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3"/><circle cx="5.5" cy="9.5" r="2"/><circle cx="18.5" cy="9.5" r="2"/><path d="M7 20c.4-4 2.1-6 5-6s4.6 2 5 6M2.5 18c.2-2.8 1.4-4.2 3.6-4.2M21.5 18c-.2-2.8-1.4-4.2-3.6-4.2"/></svg>',
             'projects'=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21h16M6.5 21V6.5l5-2.5v17M11.5 8H17v13M8.5 9h1M8.5 12h1M8.5 15h1M14 11h1M14 14h1M14 17h1"/></svg>',
             'careers'=>'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 11.5c5.6 2.3 12.4 2.3 18 0M10 12h4"/></svg>',
+            'goals'=>'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 2v3M22 12h-3M12 22v-3M2 12h3"/></svg>',
             'contact'=>'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>',
         ];
     }
