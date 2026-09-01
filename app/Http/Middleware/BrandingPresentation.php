@@ -21,9 +21,9 @@ class BrandingPresentation
         if ($request->routeIs('public.home')) {
             $isArabic = str_contains($html, '<html lang="ar"');
             $labels = $isArabic ? [
-                'home'=>'الرئيسية','about'=>'من نحن','services'=>'الخدمات','clients'=>'عملاؤنا','projects'=>'المشاريع','careers'=>'الوظائف','contact'=>'تواصل معنا',
+                'home'=>'الرئيسية','about'=>'من نحن','services'=>'الخدمات','clients'=>'عملاؤنا','projects'=>'مشاريعنا','careers'=>'الوظائف','contact'=>'تواصل معنا',
             ] : [
-                'home'=>'Home','about'=>'About Us','services'=>'Services','clients'=>'Our Clients','projects'=>'Projects','careers'=>'Careers','contact'=>'Contact us',
+                'home'=>'Home','about'=>'About Us','services'=>'Services','clients'=>'Our Clients','projects'=>'Our Projects','careers'=>'Careers','contact'=>'Contact us',
             ];
             $icons = $this->navigationIcons();
             $item = static fn (string $href, string $key) => '<a href="'.$href.'"><span class="nav-icon">'.$icons[$key].'</span><span class="nav-label">'.$labels[$key].'</span></a>';
