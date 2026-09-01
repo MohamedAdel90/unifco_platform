@@ -72,7 +72,7 @@ for file in \
   test -s "$file" || { echo "ERROR: required release file missing: $file"; exit 1; }
 done
 
-grep -q 'home-electrical-20260821-12' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
+grep -q 'home-company-profile-20260830-01' app/Http/Controllers/PublicSiteController.php || { echo "ERROR: homepage release marker missing"; exit 1; }
 grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal marker missing"; exit 1; }
 grep -q "name('transition')" routes/asset-master.php || { echo "ERROR: asset lifecycle transition route missing"; exit 1; }
 grep -q "name('locations.store')" routes/asset-master.php || { echo "ERROR: asset location hierarchy route missing"; exit 1; }
@@ -153,6 +153,6 @@ for attempt in $(seq 1 20); do
   sleep 2
 done
 [ "$app_ready" -eq 1 ] || { echo "ERROR: application did not become ready"; exit 1; }
-curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-electrical-20260821-12' || { echo "ERROR: homepage release header missing"; exit 1; }
+curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-company-profile-20260830-01' || { echo "ERROR: homepage release header missing"; exit 1; }
 
 echo "==> Deploy complete at $DEPLOY_SHA"
