@@ -32,6 +32,7 @@ class BrandingPresentation
                 .$item('#projects','projects').$item('#careers','careers').$item('#goals','goals').$item('#contact','contact').'</nav>';
             $html = preg_replace('/<nav class="nav-links">.*?<\/nav>/s', $navigation, $html, 1) ?? $html;
             $html = str_replace('<section class="section"><div class="wrap"><div class="section-head"><h2>', '<section class="section" id="goals"><div class="wrap"><div class="section-head"><h2>', $html);
+            $html = str_replace('<nav class="wrap mobile-menu" id="mobile-menu">', '<nav class="wrap mobile-menu" id="mobile-menu"><a href="#goals">'.$labels['goals'].'</a>', $html);
         }
 
         // v2 remains a supported compatibility endpoint for older clients and release checks.
