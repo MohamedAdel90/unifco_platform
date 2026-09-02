@@ -21,9 +21,16 @@ class PublicHomeFinalCopyPresentation
             return $response;
         }
 
+        $replacement = 'دع UNIFCO تتولى التشغيل والصيانة <strong class="final-copy-emphasis">وتفرغ لتطوير أعمالك.</strong>';
+
         $html = str_replace(
-            'دع UNIFCO تتولى التشغيل والصيانة بينما تركز أنت على أعمالك.',
-            'دع UNIFCO تتولى التشغيل والصيانة <strong class="final-copy-emphasis">وتفرغ لتطوير أعمالك.</strong>',
+            [
+                'دع UNIFCO تتولى التشغيل والصيانة، بينما تركز أنت على أعمالك.',
+                'دع UNIFCO تتولى التشغيل والصيانة بينما تركز أنت على أعمالك.',
+                'دع UNIFCO تتولى التشغيل والصيانة، بينما تركز أنت على أعمالك',
+                'دع UNIFCO تتولى التشغيل والصيانة بينما تركز أنت على أعمالك',
+            ],
+            $replacement,
             $html
         );
 
