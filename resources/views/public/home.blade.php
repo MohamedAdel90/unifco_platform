@@ -130,3 +130,11 @@ html[dir="ltr"] .portal-card h2,html[dir="ltr"] .portal-card>p,html[dir="ltr"] .
 @media(max-width:1080px){.operation-split{grid-template-columns:1fr}.operation-card{min-height:390px}.maintenance-photo{min-height:390px}.portal-device{height:280px}}
 @media(max-width:700px){.operations{padding:24px 0 44px}.operation-card{border-radius:14px}.maintenance-card{grid-template-columns:1fr}.maintenance-photo{min-height:250px;max-height:250px}.operation-content{padding:28px 22px}.portal-card{padding:28px 22px;grid-template-columns:1fr;grid-template-areas:"title" "copy" "checks" "device" "button";row-gap:8px}.portal-device{width:100%;height:230px;justify-self:center;margin:4px 0 8px}.portal-card>.btn{justify-self:stretch}.check-grid{grid-template-columns:1fr 1fr;gap:10px}}
 </style>
+<style id="unifco-projects-clients-heading-refine">
+#clients .public-showcase-head .kicker{font-size:clamp(22px,2.15vw,30px)!important;line-height:1.35!important;font-weight:900!important;margin-bottom:8px!important}
+#projects .public-project-kicker{font-size:clamp(22px,2.15vw,30px)!important;line-height:1.35!important;font-weight:900!important;margin-bottom:8px!important}
+@media(max-width:700px){#clients .public-showcase-head .kicker,#projects .public-project-kicker{font-size:21px!important}}
+</style>
+<script id="unifco-projects-clients-heading-copy">
+(()=>{const apply=()=>{const clients=document.querySelector('#clients .public-showcase-head .kicker');if(clients)clients.textContent='عملاؤنا وشركاء النجاح';const projects=document.querySelector('#projects .public-project-kicker');if(projects)projects.textContent='مشاريعنا'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply()})();
+</script>
