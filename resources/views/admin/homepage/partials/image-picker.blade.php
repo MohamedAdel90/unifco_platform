@@ -30,7 +30,47 @@
   var uploadBtn=document.getElementById('img-picker-upload-btn');
   var targetInputs=document.querySelectorAll('input.img-picker-target');
   if(!grid)return;
-  var insert=function(url){targetInputs.forEach(function(i){if(!i.value)i.value=url});};
+  window.__imgActiveTarget=null;
+  var commit=function(url,el){
+    el.value=url;
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  };
+  var insert=function(url){
+    var active=window.__imgActiveTarget;
+    if(active && document.body.contains(active)){commit(url,active);return;}
+    targetInputs.forEach(function(i){if(!i.value)commit(url,i);});
+  };
+  // delegated: any image field's "Select / Upload" button activates its own input
+  document.addEventListener('click',function(e){
+    var sel=e.target.closest('.hp-img-select');
+    if(!sel)return;
+    var field=sel.closest('[data-img-field]');
+    var input=field?field.querySelector('.img-picker-target'):null;
+    if(input)window.__imgActiveTarget=input;
+  });
+  // delegated: live preview refresh + clear for existing AND new rows
+  var refreshPreview=function(field){
+    var input=field.querySelector('.img-picker-target');
+    var pv=field.querySelector('[data-img-preview]');
+    if(!input||!pv)return;
+    var v=(input.value||'').trim();
+    if(!v){pv.innerHTML='<span class="hp-img-ph">No image</span>';return;}
+    pv.innerHTML='<img src="'+v.replace(/"/g,'&quot;')+'" alt=""><button type="button" class="hp-img-clear" data-img-clear title="Remove image">×</button>';
+  };
+  document.addEventListener('input',function(e){
+    var t=e.target;
+    if(t.classList&&t.classList.contains('img-picker-target')){
+      var field=t.closest('[data-img-field]');
+      if(field)refreshPreview(field);
+    }
+  });
+  document.addEventListener('click',function(e){
+    var clr=e.target.closest('[data-img-clear]');
+    if(!clr)return;
+    var field=clr.closest('[data-img-field]');
+    var input=field?field.querySelector('.img-picker-target'):null;
+    if(input){input.value='';refreshPreview(field);}
+  });
   function loadImages(){
     fetch('{{ route("admin.homepage.images.list") }}',{headers:{'Accept':'application/json'}})
       .then(function(r){return r.json();})

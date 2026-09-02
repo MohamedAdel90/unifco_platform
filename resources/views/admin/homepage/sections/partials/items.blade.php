@@ -1,3 +1,4 @@
+@php $IDX = '{{index}}'; @endphp
 <div class="card" data-repeater>
   <div class="col-head"><b>{{ $listKey }} — <span style="color:#1e315b">{{ $locale==='ar'?'ARABIC':'ENGLISH' }}</span></b><button type="button" class="btn-sm primary add-row">+ Add {{ rtrim($listKey,'s') }}</button></div>
   <div class="rows repeat-grid">
@@ -9,7 +10,11 @@
             <div>
               <label>{{ $f }}</label>
               @if($f==='image')
-                <div class="image-slot"><input type="text" name="item_{{$locale}}_{{$listKey}}_{{$i}}_{{$f}}" class="img-picker-target" value="{{ $row[$f] ?? '' }}" placeholder="/images/..."></div>
+                @include('admin.homepage.sections.partials.image-field', [
+                  'name'=>'item_{{$locale}}_{{$listKey}}_{{$i}}_{{$f}}',
+                  'value'=>$row[$f] ?? '',
+                  'placeholder'=>'/images/...'
+                ])
               @elseif($f==='desc')
                 <textarea name="item_{{$locale}}_{{$listKey}}_{{$i}}_{{$f}}">{{ $row[$f] ?? '' }}</textarea>
               @else
@@ -30,7 +35,11 @@
           <div>
             <label>{{ $f }}</label>
             @if($f==='image')
-              <div class="image-slot"><input type="text" name="item_{{$locale}}_{{$listKey}}_<?= '{{index}}' ?>_{{$f}}" class="img-picker-target" placeholder="/images/..."></div>
+              @include('admin.homepage.sections.partials.image-field', [
+                'name'=>'item_{{$locale}}_{{$listKey}}_'.$IDX.'_{{$f}}',
+                'value'=>'',
+                'placeholder'=>'/images/...'
+              ])
             @elseif($f==='desc')
               <textarea name="item_{{$locale}}_{{$listKey}}_<?= '{{index}}' ?>_{{$f}}"></textarea>
             @else

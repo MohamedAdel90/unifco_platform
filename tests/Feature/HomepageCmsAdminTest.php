@@ -204,6 +204,34 @@ class HomepageCmsAdminTest extends TestCase
         $this->assertSame(['Plans', 'Inspection'], $section->data_en['maintenance_checks']);
     }
 
+    public function test_admin_can_save_repeater_image_field(): void
+    {
+        $section = HomepageSection::create([
+            'section_key' => 'industries', 'sort_order' => 1, 'is_active' => true,
+            'data_ar' => [], 'data_en' => [],
+        ]);
+        $this->actingAs($this->admin())
+            ->get(route('admin.homepage.sections.edit', $section))
+            ->assertOk()
+            ->assertSee('Select / Upload')
+            ->assertSee('img-picker-target');
+
+        $this->actingAs($this->admin())
+            ->put(route('admin.homepage.sections.update', $section), [
+                'item_ar_items_0_image' => '/images/home/industries/oil.webp',
+                'item_ar_items_0_label' => 'نفط',
+                'item_ar_items_index' => ['0'],
+                'item_en_items_0_image' => '/images/home/industries/oil.webp',
+                'item_en_items_0_label' => 'Oil',
+                'item_en_items_index' => ['0'],
+            ])
+            ->assertRedirect();
+
+        $section->refresh();
+        $this->assertSame('/images/home/industries/oil.webp', $section->data_ar['items'][0]['image']);
+        $this->assertSame('/images/home/industries/oil.webp', $section->data_en['items'][0]['image']);
+    }
+
     public function test_public_homepage_renders_cms_data_and_fallback(): void
     {
         $this->get('/')->assertOk()->assertSee('شريك واحد لجميع احتياجات منشأتك', false);

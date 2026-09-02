@@ -36,6 +36,14 @@
 .form-actions{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid #e3e8ef;border-radius:12px;padding:14px 18px}
 .image-slot{display:flex;gap:6px;align-items:center}
 .image-slot input{flex:1}
+.hp-img-field{display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:center}
+.hp-img-preview{width:56px;height:56px;border:1px solid #e3e8ef;border-radius:10px;overflow:hidden;background:#f2f6fa;position:relative;display:flex;align-items:center;justify-content:center}
+.hp-img-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.hp-img-preview .hp-img-ph{font-size:9px;color:#97a4b6;text-align:center;line-height:1.2;padding:4px}
+.hp-img-clear{position:absolute;top:2px;right:2px;background:rgba(159,31,31,.9);color:#fff;border:0;border-radius:50%;width:18px;height:18px;font-size:13px;line-height:1;cursor:pointer;padding:0}
+.hp-img-field .hp-img-input{font-size:11.5px}
+.hp-img-actions{margin-top:4px}
+.hp-img-actions .btn-sm{font-size:11px;padding:5px 11px}
 </style>
 @if(session('status'))<div class="notice">{{ session('status') }}</div>@endif
 @if($errors->any())<div class="error">{{ $errors->first() }}</div>@endif
@@ -49,7 +57,11 @@
       @foreach($scalars as $f)
         @if(in_array($f,$imgKeys,true))
           <label class="first">Image</label>
-          <div class="image-slot"><input type="text" name="scalar_ar_{{$f}}" class="img-picker-target" value="{{ old('scalar_ar_'.$f, $section->data_ar[$f] ?? '') }}" placeholder="/images/..."></div>
+          @include('admin.homepage.sections.partials.image-field', [
+            'name'=>'scalar_ar_'.$f,
+            'value'=>old('scalar_ar_'.$f, $section->data_ar[$f] ?? ''),
+            'placeholder'=>'/images/...'
+          ])
         @elseif($long($f))
           <label class="first">{{ $f }} (AR)</label>
           <textarea name="scalar_ar_{{$f}}">{{ old('scalar_ar_'.$f, $section->data_ar[$f] ?? '') }}</textarea>
