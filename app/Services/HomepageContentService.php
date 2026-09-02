@@ -29,6 +29,18 @@ class HomepageContentService
         $home['dir'] = $dir;
         $home['language'] = $lang === 'ar' ? 'EN' : 'AR';
 
+        $home['eyebrow'] = $home['eyebrow'] ?? $home['hero_eyebrow'] ?? '';
+        $home['hero_proof'] = $home['hero_proof'] ?? $home['hero_proofs'] ?? [];
+        $home['services_sub'] = $home['services_sub'] ?? $home['services_text'] ?? '';
+        $home['services_button'] = $home['services_button'] ?? $home['all_services'] ?? ($lang === 'ar' ? 'عرض جميع الخدمات' : 'View All Services');
+        $home['services_kicker'] = $home['services_kicker'] ?? ($lang === 'ar' ? 'خدماتنا' : 'OUR SERVICES');
+        $home['industries_kicker'] = $home['industries_kicker'] ?? ($lang === 'ar' ? 'قطاعاتنا' : 'INDUSTRIES');
+        $home['industries_button'] = $home['industries_button'] ?? $home['all_industries'] ?? ($lang === 'ar' ? 'عرض جميع القطاعات' : 'View All Industries');
+
+        if (isset($home['services']) && is_array($home['services'])) {
+            $home['services'] = $this->normalizeServices($home['services'], $lang);
+        }
+
         $projects = Cache::remember("homepage_projects_{$lang}", 3600, fn () => $this->loadProjects($lang));
         $clients = Cache::remember("homepage_clients_{$lang}", 3600, fn () => $this->loadClients($lang));
 
@@ -36,6 +48,49 @@ class HomepageContentService
         $home['showcase_clients'] = $clients ?: $this->defaultShowcaseClients($lang);
 
         return $home;
+    }
+
+    private const SERVICE_SLUGS = [
+        'transformers' => 'transformer-maintenance',
+        'ups systems' => 'ups-systems',
+        'generators' => 'generators',
+        'mv systems' => 'mv-systems',
+        'preventive maintenance' => 'preventive-maintenance',
+        'corrective / emergency maintenance' => 'corrective-emergency-maintenance',
+        'inspection & testing' => 'inspection-testing',
+        'maintenance contracts' => 'maintenance-contracts',
+        'industrial / commercial electrical services' => 'industrial-commercial-electrical',
+        'asset management' => 'asset-management',
+        'hvac systems' => 'hvac-systems',
+        'mep services' => 'mep-services',
+        'facility management' => 'facility-management',
+    ];
+
+    private function normalizeServices(array $services, string $lang): array
+    {
+        $normalized = [];
+        foreach ($services as $service) {
+            $service = array_values($service);
+            if (count($service) < 4) {
+                $normalized[] = $service;
+
+                continue;
+            }
+            $candidateUrl = $service[2] ?? '';
+            if (is_string($candidateUrl) && str_starts_with($candidateUrl, '/services/')) {
+                $normalized[] = [
+                    $service[0], $service[1], $candidateUrl, $service[3],
+                ];
+
+                continue;
+            }
+            [$number, $photo, $title, $desc] = $service;
+            $slug = self::SERVICE_SLUGS[mb_strtolower(trim((string) $title))] ?? null;
+            $url = $slug ? url("/services/{$slug}?lang={$lang}") : $service[2] ?? '#';
+            $normalized[] = [$title, $desc, $url, $photo];
+        }
+
+        return $normalized;
     }
 
     private function loadFromDb(string $locale): array
