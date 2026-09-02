@@ -51,7 +51,17 @@ class PublicHomeAssetStatsPresentation
 
         foreach ($replacements as $label => $value) {
             $pattern = '/(<div class="stat"[^>]*>\s*<strong>)(.*?)(<\/strong>\s*<span>\s*'.preg_quote($label, '/').'\s*<\/span>)/us';
-            $html = preg_replace($pattern, '$1'.number_format($value).'$3', $html, 1) ?? $html;
+            $formattedValue = number_format($value);
+
+            // Use a callback so numeric values can never be interpreted as part
+            // of a regex backreference (for example "$1" + "10" => "$110").
+            // This changes the number only and preserves the original stat HTML/CSS.
+            $html = preg_replace_callback(
+                $pattern,
+                static fn (array $matches): string => $matches[1].$formattedValue.$matches[3],
+                $html,
+                1
+            ) ?? $html;
         }
 
         $response->setContent($html);
