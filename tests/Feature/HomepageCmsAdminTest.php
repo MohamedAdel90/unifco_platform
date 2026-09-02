@@ -54,7 +54,8 @@ class HomepageCmsAdminTest extends TestCase
             ->get(route('admin.homepage.sections.index'))
             ->assertOk()
             ->assertSee('hero')
-            ->assertSee('Edit JSON');
+            ->assertSee('Homepage Sections')
+            ->assertDontSee('Edit JSON');
     }
 
     public function test_admin_can_open_section_edit(): void
