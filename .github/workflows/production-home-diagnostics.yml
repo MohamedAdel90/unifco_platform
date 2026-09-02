@@ -1,0 +1,54 @@
+name: Production Homepage Diagnostics
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-homepage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_diag_key"
+          chmod 600 "$HOME/.ssh/unifco_diag_key"
+
+      - name: Diagnose production homepage GET
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          set -euo pipefail
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
+            -i "$HOME/.ssh/unifco_diag_key" -p "$DEPLOY_PORT" \
+            "$DEPLOY_USER@$DEPLOY_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          cd /var/www/unifco_platform
+          echo "==> Release: $(git rev-parse HEAD)"
+          echo "==> PHP: $(php -r '"'"'echo PHP_VERSION;'"'"')"
+          echo "==> Testing real GET /"
+          rm -f /tmp/unifco-home-body /tmp/unifco-home-headers
+          code="$(curl -sS -D /tmp/unifco-home-headers -o /tmp/unifco-home-body -w '%{http_code}' http://127.0.0.1:8081/ || true)"
+          echo "HTTP_STATUS=$code"
+          grep -Ei '^(HTTP/|content-type:|x-unifco-release:)' /tmp/unifco-home-headers || true
+          if [ "$code" != "200" ]; then
+            echo "==> Laravel error tail"
+            if [ -f storage/logs/laravel.log ]; then
+              tail -n 160 storage/logs/laravel.log \
+                | sed -E 's/(password|secret|token|key)([^= :]*)([=: ]+)[^ ,;]+/\1\2\3[REDACTED]/Ig'
+            else
+              echo "laravel.log not found"
+            fi
+            exit 1
+          fi
+          echo "==> Homepage GET is healthy"
+          REMOTE
