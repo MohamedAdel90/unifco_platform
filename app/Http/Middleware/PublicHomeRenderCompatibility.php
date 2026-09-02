@@ -27,10 +27,11 @@ class PublicHomeRenderCompatibility
                 $home['showcase_metrics'] = $home['showcase_metrics'] ?? [];
                 $home['showcase_projects'] = $home['showcase_projects'] ?? [];
                 $home['showcase_clients'] = $home['showcase_clients'] ?? [];
-                $home['clients_title'] = $home['clients_title'] ?? ($home['lang'] ?? 'ar') === 'ar' ? 'عملاؤنا' : 'Our Clients';
+                $isArabic = ($home['lang'] ?? 'ar') === 'ar';
+                $home['clients_title'] = $home['clients_title'] ?? ($isArabic ? 'عملاؤنا' : 'Our Clients');
                 $home['clients_text'] = $home['clients_text'] ?? '';
                 $home['more_clients'] = $home['more_clients'] ?? '';
-                $home['all_clients'] = $home['all_clients'] ?? (($home['lang'] ?? 'ar') === 'ar' ? 'عرض جميع العملاء' : 'View all clients');
+                $home['all_clients'] = $home['all_clients'] ?? ($isArabic ? 'عرض جميع العملاء' : 'View all clients');
                 $home['carousel_previous'] = $home['carousel_previous'] ?? 'Previous';
                 $home['carousel_next'] = $home['carousel_next'] ?? 'Next';
                 $home['emergency_photo_alt'] = $home['emergency_photo_alt'] ?? '';
