@@ -67,8 +67,6 @@ class PublicHomeAssetStatsPresentation
                 .'</div>';
         }
 
-        // Always restore the complete four-item stats bar. Homepage CMS content may
-        // otherwise shorten the array and remove Sites Served from the public page.
         $html = preg_replace(
             '/<div class="stats(?:\s+[^"]*)?">(?:\s*<div class="stat"[^>]*>.*?<\/div>\s*)+<\/div>/us',
             $stats,
@@ -79,12 +77,13 @@ class PublicHomeAssetStatsPresentation
         if (str_contains($html, '</head>')) {
             $style = <<<'HTML'
 <style id="unifco-home-live-stats-icons">
-.home-live-stats .stat{display:grid!important;grid-template-columns:auto auto!important;grid-template-areas:"icon value" "label label"!important;justify-content:center!important;align-items:center!important;column-gap:9px!important;row-gap:5px!important;padding:16px 12px!important}
-.home-live-stats .stat-icon{grid-area:icon!important;width:27px!important;height:27px!important;border:1px solid rgba(255,255,255,.34)!important;border-radius:50%!important;display:grid!important;place-items:center!important;color:#fff!important}
-.home-live-stats .stat-icon svg{width:15px!important;height:15px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
-.home-live-stats .stat strong{grid-area:value!important;margin:0!important;font-size:27px!important;line-height:1!important}
-.home-live-stats .stat>span:last-child{grid-area:label!important;display:block!important;font-size:10px!important;color:#d7e2f0!important}
-@media(max-width:700px){.home-live-stats .stat{padding:14px 8px!important}.home-live-stats .stat-icon{width:24px!important;height:24px!important}.home-live-stats .stat strong{font-size:23px!important}}
+.home-live-stats{margin-top:22px!important;border-radius:7px!important}
+.home-live-stats .stat{display:grid!important;grid-template-columns:auto auto!important;grid-template-areas:"icon value" "label label"!important;justify-content:center!important;align-items:center!important;column-gap:7px!important;row-gap:4px!important;padding:13px 10px!important}
+.home-live-stats .stat-icon{grid-area:icon!important;width:24px!important;height:24px!important;border:1px solid rgba(255,255,255,.3)!important;border-radius:50%!important;display:grid!important;place-items:center!important;color:#fff!important}
+.home-live-stats .stat-icon svg{width:13px!important;height:13px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.home-live-stats .stat strong{grid-area:value!important;margin:0!important;font-size:22px!important;line-height:1!important}
+.home-live-stats .stat>span:last-child{grid-area:label!important;display:block!important;font-size:9px!important;line-height:1.45!important;color:#d7e2f0!important}
+@media(max-width:700px){.home-live-stats{margin-top:18px!important}.home-live-stats .stat{padding:11px 7px!important;column-gap:6px!important}.home-live-stats .stat-icon{width:22px!important;height:22px!important}.home-live-stats .stat-icon svg{width:12px!important;height:12px!important}.home-live-stats .stat strong{font-size:19px!important}.home-live-stats .stat>span:last-child{font-size:8.5px!important}}
 </style>
 HTML;
             $html = str_replace('</head>', $style."\n</head>", $html);
