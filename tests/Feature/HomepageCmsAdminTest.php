@@ -63,8 +63,10 @@ class HomepageCmsAdminTest extends TestCase
         $this->actingAs($this->admin())
             ->get(route('admin.homepage.sections.edit', $section))
             ->assertOk()
-            ->assertSee('data_ar')
-            ->assertSee('data_en');
+            ->assertSee('ARABIC')
+            ->assertSee('ENGLISH')
+            ->assertSee('eyebrow')
+            ->assertSee('Save Section');
     }
 
     public function test_admin_can_open_project_create_with_image_picker(): void
@@ -105,14 +107,14 @@ class HomepageCmsAdminTest extends TestCase
         $section = $this->makeSection();
         $this->actingAs($this->admin())
             ->put(route('admin.homepage.sections.update', $section), [
-                'data_ar' => json_encode(['hero_title' => 'عنوان محدث']),
-                'data_en' => json_encode(['hero_title' => 'Updated title']),
+                'scalar_ar_title' => 'عنوان محدث',
+                'scalar_en_title' => 'Updated title',
                 'sort_order' => 5,
             ])
             ->assertRedirect();
 
         $section->refresh();
-        $this->assertSame('عنوان محدث', $section->data_ar['hero_title']);
+        $this->assertSame('عنوان محدث', $section->data_ar['title']);
         $this->assertSame(5, $section->sort_order);
     }
 
@@ -177,6 +179,28 @@ class HomepageCmsAdminTest extends TestCase
         $client = HomepageClient::where('name_en', 'Client')->firstOrFail();
         $this->actingAs($this->admin())->delete(route('admin.homepage.clients.destroy', $client))->assertRedirect();
         $this->assertDatabaseMissing('homepage_clients', ['id' => $client->id]);
+    }
+
+    public function test_admin_can_save_repeater_and_checklist_fields(): void
+    {
+        $section = HomepageSection::create([
+            'section_key' => 'operations', 'sort_order' => 1, 'is_active' => true,
+            'data_ar' => [], 'data_en' => [],
+        ]);
+        $this->actingAs($this->admin())
+            ->put(route('admin.homepage.sections.update', $section), [
+                'scalar_ar_maintenance_title' => 'من الصيانة إلى التشغيل',
+                'scalar_en_maintenance_title' => 'From maintenance to operations',
+                'check_ar_maintenance_checks' => ['خطط', 'فحص'],
+                'check_en_maintenance_checks' => ['Plans', 'Inspection'],
+            ])
+            ->assertRedirect();
+
+        $section->refresh();
+        $this->assertSame('من الصيانة إلى التشغيل', $section->data_ar['maintenance_title']);
+        $this->assertSame(['خطط', 'فحص'], $section->data_ar['maintenance_checks']);
+        $this->assertSame('From maintenance to operations', $section->data_en['maintenance_title']);
+        $this->assertSame(['Plans', 'Inspection'], $section->data_en['maintenance_checks']);
     }
 
     public function test_public_homepage_renders_cms_data_and_fallback(): void
