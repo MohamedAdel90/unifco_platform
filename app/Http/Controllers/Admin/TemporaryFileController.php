@@ -35,9 +35,9 @@ class TemporaryFileController extends Controller
             'file' => [
                 'required',
                 'file',
-                'mimes:jpg,jpeg,png,webp,gif,pdf',
-                'mimetypes:image/jpeg,image/png,image/webp,image/gif,application/pdf',
-                'max:20480',
+                'mimes:jpg,jpeg,png,webp,gif,pdf,xlsx',
+                'mimetypes:image/jpeg,image/png,image/webp,image/gif,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'max:10240',
             ],
         ]);
 
@@ -49,6 +49,7 @@ class TemporaryFileController extends Controller
             'image/webp' => 'webp',
             'image/gif' => 'gif',
             'application/pdf' => 'pdf',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
             default => abort(422, 'Unsupported temporary file type.'),
         };
         $token = (string) Str::uuid();
@@ -82,7 +83,7 @@ class TemporaryFileController extends Controller
                 'Cache-Control' => 'no-store, private',
                 'X-Content-Type-Options' => 'nosniff',
             ],
-            'inline'
+            ($metadata['is_spreadsheet'] ?? false) ? 'attachment' : 'inline'
         );
     }
 
@@ -116,6 +117,7 @@ class TemporaryFileController extends Controller
 
         $metadata['public_url'] = route('temporary-files.show', $token);
         $metadata['is_image'] = str_starts_with((string) ($metadata['mime'] ?? ''), 'image/');
+        $metadata['is_spreadsheet'] = ($metadata['mime'] ?? null) === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
         return $metadata;
     }

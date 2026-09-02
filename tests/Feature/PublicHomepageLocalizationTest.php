@@ -11,6 +11,7 @@ class PublicHomepageLocalizationTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('حلول متكاملة للمرافق والمشاريع والتشغيل والصيانة')
+            ->assertSee('خبرة موثوقة في تنفيذ المشاريع')
             ->assertSee('EN');
     }
 
@@ -19,6 +20,7 @@ class PublicHomepageLocalizationTest extends TestCase
         $this->get('/?lang=en')
             ->assertOk()
             ->assertSee('Integrated Facility, Projects, Operations & Maintenance Solutions')
+            ->assertSee('Proven experience in project delivery')
             ->assertSee('AR');
 
         $this->get('/')

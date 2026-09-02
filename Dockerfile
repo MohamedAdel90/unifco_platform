@@ -8,6 +8,7 @@ RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoload
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 COPY deploy/nginx.conf /etc/nginx/http.d/default.conf
+COPY deploy/php-upload.ini /usr/local/etc/php/conf.d/99-unifco-upload.ini
 COPY deploy/supervisord.conf /etc/supervisord.conf
 EXPOSE 8080
 CMD ["/usr/bin/supervisord","-c","/etc/supervisord.conf"]

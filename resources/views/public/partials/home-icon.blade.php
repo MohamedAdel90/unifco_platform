@@ -11,5 +11,7 @@
 @case('search')<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg>@break
 @case('clipboard')<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5H6v16h12V5h-3M9 3h6v4H9zM9 12h6M9 16h4"/></svg>@break
 @case('chart')<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2M3 8l6-5 6 7 6-5"/></svg>@break
+@case('pin')<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>@break
+@case('calendar')<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></svg>@break
 @default<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>
 @endswitch

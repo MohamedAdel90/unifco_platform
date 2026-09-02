@@ -16,11 +16,12 @@ class PublicOfficialContactTest extends TestCase
         $this->assertStringStartsWith('https://wa.me/966599402090',UnifcoContact::whatsappUrl('Test'));
     }
 
-    public function test_public_home_exposes_icon_only_official_whatsapp_and_email_actions(): void
+    public function test_public_home_exposes_official_contact_actions_and_emergency_phone(): void
     {
         $this->get('/')
             ->assertOk()
-            ->assertDontSee('0599402090')
+            ->assertSee('0599402090')
+            ->assertSee('tel:+966599402090',false)
             ->assertSee('https://wa.me/966599402090',false)
             ->assertSee('mailto:info@unifco.com',false)
             ->assertSee('/css/home-contact.css?v=20260828-4',false)

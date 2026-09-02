@@ -57,6 +57,44 @@ class TemporaryFileWorkspaceTest extends TestCase
         $this->get(route('temporary-files.show', $token))->assertNotFound();
     }
 
+    public function test_admin_can_upload_and_download_a_temporary_spreadsheet(): void
+    {
+        Storage::fake('local');
+        $users = $this->users();
+        $mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+        $this->actingAs($users['admin'])
+            ->post('/admin/temporary-files', [
+                'file' => UploadedFile::fake()->create('projects.xlsx', 100, $mime),
+            ])
+            ->assertRedirect();
+
+        $directory = Storage::disk('local')->directories('temporary-files')[0];
+        $token = basename($directory);
+        Storage::disk('local')->assertExists($directory.'/file.xlsx');
+
+        $metadata = json_decode(Storage::disk('local')->get($directory.'/metadata.json'), true);
+        $this->assertSame('projects.xlsx', $metadata['original_name']);
+        $this->assertSame($mime, $metadata['mime']);
+
+        $this->get(route('temporary-files.show', $token))
+            ->assertOk()
+            ->assertHeader('Content-Type', $mime)
+            ->assertHeader('Content-Disposition', 'attachment; filename=projects.xlsx')
+            ->assertHeader('X-Content-Type-Options', 'nosniff');
+    }
+
+    public function test_temporary_file_workspace_lists_spreadsheet_support(): void
+    {
+        $users = $this->users();
+
+        $this->actingAs($users['admin'])
+            ->get('/admin/temporary-files')
+            ->assertOk()
+            ->assertSee('XLSX', false)
+            ->assertSee('Maximum size: 10 MB', false);
+    }
+
     public function test_executable_uploads_are_rejected(): void
     {
         Storage::fake('local');

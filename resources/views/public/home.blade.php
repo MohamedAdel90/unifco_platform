@@ -82,12 +82,53 @@ $home = [
         ['settings', 'نهج وقائي ذكي', 'تركيز على منع الأعطال بخطط مدروسة'],
         ['target', 'تجربة موحدة', 'حلول متكاملة من جهة واحدة'],
     ],
+    'showcase_kicker' => 'مشاريعنا',
+    'showcase_title' => 'خبرة موثوقة في تنفيذ المشاريع',
+    'showcase_text' => 'نفذنا مجموعة واسعة من المشاريع والتعميدات في قطاعات متعددة ومناطق مختلفة بالمملكة بجودة وكفاءة.',
+    'showcase_metrics' => [
+        ['pin', 'مناطق متعددة', 'في المملكة'],
+        ['calendar', '2024 - 2026', 'خبرة تنفيذ موثقة'],
+        ['team', '24+', 'جهة مالكة'],
+        ['report', '44+', 'مشروعًا وتعميدًا'],
+    ],
+    'showcase_projects' => [
+        ['image'=>'/images/home/projects/ats-maintenance.webp','year'=>'2024-2025','title'=>'صيانة المفاتيح الكهربائية ATS','owner'=>'شركة المياه الوطنية','location'=>'المدينة المنورة','scope'=>'صيانة وقائية وتصحيحية'],
+        ['image'=>'/images/home/projects/generator-maintenance.webp','year'=>'2025-2026','title'=>'صيانة مولد مبنى المستشفى','owner'=>'مستشفى المدينة الوطني','location'=>'المدينة المنورة','scope'=>'صيانة وقائية وتصحيحية'],
+        ['image'=>'/images/home/projects/transformer-inspection.webp','year'=>'2024-2025','title'=>'صيانة المحولات ولوحات التوزيع','owner'=>'وزارة الموارد البشرية','location'=>'تبوك','scope'=>'صيانة وقائية وتصحيحية'],
+        ['image'=>'/images/home/projects/transformer-field.webp','year'=>'2026','title'=>'توريد وتركيب محولات','owner'=>'مستشفى القطيف المركزي','location'=>'القطيف','scope'=>'توريد وتركيب واختبار'],
+        ['image'=>'/images/home/projects/transformer-oil-service.webp','year'=>'2025','title'=>'فلترة زيت المحولات','owner'=>'مركز المعلومات STC','location'=>'مكة المكرمة','scope'=>'إصلاح وتركيب قطع غيار'],
+        ['image'=>'/images/home/projects/hvac-maintenance.webp','year'=>'2024','title'=>'أعمال صيانة للتشيلرات','owner'=>'سفارة دولة الإمارات العربية المتحدة','location'=>'الرياض','scope'=>'صيانة وقائية وقطع غيار'],
+        ['image'=>'/images/home/projects/emergency-team.webp','year'=>'2024-2026','title'=>'صيانة المولدات','owner'=>'شركة المياه الوطنية','location'=>'القصيم','scope'=>'صيانة وقائية وتصحيحية'],
+        ['image'=>'/images/home/projects/electrical-testing.webp','year'=>'2024-2025','title'=>'صيانة المولدات الاحتياطية','owner'=>'شركة المياه الوطنية','location'=>'تبوك','scope'=>'فحص وصيانة وتشغيل'],
+        ['image'=>'/images/home/projects/site-response.webp','year'=>'2025','title'=>'صيانة مولد قوة الأمن الخاصة','owner'=>'قوة الأمن الخاصة الرابعة','location'=>'المدينة المنورة','scope'=>'إصلاح وتركيب قطع غيار'],
+        ['image'=>'/images/home/projects/chiller-service.webp','year'=>'2025','title'=>'إنشاء غرف تبريد','owner'=>'شركة المراعي','location'=>'حفر الباطن','scope'=>'توريد وتركيب واختبار'],
+    ],
+    'carousel_previous' => 'المشاريع السابقة',
+    'carousel_next' => 'المشاريع التالية',
     'projects_title' => 'أعمالنا على أرض الواقع',
     'projects_button' => 'عرض جميع المشاريع',
+    'clients_title' => 'عملاؤنا وشركاء النجاح',
+    'clients_text' => 'نفخر بشراكاتنا مع جهات حكومية وخاصة رائدة في مختلف القطاعات.',
+    'showcase_clients' => [
+        ['/images/home/clients/nwc.webp','شركة المياه الوطنية'],
+        ['/images/home/clients/hrsd.webp','وزارة الموارد البشرية والتنمية الاجتماعية'],
+        ['/images/home/clients/islamic-university.webp','الجامعة الإسلامية بالمدينة المنورة'],
+        ['/images/home/clients/ministry-health.webp','وزارة الصحة'],
+        ['/images/home/clients/uae-embassy.webp','سفارة دولة الإمارات العربية المتحدة'],
+        ['/images/home/clients/stc.webp','STC'],
+        ['/images/home/clients/almarai.webp','شركة المراعي'],
+        ['/images/home/clients/sdb.webp','بنك التنمية الاجتماعية'],
+    ],
+    'more_clients' => 'المزيد من الجهات',
+    'all_clients' => 'عرض جميع العملاء',
     'emergency_title' => 'تحتاج إلى تدخل عاجل؟',
     'emergency_text' => 'إذا كان لديك عطل يؤثر على التشغيل، أرسل طلب صيانة طارئة وسيتم التعامل معه مباشرة.',
     'emergency_button' => 'طلب صيانة طارئة',
     'emergency_contact' => 'دعم العمليات 24/7 · أرسل طلبك العاجل مباشرة',
+    'emergency_photo_alt' => 'فريق UNIFCO في أحد مواقع العمل',
+    'operations_support' => 'دعم العمليات',
+    'contact_now' => 'اتصل بنا الآن',
+    'email_us' => 'راسلنا',
     'final_title' => 'منشأتك تستحق إدارة أفضل',
     'final_text' => 'دع UNIFCO تتولى التشغيل والصيانة، بينما تركز أنت على أعمالك.',
     'quote' => 'اطلب عرض سعر',
@@ -130,6 +171,7 @@ html[dir="ltr"] .portal-card h2,html[dir="ltr"] .portal-card>p,html[dir="ltr"] .
 @media(max-width:1080px){.operation-split{grid-template-columns:1fr}.operation-card{min-height:390px}.maintenance-photo{min-height:390px}.portal-device{height:280px}}
 @media(max-width:700px){.operations{padding:24px 0 44px}.operation-card{border-radius:14px}.maintenance-card{grid-template-columns:1fr}.maintenance-photo{min-height:250px;max-height:250px}.operation-content{padding:28px 22px}.portal-card{padding:28px 22px;grid-template-columns:1fr;grid-template-areas:"title" "copy" "checks" "device" "button";row-gap:8px}.portal-device{width:100%;height:230px;justify-self:center;margin:4px 0 8px}.portal-card>.btn{justify-self:stretch}.check-grid{grid-template-columns:1fr 1fr;gap:10px}}
 </style>
+@if(false)
 <style id="unifco-projects-clients-heading-refine">
 #clients .public-showcase-head .kicker{font-size:clamp(22px,2.15vw,30px)!important;line-height:1.35!important;font-weight:900!important;margin-bottom:8px!important}
 #projects .public-project-kicker{font-size:clamp(22px,2.15vw,30px)!important;line-height:1.35!important;font-weight:900!important;margin-bottom:8px!important}
@@ -181,6 +223,7 @@ html[dir="rtl"] .portal-card{padding-right:34px!important;padding-left:43%!impor
 <script id="unifco-project-client-showcase-v3-script">
 (()=>{const refine=()=>{const root=document.getElementById('unifco-project-showcase');if(!root)return;const imgs=[...root.querySelectorAll('.unifco-project-card img')];const sources=['/images/home/service-photo-v14-04.webp','/images/home/industry-photo-v14-04.webp','/images/home/service-photo-v14-00.webp','/images/home/service-photo-v14-03.webp','/images/home/industry-photo-v14-02.webp','/images/home/service-photo-v14-02.webp'];imgs.forEach((img,i)=>{if(sources[i])img.src=sources[i];img.onerror=()=>{img.onerror=null;img.src='/images/home/about-technician-v14.webp'}});const action=root.querySelector('.unifco-showcase-action a');if(action)action.href='#unifco-project-showcase'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(refine,0),{once:true});else setTimeout(refine,0)})();
 </script>
+@endif
 <style id="unifco-portal-side-by-side-approved">
 @media(min-width:1081px){
 .operations .operation-split{gap:18px!important;overflow:visible!important;box-shadow:none!important}
