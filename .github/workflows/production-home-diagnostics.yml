@@ -34,20 +34,24 @@ jobs:
           set -euo pipefail
           cd /var/www/unifco_platform
           echo "==> Release: $(git rev-parse HEAD)"
-          echo "==> PHP: $(php -r '"'"'echo PHP_VERSION;'"'"')"
           echo "==> Testing real GET /"
           rm -f /tmp/unifco-home-body /tmp/unifco-home-headers
           code="$(curl -sS -D /tmp/unifco-home-headers -o /tmp/unifco-home-body -w '%{http_code}' http://127.0.0.1:8081/ || true)"
           echo "HTTP_STATUS=$code"
           grep -Ei '^(HTTP/|content-type:|x-unifco-release:)' /tmp/unifco-home-headers || true
           if [ "$code" != "200" ]; then
-            echo "==> Laravel error tail"
-            if [ -f storage/logs/laravel.log ]; then
-              tail -n 160 storage/logs/laravel.log \
-                | sed -E 's/(password|secret|token|key)([^= :]*)([=: ]+)[^ ,;]+/\1\2\3[REDACTED]/Ig'
-            else
-              echo "laravel.log not found"
+            echo "==> Locating failing compiled Blade view"
+            compiled="$(grep -l 'Undefined array key' storage/logs/laravel.log >/dev/null 2>&1 && grep -oE '/var/www/unifco_platform/storage/framework/views/[a-f0-9]+\.php:[0-9]+' storage/logs/laravel.log | tail -1 | cut -d: -f1 || true)"
+            if [ -n "$compiled" ] && [ -f "$compiled" ]; then
+              echo "COMPILED_VIEW=$(basename "$compiled")"
+              echo "==> Compiled lines 34-50"
+              nl -ba "$compiled" | sed -n '34,50p'
+              echo "==> Blade source marker"
+              grep -oE '/var/www/unifco_platform/resources/views/[^ ]+\.blade\.php' "$compiled" | tail -1 || true
             fi
+            echo "==> Latest exception headers"
+            grep -E '^\[[^]]+\].*(ERROR|ErrorException|ViewException)' storage/logs/laravel.log | tail -8 \
+              | sed -E 's/(password|secret|token)([^= :]*)([=: ]+)[^ ,;]+/\1\2\3[REDACTED]/Ig' || true
             exit 1
           fi
           echo "==> Homepage GET is healthy"
