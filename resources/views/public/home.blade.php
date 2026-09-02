@@ -112,3 +112,21 @@ html[dir="rtl"] .process-step:not(:last-child):after{content:"←";right:auto;le
 <script id="unifco-services-row-toggle">
 (()=>{const section=document.getElementById('services');if(!section)return;const grid=section.querySelector('.service-grid'),cards=[...section.querySelectorAll('.service-card')],button=section.querySelector('.center-action .btn.red');if(!grid||!button||!cards.length)return;let expanded=false;const columns=()=>{const value=getComputedStyle(grid).gridTemplateColumns.trim();return value?Math.max(1,value.split(/\s+/).length):1};const render=()=>{const visible=columns();cards.forEach((card,index)=>card.hidden=!expanded&&index>=visible);button.textContent=expanded?'إخفاء الخدمات':'عرض جميع الخدمات';button.setAttribute('aria-expanded',expanded?'true':'false')};button.setAttribute('href','#services');button.addEventListener('click',event=>{event.preventDefault();expanded=!expanded;render();if(!expanded)section.scrollIntoView({behavior:'smooth',block:'start'})});window.addEventListener('resize',render,{passive:true});render()})();
 </script>
+<style id="unifco-operation-cards-refresh">
+.operations{padding:34px 0 64px;background:linear-gradient(180deg,#fff 0%,#f8fafc 100%)}
+.operation-split{grid-template-columns:1fr 1fr;gap:18px;overflow:visible;box-shadow:none;border-radius:0;align-items:stretch}
+.operation-card{min-height:420px;border-radius:18px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 18px 44px rgba(7,31,77,.10)}
+.maintenance-card{grid-template-columns:34% 66%;background:linear-gradient(145deg,#08275a 0%,#0b356d 100%);border-color:#153e73}
+.maintenance-photo{min-height:420px}.maintenance-photo img{height:100%;object-position:center}
+.operation-content{padding:40px 34px;display:flex;flex-direction:column;justify-content:center}
+.operation-card h2{font-size:clamp(25px,2.1vw,32px);line-height:1.35;margin-bottom:14px;position:relative;padding-bottom:15px}
+.operation-card h2:after{content:"";position:absolute;bottom:0;width:42px;height:4px;border-radius:99px;background:var(--red)}
+html[dir="rtl"] .operation-card h2:after{right:0}html[dir="ltr"] .operation-card h2:after{left:0}
+.operation-card p{font-size:12px;line-height:1.95}.check-grid{gap:12px 20px;margin:20px 0 24px}.check{font-size:10.5px;font-weight:800}.check:before{width:18px;height:18px;font-size:9px}
+.portal-card{padding:38px 34px;display:grid;grid-template-columns:minmax(0,1fr) 45%;grid-template-areas:"title device" "copy device" "checks device" "button device";grid-template-rows:auto auto auto 1fr;column-gap:28px;align-content:center;direction:ltr;background:linear-gradient(145deg,#fff 0%,#f7f9fc 100%)}
+.portal-card h2{grid-area:title;align-self:end}.portal-card>p{grid-area:copy}.portal-card .check-grid{grid-area:checks}.portal-card>.btn{grid-area:button;justify-self:start;align-self:start;min-width:160px}.portal-device{grid-area:device;width:100%;height:320px;max-height:none;margin:0;align-self:center;justify-self:end;object-fit:contain;object-position:center;filter:drop-shadow(0 22px 24px rgba(9,29,58,.18))}
+html[dir="rtl"] .portal-card h2,html[dir="rtl"] .portal-card>p,html[dir="rtl"] .portal-card .check-grid,html[dir="rtl"] .portal-card>.btn{direction:rtl;text-align:right}
+html[dir="ltr"] .portal-card h2,html[dir="ltr"] .portal-card>p,html[dir="ltr"] .portal-card .check-grid,html[dir="ltr"] .portal-card>.btn{direction:ltr;text-align:left}
+@media(max-width:1080px){.operation-split{grid-template-columns:1fr}.operation-card{min-height:390px}.maintenance-photo{min-height:390px}.portal-device{height:280px}}
+@media(max-width:700px){.operations{padding:24px 0 44px}.operation-card{border-radius:14px}.maintenance-card{grid-template-columns:1fr}.maintenance-photo{min-height:250px;max-height:250px}.operation-content{padding:28px 22px}.portal-card{padding:28px 22px;grid-template-columns:1fr;grid-template-areas:"title" "copy" "checks" "device" "button";row-gap:8px}.portal-device{width:100%;height:230px;justify-self:center;margin:4px 0 8px}.portal-card>.btn{justify-self:stretch}.check-grid{grid-template-columns:1fr 1fr;gap:10px}}
+</style>
