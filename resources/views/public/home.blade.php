@@ -31,17 +31,17 @@ $home = [
     'services_text' => 'من أنظمة الطاقة الحرجة والصيانة المتخصصة إلى إدارة الأصول والمرافق',
     'services' => [
         ['01', '/images/home/service-photo-v14-04.webp', 'Transformers · المحولات الكهربائية', 'فحص وصيانة وتشغيل المحولات الكهربائية ورفع الاعتمادية وكفاءة التشغيل.'],
-        ['02', '/images/home/service-photo-v14-04.webp', 'UPS Systems', 'توريد وفحص وصيانة أنظمة UPS والطاقة غير المنقطعة للأنظمة الحرجة.'],
-        ['03', '/images/home/service-photo-v14-02.webp', 'Generators · المولدات', 'صيانة وفحص وتشغيل المولدات وأنظمة القدرة الاحتياطية ودعم استمرارية الطاقة.'],
-        ['04', '/images/home/service-photo-v14-04.webp', 'MV Systems · أنظمة الجهد المتوسط', 'خدمات أنظمة الجهد المتوسط واللوحات والحماية والاختبارات والتشغيل.'],
+        ['02', '/images/home/ats.svg', 'UPS Systems', 'توريد وفحص وصيانة أنظمة UPS والطاقة غير المنقطعة للأنظمة الحرجة.'],
+        ['03', '/images/home/generator-maintenance-card.svg', 'Generators · المولدات', 'صيانة وفحص وتشغيل المولدات وأنظمة القدرة الاحتياطية ودعم استمرارية الطاقة.'],
+        ['04', '/images/home/facility-power.svg', 'MV Systems · أنظمة الجهد المتوسط', 'خدمات أنظمة الجهد المتوسط واللوحات والحماية والاختبارات والتشغيل.'],
         ['05', '/images/home/service-photo-v14-01.webp', 'Preventive Maintenance', 'برامج صيانة وقائية دورية تقلل الأعطال وتحسن جاهزية الأصول والمعدات.'],
-        ['06', '/images/home/service-photo-v14-01.webp', 'Corrective / Emergency Maintenance', 'استجابة للأعطال والصيانة التصحيحية والطارئة لإعادة التشغيل بأسرع وقت ممكن.'],
+        ['06', '/images/home/about-technician-v14.webp', 'Corrective / Emergency Maintenance', 'استجابة للأعطال والصيانة التصحيحية والطارئة لإعادة التشغيل بأسرع وقت ممكن.'],
         ['07', '/images/home/service-photo-v14-02.webp', 'Inspection & Testing', 'فحص واختبار الأنظمة والمعدات الكهربائية وإصدار تقارير فنية واضحة.'],
-        ['08', '/images/home/service-photo-v14-00.webp', 'Maintenance Contracts', 'عقود صيانة دورية بمستويات خدمة وجداول واضحة ومتابعة وتقارير مستمرة.'],
-        ['09', '/images/home/service-photo-v14-04.webp', 'Industrial / Commercial Electrical Services', 'خدمات كهربائية متخصصة للمنشآت الصناعية والتجارية والمواقع التشغيلية.'],
+        ['08', '/images/home/industry-photo-v14-01.webp', 'Maintenance Contracts', 'عقود صيانة دورية بمستويات خدمة وجداول واضحة ومتابعة وتقارير مستمرة.'],
+        ['09', '/images/home/industry-photo-v14-04.webp', 'Industrial / Commercial Electrical Services', 'خدمات كهربائية متخصصة للمنشآت الصناعية والتجارية والمواقع التشغيلية.'],
         ['10', '/images/home/service-photo-v14-05.webp', 'Asset Management', 'إدارة دورة حياة الأصول وسجلات الصيانة والضمانات والتاريخ الفني.'],
         ['11', '/images/home/service-photo-v14-03.webp', 'HVAC Systems', 'فحص وصيانة وتشغيل أنظمة التكييف والتهوية وتحسين كفاءة الأداء.'],
-        ['12', '/images/home/service-photo-v14-02.webp', 'MEP Services', 'صيانة وتشغيل الأنظمة الميكانيكية والكهربائية والصحية للمباني والمنشآت.'],
+        ['12', '/images/home/industry-photo-v14-03.webp', 'MEP Services', 'صيانة وتشغيل الأنظمة الميكانيكية والكهربائية والصحية للمباني والمنشآت.'],
         ['13', '/images/home/service-photo-v14-00.webp', 'Facility Management', 'إدارة وتشغيل المرافق والخدمات اليومية ومتابعة الأصول والمقاولين والأداء.'],
     ],
     'more' => 'المزيد',
@@ -105,5 +105,10 @@ html[dir="rtl"] .kicker{font-size:17px;line-height:1.5;margin-bottom:8px;font-we
 html[dir="rtl"] .process{direction:rtl}
 html[dir="rtl"] .process-step{direction:rtl}
 html[dir="rtl"] .process-step:not(:last-child):after{content:"←";right:auto;left:-27px}
+#services .service-card[hidden]{display:none!important}
+#services .center-action .btn.red{cursor:pointer}
 @media(max-width:700px){html[dir="rtl"] .kicker{font-size:15px}}
 </style>
+<script id="unifco-services-row-toggle">
+(()=>{const section=document.getElementById('services');if(!section)return;const grid=section.querySelector('.service-grid'),cards=[...section.querySelectorAll('.service-card')],button=section.querySelector('.center-action .btn.red');if(!grid||!button||!cards.length)return;let expanded=false;const columns=()=>{const value=getComputedStyle(grid).gridTemplateColumns.trim();return value?Math.max(1,value.split(/\s+/).length):1};const render=()=>{const visible=columns();cards.forEach((card,index)=>card.hidden=!expanded&&index>=visible);button.textContent=expanded?'إخفاء الخدمات':'عرض جميع الخدمات';button.setAttribute('aria-expanded',expanded?'true':'false')};button.setAttribute('href','#services');button.addEventListener('click',event=>{event.preventDefault();expanded=!expanded;render();if(!expanded)section.scrollIntoView({behavior:'smooth',block:'start'})});window.addEventListener('resize',render,{passive:true});render()})();
+</script>
