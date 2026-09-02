@@ -23,7 +23,7 @@ class PublicHomepageResponsiveTest extends TestCase
             ->assertSee('القطاعات التي نخدمها')
             ->assertSee('إدارة خدماتك من مكان واحد')
             ->assertSee('لماذا UNIFCO؟')
-            ->assertSee('أعمالنا على أرض الواقع')
+            ->assertSee('مشاريعنا على أرض الواقع')
             ->assertSee('capability-bar', false)
             ->assertSee('service-grid', false)
             ->assertSee('operation-split', false)
