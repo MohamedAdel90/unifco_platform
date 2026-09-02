@@ -138,3 +138,22 @@ html[dir="ltr"] .portal-card h2,html[dir="ltr"] .portal-card>p,html[dir="ltr"] .
 <script id="unifco-projects-clients-heading-copy">
 (()=>{const apply=()=>{const clients=document.querySelector('#clients .public-showcase-head .kicker');if(clients)clients.textContent='عملاؤنا وشركاء النجاح';const projects=document.querySelector('#projects .public-project-kicker');if(projects)projects.textContent='مشاريعنا'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply()})();
 </script>
+<style id="unifco-portal-dashboard-overlap">
+@media(min-width:1081px){
+.portal-card{position:relative!important;display:block!important;min-height:420px!important;padding:44px 46% 38px 34px!important;overflow:hidden!important;isolation:isolate!important}
+html[dir="rtl"] .portal-card{padding:44px 34px 38px 46%!important}
+.portal-card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 82% 58%,rgba(7,31,77,.055),transparent 36%);z-index:0;pointer-events:none}
+.portal-card h2,.portal-card>p,.portal-card .check-grid,.portal-card>.btn{position:relative;z-index:3;max-width:390px}
+.portal-card h2{margin-top:0!important;margin-bottom:16px!important}
+.portal-card>p{margin-bottom:4px!important}
+.portal-card .check-grid{grid-template-columns:1fr 1fr!important;margin:22px 0 24px!important}
+.portal-card>.btn{display:inline-flex!important;min-width:170px!important}
+.portal-device{position:absolute!important;z-index:2!important;right:-2.5%!important;bottom:10px!important;width:56%!important;height:auto!important;max-height:360px!important;margin:0!important;object-fit:contain!important;object-position:right bottom!important;filter:drop-shadow(0 24px 28px rgba(9,29,58,.22))!important;transform:translateY(2%) scale(1.05)!important;transform-origin:right bottom!important;pointer-events:none!important}
+html[dir="rtl"] .portal-device{right:-2.5%!important;left:auto!important}
+html[dir="ltr"] .portal-device{right:-2.5%!important;left:auto!important}
+}
+@media(min-width:1081px) and (max-width:1280px){
+.portal-card{padding-right:43%!important}.portal-device{width:53%!important;right:-4%!important}.portal-card h2,.portal-card>p,.portal-card .check-grid,.portal-card>.btn{max-width:350px}
+html[dir="rtl"] .portal-card{padding-right:34px!important;padding-left:43%!important}
+}
+</style>
