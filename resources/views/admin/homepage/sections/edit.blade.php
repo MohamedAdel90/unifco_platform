@@ -37,6 +37,7 @@
 .image-slot{display:flex;gap:6px;align-items:center}
 .image-slot input{flex:1}
 .hp-img-field{display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:center}
+.hp-img-field.active-img-field .hp-img-preview{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 .hp-img-preview{width:56px;height:56px;border:1px solid #e3e8ef;border-radius:10px;overflow:hidden;background:#f2f6fa;position:relative;display:flex;align-items:center;justify-content:center}
 .hp-img-preview img{width:100%;height:100%;object-fit:cover;display:block}
 .hp-img-preview .hp-img-ph{font-size:9px;color:#97a4b6;text-align:center;line-height:1.2;padding:4px}

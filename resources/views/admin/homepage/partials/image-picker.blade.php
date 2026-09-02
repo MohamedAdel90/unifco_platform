@@ -40,13 +40,23 @@
     if(active && document.body.contains(active)){commit(url,active);return;}
     targetInputs.forEach(function(i){if(!i.value)commit(url,i);});
   };
-  // delegated: any image field's "Select / Upload" button activates its own input
-  document.addEventListener('click',function(e){
-    var sel=e.target.closest('.hp-img-select');
-    if(!sel)return;
-    var field=sel.closest('[data-img-field]');
+  var activate=function(field){
     var input=field?field.querySelector('.img-picker-target'):null;
-    if(input)window.__imgActiveTarget=input;
+    if(!input)return null;
+    window.__imgActiveTarget=input;
+    document.querySelectorAll('[data-img-field]').forEach(function(f){f.classList.remove('active-img-field');});
+    field.classList.add('active-img-field');
+    return input;
+  };
+  // delegated: field-level controls work for existing AND new repeater rows
+  document.addEventListener('click',function(e){
+    var upload=e.target.closest('.hp-img-upload');
+    var choose=e.target.closest('.hp-img-select');
+    if(!upload&&!choose)return;
+    var field=(upload||choose).closest('[data-img-field]');
+    if(!activate(field))return;
+    if(upload){pickerFile.click();return;}
+    if(choose){grid.scrollIntoView({behavior:'smooth',block:'center'});}
   });
   // delegated: live preview refresh + clear for existing AND new rows
   var refreshPreview=function(field){

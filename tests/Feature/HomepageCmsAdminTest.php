@@ -213,7 +213,8 @@ class HomepageCmsAdminTest extends TestCase
         $this->actingAs($this->admin())
             ->get(route('admin.homepage.sections.edit', $section))
             ->assertOk()
-            ->assertSee('Select / Upload')
+            ->assertSee('Upload Image')
+            ->assertSee('Choose Existing')
             ->assertSee('img-picker-target');
 
         $this->actingAs($this->admin())

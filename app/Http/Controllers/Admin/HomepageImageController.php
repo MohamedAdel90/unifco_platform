@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -20,7 +19,7 @@ class HomepageImageController extends Controller
         return response()->json(['images' => $this->availableImages()]);
     }
 
-    public function upload(Request $request): RedirectResponse
+    public function upload(Request $request): JsonResponse
     {
         $this->adminOnly($request);
         $data = $request->validate([

@@ -7,15 +7,9 @@
       <span class="hp-img-ph">No image</span>
     @endif
   </div>
-  <input
-    type="text"
-    class="img-picker-target hp-img-input"
-    name="{{ $name }}"
-    value="{{ $value }}"
-    placeholder="{{ $placeholder ?? '/images/...' }}"
-    data-img-input
-  >
+  <input type="hidden" class="img-picker-target hp-img-input" name="{{ $name }}" value="{{ $value }}" data-img-input>
   <div class="hp-img-actions">
-    <button type="button" class="btn-sm primary hp-img-select" data-img-select>Select / Upload</button>
+    <button type="button" class="btn-sm primary hp-img-upload" data-img-upload>Upload Image</button>
+    <button type="button" class="btn-sm hp-img-select" data-img-select>Choose Existing</button>
   </div>
 </div>
