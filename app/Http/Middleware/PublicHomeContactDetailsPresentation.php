@@ -20,12 +20,16 @@ class PublicHomeContactDetailsPresentation
 
         $html = str_replace(
             [
+                'tel:+966123456789',
+                '+966 12 345 6789',
                 'https://wa.me/966501234567',
                 '+966 50 123 4567',
                 'mailto:info@unifco.com.sa',
                 'info@unifco.com.sa',
             ],
             [
+                'tel:0114022090',
+                '0114022090',
                 'https://wa.me/966599402090',
                 '0599402090',
                 'mailto:info@unifco.com',
