@@ -19,7 +19,7 @@ class PublicCurrentMaintenancePresentation
         $html = (string) $response->getContent();
 
         $styles = <<<'HTML'
-<style id="unifco-current-maintenance-v5">
+<style id="unifco-current-maintenance-v6">
 :root{--unifco-navy:#08295d;--unifco-red:#e3132c;--ufm-text:#0b2854;--ufm-muted:#6f819c}
 .current-service-nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.98);border-bottom:1px solid #e7ebf0;backdrop-filter:blur(14px);box-shadow:0 2px 10px rgba(7,31,77,.04)}
 .current-service-nav .nav-wrap{width:min(1560px,96%);min-height:86px;margin-inline:auto;display:flex;align-items:center;gap:16px;direction:ltr}
@@ -38,15 +38,11 @@ class PublicCurrentMaintenancePresentation
 .current-service-nav .nav-icon{display:grid;place-items:center;height:24px;color:#203759}
 .current-service-nav .nav-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .current-service-nav .menu-toggle{display:none;border:0;background:#071f4d;color:#fff;width:42px;height:42px;border-radius:7px;font-size:20px;cursor:pointer;margin-left:auto}
-
-/* Balanced desktop canvas */
 .request-clarity-hero{min-height:235px!important}
 .request-clarity-inner{width:min(1540px,94%)!important;max-width:none!important}
 .request-ticket-note{width:min(1540px,94%)!important;max-width:none!important;margin-top:16px!important}
 main.wrap{width:min(1540px,94%)!important;max-width:none!important;margin-top:16px!important}
 .panel{padding:22px 24px!important;border-radius:14px!important}
-
-/* Professional typography scale */
 body{color:var(--ufm-text)}
 .request-clarity-eyebrow{font-size:11px!important;line-height:1.4!important;font-weight:800!important;letter-spacing:.09em!important}
 .request-clarity-hero h1{font-size:40px!important;line-height:1.3!important;font-weight:900!important;letter-spacing:-.015em!important}
@@ -60,21 +56,23 @@ main.wrap{font-size:14px!important}
 .panel input,.panel select,.panel textarea,.field input,.field select,.field textarea,input,select,textarea{font-size:13px!important;line-height:1.5!important;font-weight:600!important;color:#18345e!important}
 .panel input::placeholder,.panel textarea::placeholder,input::placeholder,textarea::placeholder{font-size:12px!important;font-weight:500!important;color:#95a3b6!important}
 .hint,.helper,.help-text,.muted,.note{font-size:11px!important;line-height:1.7!important;font-weight:500!important;color:var(--ufm-muted)!important}
-.customer-kind{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:13px}
-.customer-kind-card{height:50px;border:1px solid #cdd8e6;border-radius:8px;background:#fff;color:#17345e;display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px;font-weight:850;line-height:1.2}
-.customer-kind-card.active{border:1.5px solid #e3132c;color:#e3132c;background:#fff8f9;box-shadow:inset 0 0 0 1px rgba(227,19,44,.05)}
-.customer-kind-card.disabled{opacity:.55}
+.request-selector-row{display:grid!important;grid-template-columns:1fr 1fr 1.2fr!important;gap:12px!important;align-items:end!important}
+.request-selector-customer label{display:block!important;margin-bottom:6px!important}
+.customer-kind-inline{height:42px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.customer-kind-inline .customer-kind-card{height:42px;border:1px solid #cdd8e6;border-radius:7px;background:#fff;color:#17345e;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;font-weight:850;line-height:1.2;white-space:nowrap}
+.customer-kind-inline .customer-kind-card.active{border:1.5px solid #e3132c;color:#e3132c;background:#fff8f9;box-shadow:inset 0 0 0 1px rgba(227,19,44,.04)}
+.customer-kind-inline .customer-kind-card.disabled{opacity:.5}
+.request-selector-note{margin-top:8px!important;text-align:right!important}
 button,.button,.btn{font-weight:800}
 .submit-reference-row{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:18px 0 24px;padding:18px 0 0;border-top:1px solid #eef2f7;direction:ltr}
 .submit-reference-row .submit{width:190px;min-width:190px;height:64px;margin:0;border-radius:14px;font-size:16px!important;line-height:1.2!important;font-weight:900!important;box-shadow:none;direction:rtl}
 .ticket-promise-inline{margin:0;color:#667b98;font-size:12px!important;line-height:1.75!important;text-align:right;font-weight:600;direction:rtl}
 .ticket-promise-inline .check{color:#57789e;margin-left:4px}
-
 @media(max-width:1320px){.current-service-nav .nav-wrap{width:min(1280px,96%)}.current-service-nav .primary-nav{gap:18px}.current-service-nav .primary-nav a{font-size:12px;min-width:62px}.current-service-nav .brand-copy strong{font-size:24px}}
-@media(max-width:1080px){.current-service-nav .nav-wrap{min-height:76px}.current-service-nav .primary-nav{display:none}.current-service-nav .menu-toggle{display:grid;place-items:center}.current-service-nav .nav-actions{margin-left:8px}.request-clarity-hero h1{font-size:34px!important}.request-clarity-inner,.request-ticket-note,main.wrap{width:min(1180px,94%)!important}}
-@media(max-width:850px){.current-service-nav .request-btn{display:none}.customer-kind{grid-template-columns:1fr}.panel .section-title,.section-title{font-size:17px!important}.panel{padding:18px!important}}
-@media(max-width:700px){.current-service-nav .nav-wrap{min-height:70px}.current-service-nav .site-logo-frame{width:38px;height:46px;flex-basis:38px}.current-service-nav .site-logo{width:38px;height:59px}.current-service-nav .brand-copy strong{font-size:21px}.current-service-nav .lang{display:none}.request-clarity-hero{min-height:190px!important}.request-clarity-hero h1{font-size:28px!important}.request-clarity-hero p{font-size:12px!important}.request-ticket-note{font-size:11px!important}.panel label,.field label,label{font-size:11.5px!important}.panel input,.panel select,.panel textarea,.field input,.field select,.field textarea,input,select,textarea{font-size:12.5px!important}}
-@media(max-width:620px){.submit-reference-row{flex-direction:column-reverse;align-items:stretch;gap:12px;direction:rtl}.submit-reference-row .submit{width:100%;min-width:0;height:54px}.ticket-promise-inline{text-align:center}.customer-kind-card{font-size:12px}}
+@media(max-width:1080px){.current-service-nav .nav-wrap{min-height:76px}.current-service-nav .primary-nav{display:none}.current-service-nav .menu-toggle{display:grid;place-items:center}.current-service-nav .nav-actions{margin-left:8px}.request-clarity-hero h1{font-size:34px!important}.request-clarity-inner,.request-ticket-note,main.wrap{width:min(1180px,94%)!important}.request-selector-row{grid-template-columns:1fr 1fr!important}.request-selector-customer{grid-column:1/-1}}
+@media(max-width:850px){.current-service-nav .request-btn{display:none}.panel .section-title,.section-title{font-size:17px!important}.panel{padding:18px!important}}
+@media(max-width:700px){.current-service-nav .nav-wrap{min-height:70px}.current-service-nav .site-logo-frame{width:38px;height:46px;flex-basis:38px}.current-service-nav .site-logo{width:38px;height:59px}.current-service-nav .brand-copy strong{font-size:21px}.current-service-nav .lang{display:none}.request-clarity-hero{min-height:190px!important}.request-clarity-hero h1{font-size:28px!important}.request-clarity-hero p{font-size:12px!important}.request-ticket-note{font-size:11px!important}.panel label,.field label,label{font-size:11.5px!important}.panel input,.panel select,.panel textarea,.field input,.field select,.field textarea,input,select,textarea{font-size:12.5px!important}.request-selector-row{grid-template-columns:1fr!important}.request-selector-customer{grid-column:auto}}
+@media(max-width:620px){.submit-reference-row{flex-direction:column-reverse;align-items:stretch;gap:12px;direction:rtl}.submit-reference-row .submit{width:100%;min-width:0;height:54px}.ticket-promise-inline{text-align:center}.customer-kind-inline .customer-kind-card{font-size:10.5px}}
 </style>
 HTML;
         $html = str_replace('</head>', $styles.'</head>', $html);
@@ -113,10 +111,10 @@ HTML;
             $html = str_replace($oldHeader, $newHeader, $html);
         }
 
-        $customerPanel = '<section class="panel"><h2 class="section-title"><span class="num">1</span> بيانات العميل الحالي</h2>';
-        $customerKind = '<section class="panel"><div class="section-title" style="margin-bottom:10px">نوع العميل</div><div class="customer-kind"><div class="customer-kind-card active">✓ عميل حالي</div><div class="customer-kind-card disabled">＋ عميل جديد</div></div><div class="hint">هذا المسار مخصص حاليًا لعملاء UNIFCO المسجلين. سيتم توفير نموذج العميل الجديد ضمن نفس رحلة الطلب لاحقًا.</div></section>';
-        if (str_contains($html, $customerPanel)) {
-            $html = str_replace($customerPanel, $customerKind.$customerPanel, $html);
+        $oldSelector = '<section class="panel"><div class="service-line"><div class="field"><label>نوع الخدمة المطلوبة</label><select id="service-type"><option value="maintenance" selected>صيانة</option><option value="quotation">عرض سعر</option><option value="consultation">استشارة فنية</option></select></div><div class="field"><label>نوع الطلب</label><select id="service-subtype"><option value="routine" selected>صيانة عادية</option><option value="urgent">صيانة طارئة</option></select></div><div class="hint">يتم عرض نموذج صيانة عادية حاليًا. بقية النماذج سيتم تجهيزها لاحقًا.</div></div><div class="future" id="future-box">هذا النوع تم اعتماده للتطوير اللاحق. لم يتم تغيير أي نموذج آخر بالموقع.</div></section>';
+        $newSelector = '<section class="panel request-selector-panel"><div class="request-selector-row"><div class="field"><label>نوع الخدمة المطلوبة</label><select id="service-type"><option value="maintenance" selected>صيانة</option><option value="quotation">عرض سعر</option><option value="consultation">استشارة فنية</option></select></div><div class="field"><label>نوع الطلب</label><select id="service-subtype"><option value="routine" selected>صيانة عادية</option><option value="urgent">صيانة طارئة</option></select></div><div class="request-selector-customer"><label>نوع العميل</label><div class="customer-kind-inline"><div class="customer-kind-card active">✓ عميل حالي</div><div class="customer-kind-card disabled">＋ عميل جديد</div></div></div></div><div class="hint request-selector-note">يتم عرض نموذج صيانة عادية لعميل حالي الآن. بقية النماذج سيتم تجهيزها لاحقًا ضمن نفس الرحلة.</div><div class="future" id="future-box">هذا النوع تم اعتماده للتطوير اللاحق. لم يتم تغيير أي نموذج آخر بالموقع.</div></section>';
+        if (str_contains($html, $oldSelector)) {
+            $html = str_replace($oldSelector, $newSelector, $html);
         }
 
         $submit = '<button class="submit" type="submit">إرسال طلب الخدمة</button>';
