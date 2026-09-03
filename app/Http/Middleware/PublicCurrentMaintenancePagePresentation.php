@@ -31,18 +31,17 @@ body{padding-top:0!important}
 .request-menu-toggle{display:none;border:1px solid #d7e0eb;background:#fff;color:var(--unifco-navy);border-radius:8px;width:42px;height:42px;font-size:20px;font-weight:900}
 .request-mobile-nav{display:none;background:#fff;border-top:1px solid #e7edf4;padding:10px 4%;grid-template-columns:1fr 1fr;gap:5px}.request-mobile-nav a{padding:11px 10px;text-decoration:none;color:#10294f;font-size:11px;font-weight:800;border-radius:7px;background:#f7f9fc;text-align:center}
 .page-head{display:none!important}
-.request-clarity-hero{position:relative;overflow:hidden;background:linear-gradient(110deg,#061f49 0%,#0a2d60 55%,#1c3c69 100%);min-height:205px;color:#fff;display:flex;align-items:center;border-bottom:4px solid var(--unifco-red)}
+.request-clarity-hero{position:relative;overflow:hidden;background:linear-gradient(110deg,#061f49 0%,#0a2d60 55%,#1c3c69 100%);min-height:105px;color:#fff;display:flex;align-items:center;border-bottom:4px solid var(--unifco-red)}
 .request-clarity-hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 22% 25%,rgba(255,255,255,.08),transparent 28%),linear-gradient(90deg,transparent 0 66%,rgba(255,255,255,.035) 66% 67%,transparent 67%)}
 .request-clarity-inner{position:relative;width:min(1280px,94%)!important;max-width:1280px!important;margin:auto!important;text-align:right}
-.request-clarity-eyebrow{font-size:10px;font-weight:900;letter-spacing:.12em;color:#c9d6e8;margin-bottom:8px}
-.request-clarity-hero h1{margin:0;color:#fff;font-size:38px;line-height:1.45;font-weight:900}.request-clarity-hero h1 span{color:#fff}.request-clarity-hero p{margin:8px 0 0;color:#dbe5f1;font-size:12px;line-height:2;max-width:760px}
+.request-clarity-hero h1{margin:0;color:#fff;font-size:34px;line-height:1.25;font-weight:900}.request-clarity-hero h1 span{color:#fff}.request-clarity-hero p{margin:5px 0 0;color:#dbe5f1;font-size:11px;line-height:1.7;max-width:760px}
 .request-ticket-note{width:min(1280px,94%)!important;max-width:1280px!important;margin:14px auto 0!important;background:#eef5ff;border:1px solid #cfe0f6;border-right:4px solid var(--unifco-navy);border-radius:9px;padding:10px 14px;color:#24456f;font-size:10px;font-weight:800;line-height:1.9}
 .request-ticket-note strong{color:var(--unifco-red)}
 main.wrap{width:min(1280px,94%)!important;max-width:1280px!important;margin:14px auto 0!important;padding-left:0!important;padding-right:0!important}
 main.wrap>.panel,main.wrap>form,main.wrap form>.panel{width:100%!important;max-width:none!important}
 @media(min-width:1600px){.request-clarity-inner,.request-ticket-note,main.wrap{width:min(1360px,90%)!important;max-width:1360px!important}}
-@media(max-width:980px){.request-main-nav{gap:18px}.request-main-nav a{font-size:10px}.request-brand img{height:50px}.request-clarity-hero h1{font-size:32px}}
-@media(max-width:760px){.top{height:68px!important}.request-main-nav{display:none}.request-menu-toggle{display:block}.request-mobile-nav.open{display:grid}.request-brand img{height:46px}.request-clarity-hero{min-height:185px}.request-clarity-hero h1{font-size:28px}.request-clarity-hero p{font-size:11px}.request-clarity-inner,.request-ticket-note,main.wrap{width:94%!important}}
+@media(max-width:980px){.request-main-nav{gap:18px}.request-main-nav a{font-size:10px}.request-brand img{height:50px}.request-clarity-hero h1{font-size:30px}}
+@media(max-width:760px){.top{height:68px!important}.request-main-nav{display:none}.request-menu-toggle{display:block}.request-mobile-nav.open{display:grid}.request-brand img{height:46px}.request-clarity-hero{min-height:100px}.request-clarity-hero h1{font-size:26px}.request-clarity-hero p{font-size:10.5px}.request-clarity-inner,.request-ticket-note,main.wrap{width:94%!important}}
 </style>
 HTML;
 
@@ -65,7 +64,6 @@ HTML;
             .'</nav></header>';
 
         $hero = '<section class="request-clarity-hero"><div class="request-clarity-inner">'
-            .'<div class="request-clarity-eyebrow">UNIFCO · ONE FACILITY SHOP</div>'
             .'<h1>خدمة أسرع تبدأ بطلب أوضح</h1>'
             .'<p>خطوات بسيطة تساعد فريق UNIFCO على فهم الخدمة المطلوبة بشكل أسرع، وربط طلب العميل الحالي بعقده وموقعه ومعداته المسجلة.</p>'
             .'</div></section>'
