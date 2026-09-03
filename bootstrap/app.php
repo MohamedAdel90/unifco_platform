@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\{AuthenticateApiToken,AuthenticateJwt,BrandingPresentation,CustomerPortalDashboardPresentation,CustomerPortalMobileLogoutPresentation,EnsureUserSessionValid,LegacyFormCompatibility,PublicAssetQrInsecureFallback,PublicAssetQrPresentation,PublicContactPresentation,PublicHomeAssetStatsPresentation,PublicHomeFinalCompactPresentation,PublicHomeFinalCopyPresentation,PublicHomeFooterPresentation,PublicHomeHeroPresentation,PublicHomeLocationPresentation,PublicHomeNavPresentation,PublicHomeOperationsPresentation,PublicHomeProcessTitlePresentation,PublicHomeRenderCompatibility,PublicHomeSocialLinksPresentation,PublicHomeSpacingPresentation,PublicRequestAttachmentsPresentation,PublicRequestCompactDesign,PublicRequestHeaderMatch,PublicServiceLinks,RequirePermission,WorkflowRoleHomeRedirect,WorkflowRoleNavigationPresentation};
+use App\Http\Middleware\{AuthenticateApiToken,AuthenticateJwt,BrandingPresentation,CustomerPortalDashboardPresentation,CustomerPortalMobileLogoutPresentation,EnsureUserSessionValid,LegacyFormCompatibility,PublicAssetQrInsecureFallback,PublicAssetQrPresentation,PublicContactPresentation,PublicHomeAssetStatsPresentation,PublicHomeFinalCompactPresentation,PublicHomeFinalCopyPresentation,PublicHomeFooterPresentation,PublicHomeHeroPresentation,PublicHomeHeroServiceLinkPresentation,PublicHomeLocationPresentation,PublicHomeNavPresentation,PublicHomeOperationsPresentation,PublicHomeProcessTitlePresentation,PublicHomeRenderCompatibility,PublicHomeSocialLinksPresentation,PublicHomeSpacingPresentation,PublicRequestAttachmentsPresentation,PublicRequestCompactDesign,PublicRequestHeaderMatch,PublicServiceLinks,RequirePermission,WorkflowRoleHomeRedirect,WorkflowRoleNavigationPresentation};
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -10,6 +10,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: [
             __DIR__.'/../routes/web.php',
             __DIR__.'/../routes/public.php',
+            __DIR__.'/../routes/current-customer-maintenance.php',
             __DIR__.'/../routes/public-home-compat.php',
             __DIR__.'/../routes/customer-phase2.php',
             __DIR__.'/../routes/customer-acquisition.php',
@@ -38,7 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['permission'=>RequirePermission::class,'api.token'=>AuthenticateApiToken::class,'jwt'=>AuthenticateJwt::class]);
-        $middleware->web(append: [EnsureUserSessionValid::class,WorkflowRoleHomeRedirect::class,WorkflowRoleNavigationPresentation::class,LegacyFormCompatibility::class,CustomerPortalDashboardPresentation::class,CustomerPortalMobileLogoutPresentation::class,PublicHomeRenderCompatibility::class,PublicHomeFinalCompactPresentation::class,PublicHomeFinalCopyPresentation::class,PublicHomeAssetStatsPresentation::class,PublicHomeHeroPresentation::class,PublicHomeProcessTitlePresentation::class,PublicHomeSocialLinksPresentation::class,PublicHomeSpacingPresentation::class,PublicHomeLocationPresentation::class,PublicHomeFooterPresentation::class,PublicHomeOperationsPresentation::class,PublicHomeNavPresentation::class,BrandingPresentation::class,PublicRequestHeaderMatch::class,PublicRequestAttachmentsPresentation::class,PublicAssetQrInsecureFallback::class,PublicAssetQrPresentation::class,PublicRequestCompactDesign::class,PublicServiceLinks::class,PublicContactPresentation::class]);
+        $middleware->web(append: [EnsureUserSessionValid::class,WorkflowRoleHomeRedirect::class,WorkflowRoleNavigationPresentation::class,LegacyFormCompatibility::class,CustomerPortalDashboardPresentation::class,CustomerPortalMobileLogoutPresentation::class,PublicHomeRenderCompatibility::class,PublicHomeFinalCompactPresentation::class,PublicHomeFinalCopyPresentation::class,PublicHomeAssetStatsPresentation::class,PublicHomeHeroPresentation::class,PublicHomeHeroServiceLinkPresentation::class,PublicHomeProcessTitlePresentation::class,PublicHomeSocialLinksPresentation::class,PublicHomeSpacingPresentation::class,PublicHomeLocationPresentation::class,PublicHomeFooterPresentation::class,PublicHomeOperationsPresentation::class,PublicHomeNavPresentation::class,BrandingPresentation::class,PublicRequestHeaderMatch::class,PublicRequestAttachmentsPresentation::class,PublicAssetQrInsecureFallback::class,PublicAssetQrPresentation::class,PublicRequestCompactDesign::class,PublicServiceLinks::class,PublicContactPresentation::class]);
         $middleware->validateCsrfTokens(except: ['login','service-requests']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
