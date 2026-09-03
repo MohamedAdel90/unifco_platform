@@ -17,7 +17,14 @@ class CurrentCustomerMaintenanceRequestController extends Controller
     public function customer(Request $request): JsonResponse
     {
         $data = $request->validate(['customer_number' => ['required','string','max:80']]);
-        $customer = DB::table('customers')->where('customer_code', trim($data['customer_number']))->first();
+        $customerNumber = trim($data['customer_number']);
+
+        $customerQuery = DB::table('customers')->where('customer_code', $customerNumber);
+        if (ctype_digit($customerNumber)) {
+            $customerQuery->orWhere('id', (int) $customerNumber);
+        }
+        $customer = $customerQuery->first();
+
         if (! $customer) {
             return response()->json(['message' => 'لم يتم العثور على رقم العميل.'], 404);
         }
