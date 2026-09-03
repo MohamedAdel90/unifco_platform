@@ -19,7 +19,7 @@ class PublicCurrentMaintenanceAttachmentsPresentation
         $html = (string) $response->getContent();
 
         $styles = <<<'HTML'
-<style id="unifco-current-maintenance-attachments-v2">
+<style id="unifco-current-maintenance-attachments-v3">
 .maintenance-attachments{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;direction:rtl}
 .maintenance-attachment-card{min-height:118px;border:1px dashed #c6d5e6;border-radius:9px;background:#fff;padding:13px 16px 11px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .maintenance-attachment-title{display:flex;align-items:center;justify-content:center;gap:7px;color:#102b58;font-size:11px;font-weight:900;margin-bottom:10px}
@@ -35,17 +35,7 @@ class PublicCurrentMaintenanceAttachmentsPresentation
 .maintenance-upload-input{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;clip-path:inset(50%)!important;opacity:0!important;pointer-events:none!important}
 .maintenance-attachment-types{margin-top:8px;color:#74849b;font-size:8px;line-height:1.5;direction:ltr}
 .maintenance-attachment-limit{color:#74849b;font-size:8px;line-height:1.4;margin-top:1px}
-
-/* Compact submit actions: far left, cancel beside submit */
-.submit-reference-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:20px!important;direction:ltr!important}
-.submit-reference-row .submit-actions{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:9px!important;flex:0 0 auto!important;direction:ltr!important}
-.submit-reference-row .submit-actions .submit{width:150px!important;min-width:150px!important;height:46px!important;min-height:46px!important;border-radius:8px!important;font-size:12px!important;padding:0 16px!important;margin:0!important}
-.submit-reference-row .cancel-request-btn{height:46px;min-width:92px;padding:0 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#52657e!important;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;box-shadow:none}
-.submit-reference-row .cancel-request-btn:hover{background:#f7f9fc;border-color:#9fb0c4;color:#17345e!important}
-.submit-reference-row .ticket-promise-inline{margin-left:auto!important;direction:rtl!important;text-align:right!important}
-
 @media(max-width:850px){.maintenance-attachments{grid-template-columns:1fr 1fr}.maintenance-attachment-card:last-child{grid-column:1/-1}}
-@media(max-width:620px){.submit-reference-row{flex-direction:column!important;align-items:stretch!important;direction:rtl!important}.submit-reference-row .submit-actions{width:100%!important;direction:rtl!important}.submit-reference-row .submit-actions .submit,.submit-reference-row .cancel-request-btn{flex:1!important;width:auto!important;min-width:0!important}.submit-reference-row .ticket-promise-inline{text-align:center!important;margin:0!important}}
 @media(max-width:560px){.maintenance-attachments{grid-template-columns:1fr}.maintenance-attachment-card:last-child{grid-column:auto}.maintenance-attachment-actions{width:100%}.maintenance-upload-btn{flex:1;min-width:0}}
 </style>
 HTML;
@@ -89,11 +79,10 @@ HTML;
             $html = str_replace($old, $replacement, $html);
         }
 
-        $homeUrl = route('public.home');
-        $script = <<<HTML
-<script id="unifco-current-maintenance-attachments-script-v2">
+        $script = <<<'HTML'
+<script id="unifco-current-maintenance-attachments-script-v3">
 (()=>{
-  const bindFileButtons=()=>{
+  const init=()=>{
     document.querySelectorAll('[data-file-target]').forEach(btn=>{
       if(btn.dataset.bound==='1') return;
       btn.dataset.bound='1';
@@ -103,25 +92,6 @@ HTML;
       });
     });
   };
-
-  const enhanceSubmit=()=>{
-    const row=document.querySelector('.submit-reference-row');
-    if(!row || row.querySelector('.submit-actions')) return;
-    const submit=row.querySelector('.submit');
-    if(!submit) return;
-    const actions=document.createElement('div');
-    actions.className='submit-actions';
-    submit.parentNode.insertBefore(actions, submit);
-    actions.appendChild(submit);
-    const cancel=document.createElement('a');
-    cancel.className='cancel-request-btn';
-    cancel.href='{$homeUrl}';
-    cancel.textContent='إلغاء';
-    cancel.setAttribute('aria-label','إلغاء طلب الخدمة والعودة للرئيسية');
-    actions.appendChild(cancel);
-  };
-
-  const init=()=>{bindFileButtons();enhanceSubmit();};
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
