@@ -16,13 +16,27 @@ class PublicHomeHeroServiceLinkPresentation
         }
 
         $html = (string) $response->getContent();
-        $old = '<div class="hero-actions"><a class="btn red" href="'.route('public.request-service').'">';
-        $new = '<div class="hero-actions"><a class="btn red" href="'.route('public.current-maintenance').'">';
-        if (str_contains($html, $old)) {
-            $html = str_replace($old, $new, $html);
-            $response->setContent($html);
+        $legacy = route('public.request-service');
+        $advanced = route('public.current-maintenance');
+
+        $heroOld = '<div class="hero-actions"><a class="btn red" href="'.$legacy.'">';
+        $heroNew = '<div class="hero-actions"><a class="btn red" href="'.$advanced.'">';
+        if (str_contains($html, $heroOld)) {
+            $html = str_replace($heroOld, $heroNew, $html);
         }
 
+        $topOld = '<div class="nav-actions"><a class="lang"';
+        $topPos = strpos($html, $topOld);
+        if ($topPos !== false) {
+            $topEnd = strpos($html, '</div>', $topPos);
+            if ($topEnd !== false) {
+                $topChunk = substr($html, $topPos, $topEnd - $topPos + 6);
+                $newTopChunk = str_replace('href="'.$legacy.'"', 'href="'.$advanced.'"', $topChunk);
+                $html = substr_replace($html, $newTopChunk, $topPos, strlen($topChunk));
+            }
+        }
+
+        $response->setContent($html);
         return $response;
     }
 }
