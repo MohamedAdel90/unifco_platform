@@ -19,36 +19,54 @@ class PublicCurrentMaintenancePresentation
         $html = (string) $response->getContent();
 
         $styles = <<<'HTML'
-<style id="unifco-current-maintenance-v3">
+<style id="unifco-current-maintenance-v4">
+:root{--unifco-navy:#08295d;--unifco-red:#e3132c;--ufm-text:#0b2854;--ufm-muted:#6f819c}
 .current-service-nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.97);border-bottom:1px solid #e7ebf0;backdrop-filter:blur(14px)}
 .current-service-nav .nav-wrap{width:min(1280px,94%);min-height:76px;margin-inline:auto;display:flex;align-items:center;gap:20px;direction:ltr}
 .current-service-nav .brand-link{display:flex;align-items:center;gap:9px;margin-right:auto;direction:ltr;text-decoration:none}
 .current-service-nav .site-logo-frame{width:42px;height:50px;overflow:hidden;flex:0 0 42px}
 .current-service-nav .site-logo{width:42px;height:65px;object-fit:cover;object-position:center top;display:block}
 .current-service-nav .brand-copy{display:flex;flex-direction:column;line-height:.88}
-.current-service-nav .brand-copy strong{font-family:Inter,Arial,sans-serif;font-size:24px;letter-spacing:.03em;color:#071f4d}
-.current-service-nav .brand-copy small{margin-top:5px;font-family:Inter,Arial,sans-serif;font-size:6px;font-weight:900;letter-spacing:.16em;color:#ce122d}
+.current-service-nav .brand-copy strong{font-family:Inter,Arial,sans-serif;font-size:24px;letter-spacing:.03em;color:#071f4d;font-weight:800}
+.current-service-nav .brand-copy small{margin-top:5px;font-family:Inter,Arial,sans-serif;font-size:7px;font-weight:900;letter-spacing:.16em;color:#ce122d}
 .current-service-nav .primary-nav{display:flex;align-items:center;gap:23px;direction:rtl}
-.current-service-nav .primary-nav a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#25354d;text-decoration:none;font-size:11px;font-weight:800;white-space:nowrap;min-width:62px}
+.current-service-nav .primary-nav a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#25354d;text-decoration:none;font-size:13px;line-height:1.25;font-weight:800;white-space:nowrap;min-width:68px}
 .current-service-nav .primary-nav a:first-child:after,.current-service-nav .primary-nav a:hover:after{content:"";position:absolute;inset-inline:5px;bottom:-13px;height:2px;background:#ce122d}
-.current-service-nav .nav-icon{display:grid;place-items:center;height:22px;color:#203759}
-.current-service-nav .nav-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.current-service-nav .nav-icon{display:grid;place-items:center;height:23px;color:#203759}
+.current-service-nav .nav-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .current-service-nav .nav-actions{display:flex;align-items:center;gap:9px;direction:ltr}
-.current-service-nav .lang{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 13px;border:1px solid #ccd4df;border-radius:6px;font-size:10px;font-weight:900;color:#071f4d;background:#fff;text-decoration:none}
-.current-service-nav .request-btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 18px;border-radius:6px;background:#ce122d;color:#fff;text-decoration:none;font-size:11px;font-weight:900}
+.current-service-nav .lang{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 13px;border:1px solid #ccd4df;border-radius:6px;font-size:11px;font-weight:900;color:#071f4d;background:#fff;text-decoration:none}
+.current-service-nav .request-btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 18px;border-radius:6px;background:#ce122d;color:#fff;text-decoration:none;font-size:12px;font-weight:900}
 .current-service-nav .menu-toggle{display:none;border:0;background:#071f4d;color:#fff;width:42px;height:42px;border-radius:7px;font-size:20px;cursor:pointer}
+
+/* Professional typography scale for the entire service request */
+body{color:var(--ufm-text)}
+.request-clarity-eyebrow{font-size:11px!important;line-height:1.4!important;font-weight:800!important;letter-spacing:.09em!important}
+.request-clarity-hero h1{font-size:36px!important;line-height:1.35!important;font-weight:900!important;letter-spacing:-.015em!important}
+.request-clarity-hero p{font-size:13px!important;line-height:1.9!important;font-weight:500!important}
+.request-ticket-note{font-size:12px!important;line-height:1.75!important;font-weight:650!important}
+main.wrap{font-size:14px!important}
+.panel{color:var(--ufm-text)}
+.panel .section-title,.section-title{font-size:18px!important;line-height:1.45!important;font-weight:900!important;letter-spacing:-.01em!important}
+.section-title .num,.panel .num{font-size:11px!important;line-height:26px!important;font-weight:900!important}
+.panel label,.field label,label{font-size:12px!important;line-height:1.45!important;font-weight:800!important;color:#102b55!important}
+.panel input,.panel select,.panel textarea,.field input,.field select,.field textarea,input,select,textarea{font-size:13px!important;line-height:1.5!important;font-weight:600!important;color:#18345e!important}
+.panel input::placeholder,.panel textarea::placeholder,input::placeholder,textarea::placeholder{font-size:12px!important;font-weight:500!important;color:#95a3b6!important}
+.hint,.helper,.help-text,.muted,.note{font-size:11px!important;line-height:1.7!important;font-weight:500!important;color:var(--ufm-muted)!important}
 .customer-kind{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:13px}
-.customer-kind-card{height:46px;border:1px solid #cdd8e6;border-radius:8px;background:#fff;color:#17345e;display:flex;align-items:center;justify-content:center;gap:9px;font-size:11px;font-weight:900}
+.customer-kind-card{height:46px;border:1px solid #cdd8e6;border-radius:8px;background:#fff;color:#17345e;display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px;font-weight:850;line-height:1.2}
 .customer-kind-card.active{border:1.5px solid #e3132c;color:#e3132c;background:#fff8f9;box-shadow:inset 0 0 0 1px rgba(227,19,44,.05)}
 .customer-kind-card.disabled{opacity:.55}
+button,.button,.btn{font-weight:800}
 .submit-reference-row{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:18px 0 24px;padding:18px 0 0;border-top:1px solid #eef2f7;direction:ltr}
-.submit-reference-row .submit{width:190px;min-width:190px;height:64px;margin:0;border-radius:14px;font-size:16px;box-shadow:none;direction:rtl}
-.ticket-promise-inline{margin:0;color:#667b98;font-size:11px;line-height:1.8;text-align:right;font-weight:600;direction:rtl}
+.submit-reference-row .submit{width:190px;min-width:190px;height:64px;margin:0;border-radius:14px;font-size:16px!important;line-height:1.2!important;font-weight:900!important;box-shadow:none;direction:rtl}
+.ticket-promise-inline{margin:0;color:#667b98;font-size:12px!important;line-height:1.75!important;text-align:right;font-weight:600;direction:rtl}
 .ticket-promise-inline .check{color:#57789e;margin-left:4px}
-@media(max-width:1080px){.current-service-nav .primary-nav{display:none}.current-service-nav .menu-toggle{display:grid;place-items:center}}
-@media(max-width:850px){.current-service-nav .request-btn{display:none}.customer-kind{grid-template-columns:1fr}}
-@media(max-width:700px){.current-service-nav .nav-wrap{min-height:70px}.current-service-nav .site-logo-frame{width:38px;height:46px;flex-basis:38px}.current-service-nav .site-logo{width:38px;height:59px}.current-service-nav .brand-copy strong{font-size:21px}.current-service-nav .lang{display:none}}
-@media(max-width:620px){.submit-reference-row{flex-direction:column-reverse;align-items:stretch;gap:12px;direction:rtl}.submit-reference-row .submit{width:100%;min-width:0;height:54px}.ticket-promise-inline{text-align:center}}
+
+@media(max-width:1080px){.current-service-nav .primary-nav{display:none}.current-service-nav .menu-toggle{display:grid;place-items:center}.request-clarity-hero h1{font-size:32px!important}}
+@media(max-width:850px){.current-service-nav .request-btn{display:none}.customer-kind{grid-template-columns:1fr}.panel .section-title,.section-title{font-size:17px!important}}
+@media(max-width:700px){.current-service-nav .nav-wrap{min-height:70px}.current-service-nav .site-logo-frame{width:38px;height:46px;flex-basis:38px}.current-service-nav .site-logo{width:38px;height:59px}.current-service-nav .brand-copy strong{font-size:21px}.current-service-nav .lang{display:none}.request-clarity-hero h1{font-size:27px!important}.request-clarity-hero p{font-size:12px!important}.request-ticket-note{font-size:11px!important}.panel label,.field label,label{font-size:11.5px!important}.panel input,.panel select,.panel textarea,.field input,.field select,.field textarea,input,select,textarea{font-size:12.5px!important}}
+@media(max-width:620px){.submit-reference-row{flex-direction:column-reverse;align-items:stretch;gap:12px;direction:rtl}.submit-reference-row .submit{width:100%;min-width:0;height:54px}.ticket-promise-inline{text-align:center}.customer-kind-card{font-size:12px}}
 </style>
 HTML;
         $html = str_replace('</head>', $styles.'</head>', $html);
