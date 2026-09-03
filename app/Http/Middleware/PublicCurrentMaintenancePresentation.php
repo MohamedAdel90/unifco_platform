@@ -30,9 +30,12 @@ class PublicCurrentMaintenancePresentation
 .customer-kind-card{height:46px;border:1px solid #cdd8e6;border-radius:8px;background:#fff;color:#17345e;display:flex;align-items:center;justify-content:center;gap:9px;font-size:11px;font-weight:900}
 .customer-kind-card.active{border:1.5px solid #e3132c;color:#e3132c;background:#fff8f9;box-shadow:inset 0 0 0 1px rgba(227,19,44,.05)}
 .customer-kind-card.disabled{opacity:.55}
-.ticket-promise{margin:-4px 0 12px;padding:11px 14px;border:1px solid #d9e6f5;border-radius:8px;background:#f5f9ff;color:#35577f;font-size:10px;text-align:center;font-weight:700}
-.ticket-promise b{color:#071f4d}
+.submit-reference-row{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:18px 0 24px;padding:18px 0 0;border-top:1px solid #eef2f7;direction:ltr}
+.submit-reference-row .submit{width:190px;min-width:190px;height:64px;margin:0;border-radius:14px;font-size:16px;box-shadow:none;direction:rtl}
+.ticket-promise-inline{margin:0;color:#667b98;font-size:11px;line-height:1.8;text-align:right;font-weight:600;direction:rtl}
+.ticket-promise-inline .check{color:#57789e;margin-left:4px}
 @media(max-width:850px){.current-service-nav .nav-links{display:none}.current-service-nav .nav-logo{margin-left:0;margin-right:auto}.customer-kind{grid-template-columns:1fr}}
+@media(max-width:620px){.submit-reference-row{flex-direction:column-reverse;align-items:stretch;gap:12px;direction:rtl}.submit-reference-row .submit{width:100%;min-width:0;height:54px}.ticket-promise-inline{text-align:center}}
 </style>
 HTML;
         $html = str_replace('</head>', $styles.'</head>', $html);
@@ -50,7 +53,7 @@ HTML;
         }
 
         $submit = '<button class="submit" type="submit">إرسال طلب الخدمة</button>';
-        $replacement = '<div class="ticket-promise">✓ بعد نجاح الإرسال سيتم إصدار <b>رقم تذكرة فريد</b> للطلب وعرضه مباشرة في صفحة التأكيد وفق آلية الترقيم المعتمدة.</div>'.$submit;
+        $replacement = '<div class="submit-reference-row"><button class="submit" type="submit">إرسال الطلب</button><p class="ticket-promise-inline"><span class="check">✓</span> سيتم إصدار رقم تذكرة مرجعي فور إرسال الطلب.</p></div>';
         if (str_contains($html, $submit)) {
             $html = str_replace($submit, $replacement, $html);
         }
