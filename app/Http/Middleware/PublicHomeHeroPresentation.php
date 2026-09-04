@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\HomepageContentService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -156,6 +157,19 @@ html[dir="ltr"] .hero-eyebrow:after{left:0!important}
 }
 </style>
 HTML;
+
+        // The reference Blade still carries a safe fallback hero image. Override
+        // it only when the CMS has an explicit image for the active language.
+        $requested = $request->query('lang');
+        $locale = in_array($requested, ['ar', 'en'], true)
+            ? $requested
+            : $request->session()->get('public_locale', 'ar');
+        $home = app(HomepageContentService::class)->getContent($locale);
+        $heroImage = trim((string) ($home['hero_image'] ?? ''));
+        if ($heroImage !== '') {
+            $safeHeroImage = str_replace(["\\", '"', "\r", "\n"], ["\\\\", '\\"', '', ''], $heroImage);
+            $style .= '<style id="unifco-home-hero-cms-image">.hero{background-image:linear-gradient(90deg,rgba(3,22,48,.98) 0%,rgba(5,30,62,.91) 30%,rgba(5,30,62,.54) 50%,rgba(5,30,62,.06) 74%),url("'.$safeHeroImage.'")!important}</style>';
+        }
 
         $response->setContent(str_replace('</head>', $style."\n</head>", $html));
 
