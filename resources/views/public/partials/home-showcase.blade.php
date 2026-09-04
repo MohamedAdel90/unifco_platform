@@ -1,3 +1,43 @@
+@php
+    $normalizeShowcaseText = static function ($value): string {
+        $value = mb_strtolower(trim((string) $value));
+        $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
+        return $value;
+    };
+
+    $projectSeen = [];
+    $showcaseProjects = collect($home['showcase_projects'] ?? [])->filter(function ($project) use (&$projectSeen, $normalizeShowcaseText) {
+        if (! is_array($project)) return false;
+
+        $identity = implode('|', [
+            $normalizeShowcaseText($project['title'] ?? ''),
+            $normalizeShowcaseText($project['owner'] ?? ''),
+            $normalizeShowcaseText($project['location'] ?? ''),
+            $normalizeShowcaseText($project['year'] ?? ''),
+        ]);
+
+        if ($identity === '|||') {
+            $identity = $normalizeShowcaseText(parse_url((string) ($project['image'] ?? ''), PHP_URL_PATH) ?: ($project['image'] ?? ''));
+        }
+
+        if ($identity === '' || isset($projectSeen[$identity])) return false;
+        $projectSeen[$identity] = true;
+        return true;
+    })->values();
+
+    $clientSeen = [];
+    $showcaseClients = collect($home['showcase_clients'] ?? [])->filter(function ($client) use (&$clientSeen, $normalizeShowcaseText) {
+        if (! is_array($client)) return false;
+
+        $name = $normalizeShowcaseText($client[1] ?? '');
+        $image = $normalizeShowcaseText(parse_url((string) ($client[0] ?? ''), PHP_URL_PATH) ?: ($client[0] ?? ''));
+        $identity = $name !== '' ? 'name:'.$name : 'image:'.$image;
+
+        if ($identity === 'image:' || isset($clientSeen[$identity])) return false;
+        $clientSeen[$identity] = true;
+        return true;
+    })->values();
+@endphp
 <section class="projects-showcase" id="projects" style="--showcase-dir:{{ $home['dir'] }}">
 <span class="showcase-anchor" id="unifco-project-showcase" aria-hidden="true"></span>
 <div class="wrap">
@@ -8,7 +48,7 @@
 <div class="showcase-rail-shell" data-showcase-carousel>
 <button class="showcase-arrow prev" type="button" data-showcase-prev aria-label="{{ $home['carousel_previous'] }}" aria-controls="project-showcase-rail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
 <div class="showcase-rail" id="project-showcase-rail" data-showcase-rail tabindex="0">
-@foreach($home['showcase_projects'] as $project)<article class="showcase-project-card"><div class="showcase-project-media"><img src="{{ $project['image'] }}" alt="{{ $project['title'] }}" loading="lazy"><span class="showcase-project-year">{{ $project['year'] }}</span></div><div class="showcase-project-body"><h3>{{ $project['title'] }}</h3><span class="showcase-project-owner">{{ $project['owner'] }}</span><span class="showcase-project-location"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>{{ $project['location'] }}</span><span class="showcase-project-tag">{{ $project['scope'] }}</span></div></article>@endforeach
+@foreach($showcaseProjects as $project)<article class="showcase-project-card"><div class="showcase-project-media"><img src="{{ $project['image'] }}" alt="{{ $project['title'] }}" loading="lazy"><span class="showcase-project-year">{{ $project['year'] }}</span></div><div class="showcase-project-body"><h3>{{ $project['title'] }}</h3><span class="showcase-project-owner">{{ $project['owner'] }}</span><span class="showcase-project-location"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>{{ $project['location'] }}</span><span class="showcase-project-tag">{{ $project['scope'] }}</span></div></article>@endforeach
 </div>
 <button class="showcase-arrow next" type="button" data-showcase-next aria-label="{{ $home['carousel_next'] }}" aria-controls="project-showcase-rail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
 </div>
@@ -21,7 +61,7 @@
 <div class="showcase-rail-shell" data-showcase-carousel>
 <button class="showcase-arrow prev" type="button" data-showcase-prev aria-label="{{ $home['carousel_previous'] }}" aria-controls="client-showcase-rail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
 <div class="showcase-rail client-rail" id="client-showcase-rail" data-showcase-rail tabindex="0">
-@foreach($home['showcase_clients'] as $client)<article class="client-card"><img src="{{ $client[0] }}" alt="{{ $client[1] }}" loading="lazy"></article>@endforeach
+@foreach($showcaseClients as $client)<article class="client-card"><img src="{{ $client[0] }}" alt="{{ $client[1] }}" loading="lazy"></article>@endforeach
 <article class="client-card more"><strong>+</strong><span>{{ $home['more_clients'] }}</span></article>
 </div>
 <button class="showcase-arrow next" type="button" data-showcase-next aria-label="{{ $home['carousel_next'] }}" aria-controls="client-showcase-rail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
