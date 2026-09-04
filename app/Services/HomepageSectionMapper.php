@@ -15,6 +15,7 @@ class HomepageSectionMapper
 
         return match ($sectionKey) {
             'hero' => self::map($mapped, [
+                'render_mode' => 'hero_render_mode',
                 'image' => 'hero_image',
                 'eyebrow' => 'hero_eyebrow',
                 'title' => 'hero_title',
@@ -121,8 +122,6 @@ class HomepageSectionMapper
                 $value = self::normalizeRows($value, $listFields[$source]);
             }
 
-            // The value exposed by the CMS must win over a stale legacy alias.
-            // Otherwise an edit may save correctly yet never appear publicly.
             $data[$target] = $value;
 
             if ($target !== $source) {
