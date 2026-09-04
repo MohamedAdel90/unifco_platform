@@ -118,19 +118,25 @@ class HomepageSectionController extends Controller
         foreach (($schema['items'] ?? []) as $listKey => $itemFields) {
             $base = "item_{$locale}_{$listKey}";
             $items = [];
+            $existingItems = is_array($existing[$listKey] ?? null) ? $existing[$listKey] : [];
             $rows = (array) $request->input("{$base}_index", []);
+
             foreach ($rows as $index) {
-                $item = [];
-                foreach ($itemFields as $f) {
-                    $key = "{$base}_{$index}_{$f}";
+                $index = (int) $index;
+                $item = is_array($existingItems[$index] ?? null) ? $existingItems[$index] : [];
+
+                foreach ($itemFields as $field) {
+                    $key = "{$base}_{$index}_{$field}";
                     if ($request->has($key)) {
-                        $item[$f] = $request->input($key);
+                        $item[$field] = $request->input($key);
                     }
                 }
+
                 if ($item !== []) {
                     $items[] = $item;
                 }
             }
+
             $result[$listKey] = $items;
         }
 
