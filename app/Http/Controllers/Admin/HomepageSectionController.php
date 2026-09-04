@@ -38,11 +38,13 @@ class HomepageSectionController extends Controller
         $schema = HomepageSectionSchema::fields($section->section_key);
 
         if ($request->has('data_ar') && $request->has('data_en')) {
-            $dataAr = json_decode($request->input('data_ar'), true) ?: [];
-            $dataEn = json_decode($request->input('data_en'), true) ?: [];
+            $submittedAr = json_decode($request->input('data_ar'), true) ?: [];
+            $submittedEn = json_decode($request->input('data_en'), true) ?: [];
+            $dataAr = array_replace($section->data_ar ?? [], $submittedAr);
+            $dataEn = array_replace($section->data_en ?? [], $submittedEn);
         } else {
-            $dataAr = $this->assemble($request, $schema, 'ar');
-            $dataEn = $this->assemble($request, $schema, 'en');
+            $dataAr = $this->assemble($request, $schema, 'ar', $section->data_ar ?? []);
+            $dataEn = $this->assemble($request, $schema, 'en', $section->data_en ?? []);
         }
 
         $section->update([
@@ -55,9 +57,12 @@ class HomepageSectionController extends Controller
         return back()->with('status', 'Section "'.$section->section_key.'" updated. Public cache cleared.');
     }
 
-    private function assemble(Request $request, array $schema, string $locale): array
+    private function assemble(Request $request, array $schema, string $locale, array $existing = []): array
     {
-        $result = [];
+        // Compatibility layer: only replace fields owned by the current schema.
+        // Unknown/legacy keys stay untouched so editing one CMS section cannot
+        // silently delete data still consumed by the public homepage.
+        $result = $existing;
 
         foreach (($schema['scalars'] ?? []) as $field) {
             $base = "scalar_{$locale}_{$field}";
@@ -69,9 +74,9 @@ class HomepageSectionController extends Controller
         foreach (($schema['checks'] ?? []) as $field) {
             $base = "check_{$locale}_{$field}";
             $rows = array_values(array_filter((array) $request->input($base, []), fn ($v) => $v !== '' && $v !== null));
-            if ($rows !== []) {
-                $result[$field] = $rows;
-            }
+            // The checklist is rendered by this editor, so an empty submission
+            // intentionally clears this known field without touching other keys.
+            $result[$field] = $rows;
         }
 
         foreach (($schema['items'] ?? []) as $listKey => $itemFields) {
@@ -90,9 +95,9 @@ class HomepageSectionController extends Controller
                     $items[] = $item;
                 }
             }
-            if ($items !== []) {
-                $result[$listKey] = $items;
-            }
+            // Same rule as checklists: this field belongs to the current schema,
+            // therefore removing all rows must persist as an empty list.
+            $result[$listKey] = $items;
         }
 
         return $result;
