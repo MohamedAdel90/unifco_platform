@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin/homepage')->name('admin.homepage.')->group(function () {
         Route::get('/sections', [HomepageSectionController::class, 'index'])->name('sections.index');
         Route::get('/sections/{section}/edit', [HomepageSectionController::class, 'edit'])->name('sections.edit');
+        Route::post('/sections/{section}/preview', [HomepageSectionController::class, 'preview'])->name('sections.preview');
         Route::put('/sections/{section}', [HomepageSectionController::class, 'update'])->name('sections.update');
         Route::post('/sections/{section}/toggle', [HomepageSectionController::class, 'toggle'])->name('sections.toggle');
         Route::get('/projects', [HomepageProjectController::class, 'index'])->name('projects.index');
