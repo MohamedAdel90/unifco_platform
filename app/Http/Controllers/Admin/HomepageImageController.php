@@ -10,7 +10,8 @@ use Illuminate\Support\Str;
 
 class HomepageImageController extends Controller
 {
-    private const DIRECTORY = 'temporary-files';
+    private const DIRECTORY = 'homepage-media';
+    private const LEGACY_TEMP_DIRECTORY = 'temporary-files';
 
     public function list(Request $request): JsonResponse
     {
@@ -34,23 +35,13 @@ class HomepageImageController extends Controller
             'image/gif' => 'gif',
             default => 'png',
         };
-        $token = (string) Str::uuid();
-        $directory = self::DIRECTORY.'/'.$token;
-        $path = $file->storeAs($directory, 'file.'.$extension, 'local');
 
-        Storage::disk('local')->put($directory.'/metadata.json', json_encode([
-            'token' => $token,
-            'path' => $path,
-            'original_name' => $file->getClientOriginalName(),
-            'mime' => $mime,
-            'size' => $file->getSize(),
-            'uploaded_by' => $request->user()->name,
-            'uploaded_at' => now()->toIso8601String(),
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        $filename = Str::uuid().'.'.$extension;
+        $path = $file->storeAs(self::DIRECTORY, $filename, 'public');
 
         return response()->json([
             'image' => [
-                'url' => route('temporary-files.show', $token),
+                'url' => Storage::disk('public')->url($path),
                 'name' => $file->getClientOriginalName(),
             ],
         ]);
@@ -58,10 +49,21 @@ class HomepageImageController extends Controller
 
     private function availableImages(): array
     {
-        $fromTmp = collect(Storage::disk('local')->directories(self::DIRECTORY))
+        $permanent = collect(Storage::disk('public')->files(self::DIRECTORY))
+            ->filter(fn (string $path) => preg_match('/\.(?:jpe?g|png|webp|gif)$/i', $path))
+            ->map(fn (string $path) => [
+                'url' => Storage::disk('public')->url($path),
+                'name' => basename($path),
+            ])
+            ->values()
+            ->all();
+
+        // Keep previously uploaded CMS images selectable so no existing content
+        // breaks while all new uploads use permanent homepage media storage.
+        $legacyTemporary = collect(Storage::disk('local')->directories(self::LEGACY_TEMP_DIRECTORY))
             ->map(function (string $directory) {
                 $token = basename($directory);
-                $metaPath = self::DIRECTORY.'/'.$token.'/metadata.json';
+                $metaPath = self::LEGACY_TEMP_DIRECTORY.'/'.$token.'/metadata.json';
                 if (! Storage::disk('local')->exists($metaPath)) {
                     return null;
                 }
@@ -76,17 +78,25 @@ class HomepageImageController extends Controller
             ->values()
             ->all();
 
-        $fromProjects = collect(glob(public_path('images/home/projects/*.{webp,jpg,jpeg,png}', GLOB_BRACE)) ?: [])
-            ->map(fn ($p) => ['url' => str_replace(public_path(), '', $p), 'name' => basename($p)])
+        $staticHome = collect(glob(public_path('images/home/*.{webp,jpg,jpeg,png,gif,svg}', GLOB_BRACE)) ?: [])
+            ->map(fn ($path) => ['url' => str_replace(public_path(), '', $path), 'name' => basename($path)])
             ->values()
             ->all();
 
-        $fromClients = collect(glob(public_path('images/home/clients/*.{webp,jpg,jpeg,png}', GLOB_BRACE)) ?: [])
-            ->map(fn ($p) => ['url' => str_replace(public_path(), '', $p), 'name' => basename($p)])
+        $projects = collect(glob(public_path('images/home/projects/*.{webp,jpg,jpeg,png,gif,svg}', GLOB_BRACE)) ?: [])
+            ->map(fn ($path) => ['url' => str_replace(public_path(), '', $path), 'name' => basename($path)])
             ->values()
             ->all();
 
-        return array_merge($fromProjects, $fromClients, $fromTmp);
+        $clients = collect(glob(public_path('images/home/clients/*.{webp,jpg,jpeg,png,gif,svg}', GLOB_BRACE)) ?: [])
+            ->map(fn ($path) => ['url' => str_replace(public_path(), '', $path), 'name' => basename($path)])
+            ->values()
+            ->all();
+
+        return collect(array_merge($permanent, $staticHome, $projects, $clients, $legacyTemporary))
+            ->unique('url')
+            ->values()
+            ->all();
     }
 
     private function adminOnly(Request $request): void
