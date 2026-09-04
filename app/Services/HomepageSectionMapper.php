@@ -6,11 +6,8 @@ class HomepageSectionMapper
 {
     /**
      * Convert section-local CMS keys into the legacy public homepage contract.
-     *
-     * The CMS deliberately stores simple keys such as title/text/items inside
-     * each section. The public homepage, however, still consumes a flat legacy
-     * array. Mapping here prevents one section's generic keys from overwriting
-     * another section when HomepageContentService merges active sections.
+     * The generic field currently edited by the CMS is authoritative whenever
+     * it exists, so stale legacy keys cannot shadow newly saved values.
      */
     public static function toPublic(string $sectionKey, array $data): array
     {
@@ -45,7 +42,7 @@ class HomepageSectionMapper
                 'kicker' => 'services_kicker',
                 'title' => 'services_title',
                 'text' => 'services_text',
-                'more' => 'services_more',
+                'more' => 'more',
                 'button' => 'services_button',
                 'items' => 'services',
             ], ['items' => ['number', 'image', 'title', 'desc']]),
@@ -124,20 +121,15 @@ class HomepageSectionMapper
                 $value = self::normalizeRows($value, $listFields[$source]);
             }
 
-            // A section-specific/legacy key already stored in the same record
-            // wins over the generic alias. This keeps existing production data
-            // stable while the CMS is migrated incrementally.
-            if (! array_key_exists($target, $data) || $target === $source) {
-                $data[$target] = $value;
-            }
+            // The value exposed by the CMS must win over a stale legacy alias.
+            // Otherwise an edit may save correctly yet never appear publicly.
+            $data[$target] = $value;
 
             if ($target !== $source) {
                 unset($data[$source]);
             }
         }
 
-        // Some lists keep their public key but still need conversion from the
-        // editor's associative rows to the positional arrays used by old views.
         foreach ($listFields as $field => $columns) {
             if (isset($aliases[$field])) {
                 continue;
@@ -157,7 +149,6 @@ class HomepageSectionMapper
                 return $row;
             }
 
-            // Already positional: keep it exactly as stored.
             if (array_is_list($row)) {
                 return array_values($row);
             }
