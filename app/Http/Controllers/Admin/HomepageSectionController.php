@@ -59,6 +59,16 @@ class HomepageSectionController extends Controller
 
         $html = view('public.partials.home-reference-layout', compact('home'))->render();
 
+        // The public reference layout intentionally has a fallback hero image.
+        // Mirror the production middleware override so an unsaved Hero image is
+        // visible in Preview before the administrator commits it.
+        $heroImage = trim((string) ($home['hero_image'] ?? ''));
+        if ($heroImage !== '' && str_contains($html, '</head>')) {
+            $safeHeroImage = str_replace(["\\", '"', "\r", "\n"], ["\\\\", '\\"', '', ''], $heroImage);
+            $heroStyle = '<style id="unifco-cms-preview-hero-image">.hero{background-image:linear-gradient(90deg,rgba(3,22,48,.98) 0%,rgba(5,30,62,.91) 30%,rgba(5,30,62,.54) 50%,rgba(5,30,62,.06) 74%),url("'.$safeHeroImage.'")!important}</style>';
+            $html = str_replace('</head>', $heroStyle.'</head>', $html);
+        }
+
         return response($html, 200, [
             'Content-Type' => 'text/html; charset=UTF-8',
             'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
