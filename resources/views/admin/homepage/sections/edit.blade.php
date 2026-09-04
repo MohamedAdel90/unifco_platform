@@ -33,7 +33,10 @@
 .check-list{display:grid;gap:8px}
 .check-list .cl-row{display:flex;gap:8px;align-items:center}
 .check-list input{flex:1}
-.form-actions{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid #e3e8ef;border-radius:12px;padding:14px 18px}
+.form-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid #e3e8ef;border-radius:12px;padding:14px 18px}
+.preview-actions{display:flex;gap:7px;align-items:center}
+.preview-btn{border:1px solid #9fb6da;background:#f5f8fd;color:#17366c;border-radius:7px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer}
+.preview-btn:hover{background:#eaf1fb}
 .image-slot{display:flex;gap:6px;align-items:center}
 .image-slot input{flex:1}
 .hp-img-field{display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:center}
@@ -45,12 +48,21 @@
 .hp-img-field .hp-img-input{font-size:11.5px}
 .hp-img-actions{margin-top:4px}
 .hp-img-actions .btn-sm{font-size:11px;padding:5px 11px}
-@media(max-width:760px){.seg{grid-template-columns:1fr}.item-subrow{grid-template-columns:1fr}}
+.preview-modal{position:fixed;inset:0;z-index:10000;background:rgba(8,18,35,.78);padding:18px;display:none;align-items:center;justify-content:center}
+.preview-modal.open{display:flex}
+.preview-shell{width:min(1440px,100%);height:min(94vh,980px);background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.34);display:grid;grid-template-rows:auto 1fr}
+.preview-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#132137;color:#fff}
+.preview-head strong{font-size:13px}.preview-head small{font-size:10px;color:#cbd5e1}.preview-head .spacer{flex:1}
+.preview-close{border:1px solid #7d8ca3;background:transparent;color:#fff;border-radius:7px;padding:6px 11px;font-weight:800;cursor:pointer}
+.preview-frame{width:100%;height:100%;border:0;background:#fff}
+.preview-loading{position:absolute;background:#fff;border:1px solid #dce3ec;border-radius:9px;padding:10px 14px;font-size:12px;font-weight:700;color:#41516b;box-shadow:0 8px 25px rgba(0,0,0,.12);display:none}
+.preview-loading.show{display:block}
+@media(max-width:760px){.seg{grid-template-columns:1fr}.item-subrow{grid-template-columns:1fr}.form-actions{align-items:stretch}.form-actions .grow{display:none}.preview-actions{width:100%}.preview-btn{flex:1}.preview-modal{padding:4px}.preview-shell{height:98vh;border-radius:8px}}
 </style>
 @if(session('status'))<div class="notice">{{ session('status') }}</div>@endif
 @if($errors->any())<div class="error">{{ $errors->first() }}</div>@endif
 
-<form method="POST" action="{{ route('admin.homepage.sections.update', $section) }}" class="section-form">@csrf @method('PUT')
+<form id="homepage-section-form" method="POST" action="{{ route('admin.homepage.sections.update', $section) }}" class="section-form">@csrf @method('PUT')
 
 @if(count($scalars)||count($checks)||count($items))
   <div class="seg">
@@ -126,35 +138,118 @@
 <div class="form-actions">
   <label style="font-size:12px;font-weight:700;color:#374151;margin:0">Sort order:</label>
   <input type="number" name="sort_order" value="{{ $section->sort_order }}" min="0" style="width:80px;border:1px solid #dce1e8;border-radius:8px;padding:6px 10px;font-size:13px">
-  <div style="flex:1"></div>
+  <div class="grow" style="flex:1"></div>
+  <div class="preview-actions">
+    <button type="button" class="preview-btn" data-preview-locale="ar">Preview AR</button>
+    <button type="button" class="preview-btn" data-preview-locale="en">Preview EN</button>
+  </div>
   <a class="btn" href="{{ route('admin.homepage.sections.index') }}" style="background:#f2f6fa;color:#374151">Cancel</a>
   <button class="btn" type="submit">Save Section</button>
 </div>
 </form>
 
+<div class="preview-modal" id="section-preview-modal" aria-hidden="true">
+  <div class="preview-shell">
+    <div class="preview-head">
+      <strong>Unsaved Preview · {{ $section->section_key }}</strong>
+      <small id="section-preview-locale-label"></small>
+      <div class="spacer"></div>
+      <button type="button" class="preview-close" id="section-preview-close">Close</button>
+    </div>
+    <iframe class="preview-frame" id="section-preview-frame" title="Homepage section preview"></iframe>
+  </div>
+  <div class="preview-loading" id="section-preview-loading">Building preview…</div>
+</div>
+
 <script>
 (function(){
+  // Repeater indexes must never be derived from the current child count.
+  // Deleting a middle row and adding a new one previously reused an existing
+  // index, causing two rows to submit under the same field names.
   document.querySelectorAll('[data-repeater]').forEach(function(zone){
+    var wrap=zone.querySelector('.rows');
+    var used=Array.from(wrap.querySelectorAll('input[type="hidden"][name$="_index[]"]'))
+      .map(function(i){return parseInt(i.value,10);})
+      .filter(function(i){return Number.isFinite(i);});
+    var nextIndex=used.length ? Math.max.apply(null,used)+1 : 0;
+
     zone.querySelector('.add-row').addEventListener('click',function(){
       var tpl=zone.querySelector('.row-template').innerHTML;
-      var wrap=zone.querySelector('.rows');
-      var idx=wrap.children.length;
+      var idx=nextIndex++;
       wrap.insertAdjacentHTML('beforeend',tpl.replace(/\{\{index\}\}/g,idx));
     });
-    zone.querySelector('.rows').addEventListener('click',function(e){
+    wrap.addEventListener('click',function(e){
       var rm=e.target.closest('.remove-row');
       if(rm){rm.closest('.item-block').remove();}
     });
   });
+
   document.querySelectorAll('[data-checklist]').forEach(function(zone){
+    var wrap=zone.querySelector('.rows');
+    var used=Array.from(wrap.querySelectorAll('input[type="text"]')).map(function(input){
+      var m=(input.name||'').match(/\[(\d+)\]$/);
+      return m ? parseInt(m[1],10) : -1;
+    }).filter(function(i){return i>=0;});
+    var nextIndex=used.length ? Math.max.apply(null,used)+1 : 0;
+
     zone.querySelector('.add-row').addEventListener('click',function(){
-      var wrap=zone.querySelector('.rows');
-      var idx=wrap.children.length;
+      var idx=nextIndex++;
       wrap.insertAdjacentHTML('beforeend','<div class="cl-row"><input type="text" name="'+zone.dataset.base+'['+idx+']" value=""><button type="button" class="btn-sm danger remove-row">×</button></div>');
     });
-    zone.querySelector('.rows').addEventListener('click',function(e){
+    wrap.addEventListener('click',function(e){
       var rm=e.target.closest('.remove-row');
       if(rm){rm.closest('.cl-row').remove();}
+    });
+  });
+
+  var form=document.getElementById('homepage-section-form');
+  var modal=document.getElementById('section-preview-modal');
+  var frame=document.getElementById('section-preview-frame');
+  var close=document.getElementById('section-preview-close');
+  var loading=document.getElementById('section-preview-loading');
+  var localeLabel=document.getElementById('section-preview-locale-label');
+  var previewUrl='{{ route('admin.homepage.sections.preview', $section) }}';
+
+  function closePreview(){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+    frame.srcdoc='';
+  }
+
+  close.addEventListener('click',closePreview);
+  modal.addEventListener('click',function(e){if(e.target===modal)closePreview();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))closePreview();});
+
+  document.querySelectorAll('[data-preview-locale]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var locale=btn.dataset.previewLocale;
+      var fd=new FormData(form);
+      // Do not allow Laravel method spoofing to turn this POST preview into the
+      // real PUT update endpoint. Preview is strictly read-only.
+      fd.delete('_method');
+      fd.set('locale',locale);
+      loading.classList.add('show');
+      btn.disabled=true;
+
+      fetch(previewUrl,{
+        method:'POST',
+        headers:{'Accept':'text/html'},
+        body:fd,
+        credentials:'same-origin'
+      }).then(function(r){
+        if(!r.ok){throw new Error('Preview failed ('+r.status+')');}
+        return r.text();
+      }).then(function(html){
+        frame.srcdoc=html;
+        localeLabel.textContent=locale==='ar'?'Arabic · RTL':'English · LTR';
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden','false');
+      }).catch(function(err){
+        alert(err.message || 'Preview failed');
+      }).finally(function(){
+        loading.classList.remove('show');
+        btn.disabled=false;
+      });
     });
   });
 })();
