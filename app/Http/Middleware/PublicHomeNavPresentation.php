@@ -21,13 +21,33 @@ class PublicHomeNavPresentation
             return $response;
         }
 
-        // BrandingPresentation is still required by other public/admin pages, but
-        // its historical homepage block injects layout CSS that changes the approved
-        // homepage dimensions (service-grid auto-fit, project/client sizing, etc.).
-        // Remove that legacy presentation layer on the homepage only. Functional
-        // brand routes and the dedicated homepage middlewares remain untouched.
         $html = preg_replace('/<style id="dynamic-brand-logo-presentation">.*?<\/style>/s', '', $html) ?? $html;
         $html = str_replace('<link rel="preload" as="image" href="/brand/unifco-logo-v2.webp">', '', $html);
+
+        // Restore only the approved header/navigation presentation that was lost
+        // when the legacy BrandingPresentation stylesheet was removed. Do not
+        // reintroduce its service/project/client layout overrides.
+        $navStyle = <<<'HTML'
+<style id="public-home-nav-presentation">
+.top .nav .brand-link{order:1;margin-right:0}
+.top .nav .nav-actions{order:2}
+.top .nav .nav-actions .lang{order:1}
+.top .nav .nav-actions .btn:not(.red){order:2}
+.top .nav .nav-actions .btn.red{order:3}
+.top .nav .nav-links{order:3;margin-left:auto}
+.top .nav .menu-toggle{order:4}
+.public-primary-nav{gap:20px;overflow:visible;align-items:stretch}
+.public-primary-nav>a{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:54px;padding:9px 2px 8px;font-size:11px;line-height:1.15;color:#20324e;text-align:center;transition:color .18s ease,transform .18s ease}
+.public-primary-nav>a:hover{color:#071f4d;transform:translateY(-1px)}
+.public-primary-nav .nav-icon{display:grid;place-items:center;width:21px;height:21px;color:currentColor}
+.public-primary-nav .nav-icon svg{display:block;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.public-primary-nav .nav-label{display:block;white-space:nowrap;font-weight:800}
+@media(max-width:1180px){.public-primary-nav{gap:12px}.public-primary-nav>a{font-size:10px;min-width:48px}.public-primary-nav .nav-icon,.public-primary-nav .nav-icon svg{width:18px;height:18px}}
+</style>
+HTML;
+        if (! str_contains($html, 'id="public-home-nav-presentation"')) {
+            $html = str_replace('</head>', $navStyle."\n</head>", $html);
+        }
 
         $isArabic = str_contains($html, '<html lang="ar"');
 
