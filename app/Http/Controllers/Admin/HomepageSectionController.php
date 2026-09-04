@@ -59,14 +59,17 @@ class HomepageSectionController extends Controller
 
         $html = view('public.partials.home-reference-layout', compact('home'))->render();
 
-        // The public reference layout intentionally has a fallback hero image.
-        // Mirror the production middleware override so an unsaved Hero image is
-        // visible in Preview before the administrator commits it.
+        // The reference layout has a legacy fallback image in its stylesheet.
+        // For Hero preview, replace that source at the element itself rather
+        // than adding another CSS background layer. This guarantees that the
+        // draft image is the only photographic background rendered and avoids
+        // old/new Hero images visually overlapping after a CMS image change.
         $heroImage = trim((string) ($home['hero_image'] ?? ''));
-        if ($heroImage !== '' && str_contains($html, '</head>')) {
-            $safeHeroImage = str_replace(["\\", '"', "\r", "\n"], ["\\\\", '\\"', '', ''], $heroImage);
-            $heroStyle = '<style id="unifco-cms-preview-hero-image">.hero{background-image:linear-gradient(90deg,rgba(3,22,48,.98) 0%,rgba(5,30,62,.91) 30%,rgba(5,30,62,.54) 50%,rgba(5,30,62,.06) 74%),url("'.$safeHeroImage.'")!important}</style>';
-            $html = str_replace('</head>', $heroStyle.'</head>', $html);
+        if ($heroImage !== '') {
+            $safeHeroImage = htmlspecialchars($heroImage, ENT_QUOTES, 'UTF-8');
+            $heroBackground = "linear-gradient(90deg,rgba(3,22,48,.98) 0%,rgba(5,30,62,.91) 30%,rgba(5,30,62,.54) 50%,rgba(5,30,62,.06) 74%),url('{$safeHeroImage}')";
+            $heroTag = '<section class="hero" style="background-image:'.$heroBackground.'!important;background-repeat:no-repeat!important;background-size:cover!important;">';
+            $html = str_replace('<section class="hero">', $heroTag, $html);
         }
 
         return response($html, 200, [
