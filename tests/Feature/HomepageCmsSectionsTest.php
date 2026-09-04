@@ -328,13 +328,6 @@ class HomepageCmsSectionsTest extends TestCase
                 foreach ([0 => 3, 1 => 8] as $storedIndex => $submittedIndex) {
                     foreach ($itemFields as $field) {
                         $expected = $payload["item_{$locale}_{$listKey}_{$submittedIndex}_{$field}"];
-                        if ($key === 'services' && $field === 'image') {
-                            $otherLocale = $locale === 'ar' ? 'en' : 'ar';
-                            $other = $payload["item_{$otherLocale}_{$listKey}_{$submittedIndex}_{$field}"] ?? $expected;
-                            if ($locale === 'en' && $expected !== $other) {
-                                $expected = $other;
-                            }
-                        }
                         $this->assertSame($expected, $stored[$listKey][$storedIndex][$field]);
                     }
                 }
