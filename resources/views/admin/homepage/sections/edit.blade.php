@@ -21,6 +21,8 @@
 .col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
 .col-head b{font-size:13px;color:#1e315b;letter-spacing:.02em}
 .col-head small{font-size:10px;color:#8a97aa;font-weight:600}
+.hero-mode-help{margin-top:7px;padding:9px 10px;border-radius:8px;background:#f5f8fd;border:1px solid #dbe7f5;color:#53647d;font-size:10px;line-height:1.6}
+.hero-mode-help strong{color:#17366c}
 .item-block{border:1px solid #e3e8ef;background:#fbfcfe;border-radius:10px;padding:12px;margin:10px 0}
 .item-block .item-title{font-size:11px;font-weight:800;color:#374151;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .item-block .item-title .idx{color:#8a97aa}
@@ -69,7 +71,15 @@
     <div class="card">
       <div class="col-head"><b>Arabic</b><small>RTL · اليمين</small></div>
       @foreach($scalars as $f)
-        @if(in_array($f,$imgKeys,true))
+        @if($f === 'render_mode')
+          @php($modeAr = old('scalar_ar_render_mode', $section->data_ar['render_mode'] ?? 'background'))
+          <label class="first">Hero Render Mode (AR)</label>
+          <select name="scalar_ar_render_mode" data-hero-mode-select="ar">
+            <option value="background" @selected($modeAr === 'background')>Background image + CMS content</option>
+            <option value="full_banner" @selected($modeAr === 'full_banner')>Full banner image (content already inside image)</option>
+          </select>
+          <div class="hero-mode-help" data-hero-mode-help="ar"></div>
+        @elseif(in_array($f,$imgKeys,true))
           <label class="first">Image (AR)</label>
           @include('admin.homepage.sections.partials.image-field', [
             'name'=>'scalar_ar_'.$f,
@@ -89,7 +99,15 @@
     <div class="card">
       <div class="col-head"><b>English</b><small>LTR · Left</small></div>
       @foreach($scalars as $f)
-        @if(in_array($f,$imgKeys,true))
+        @if($f === 'render_mode')
+          @php($modeEn = old('scalar_en_render_mode', $section->data_en['render_mode'] ?? 'background'))
+          <label class="first">Hero Render Mode (EN)</label>
+          <select name="scalar_en_render_mode" data-hero-mode-select="en">
+            <option value="background" @selected($modeEn === 'background')>Background image + CMS content</option>
+            <option value="full_banner" @selected($modeEn === 'full_banner')>Full banner image (content already inside image)</option>
+          </select>
+          <div class="hero-mode-help" data-hero-mode-help="en"></div>
+        @elseif(in_array($f,$imgKeys,true))
           <label class="first">Image (EN)</label>
           @include('admin.homepage.sections.partials.image-field', [
             'name'=>'scalar_en_'.$f,
@@ -163,9 +181,19 @@
 
 <script>
 (function(){
-  // Repeater indexes must never be derived from the current child count.
-  // Deleting a middle row and adding a new one previously reused an existing
-  // index, causing two rows to submit under the same field names.
+  document.querySelectorAll('[data-hero-mode-select]').forEach(function(select){
+    var locale=select.dataset.heroModeSelect;
+    var help=document.querySelector('[data-hero-mode-help="'+locale+'"]');
+    var refresh=function(){
+      if(!help)return;
+      help.innerHTML=select.value==='full_banner'
+        ? '<strong>Full banner:</strong> the selected image is rendered exactly once at full width. CMS title, text, buttons and proofs are preserved in storage but intentionally hidden on the public Hero.'
+        : '<strong>Background:</strong> the selected image is used as a clean background and CMS title, text, buttons and proofs are rendered above it.';
+    };
+    select.addEventListener('change',refresh);
+    refresh();
+  });
+
   document.querySelectorAll('[data-repeater]').forEach(function(zone){
     var wrap=zone.querySelector('.rows');
     var used=Array.from(wrap.querySelectorAll('input[type="hidden"][name$="_index[]"]'))
@@ -224,8 +252,6 @@
     btn.addEventListener('click',function(){
       var locale=btn.dataset.previewLocale;
       var fd=new FormData(form);
-      // Do not allow Laravel method spoofing to turn this POST preview into the
-      // real PUT update endpoint. Preview is strictly read-only.
       fd.delete('_method');
       fd.set('locale',locale);
       loading.classList.add('show');
