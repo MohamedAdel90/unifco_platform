@@ -29,12 +29,29 @@ class HomepageHeroRendererTest extends TestCase
         $html = $renderer->render($this->html, [
             'hero_render_mode' => 'full_banner',
             'hero_image' => '/images/full-banner.webp',
+            'lang' => 'ar',
         ]);
 
         $this->assertSame(1, substr_count($html, '<img class="hero-full-banner-image"'));
         $this->assertStringContainsString('src="/images/full-banner.webp"', $html);
         $this->assertStringContainsString('.hero-inner{display:none!important}', $html);
         $this->assertStringContainsString('.hero::before,.hero::after{display:none!important', $html);
+    }
+
+    public function test_full_banner_mode_adds_accessible_request_and_contact_hotspots(): void
+    {
+        $renderer = new HomepageHeroRenderer();
+        $html = $renderer->render($this->html, [
+            'hero_render_mode' => 'full_banner',
+            'hero_image' => '/images/full-banner.webp',
+            'lang' => 'ar',
+        ]);
+
+        $this->assertStringContainsString('hero-banner-hotspot--request', $html);
+        $this->assertStringContainsString('hero-banner-hotspot--contact', $html);
+        $this->assertStringContainsString('href="#contact"', $html);
+        $this->assertStringContainsString('aria-label="طلب الخدمة"', $html);
+        $this->assertStringContainsString('aria-label="تواصل معنا"', $html);
     }
 
     public function test_invalid_mode_falls_back_to_background_mode(): void
