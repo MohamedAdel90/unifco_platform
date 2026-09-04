@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\HomepageSection;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\HomepageSectionSchema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,9 +19,28 @@ class HomepageCmsSectionsTest extends TestCase
         'emergency', 'footer_cta', 'footer',
     ];
 
+    private function admin(): User
+    {
+        $code = 'HPC'.substr(uniqid(), -6);
+        $tenant = Tenant::query()->create([
+            'name' => 'Homepage CMS Test Tenant',
+            'code' => $code,
+            'status' => 'ACTIVE',
+        ]);
+
+        return User::query()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Homepage CMS Test Admin',
+            'email' => 'homepage-cms-'.$code.'@example.test',
+            'password' => 'password',
+            'role' => 'ADMIN',
+            'status' => 'ACTIVE',
+        ]);
+    }
+
     public function test_every_homepage_section_can_be_updated_in_arabic_and_english_without_cross_section_overlap(): void
     {
-        $admin = User::factory()->create(['role' => 'ADMIN']);
+        $admin = $this->admin();
         $sections = collect($this->sectionKeys)->mapWithKeys(function (string $key, int $index) {
             $section = HomepageSection::query()->create([
                 'section_key' => $key,
@@ -60,7 +80,7 @@ class HomepageCmsSectionsTest extends TestCase
 
     public function test_every_homepage_section_supports_unsaved_preview_in_both_languages_without_persisting_draft_data(): void
     {
-        $admin = User::factory()->create(['role' => 'ADMIN']);
+        $admin = $this->admin();
 
         foreach ($this->sectionKeys as $index => $key) {
             $section = HomepageSection::query()->create([
