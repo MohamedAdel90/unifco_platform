@@ -6,7 +6,7 @@ use Tests\TestCase;
 
 class HomepageAboutProfileCardTest extends TestCase
 {
-    public function test_homepage_restores_about_profile_modal_for_arabic_and_english(): void
+    public function test_homepage_about_profile_modal_is_available_in_both_locales(): void
     {
         foreach (['ar', 'en'] as $locale) {
             $html = $this->get('/?lang='.$locale)->assertOk()->getContent();
@@ -16,8 +16,24 @@ class HomepageAboutProfileCardTest extends TestCase
             $this->assertStringContainsString("document.querySelector('#about .about-copy > .btn')", $html);
             $this->assertStringContainsString("trigger.setAttribute('href','#unifco-profile-modal')", $html);
             $this->assertStringContainsString('aria-haspopup', $html);
-            $this->assertStringContainsString("grid.cloneNode(true)", $html);
-            $this->assertStringContainsString("stats.cloneNode(true)", $html);
         }
+    }
+
+    public function test_english_homepage_uses_the_exact_approved_profile_card_artwork(): void
+    {
+        $html = $this->get('/?lang=en')->assertOk()->getContent();
+
+        $this->assertStringContainsString('/images/home/unifco-about-card-en.webp', $html);
+        $this->assertStringContainsString('unifco-profile-dialog-artwork', $html);
+        $this->assertStringContainsString('aspect-ratio:3/2', $html);
+        $this->assertStringNotContainsString('<h2 class="up-title">Who We Are</h2>', $html);
+    }
+
+    public function test_arabic_homepage_keeps_the_existing_profile_layout(): void
+    {
+        $html = $this->get('/?lang=ar')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<h2 class="up-title">من نحن</h2>', $html);
+        $this->assertStringNotContainsString('/images/home/unifco-about-card-en.webp', $html);
     }
 }
