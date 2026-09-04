@@ -1,7 +1,7 @@
 <div class="img-picker">
   <div class="img-picker-head">
     <strong>Image Picker</strong>
-    <small>Click an image to insert its path, or upload a new one.</small>
+    <small id="img-picker-help">Choose an image field first, then select or upload an image.</small>
   </div>
   <input type="file" id="img-picker-file" accept="image/*" style="display:none">
   <div class="img-picker-toolbar">
@@ -28,27 +28,54 @@
   var pickerFile=document.getElementById('img-picker-file');
   var loading=document.getElementById('img-picker-loading');
   var uploadBtn=document.getElementById('img-picker-upload-btn');
-  var targetInputs=document.querySelectorAll('input.img-picker-target');
+  var help=document.getElementById('img-picker-help');
   if(!grid)return;
+
   window.__imgActiveTarget=null;
+
+  var targetLabel=function(input){
+    if(!input)return '';
+    return input.getAttribute('data-img-label') || input.name || 'selected image field';
+  };
+
+  var requireActive=function(){
+    var active=window.__imgActiveTarget;
+    if(active && document.body.contains(active))return active;
+    if(help){
+      help.textContent='Select “Choose Existing” or “Upload Image” beside the exact image field first.';
+      help.style.color='#9f1f1f';
+    }
+    return null;
+  };
+
   var commit=function(url,el){
+    if(!el)return;
     el.value=url;
     el.dispatchEvent(new Event('input',{bubbles:true}));
   };
+
   var insert=function(url){
-    var active=window.__imgActiveTarget;
-    if(active && document.body.contains(active)){commit(url,active);return;}
-    targetInputs.forEach(function(i){if(!i.value)commit(url,i);});
+    // Safety rule: never guess a target and never fill all empty image fields.
+    var active=requireActive();
+    if(!active)return false;
+    commit(url,active);
+    return true;
   };
+
   var activate=function(field){
     var input=field?field.querySelector('.img-picker-target'):null;
     if(!input)return null;
     window.__imgActiveTarget=input;
     document.querySelectorAll('[data-img-field]').forEach(function(f){f.classList.remove('active-img-field');});
     field.classList.add('active-img-field');
+    if(help){
+      help.textContent='Target: '+targetLabel(input)+'. Only this field will be changed.';
+      help.style.color='#1f4e9c';
+    }
     return input;
   };
-  // delegated: field-level controls work for existing AND new repeater rows
+
+  // Field-level controls work for existing and dynamically added repeater rows.
   document.addEventListener('click',function(e){
     var upload=e.target.closest('.hp-img-upload');
     var choose=e.target.closest('.hp-img-select');
@@ -58,7 +85,7 @@
     if(upload){pickerFile.click();return;}
     if(choose){grid.scrollIntoView({behavior:'smooth',block:'center'});}
   });
-  // delegated: live preview refresh + clear for existing AND new rows
+
   var refreshPreview=function(field){
     var input=field.querySelector('.img-picker-target');
     var pv=field.querySelector('[data-img-preview]');
@@ -67,6 +94,7 @@
     if(!v){pv.innerHTML='<span class="hp-img-ph">No image</span>';return;}
     pv.innerHTML='<img src="'+v.replace(/"/g,'&quot;')+'" alt=""><button type="button" class="hp-img-clear" data-img-clear title="Remove image">×</button>';
   };
+
   document.addEventListener('input',function(e){
     var t=e.target;
     if(t.classList&&t.classList.contains('img-picker-target')){
@@ -74,40 +102,60 @@
       if(field)refreshPreview(field);
     }
   });
+
   document.addEventListener('click',function(e){
     var clr=e.target.closest('[data-img-clear]');
     if(!clr)return;
     var field=clr.closest('[data-img-field]');
     var input=field?field.querySelector('.img-picker-target'):null;
-    if(input){input.value='';refreshPreview(field);}
+    if(input){
+      activate(field);
+      input.value='';
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+    }
   });
+
   function loadImages(){
     fetch('{{ route("admin.homepage.images.list") }}',{headers:{'Accept':'application/json'}})
       .then(function(r){return r.json();})
       .then(function(data){
-        if(!grid)return;
         grid.innerHTML='';
         var imgs=(data.images||[]);
         if(!imgs.length){grid.innerHTML='<div class="img-picker-none">No images yet. Upload one to get started.</div>';return;}
         imgs.forEach(function(img){
-          var b=document.createElement('button');b.type='button';b.className='img-picker-cell';b.setAttribute('data-url',img.url);b.title=img.name;
+          var b=document.createElement('button');
+          b.type='button';b.className='img-picker-cell';b.setAttribute('data-url',img.url);b.title=img.name;
           var im=document.createElement('img');im.src=img.url;im.alt=img.name;
           var sp=document.createElement('span');sp.textContent=(img.name||'').slice(0,18);
           b.appendChild(im);b.appendChild(sp);grid.appendChild(b);
         });
       });
   }
+
   grid.addEventListener('click',function(e){
     var cell=e.target.closest('.img-picker-cell');
-    if(cell){insert(cell.getAttribute('data-url'));cell.style.outline='2px solid #2563eb';setTimeout(function(){cell.style.outline=''},800);}
+    if(!cell)return;
+    if(insert(cell.getAttribute('data-url'))){
+      cell.style.outline='2px solid #2563eb';
+      setTimeout(function(){cell.style.outline=''},800);
+    }
   });
-  uploadBtn.addEventListener('click',function(){pickerFile.click();});
+
+  // The global upload button is intentionally disabled until a target is explicit.
+  uploadBtn.addEventListener('click',function(){
+    if(requireActive())pickerFile.click();
+  });
+
   pickerFile.addEventListener('change',function(){
     if(!pickerFile.files.length)return;
+    if(!requireActive()){pickerFile.value='';return;}
     var fd=new FormData();fd.append('file',pickerFile.files[0]);
     loading.style.display='inline';
     fetch('{{ route("admin.homepage.images.upload") }}',{method:'POST',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}','Accept':'application/json'},body:fd})
-      .then(function(r){return r.json();})
+      .then(function(r){
+        if(!r.ok)throw new Error('upload failed');
+        return r.json();
+      })
       .then(function(data){
         loading.style.display='none';
         if(data && data.image && data.image.url){
@@ -115,7 +163,9 @@
           loadImages();
         }
       }).catch(function(){loading.style.display='none';alert('Upload failed');});
+    pickerFile.value='';
   });
+
   loadImages();
 })();
 </script>
