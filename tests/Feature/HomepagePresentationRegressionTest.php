@@ -6,11 +6,18 @@ use App\Models\HomepageClient;
 use App\Models\HomepageProject;
 use App\Models\HomepageSection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class HomepagePresentationRegressionTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Cache::flush();
+    }
 
     public function test_homepage_keeps_approved_layout_and_renders_service_image_from_cms(): void
     {
@@ -48,38 +55,79 @@ class HomepagePresentationRegressionTest extends TestCase
         $response->assertDontSee('color:var(--navy-deep;font-size', false);
     }
 
-    public function test_duplicate_projects_and_client_logos_are_rendered_only_once(): void
+    public function test_same_project_visual_is_rendered_once_even_when_project_metadata_differs(): void
     {
-        for ($i = 0; $i < 2; $i++) {
-            HomepageProject::query()->create([
-                'sort_order' => $i,
-                'is_active' => true,
-                'year' => '2025',
-                'image' => '/images/home/projects/duplicate-project.webp',
-                'title_ar' => 'مشروع مكرر',
-                'title_en' => 'Duplicate Project',
-                'owner_ar' => 'عميل',
-                'owner_en' => 'Client',
-                'location_ar' => 'الرياض',
-                'location_en' => 'Riyadh',
-                'scope_ar' => 'صيانة',
-                'scope_en' => 'Maintenance',
-            ]);
+        HomepageProject::query()->create([
+            'sort_order' => 1,
+            'is_active' => true,
+            'year' => '2025',
+            'image' => '/images/home/projects/generator-maintenance.webp?v=1',
+            'title_ar' => 'صيانة مولد المستشفى',
+            'title_en' => 'Hospital generator maintenance',
+            'owner_ar' => 'المستشفى الوطني',
+            'owner_en' => 'National Hospital',
+            'location_ar' => 'المدينة',
+            'location_en' => 'Madinah',
+            'scope_ar' => 'صيانة وقائية',
+            'scope_en' => 'Preventive maintenance',
+        ]);
 
-            HomepageClient::query()->create([
-                'sort_order' => $i,
-                'is_active' => true,
-                'image' => '/images/home/clients/duplicate-logo.webp',
-                'name_ar' => 'عميل مكرر',
-                'name_en' => 'Duplicate Client',
-            ]);
-        }
+        HomepageProject::query()->create([
+            'sort_order' => 2,
+            'is_active' => true,
+            'year' => '2026',
+            'image' => '/images/home/projects/generator-maintenance.webp?v=2',
+            'title_ar' => 'صيانة مولد احتياطي',
+            'title_en' => 'Standby generator maintenance',
+            'owner_ar' => 'عميل آخر',
+            'owner_en' => 'Another Client',
+            'location_ar' => 'تبوك',
+            'location_en' => 'Tabuk',
+            'scope_ar' => 'فحص وتشغيل',
+            'scope_en' => 'Inspection and operation',
+        ]);
 
-        $response = $this->get('/?lang=ar');
-        $response->assertOk();
+        $html = $this->get('/?lang=ar')->assertOk()->getContent();
 
-        $html = $response->getContent();
-        $this->assertSame(1, substr_count($html, '/images/home/projects/duplicate-project.webp'));
-        $this->assertSame(1, substr_count($html, '/images/home/clients/duplicate-logo.webp'));
+        $this->assertSame(1, substr_count($html, '/images/home/projects/generator-maintenance.webp'));
+    }
+
+    public function test_same_client_is_rendered_once_when_logo_url_or_upload_token_differs(): void
+    {
+        HomepageClient::query()->create([
+            'sort_order' => 1,
+            'is_active' => true,
+            'image' => '/storage/homepage-media/nwc-logo.webp?v=1',
+            'name_ar' => 'شركة المياه الوطنية',
+            'name_en' => 'National Water Company',
+        ]);
+
+        HomepageClient::query()->create([
+            'sort_order' => 2,
+            'is_active' => true,
+            'image' => '/storage/homepage-media/nwc-logo-copy.webp',
+            'name_ar' => '  شركة   المياه الوطنية  ',
+            'name_en' => 'National Water Company',
+        ]);
+
+        $html = $this->get('/?lang=ar')->assertOk()->getContent();
+
+        $this->assertSame(1, substr_count($html, 'شركة المياه الوطنية'));
+    }
+
+    public function test_project_and_client_cache_clear_methods_invalidate_their_real_showcase_keys(): void
+    {
+        Cache::put('homepage_projects_ar', ['stale'], 3600);
+        Cache::put('homepage_projects_en', ['stale'], 3600);
+        Cache::put('homepage_clients_ar', ['stale'], 3600);
+        Cache::put('homepage_clients_en', ['stale'], 3600);
+
+        HomepageProject::clearCache();
+        HomepageClient::clearCache();
+
+        $this->assertNull(Cache::get('homepage_projects_ar'));
+        $this->assertNull(Cache::get('homepage_projects_en'));
+        $this->assertNull(Cache::get('homepage_clients_ar'));
+        $this->assertNull(Cache::get('homepage_clients_en'));
     }
 }
