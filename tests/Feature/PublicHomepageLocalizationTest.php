@@ -31,4 +31,17 @@ class PublicHomepageLocalizationTest extends TestCase
             ->assertOk()
             ->assertSee('حلول متكاملة للمرافق والمشاريع والتشغيل والصيانة');
     }
+
+    public function test_desktop_and_mobile_language_switch_links_explicitly_set_target_locale(): void
+    {
+        $arabic = $this->get('/?lang=ar');
+        $arabic->assertOk();
+        $arabic->assertSee('data-language-switch="en"', false);
+        $arabic->assertSee('href="/?lang=en"', false);
+
+        $english = $this->get('/?lang=en');
+        $english->assertOk();
+        $english->assertSee('data-language-switch="ar"', false);
+        $english->assertSee('href="/?lang=ar"', false);
+    }
 }
