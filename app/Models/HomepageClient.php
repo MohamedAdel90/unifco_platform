@@ -45,6 +45,8 @@ class HomepageClient extends Model
     {
         Cache::forget('homepage_content_ar');
         Cache::forget('homepage_content_en');
+        Cache::forget('homepage_clients_ar');
+        Cache::forget('homepage_clients_en');
     }
 
     public function toArrayForLocale(string $locale): array
