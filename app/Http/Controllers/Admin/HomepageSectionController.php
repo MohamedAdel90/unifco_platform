@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HomepageSection;
 use App\Services\HomepageContentService;
+use App\Services\HomepageSectionMapper;
 use App\Services\HomepageSectionSchema;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class HomepageSectionController extends Controller
@@ -26,6 +28,42 @@ class HomepageSectionController extends Controller
         $schema = HomepageSectionSchema::fields($section->section_key);
 
         return view('admin.homepage.sections.edit', ['section' => $section, 'schema' => $schema]);
+    }
+
+    public function preview(Request $request, HomepageSection $section): Response
+    {
+        $this->adminOnly($request);
+        $locale = $request->validate([
+            'locale' => ['required', 'in:ar,en'],
+        ])['locale'];
+
+        $schema = HomepageSectionSchema::fields($section->section_key);
+        $existing = $locale === 'ar' ? ($section->data_ar ?? []) : ($section->data_en ?? []);
+        $draft = $this->assemble($request, $schema, $locale, $existing);
+        $draftPublic = HomepageSectionMapper::toPublic($section->section_key, $draft);
+
+        // Start from the real public homepage payload, then overlay only the
+        // currently edited unsaved section. No database write or cache clear.
+        $home = app(HomepageContentService::class)->getContent($locale);
+        $home = array_replace($home, $draftPublic);
+        $home['lang'] = $locale;
+        $home['dir'] = $locale === 'ar' ? 'rtl' : 'ltr';
+        $home['language'] = $locale === 'ar' ? 'EN' : 'AR';
+
+        // Keep compatibility aliases in sync after the draft overlay.
+        $home['eyebrow'] = $home['hero_eyebrow'] ?? $home['eyebrow'] ?? '';
+        $home['hero_proof'] = $home['hero_proofs'] ?? $home['hero_proof'] ?? [];
+        $home['services_sub'] = $home['services_text'] ?? $home['services_sub'] ?? '';
+        $home['services_button'] = $home['services_button'] ?? $home['all_services'] ?? ($locale === 'ar' ? 'عرض جميع الخدمات' : 'View All Services');
+        $home['industries_button'] = $home['industries_button'] ?? $home['all_industries'] ?? ($locale === 'ar' ? 'عرض جميع القطاعات' : 'View All Industries');
+
+        $html = view('public.partials.home-reference-layout', compact('home'))->render();
+
+        return response($html, 200, [
+            'Content-Type' => 'text/html; charset=UTF-8',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+        ]);
     }
 
     public function update(Request $request, HomepageSection $section): RedirectResponse
