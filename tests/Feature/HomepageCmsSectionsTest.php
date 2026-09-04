@@ -97,7 +97,6 @@ class HomepageCmsSectionsTest extends TestCase
 
             foreach (['ar', 'en'] as $locale) {
                 $previewPayload = $payload;
-                unset($previewPayload['_method']);
                 $previewPayload['locale'] = $locale;
 
                 $response = $this->actingAs($admin)
@@ -106,6 +105,10 @@ class HomepageCmsSectionsTest extends TestCase
                 $response->assertOk();
                 $response->assertHeader('Cache-Control');
                 $response->assertSee('UNIFCO', false);
+
+                if ($key === 'hero' && $locale === 'ar') {
+                    $response->assertSee('hero-full-banner-image', false);
+                }
 
                 $fresh = $section->fresh();
                 $this->assertSame($beforeAr, $fresh->data_ar, "Preview {$locale} persisted AR data for {$key}");
@@ -121,7 +124,11 @@ class HomepageCmsSectionsTest extends TestCase
 
         foreach (['ar', 'en'] as $locale) {
             foreach ($schema['scalars'] ?? [] as $field) {
-                $payload["scalar_{$locale}_{$field}"] = "{$key}-{$locale}-{$field}";
+                if ($field === 'render_mode') {
+                    $payload["scalar_{$locale}_{$field}"] = $locale === 'ar' ? 'full_banner' : 'background';
+                } else {
+                    $payload["scalar_{$locale}_{$field}"] = "{$key}-{$locale}-{$field}";
+                }
             }
 
             foreach ($schema['checks'] ?? [] as $field) {
