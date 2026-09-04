@@ -25,9 +25,6 @@ class PublicHomeRenderCompatibility
                 $home['showcase_projects'] = $this->deduplicateProjects((array) ($home['showcase_projects'] ?? []));
                 $home['showcase_clients'] = $this->deduplicateClients((array) ($home['showcase_clients'] ?? []));
 
-                // HomepageContentService normally converts current CMS service rows
-                // into the approved public tuple [title, description, href, image].
-                // Keep this compatibility guard for older cached/current rows only.
                 if (isset($home['services']) && is_array($home['services'])) {
                     $home['services'] = array_map(function ($service) {
                         if (! is_array($service)) {
@@ -69,11 +66,6 @@ class PublicHomeRenderCompatibility
         return $next($request);
     }
 
-    /**
-     * The public project carousel must not show the same visual twice. Multiple
-     * project records can legitimately carry different metadata while pointing
-     * at the same uploaded/static image; users experience those as duplicates.
-     */
     private function deduplicateProjects(array $projects): array
     {
         $seenImages = [];
@@ -112,11 +104,6 @@ class PublicHomeRenderCompatibility
         return $unique;
     }
 
-    /**
-     * A client is duplicated when either the same logo asset or the same client
-     * name appears again. Checking both also catches copies of a logo uploaded
-     * under a second URL/token.
-     */
     private function deduplicateClients(array $clients): array
     {
         $seenLogos = [];
@@ -162,8 +149,21 @@ class PublicHomeRenderCompatibility
         $path = is_string($path) && $path !== '' ? $path : $value;
         $path = rawurldecode($path);
         $path = preg_replace('#/+#', '/', $path) ?? $path;
+        $normalizedPath = mb_strtolower(rtrim($path, '/'));
 
-        return mb_strtolower(rtrim($path, '/'));
+        // Different filenames can still contain the exact same project photo/logo.
+        // For local public assets and public/storage uploads, fingerprint the bytes
+        // so copied files are treated as one visual. Fall back to normalized URL
+        // identity for remote/temporary resources that are not locally readable.
+        $localPath = public_path(ltrim($path, '/'));
+        if (is_file($localPath) && is_readable($localPath)) {
+            $hash = @sha1_file($localPath);
+            if (is_string($hash) && $hash !== '') {
+                return 'sha1:'.$hash;
+            }
+        }
+
+        return $normalizedPath;
     }
 
     private function normalizeText(string $value): string
