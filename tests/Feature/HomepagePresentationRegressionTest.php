@@ -92,6 +92,52 @@ class HomepagePresentationRegressionTest extends TestCase
         $this->assertSame(1, substr_count($html, '/images/home/projects/generator-maintenance.webp'));
     }
 
+    public function test_identical_project_files_with_different_filenames_are_rendered_once(): void
+    {
+        $fileA = public_path('test-home-project-copy-a.webp');
+        $fileB = public_path('test-home-project-copy-b.webp');
+        file_put_contents($fileA, 'same-binary-project-image');
+        file_put_contents($fileB, 'same-binary-project-image');
+
+        try {
+            HomepageProject::query()->create([
+                'sort_order' => 1,
+                'is_active' => true,
+                'year' => '2025',
+                'image' => '/test-home-project-copy-a.webp',
+                'title_ar' => 'مشروع أول',
+                'title_en' => 'Project One',
+                'owner_ar' => 'عميل أول',
+                'owner_en' => 'Client One',
+                'location_ar' => 'الرياض',
+                'location_en' => 'Riyadh',
+                'scope_ar' => 'صيانة',
+                'scope_en' => 'Maintenance',
+            ]);
+
+            HomepageProject::query()->create([
+                'sort_order' => 2,
+                'is_active' => true,
+                'year' => '2026',
+                'image' => '/test-home-project-copy-b.webp',
+                'title_ar' => 'مشروع ثان',
+                'title_en' => 'Project Two',
+                'owner_ar' => 'عميل ثان',
+                'owner_en' => 'Client Two',
+                'location_ar' => 'جدة',
+                'location_en' => 'Jeddah',
+                'scope_ar' => 'تشغيل',
+                'scope_en' => 'Operations',
+            ]);
+
+            $html = $this->get('/?lang=ar')->assertOk()->getContent();
+            $this->assertSame(1, substr_count($html, 'test-home-project-copy-'));
+        } finally {
+            @unlink($fileA);
+            @unlink($fileB);
+        }
+    }
+
     public function test_same_client_is_rendered_once_when_logo_url_or_upload_token_differs(): void
     {
         HomepageClient::query()->create([
@@ -113,6 +159,37 @@ class HomepagePresentationRegressionTest extends TestCase
         $html = $this->get('/?lang=ar')->assertOk()->getContent();
 
         $this->assertSame(1, substr_count($html, 'شركة المياه الوطنية'));
+    }
+
+    public function test_identical_client_logo_files_with_different_names_are_rendered_once(): void
+    {
+        $fileA = public_path('test-home-client-copy-a.webp');
+        $fileB = public_path('test-home-client-copy-b.webp');
+        file_put_contents($fileA, 'same-binary-client-logo');
+        file_put_contents($fileB, 'same-binary-client-logo');
+
+        try {
+            HomepageClient::query()->create([
+                'sort_order' => 1,
+                'is_active' => true,
+                'image' => '/test-home-client-copy-a.webp',
+                'name_ar' => 'العميل الأول',
+                'name_en' => 'First Client',
+            ]);
+            HomepageClient::query()->create([
+                'sort_order' => 2,
+                'is_active' => true,
+                'image' => '/test-home-client-copy-b.webp',
+                'name_ar' => 'العميل الثاني',
+                'name_en' => 'Second Client',
+            ]);
+
+            $html = $this->get('/?lang=ar')->assertOk()->getContent();
+            $this->assertSame(1, substr_count($html, 'test-home-client-copy-'));
+        } finally {
+            @unlink($fileA);
+            @unlink($fileB);
+        }
     }
 
     public function test_project_and_client_cache_clear_methods_invalidate_their_real_showcase_keys(): void
