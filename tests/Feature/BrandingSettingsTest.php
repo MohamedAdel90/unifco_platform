@@ -55,7 +55,7 @@ class BrandingSettingsTest extends TestCase
         $this->assertDatabaseCount('branding_settings',0);
     }
 
-    public function test_logo_presentation_rules_are_injected_into_login_and_public_html(): void
+    public function test_login_keeps_dynamic_brand_rules_but_public_home_keeps_approved_layout(): void
     {
         $this->get('/login')->assertOk()
             ->assertSee('dynamic-brand-logo-presentation',false)
@@ -64,12 +64,9 @@ class BrandingSettingsTest extends TestCase
 
         $arabic = $this->get('/')->assertOk();
         $arabic
-            ->assertSee('dynamic-brand-logo-presentation',false)
-            ->assertSee('.top .logo',false)
-            ->assertSee('.foot-logo',false)
-            ->assertSee('.top .nav .nav-actions .lang{order:1!important}',false)
-            ->assertSee('.top .nav .nav-actions .btn:not(.red){order:2!important}',false)
-            ->assertSee('.top .nav .nav-actions .btn.red{order:3!important}',false)
+            ->assertDontSee('dynamic-brand-logo-presentation',false)
+            ->assertDontSee('grid-template-columns:repeat(auto-fit,minmax(205px,1fr))',false)
+            ->assertSee('.service-grid{display:grid;grid-template-columns:repeat(6,1fr)',false)
             ->assertSee('public-primary-nav',false)
             ->assertSee('class="nav-icon"',false)
             ->assertSee('class="nav-label"',false)
@@ -90,6 +87,7 @@ class BrandingSettingsTest extends TestCase
 
         $english = $this->get('/?lang=en')->assertOk();
         $english
+            ->assertDontSee('dynamic-brand-logo-presentation',false)
             ->assertSee('public-primary-nav',false)
             ->assertSee('class="nav-icon"',false)
             ->assertSee('class="nav-label"',false)
