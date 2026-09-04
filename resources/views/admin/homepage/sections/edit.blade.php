@@ -45,6 +45,7 @@
 .hp-img-field .hp-img-input{font-size:11.5px}
 .hp-img-actions{margin-top:4px}
 .hp-img-actions .btn-sm{font-size:11px;padding:5px 11px}
+@media(max-width:760px){.seg{grid-template-columns:1fr}.item-subrow{grid-template-columns:1fr}}
 </style>
 @if(session('status'))<div class="notice">{{ session('status') }}</div>@endif
 @if($errors->any())<div class="error">{{ $errors->first() }}</div>@endif
@@ -57,11 +58,12 @@
       <div class="col-head"><b>Arabic</b><small>RTL · اليمين</small></div>
       @foreach($scalars as $f)
         @if(in_array($f,$imgKeys,true))
-          <label class="first">Image</label>
+          <label class="first">Image (AR)</label>
           @include('admin.homepage.sections.partials.image-field', [
             'name'=>'scalar_ar_'.$f,
             'value'=>old('scalar_ar_'.$f, $section->data_ar[$f] ?? ''),
-            'placeholder'=>'/images/...'
+            'placeholder'=>'/images/...',
+            'label'=>'Arabic '.$f
           ])
         @elseif($long($f))
           <label class="first">{{ $f }} (AR)</label>
@@ -75,7 +77,15 @@
     <div class="card">
       <div class="col-head"><b>English</b><small>LTR · Left</small></div>
       @foreach($scalars as $f)
-        @if($long($f))
+        @if(in_array($f,$imgKeys,true))
+          <label class="first">Image (EN)</label>
+          @include('admin.homepage.sections.partials.image-field', [
+            'name'=>'scalar_en_'.$f,
+            'value'=>old('scalar_en_'.$f, $section->data_en[$f] ?? ''),
+            'placeholder'=>'/images/...',
+            'label'=>'English '.$f
+          ])
+        @elseif($long($f))
           <label class="first">{{ $f }} (EN)</label>
           <textarea name="scalar_en_{{$f}}">{{ old('scalar_en_'.$f, $section->data_en[$f] ?? '') }}</textarea>
         @else
