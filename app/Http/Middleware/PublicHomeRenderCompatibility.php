@@ -16,23 +16,18 @@ class PublicHomeRenderCompatibility
             View::composer('public.partials.home-reference-layout', function (IlluminateView $view): void {
                 $home = (array) ($view->getData()['home'] ?? []);
 
-                // Keep the public homepage render-safe across qualified releases that
-                // may still use the previous key names while the presentation layer
-                // already expects the current schema.
                 $home['eyebrow'] = $home['eyebrow'] ?? $home['hero_eyebrow'] ?? '';
                 $home['hero_proof'] = $home['hero_proof'] ?? $home['hero_proofs'] ?? [];
                 $home['showcase_kicker'] = $home['showcase_kicker'] ?? $home['projects_kicker'] ?? '';
                 $home['showcase_title'] = $home['showcase_title'] ?? $home['projects_title'] ?? '';
                 $home['showcase_text'] = $home['showcase_text'] ?? '';
                 $home['showcase_metrics'] = $home['showcase_metrics'] ?? [];
-                $home['showcase_projects'] = $home['showcase_projects'] ?? [];
-                $home['showcase_clients'] = $home['showcase_clients'] ?? [];
+                $home['showcase_projects'] = $this->deduplicateProjects((array) ($home['showcase_projects'] ?? []));
+                $home['showcase_clients'] = $this->deduplicateClients((array) ($home['showcase_clients'] ?? []));
 
-                // The approved public layout consumes the legacy service tuple:
-                // [title, description, href, image]. The Homepage CMS stores the
-                // current tuple as [number, image, title, description]. Normalize
-                // here, before rendering, so CMS image changes work without touching
-                // the qualified homepage markup/CSS or changing its dimensions.
+                // HomepageContentService normally converts current CMS service rows
+                // into the approved public tuple [title, description, href, image].
+                // Keep this compatibility guard for older cached/current rows only.
                 if (isset($home['services']) && is_array($home['services'])) {
                     $home['services'] = array_map(function ($service) {
                         if (! is_array($service)) {
@@ -72,5 +67,61 @@ class PublicHomeRenderCompatibility
         }
 
         return $next($request);
+    }
+
+    private function deduplicateProjects(array $projects): array
+    {
+        $seen = [];
+        $unique = [];
+
+        foreach ($projects as $project) {
+            if (! is_array($project)) {
+                continue;
+            }
+
+            $key = implode('|', [
+                trim((string) ($project['image'] ?? '')),
+                trim((string) ($project['title'] ?? '')),
+                trim((string) ($project['owner'] ?? '')),
+                trim((string) ($project['location'] ?? '')),
+            ]);
+
+            if ($key === '|||') {
+                continue;
+            }
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+            $unique[] = $project;
+        }
+
+        return $unique;
+    }
+
+    private function deduplicateClients(array $clients): array
+    {
+        $seen = [];
+        $unique = [];
+
+        foreach ($clients as $client) {
+            if (! is_array($client)) {
+                continue;
+            }
+
+            $logo = trim((string) ($client[0] ?? ''));
+            $name = trim((string) ($client[1] ?? ''));
+            $key = $logo !== '' ? $logo : $name;
+
+            if ($key === '' || isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+            $unique[] = $client;
+        }
+
+        return $unique;
     }
 }
