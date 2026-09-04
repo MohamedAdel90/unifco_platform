@@ -68,6 +68,30 @@ class PublicHomeNavPresentation
             .'</nav>';
 
         $html = preg_replace('/<nav class="nav-links public-primary-nav">.*?<\/nav>/s', $navigation, $html, 1) ?? $html;
+
+        // Always switch language explicitly through the `lang` query parameter.
+        // Going from English to `/` previously kept `public_locale=en` in the
+        // session, so the AR button could appear to do nothing. Explicitly
+        // setting `lang=ar`/`lang=en` makes desktop and mobile switching
+        // deterministic and keeps the controller/session contract intact.
+        $targetLocale = $isArabic ? 'en' : 'ar';
+        $targetLabel = strtoupper($targetLocale);
+        $languageUrl = route('public.home', ['lang' => $targetLocale]);
+
+        $html = preg_replace(
+            '/<a class="lang" href="[^"]*">(?:EN|AR)<\/a>/',
+            '<a class="lang" href="'.$languageUrl.'" data-language-switch="'.$targetLocale.'">'.$targetLabel.'</a>',
+            $html,
+            1
+        ) ?? $html;
+
+        $html = preg_replace_callback(
+            '/(<nav class="wrap mobile-menu" id="mobile-menu">.*?)(<a href="[^"]*">(?:EN|AR)<\/a>)(<\/nav>)/s',
+            static fn (array $matches): string => $matches[1].'<a href="'.$languageUrl.'" data-language-switch="'.$targetLocale.'">'.$targetLabel.'</a>'.$matches[3],
+            $html,
+            1
+        ) ?? $html;
+
         $response->setContent($html);
 
         return $response;
