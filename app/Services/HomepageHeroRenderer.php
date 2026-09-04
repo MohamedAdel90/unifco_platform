@@ -56,11 +56,27 @@ CSS;
 .hero{min-height:0!important;display:block!important;background:none!important;background-image:none!important}
 .hero::before,.hero::after{display:none!important;content:none!important;background:none!important}
 .hero-inner{display:none!important}
+.hero-full-banner{position:relative!important;width:100%!important;line-height:0!important}
 .hero-full-banner-image{display:block!important;width:100%!important;height:auto!important;max-width:none!important;object-fit:contain!important;object-position:center!important;margin:0!important;padding:0!important}
+.hero-banner-hotspot{position:absolute!important;z-index:5!important;display:block!important;background:transparent!important;border:0!important;border-radius:8px!important;cursor:pointer!important;line-height:1!important;font-size:0!important;color:transparent!important;text-indent:-9999px!important;overflow:hidden!important}
+.hero-banner-hotspot:focus-visible{outline:3px solid #fff!important;outline-offset:3px!important;box-shadow:0 0 0 5px rgba(206,18,45,.92)!important}
+/* Full-banner master artwork uses a fixed proportional layout. Hotspots use percentages so they stay aligned on desktop, tablet and mobile. */
+.hero-banner-hotspot--contact{left:15.4%!important;top:60.0%!important;width:23.0%!important;height:8.8%!important}
+.hero-banner-hotspot--request{left:39.6%!important;top:60.0%!important;width:24.2%!important;height:8.8%!important}
+@media(max-width:700px){.hero-banner-hotspot{min-height:34px}}
 </style>
 CSS;
 
-            $banner = '<img class="hero-full-banner-image" src="'.$safeHtmlImage.'" alt="UNIFCO Hero Banner">';
+            $requestUrl = htmlspecialchars(route('public.request-service'), ENT_QUOTES, 'UTF-8');
+            $contactUrl = '#contact';
+            $requestLabel = ($home['lang'] ?? 'ar') === 'ar' ? 'طلب الخدمة' : 'Request Service';
+            $contactLabel = ($home['lang'] ?? 'ar') === 'ar' ? 'تواصل معنا' : 'Contact Us';
+
+            $banner = '<div class="hero-full-banner">'
+                .'<img class="hero-full-banner-image" src="'.$safeHtmlImage.'" alt="UNIFCO Hero Banner">'
+                .'<a class="hero-banner-hotspot hero-banner-hotspot--contact" href="'.$contactUrl.'" aria-label="'.htmlspecialchars($contactLabel, ENT_QUOTES, 'UTF-8').'">'.$contactLabel.'</a>'
+                .'<a class="hero-banner-hotspot hero-banner-hotspot--request" href="'.$requestUrl.'" aria-label="'.htmlspecialchars($requestLabel, ENT_QUOTES, 'UTF-8').'">'.$requestLabel.'</a>'
+                .'</div>';
             $html = preg_replace('/(<section\s+class="hero"[^>]*>)/i', '$1'.$banner, $html, 1) ?? $html;
         } else {
             $modeCss = <<<CSS
@@ -72,7 +88,7 @@ CSS;
 @media(max-width:850px){.hero,.hero-inner{min-height:560px!important}}
 @media(max-width:700px){.hero,.hero-inner{min-height:590px!important}}
 @media(max-width:450px){.hero,.hero-inner{min-height:610px!important}}
-.hero-full-banner-image{display:none!important}
+.hero-full-banner,.hero-full-banner-image{display:none!important}
 </style>
 CSS;
         }
