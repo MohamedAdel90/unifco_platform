@@ -8,7 +8,7 @@ class HomepageSectionSchema
     {
         return match ($sectionKey) {
             'hero' => [
-                'scalars' => ['image', 'eyebrow', 'title', 'text', 'button'],
+                'scalars' => ['render_mode', 'image', 'eyebrow', 'title', 'text', 'button'],
                 'items' => [
                     'proofs' => ['icon', 'label', 'sub'],
                 ],
@@ -96,8 +96,6 @@ class HomepageSectionSchema
 
     public static function localized(string $field): bool
     {
-        $suffix = ['_ar', '_en'];
-
         return str_ends_with($field, '_ar') || str_ends_with($field, '_en');
     }
 }
