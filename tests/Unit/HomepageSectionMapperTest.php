@@ -45,6 +45,18 @@ class HomepageSectionMapperTest extends TestCase
         $this->assertArrayNotHasKey('title', $mapped);
     }
 
+    public function test_hero_render_mode_is_namespaced_for_public_renderer(): void
+    {
+        $mapped = HomepageSectionMapper::toPublic('hero', [
+            'render_mode' => 'full_banner',
+            'image' => '/banner.webp',
+        ]);
+
+        $this->assertSame('full_banner', $mapped['hero_render_mode']);
+        $this->assertSame('/banner.webp', $mapped['hero_image']);
+        $this->assertArrayNotHasKey('render_mode', $mapped);
+    }
+
     public function test_services_more_keeps_the_public_more_key(): void
     {
         $mapped = HomepageSectionMapper::toPublic('services', ['more' => 'Read more']);
