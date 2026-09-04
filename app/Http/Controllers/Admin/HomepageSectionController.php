@@ -39,8 +39,16 @@ class HomepageSectionController extends Controller
         ])['locale'];
 
         $schema = HomepageSectionSchema::fields($section->section_key);
-        $existing = $locale === 'ar' ? ($section->data_ar ?? []) : ($section->data_en ?? []);
-        $draft = $this->assemble($request, $schema, $locale, $existing);
+        $existingAr = $section->data_ar ?? [];
+        $existingEn = $section->data_en ?? [];
+        $draftAr = $this->assemble($request, $schema, 'ar', $existingAr);
+        $draftEn = $this->assemble($request, $schema, 'en', $existingEn);
+
+        if ($section->section_key === 'services') {
+            [$draftAr, $draftEn] = $this->synchronizeServiceImages($draftAr, $draftEn, $existingAr, $existingEn);
+        }
+
+        $draft = $locale === 'ar' ? $draftAr : $draftEn;
         $draftPublic = HomepageSectionMapper::toPublic($section->section_key, $draft);
 
         $home = app(HomepageContentService::class)->getContent($locale);
@@ -73,15 +81,21 @@ class HomepageSectionController extends Controller
         ]);
 
         $schema = HomepageSectionSchema::fields($section->section_key);
+        $existingAr = $section->data_ar ?? [];
+        $existingEn = $section->data_en ?? [];
 
         if ($request->has('data_ar') && $request->has('data_en')) {
             $submittedAr = json_decode($request->input('data_ar'), true) ?: [];
             $submittedEn = json_decode($request->input('data_en'), true) ?: [];
-            $dataAr = array_replace($section->data_ar ?? [], $submittedAr);
-            $dataEn = array_replace($section->data_en ?? [], $submittedEn);
+            $dataAr = array_replace($existingAr, $submittedAr);
+            $dataEn = array_replace($existingEn, $submittedEn);
         } else {
-            $dataAr = $this->assemble($request, $schema, 'ar', $section->data_ar ?? []);
-            $dataEn = $this->assemble($request, $schema, 'en', $section->data_en ?? []);
+            $dataAr = $this->assemble($request, $schema, 'ar', $existingAr);
+            $dataEn = $this->assemble($request, $schema, 'en', $existingEn);
+        }
+
+        if ($section->section_key === 'services') {
+            [$dataAr, $dataEn] = $this->synchronizeServiceImages($dataAr, $dataEn, $existingAr, $existingEn);
         }
 
         $section->update([
@@ -141,6 +155,72 @@ class HomepageSectionController extends Controller
         }
 
         return $result;
+    }
+
+    private function synchronizeServiceImages(array $dataAr, array $dataEn, array $existingAr, array $existingEn): array
+    {
+        $arItems = is_array($dataAr['items'] ?? null) ? $dataAr['items'] : [];
+        $enItems = is_array($dataEn['items'] ?? null) ? $dataEn['items'] : [];
+        $oldArItems = is_array($existingAr['items'] ?? null) ? $existingAr['items'] : [];
+        $oldEnItems = is_array($existingEn['items'] ?? null) ? $existingEn['items'] : [];
+
+        $oldArByNumber = $this->itemsByNumber($oldArItems);
+        $oldEnByNumber = $this->itemsByNumber($oldEnItems);
+        $arByNumber = $this->itemsByNumber($arItems, true);
+        $enByNumber = $this->itemsByNumber($enItems, true);
+
+        $numbers = array_values(array_unique(array_merge(array_keys($arByNumber), array_keys($enByNumber))));
+
+        foreach ($numbers as $number) {
+            $arIndex = $arByNumber[$number]['index'] ?? null;
+            $enIndex = $enByNumber[$number]['index'] ?? null;
+            $newAr = $arIndex !== null ? (string) ($arItems[$arIndex]['image'] ?? '') : '';
+            $newEn = $enIndex !== null ? (string) ($enItems[$enIndex]['image'] ?? '') : '';
+            $oldAr = (string) ($oldArByNumber[$number]['item']['image'] ?? '');
+            $oldEn = (string) ($oldEnByNumber[$number]['item']['image'] ?? '');
+
+            $arChanged = $arIndex !== null && $newAr !== $oldAr;
+            $enChanged = $enIndex !== null && $newEn !== $oldEn;
+
+            if ($arChanged && ! $enChanged) {
+                $shared = $newAr;
+            } elseif ($enChanged && ! $arChanged) {
+                $shared = $newEn;
+            } elseif ($arChanged && $enChanged) {
+                $shared = $newAr === $newEn ? $newAr : ($newAr !== '' ? $newAr : $newEn);
+            } else {
+                $shared = $newAr !== '' ? $newAr : ($newEn !== '' ? $newEn : ($oldAr !== '' ? $oldAr : $oldEn));
+            }
+
+            if ($arIndex !== null) {
+                $arItems[$arIndex]['image'] = $shared;
+            }
+            if ($enIndex !== null) {
+                $enItems[$enIndex]['image'] = $shared;
+            }
+        }
+
+        $dataAr['items'] = $arItems;
+        $dataEn['items'] = $enItems;
+
+        return [$dataAr, $dataEn];
+    }
+
+    private function itemsByNumber(array $items, bool $includeIndex = false): array
+    {
+        $mapped = [];
+        foreach ($items as $index => $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            $number = str_pad((string) ($item['number'] ?? ''), 2, '0', STR_PAD_LEFT);
+            if ($number === '00' || $number === '') {
+                continue;
+            }
+            $mapped[$number] = $includeIndex ? ['index' => $index, 'item' => $item] : ['item' => $item];
+        }
+
+        return $mapped;
     }
 
     public function toggle(Request $request, HomepageSection $section): RedirectResponse
