@@ -69,9 +69,15 @@ class PublicHomeRenderCompatibility
         return $next($request);
     }
 
+    /**
+     * The public project carousel must not show the same visual twice. Multiple
+     * project records can legitimately carry different metadata while pointing
+     * at the same uploaded/static image; users experience those as duplicates.
+     */
     private function deduplicateProjects(array $projects): array
     {
-        $seen = [];
+        $seenImages = [];
+        $seenContent = [];
         $unique = [];
 
         foreach ($projects as $project) {
@@ -79,30 +85,42 @@ class PublicHomeRenderCompatibility
                 continue;
             }
 
-            $key = implode('|', [
-                trim((string) ($project['image'] ?? '')),
-                trim((string) ($project['title'] ?? '')),
-                trim((string) ($project['owner'] ?? '')),
-                trim((string) ($project['location'] ?? '')),
-            ]);
+            $image = $this->normalizeMediaIdentity((string) ($project['image'] ?? ''));
+            $content = $this->normalizeText(implode('|', [
+                (string) ($project['title'] ?? ''),
+                (string) ($project['owner'] ?? ''),
+                (string) ($project['location'] ?? ''),
+            ]));
 
-            if ($key === '|||') {
-                continue;
-            }
-            if (isset($seen[$key])) {
+            if ($image === '' && $content === '') {
                 continue;
             }
 
-            $seen[$key] = true;
+            if (($image !== '' && isset($seenImages[$image])) || ($content !== '' && isset($seenContent[$content]))) {
+                continue;
+            }
+
+            if ($image !== '') {
+                $seenImages[$image] = true;
+            }
+            if ($content !== '') {
+                $seenContent[$content] = true;
+            }
             $unique[] = $project;
         }
 
         return $unique;
     }
 
+    /**
+     * A client is duplicated when either the same logo asset or the same client
+     * name appears again. Checking both also catches copies of a logo uploaded
+     * under a second URL/token.
+     */
     private function deduplicateClients(array $clients): array
     {
-        $seen = [];
+        $seenLogos = [];
+        $seenNames = [];
         $unique = [];
 
         foreach ($clients as $client) {
@@ -110,18 +128,49 @@ class PublicHomeRenderCompatibility
                 continue;
             }
 
-            $logo = trim((string) ($client[0] ?? ''));
-            $name = trim((string) ($client[1] ?? ''));
-            $key = $logo !== '' ? $logo : $name;
+            $logo = $this->normalizeMediaIdentity((string) ($client[0] ?? ''));
+            $name = $this->normalizeText((string) ($client[1] ?? ''));
 
-            if ($key === '' || isset($seen[$key])) {
+            if ($logo === '' && $name === '') {
                 continue;
             }
 
-            $seen[$key] = true;
+            if (($logo !== '' && isset($seenLogos[$logo])) || ($name !== '' && isset($seenNames[$name]))) {
+                continue;
+            }
+
+            if ($logo !== '') {
+                $seenLogos[$logo] = true;
+            }
+            if ($name !== '') {
+                $seenNames[$name] = true;
+            }
             $unique[] = $client;
         }
 
         return $unique;
+    }
+
+    private function normalizeMediaIdentity(string $value): string
+    {
+        $value = trim(html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        if ($value === '') {
+            return '';
+        }
+
+        $path = parse_url($value, PHP_URL_PATH);
+        $path = is_string($path) && $path !== '' ? $path : $value;
+        $path = rawurldecode($path);
+        $path = preg_replace('#/+#', '/', $path) ?? $path;
+
+        return mb_strtolower(rtrim($path, '/'));
+    }
+
+    private function normalizeText(string $value): string
+    {
+        $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $value = preg_replace('/\s+/u', ' ', trim($value)) ?? trim($value);
+
+        return mb_strtolower($value);
     }
 }
