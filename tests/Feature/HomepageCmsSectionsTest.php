@@ -190,7 +190,7 @@ class HomepageCmsSectionsTest extends TestCase
         $this->assertSame('Updated EN description', $fresh->data_en['items'][0]['desc']);
     }
 
-    public function test_services_image_can_be_replaced_through_the_cms_field(): void
+    public function test_services_image_is_shared_and_can_be_replaced_through_the_cms_field(): void
     {
         $admin = $this->admin();
         $section = HomepageSection::query()->create([
@@ -215,12 +215,12 @@ class HomepageCmsSectionsTest extends TestCase
             'sort_order' => 30,
             'item_ar_items_index' => [0],
             'item_ar_items_0_number' => '04',
-            'item_ar_items_0_image' => '/storage/homepage-media/new-mv-ar.webp',
+            'item_ar_items_0_image' => '/storage/homepage-media/new-mv.webp',
             'item_ar_items_0_title' => 'MV Systems',
             'item_ar_items_0_desc' => 'AR desc',
             'item_en_items_index' => [0],
             'item_en_items_0_number' => '04',
-            'item_en_items_0_image' => '/storage/homepage-media/new-mv-en.webp',
+            'item_en_items_0_image' => '/storage/homepage-media/new-mv.webp',
             'item_en_items_0_title' => 'MV Systems',
             'item_en_items_0_desc' => 'EN desc',
         ];
@@ -230,8 +230,48 @@ class HomepageCmsSectionsTest extends TestCase
             ->assertRedirect();
 
         $fresh = $section->fresh();
-        $this->assertSame('/storage/homepage-media/new-mv-ar.webp', $fresh->data_ar['items'][0]['image']);
-        $this->assertSame('/storage/homepage-media/new-mv-en.webp', $fresh->data_en['items'][0]['image']);
+        $this->assertSame('/storage/homepage-media/new-mv.webp', $fresh->data_ar['items'][0]['image']);
+        $this->assertSame('/storage/homepage-media/new-mv.webp', $fresh->data_en['items'][0]['image']);
+    }
+
+    public function test_changing_service_image_in_one_language_propagates_to_the_other_language(): void
+    {
+        $admin = $this->admin();
+        $old = '/images/home/facility-power.svg';
+        $new = '/storage/homepage-media/shared-mv.webp';
+        $section = HomepageSection::query()->create([
+            'section_key' => 'services',
+            'is_active' => true,
+            'sort_order' => 30,
+            'data_ar' => ['items' => [[
+                'number' => '04', 'image' => $old, 'title' => 'أنظمة الجهد المتوسط', 'desc' => 'AR desc',
+            ]]],
+            'data_en' => ['items' => [[
+                'number' => '04', 'image' => $old, 'title' => 'MV Systems', 'desc' => 'EN desc',
+            ]]],
+        ]);
+
+        $payload = [
+            'sort_order' => 30,
+            'item_ar_items_index' => [0],
+            'item_ar_items_0_number' => '04',
+            'item_ar_items_0_image' => $new,
+            'item_ar_items_0_title' => 'أنظمة الجهد المتوسط',
+            'item_ar_items_0_desc' => 'AR desc',
+            'item_en_items_index' => [0],
+            'item_en_items_0_number' => '04',
+            'item_en_items_0_image' => $old,
+            'item_en_items_0_title' => 'MV Systems',
+            'item_en_items_0_desc' => 'EN desc',
+        ];
+
+        $this->actingAs($admin)
+            ->put(route('admin.homepage.sections.update', $section), $payload)
+            ->assertRedirect();
+
+        $fresh = $section->fresh();
+        $this->assertSame($new, $fresh->data_ar['items'][0]['image']);
+        $this->assertSame($new, $fresh->data_en['items'][0]['image']);
     }
 
     private function payloadFor(string $key): array
@@ -287,10 +327,15 @@ class HomepageCmsSectionsTest extends TestCase
                 $this->assertCount(2, $stored[$listKey]);
                 foreach ([0 => 3, 1 => 8] as $storedIndex => $submittedIndex) {
                     foreach ($itemFields as $field) {
-                        $this->assertSame(
-                            $payload["item_{$locale}_{$listKey}_{$submittedIndex}_{$field}"],
-                            $stored[$listKey][$storedIndex][$field]
-                        );
+                        $expected = $payload["item_{$locale}_{$listKey}_{$submittedIndex}_{$field}"];
+                        if ($key === 'services' && $field === 'image') {
+                            $otherLocale = $locale === 'ar' ? 'en' : 'ar';
+                            $other = $payload["item_{$otherLocale}_{$listKey}_{$submittedIndex}_{$field}"] ?? $expected;
+                            if ($locale === 'en' && $expected !== $other) {
+                                $expected = $other;
+                            }
+                        }
+                        $this->assertSame($expected, $stored[$listKey][$storedIndex][$field]);
                     }
                 }
             }
