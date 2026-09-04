@@ -37,11 +37,11 @@ class PublicHomepageLocalizationTest extends TestCase
         $arabic = $this->get('/?lang=ar');
         $arabic->assertOk();
         $arabic->assertSee('data-language-switch="en"', false);
-        $arabic->assertSee('href="/?lang=en"', false);
+        $arabic->assertSee('href="'.route('public.home', ['lang' => 'en']).'"', false);
 
         $english = $this->get('/?lang=en');
         $english->assertOk();
         $english->assertSee('data-language-switch="ar"', false);
-        $english->assertSee('href="/?lang=ar"', false);
+        $english->assertSee('href="'.route('public.home', ['lang' => 'ar']).'"', false);
     }
 }
