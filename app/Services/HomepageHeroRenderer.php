@@ -60,14 +60,13 @@ CSS;
 .hero-full-banner-image{display:block!important;width:100%!important;height:auto!important;max-width:none!important;object-fit:contain!important;object-position:center!important;margin:0!important;padding:0!important}
 .hero-banner-hotspot{position:absolute!important;z-index:5!important;display:block!important;background:transparent!important;border:0!important;border-radius:8px!important;cursor:pointer!important;line-height:1!important;font-size:0!important;color:transparent!important;text-indent:-9999px!important;overflow:hidden!important}
 .hero-banner-hotspot:focus-visible{outline:3px solid #fff!important;outline-offset:3px!important;box-shadow:0 0 0 5px rgba(206,18,45,.92)!important}
-/* Full-banner master artwork uses a fixed proportional layout. Hotspots use percentages so they stay aligned on desktop, tablet and mobile. */
 .hero-banner-hotspot--contact{left:15.4%!important;top:60.0%!important;width:23.0%!important;height:8.8%!important}
 .hero-banner-hotspot--request{left:39.6%!important;top:60.0%!important;width:24.2%!important;height:8.8%!important}
 @media(max-width:700px){.hero-banner-hotspot{min-height:34px}}
 </style>
 CSS;
 
-            $requestUrl = htmlspecialchars(route('public.request-service'), ENT_QUOTES, 'UTF-8');
+            $requestUrl = htmlspecialchars((string) ($home['request_service_url'] ?? '/request-service'), ENT_QUOTES, 'UTF-8');
             $contactUrl = '#contact';
             $requestLabel = ($home['lang'] ?? 'ar') === 'ar' ? 'طلب الخدمة' : 'Request Service';
             $contactLabel = ($home['lang'] ?? 'ar') === 'ar' ? 'تواصل معنا' : 'Contact Us';
