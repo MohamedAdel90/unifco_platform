@@ -158,7 +158,7 @@ class HomepagePresentationRegressionTest extends TestCase
 
         $html = $this->get('/?lang=ar')->assertOk()->getContent();
 
-        $this->assertSame(1, substr_count($html, 'شركة المياه الوطنية'));
+        $this->assertSame(1, substr_count($html, '/storage/homepage-media/nwc-logo'));
     }
 
     public function test_identical_client_logo_files_with_different_names_are_rendered_once(): void
