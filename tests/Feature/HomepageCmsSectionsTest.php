@@ -117,6 +117,123 @@ class HomepageCmsSectionsTest extends TestCase
         }
     }
 
+    public function test_services_editor_binds_image_controls_to_real_repeater_field_names(): void
+    {
+        $admin = $this->admin();
+        $section = HomepageSection::query()->create([
+            'section_key' => 'services',
+            'is_active' => true,
+            'sort_order' => 30,
+            'data_ar' => ['items' => [[
+                'number' => '01',
+                'image' => '/images/home/service-photo-v14-04.webp',
+                'title' => 'Transformers',
+                'desc' => 'AR desc',
+            ]]],
+            'data_en' => ['items' => [[
+                'number' => '01',
+                'image' => '/images/home/service-photo-v14-04.webp',
+                'title' => 'Transformers',
+                'desc' => 'EN desc',
+            ]]],
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.homepage.sections.edit', $section));
+
+        $response->assertOk();
+        $response->assertSee('name="item_ar_items_0_image"', false);
+        $response->assertSee('name="item_en_items_0_image"', false);
+        $response->assertDontSee('name="item_{{$locale}}_{{$listKey}}_{{$i}}_{{$f}}"', false);
+    }
+
+    public function test_services_save_preserves_existing_image_when_an_unrelated_field_is_not_submitted(): void
+    {
+        $admin = $this->admin();
+        $section = HomepageSection::query()->create([
+            'section_key' => 'services',
+            'is_active' => true,
+            'sort_order' => 30,
+            'data_ar' => ['items' => [[
+                'number' => '03',
+                'image' => '/images/home/generator-maintenance-card.svg',
+                'title' => 'Generators',
+                'desc' => 'Old AR description',
+            ]]],
+            'data_en' => ['items' => [[
+                'number' => '03',
+                'image' => '/images/home/generator-maintenance-card.svg',
+                'title' => 'Generators',
+                'desc' => 'Old EN description',
+            ]]],
+        ]);
+
+        $payload = [
+            'sort_order' => 30,
+            'item_ar_items_index' => [0],
+            'item_ar_items_0_number' => '03',
+            'item_ar_items_0_title' => 'Generators',
+            'item_ar_items_0_desc' => 'Updated AR description',
+            'item_en_items_index' => [0],
+            'item_en_items_0_number' => '03',
+            'item_en_items_0_title' => 'Generators',
+            'item_en_items_0_desc' => 'Updated EN description',
+        ];
+
+        $this->actingAs($admin)
+            ->put(route('admin.homepage.sections.update', $section), $payload)
+            ->assertRedirect();
+
+        $fresh = $section->fresh();
+        $this->assertSame('/images/home/generator-maintenance-card.svg', $fresh->data_ar['items'][0]['image']);
+        $this->assertSame('/images/home/generator-maintenance-card.svg', $fresh->data_en['items'][0]['image']);
+        $this->assertSame('Updated AR description', $fresh->data_ar['items'][0]['desc']);
+        $this->assertSame('Updated EN description', $fresh->data_en['items'][0]['desc']);
+    }
+
+    public function test_services_image_can_be_replaced_through_the_cms_field(): void
+    {
+        $admin = $this->admin();
+        $section = HomepageSection::query()->create([
+            'section_key' => 'services',
+            'is_active' => true,
+            'sort_order' => 30,
+            'data_ar' => ['items' => [[
+                'number' => '04',
+                'image' => '/images/home/facility-power.svg',
+                'title' => 'MV Systems',
+                'desc' => 'AR desc',
+            ]]],
+            'data_en' => ['items' => [[
+                'number' => '04',
+                'image' => '/images/home/facility-power.svg',
+                'title' => 'MV Systems',
+                'desc' => 'EN desc',
+            ]]],
+        ]);
+
+        $payload = [
+            'sort_order' => 30,
+            'item_ar_items_index' => [0],
+            'item_ar_items_0_number' => '04',
+            'item_ar_items_0_image' => '/storage/homepage-media/new-mv-ar.webp',
+            'item_ar_items_0_title' => 'MV Systems',
+            'item_ar_items_0_desc' => 'AR desc',
+            'item_en_items_index' => [0],
+            'item_en_items_0_number' => '04',
+            'item_en_items_0_image' => '/storage/homepage-media/new-mv-en.webp',
+            'item_en_items_0_title' => 'MV Systems',
+            'item_en_items_0_desc' => 'EN desc',
+        ];
+
+        $this->actingAs($admin)
+            ->put(route('admin.homepage.sections.update', $section), $payload)
+            ->assertRedirect();
+
+        $fresh = $section->fresh();
+        $this->assertSame('/storage/homepage-media/new-mv-ar.webp', $fresh->data_ar['items'][0]['image']);
+        $this->assertSame('/storage/homepage-media/new-mv-en.webp', $fresh->data_en['items'][0]['image']);
+    }
+
     private function payloadFor(string $key): array
     {
         $schema = HomepageSectionSchema::fields($key);
