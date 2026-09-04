@@ -58,7 +58,7 @@ class HomepageSectionMapper
                 'title' => 'industries_title',
                 'button' => 'industries_button',
                 'items' => 'industries',
-            ], ['items' => ['image', 'label']]),
+            ], ['items' => ['label', 'image']]),
 
             'operations' => $mapped,
 

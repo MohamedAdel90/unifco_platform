@@ -95,7 +95,7 @@ class HomepageSectionMapperTest extends TestCase
         ]);
 
         $this->assertSame([['01', '/image.webp', 'Transformers', 'Maintenance']], $services['services']);
-        $this->assertSame([['/industry.webp', 'Healthcare']], $industries['industries']);
+        $this->assertSame([['Healthcare', '/industry.webp']], $industries['industries']);
         $this->assertArrayNotHasKey('items', $services);
         $this->assertArrayNotHasKey('items', $industries);
     }
