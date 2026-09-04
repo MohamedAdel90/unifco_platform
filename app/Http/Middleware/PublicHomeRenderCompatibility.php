@@ -27,6 +27,34 @@ class PublicHomeRenderCompatibility
                 $home['showcase_metrics'] = $home['showcase_metrics'] ?? [];
                 $home['showcase_projects'] = $home['showcase_projects'] ?? [];
                 $home['showcase_clients'] = $home['showcase_clients'] ?? [];
+
+                // The approved public layout consumes the legacy service tuple:
+                // [title, description, href, image]. The Homepage CMS stores the
+                // current tuple as [number, image, title, description]. Normalize
+                // here, before rendering, so CMS image changes work without touching
+                // the qualified homepage markup/CSS or changing its dimensions.
+                if (isset($home['services']) && is_array($home['services'])) {
+                    $home['services'] = array_map(function ($service) {
+                        if (! is_array($service)) {
+                            return $service;
+                        }
+
+                        $isCmsTuple = isset($service[0])
+                            && preg_match('/^\d{1,2}$/', (string) $service[0]) === 1;
+
+                        if (! $isCmsTuple) {
+                            return $service;
+                        }
+
+                        return [
+                            (string) ($service[2] ?? ''),
+                            (string) ($service[3] ?? ''),
+                            route('public.services'),
+                            (string) ($service[1] ?? ''),
+                        ];
+                    }, $home['services']);
+                }
+
                 $isArabic = ($home['lang'] ?? 'ar') === 'ar';
                 $home['clients_title'] = $home['clients_title'] ?? ($isArabic ? 'عملاؤنا' : 'Our Clients');
                 $home['clients_text'] = $home['clients_text'] ?? '';
