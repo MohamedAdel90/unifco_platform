@@ -38,10 +38,11 @@ class BrandReleaseQualificationTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('/brand/unifco-logo-v2.webp', false)
+            ->assertSee('class="site-logo"', false)
             ->assertSee('#1e315b', false)
             ->assertSee('#132137', false)
-            ->assertSee('#ce122d', false);
+            ->assertSee('#ce122d', false)
+            ->assertDontSee('dynamic-brand-logo-presentation', false);
 
         $this->get('/login')
             ->assertOk()
