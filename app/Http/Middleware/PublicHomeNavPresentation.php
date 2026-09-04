@@ -21,6 +21,14 @@ class PublicHomeNavPresentation
             return $response;
         }
 
+        // BrandingPresentation is still required by other public/admin pages, but
+        // its historical homepage block injects layout CSS that changes the approved
+        // homepage dimensions (service-grid auto-fit, project/client sizing, etc.).
+        // Remove that legacy presentation layer on the homepage only. Functional
+        // brand routes and the dedicated homepage middlewares remain untouched.
+        $html = preg_replace('/<style id="dynamic-brand-logo-presentation">.*?<\/style>/s', '', $html) ?? $html;
+        $html = str_replace('<link rel="preload" as="image" href="/brand/unifco-logo-v2.webp">', '', $html);
+
         $isArabic = str_contains($html, '<html lang="ar"');
 
         $labels = $isArabic ? [
@@ -69,11 +77,6 @@ class PublicHomeNavPresentation
 
         $html = preg_replace('/<nav class="nav-links public-primary-nav">.*?<\/nav>/s', $navigation, $html, 1) ?? $html;
 
-        // Always switch language explicitly through the `lang` query parameter.
-        // Going from English to `/` previously kept `public_locale=en` in the
-        // session, so the AR button could appear to do nothing. Explicitly
-        // setting `lang=ar`/`lang=en` makes desktop and mobile switching
-        // deterministic and keeps the controller/session contract intact.
         $targetLocale = $isArabic ? 'en' : 'ar';
         $targetLabel = strtoupper($targetLocale);
         $languageUrl = route('public.home', ['lang' => $targetLocale]);
