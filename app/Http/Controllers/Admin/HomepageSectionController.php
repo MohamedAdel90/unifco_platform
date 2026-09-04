@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HomepageSection;
 use App\Services\HomepageContentService;
+use App\Services\HomepageHeroRenderer;
 use App\Services\HomepageSectionMapper;
 use App\Services\HomepageSectionSchema;
 use Illuminate\Http\RedirectResponse;
@@ -42,15 +43,12 @@ class HomepageSectionController extends Controller
         $draft = $this->assemble($request, $schema, $locale, $existing);
         $draftPublic = HomepageSectionMapper::toPublic($section->section_key, $draft);
 
-        // Start from the real public homepage payload, then overlay only the
-        // currently edited unsaved section. No database write or cache clear.
         $home = app(HomepageContentService::class)->getContent($locale);
         $home = array_replace($home, $draftPublic);
         $home['lang'] = $locale;
         $home['dir'] = $locale === 'ar' ? 'rtl' : 'ltr';
         $home['language'] = $locale === 'ar' ? 'EN' : 'AR';
 
-        // Keep compatibility aliases in sync after the draft overlay.
         $home['eyebrow'] = $home['hero_eyebrow'] ?? $home['eyebrow'] ?? '';
         $home['hero_proof'] = $home['hero_proofs'] ?? $home['hero_proof'] ?? [];
         $home['services_sub'] = $home['services_text'] ?? $home['services_sub'] ?? '';
@@ -58,19 +56,7 @@ class HomepageSectionController extends Controller
         $home['industries_button'] = $home['industries_button'] ?? $home['all_industries'] ?? ($locale === 'ar' ? 'عرض جميع القطاعات' : 'View All Industries');
 
         $html = view('public.partials.home-reference-layout', compact('home'))->render();
-
-        // The reference layout has a legacy fallback image in its stylesheet.
-        // For Hero preview, replace that source at the element itself rather
-        // than adding another CSS background layer. This guarantees that the
-        // draft image is the only photographic background rendered and avoids
-        // old/new Hero images visually overlapping after a CMS image change.
-        $heroImage = trim((string) ($home['hero_image'] ?? ''));
-        if ($heroImage !== '') {
-            $safeHeroImage = htmlspecialchars($heroImage, ENT_QUOTES, 'UTF-8');
-            $heroBackground = "linear-gradient(90deg,rgba(3,22,48,.98) 0%,rgba(5,30,62,.91) 30%,rgba(5,30,62,.54) 50%,rgba(5,30,62,.06) 74%),url('{$safeHeroImage}')";
-            $heroTag = '<section class="hero" style="background-image:'.$heroBackground.'!important;background-repeat:no-repeat!important;background-size:cover!important;">';
-            $html = str_replace('<section class="hero">', $heroTag, $html);
-        }
+        $html = app(HomepageHeroRenderer::class)->render($html, $home);
 
         return response($html, 200, [
             'Content-Type' => 'text/html; charset=UTF-8',
@@ -110,23 +96,22 @@ class HomepageSectionController extends Controller
 
     private function assemble(Request $request, array $schema, string $locale, array $existing = []): array
     {
-        // Compatibility layer: only replace fields owned by the current schema.
-        // Unknown/legacy keys stay untouched so editing one CMS section cannot
-        // silently delete data still consumed by the public homepage.
         $result = $existing;
 
         foreach (($schema['scalars'] ?? []) as $field) {
             $base = "scalar_{$locale}_{$field}";
             if ($request->has($base)) {
-                $result[$field] = $request->input($base);
+                $value = $request->input($base);
+                if ($field === 'render_mode') {
+                    $value = HomepageHeroRenderer::normalizeMode((string) $value);
+                }
+                $result[$field] = $value;
             }
         }
 
         foreach (($schema['checks'] ?? []) as $field) {
             $base = "check_{$locale}_{$field}";
             $rows = array_values(array_filter((array) $request->input($base, []), fn ($v) => $v !== '' && $v !== null));
-            // The checklist is rendered by this editor, so an empty submission
-            // intentionally clears this known field without touching other keys.
             $result[$field] = $rows;
         }
 
@@ -146,8 +131,6 @@ class HomepageSectionController extends Controller
                     $items[] = $item;
                 }
             }
-            // Same rule as checklists: this field belongs to the current schema,
-            // therefore removing all rows must persist as an empty list.
             $result[$listKey] = $items;
         }
 
