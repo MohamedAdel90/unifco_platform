@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class HomepageImageController extends Controller
 {
@@ -24,20 +25,31 @@ class HomepageImageController extends Controller
     {
         $this->adminOnly($request);
         $data = $request->validate([
-            'file' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'],
+            'file' => ['required', 'file', 'max:20480'],
         ]);
 
         $file = $data['file'];
-        $mime = (string) ($file->getMimeType() ?: 'image/png');
-        $extension = match ($mime) {
+        $mime = strtolower((string) ($file->getMimeType() ?: ''));
+        $allowed = [
             'image/jpeg' => 'jpg',
+            'image/png' => 'png',
             'image/webp' => 'webp',
             'image/gif' => 'gif',
-            default => 'png',
-        };
+        ];
 
+        if (! isset($allowed[$mime])) {
+            throw ValidationException::withMessages([
+                'file' => 'Unsupported image format. Please upload JPG, PNG, WEBP or GIF. Photos selected from iPhone HEIC/HEIF are converted automatically by the CMS before upload.',
+            ]);
+        }
+
+        $extension = $allowed[$mime];
         $filename = Str::uuid().'.'.$extension;
         $path = $file->storeAs(self::DIRECTORY, $filename, 'public');
+
+        if (! $path || ! Storage::disk('public')->exists($path)) {
+            abort(500, 'The image could not be saved to permanent homepage storage.');
+        }
 
         return response()->json([
             'image' => [
@@ -58,8 +70,6 @@ class HomepageImageController extends Controller
             ->values()
             ->all();
 
-        // Keep previously uploaded CMS images selectable so no existing content
-        // breaks while all new uploads use permanent homepage media storage.
         $legacyTemporary = collect(Storage::disk('local')->directories(self::LEGACY_TEMP_DIRECTORY))
             ->map(function (string $directory) {
                 $token = basename($directory);
