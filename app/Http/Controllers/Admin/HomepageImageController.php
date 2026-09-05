@@ -55,7 +55,33 @@ class HomepageImageController extends Controller
             'image' => [
                 'url' => Storage::disk('public')->url($path),
                 'name' => $file->getClientOriginalName(),
+                'delete_key' => $filename,
+                'deletable' => true,
             ],
+        ]);
+    }
+
+    public function destroy(Request $request, string $image): JsonResponse
+    {
+        $this->adminOnly($request);
+
+        // CMS uploads are generated UUID filenames. Never accept directories or arbitrary paths.
+        if (! preg_match('/^[0-9a-f-]{36}\.(?:jpe?g|png|webp|gif)$/i', $image)) {
+            abort(422, 'This image cannot be deleted from the CMS library.');
+        }
+
+        $path = self::DIRECTORY.'/'.$image;
+        if (! Storage::disk('public')->exists($path)) {
+            abort(404, 'Image not found.');
+        }
+
+        if (! Storage::disk('public')->delete($path)) {
+            abort(500, 'The image could not be deleted.');
+        }
+
+        return response()->json([
+            'deleted' => true,
+            'image' => $image,
         ]);
     }
 
@@ -66,6 +92,8 @@ class HomepageImageController extends Controller
             ->map(fn (string $path) => [
                 'url' => Storage::disk('public')->url($path),
                 'name' => basename($path),
+                'delete_key' => basename($path),
+                'deletable' => true,
             ])
             ->values()
             ->all();
@@ -82,24 +110,29 @@ class HomepageImageController extends Controller
                     return null;
                 }
 
-                return ['url' => route('temporary-files.show', $token), 'name' => $meta['original_name'] ?? $token];
+                return [
+                    'url' => route('temporary-files.show', $token),
+                    'name' => $meta['original_name'] ?? $token,
+                    'deletable' => false,
+                ];
             })
             ->filter()
             ->values()
             ->all();
 
+        // Repository-managed artwork is visible for selection but intentionally protected from deletion.
         $staticHome = collect(glob(public_path('images/home/*.{webp,jpg,jpeg,png,gif,svg}', GLOB_BRACE)) ?: [])
-            ->map(fn ($path) => ['url' => str_replace(public_path(), '', $path), 'name' => basename($path)])
+            ->map(fn ($path) => ['url' => str_replace(public_path(), '', $path), 'name' => basename($path), 'deletable' => false])
             ->values()
             ->all();
 
         $projects = collect(glob(public_path('images/home/projects/*.{webp,jpg,jpeg,png,gif,svg}', GLOB_BRACE)) ?: [])
-            ->map(fn ($path) => ['url' => str_replace(public_path(), '', $path), 'name' => basename($path)])
+            ->map(fn ($path) => ['url' => str_replace(public_path(), '', $path), 'name' => basename($path), 'deletable' => false])
             ->values()
             ->all();
 
         $clients = collect(glob(public_path('images/home/clients/*.{webp,jpg,jpeg,png,gif,svg}', GLOB_BRACE)) ?: [])
-            ->map(fn ($path) => ['url' => str_replace(public_path(), '', $path), 'name' => basename($path)])
+            ->map(fn ($path) => ['url' => str_replace(public_path(), '', $path), 'name' => basename($path), 'deletable' => false])
             ->values()
             ->all();
 
