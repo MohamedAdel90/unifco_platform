@@ -16,12 +16,17 @@
 .img-picker-head strong{font-size:13px;color:#17243c}.img-picker-head small{display:block;font-size:10px;color:#728096;margin-top:2px}
 .img-picker-toolbar{margin:10px 0}
 .img-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
-.img-picker-cell{border:1px solid #e3e8ef;border-radius:10px;background:#fff;padding:6px;cursor:pointer;display:block;text-align:center}
+.img-picker-cell{position:relative;border:1px solid #e3e8ef;border-radius:10px;background:#fff;padding:6px;cursor:pointer;display:block;text-align:center}
 .img-picker-cell img{width:100%;height:64px;object-fit:cover;border-radius:6px;background:#f2f6fa}
 .img-picker-cell span{display:block;font-size:9px;color:#526177;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .img-picker-cell:hover{border-color:#2563eb;box-shadow:0 2px 8px rgba(37,99,235,.15)}
+.img-picker-delete{position:absolute;z-index:4;inset-block-start:3px;inset-inline-end:3px;width:25px;height:25px;display:grid;place-items:center;padding:0;border:2px solid #fff;border-radius:50%;background:#d7193f;color:#fff;font-size:18px;font-weight:800;line-height:1;box-shadow:0 2px 7px rgba(20,31,50,.28);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.img-picker-delete:hover,.img-picker-delete:focus{background:#a90f2d;transform:scale(1.06);outline:none}
+.img-picker-delete:disabled{opacity:.55;cursor:wait;transform:none}
+.img-picker-cell.is-deleting{opacity:.48;pointer-events:none}
 .img-picker-none{font-size:12px;color:#728096;padding:24px;text-align:center;border:1px dashed #bcc7d6;border-radius:10px}
 .cms-auto-note{margin:10px 0 0;padding:9px 11px;border-radius:8px;background:#eef7ff;border:1px solid #cfe2f6;color:#35506e;font-size:10.5px;line-height:1.5}.cms-auto-note b{color:#17366c}.cms-translating{outline:2px solid #d7e6f8!important}.cms-translated{outline:2px solid #b9e3c9!important}
+@media(max-width:640px){.img-picker-delete{width:29px;height:29px;font-size:20px;inset-block-start:2px;inset-inline-end:2px}}
 </style>
 <script>
 (function(){
@@ -30,6 +35,8 @@
   var loading=document.getElementById('img-picker-loading');
   var uploadBtn=document.getElementById('img-picker-upload-btn');
   var help=document.getElementById('img-picker-help');
+  var deleteBase='{{ url('/admin/homepage/image-library') }}';
+  var csrf='{{ csrf_token() }}';
   if(!grid)return;
 
   window.__imgActiveTarget=null;
@@ -114,6 +121,18 @@
     }
   });
 
+  function showStatus(message,isError){
+    if(!loading)return;
+    loading.textContent=message;
+    loading.style.color=isError?'#a90f2d':'#147a42';
+    loading.style.display='inline';
+    clearTimeout(showStatus.timer);
+    showStatus.timer=setTimeout(function(){
+      loading.style.display='none';
+      loading.style.color='#728096';
+    },2600);
+  }
+
   function loadImages(){
     fetch('{{ route("admin.homepage.images.list") }}',{headers:{'Accept':'application/json'},credentials:'same-origin'})
       .then(function(r){return r.json();})
@@ -122,16 +141,83 @@
         var imgs=(data.images||[]);
         if(!imgs.length){grid.innerHTML='<div class="img-picker-none">No images yet. Upload one to get started.</div>';return;}
         imgs.forEach(function(img){
-          var b=document.createElement('button');
-          b.type='button';b.className='img-picker-cell';b.setAttribute('data-url',img.url);b.title=img.name;
+          var cell=document.createElement('div');
+          cell.className='img-picker-cell';cell.setAttribute('data-url',img.url);cell.title=img.name;
           var im=document.createElement('img');im.src=img.url;im.alt=img.name;
           var sp=document.createElement('span');sp.textContent=(img.name||'').slice(0,18);
-          b.appendChild(im);b.appendChild(sp);grid.appendChild(b);
+          cell.appendChild(im);cell.appendChild(sp);
+
+          if(img.deletable && img.delete_key){
+            var del=document.createElement('button');
+            del.type='button';del.className='img-picker-delete';del.textContent='×';
+            del.setAttribute('data-delete-key',img.delete_key);
+            del.setAttribute('aria-label','Delete '+(img.name||'image'));
+            del.title='Delete image';
+            cell.appendChild(del);
+          }
+          grid.appendChild(cell);
         });
+      }).catch(function(){showStatus('Could not refresh image library.',true);});
+  }
+
+  function clearDeletedUrl(url){
+    document.querySelectorAll('.img-picker-target').forEach(function(input){
+      if((input.value||'').trim()===url){
+        input.value='';
+        input.dispatchEvent(new Event('input',{bubbles:true}));
+      }
+    });
+  }
+
+  function deleteImage(button,cell){
+    var key=button.getAttribute('data-delete-key');
+    var url=cell.getAttribute('data-url')||'';
+    if(!key)return;
+    if(!window.confirm('Delete this image permanently? This action cannot be undone.'))return;
+
+    button.disabled=true;
+    cell.classList.add('is-deleting');
+    loading.textContent='Deleting image…';
+    loading.style.color='#728096';
+    loading.style.display='inline';
+
+    fetch(deleteBase+'/'+encodeURIComponent(key),{
+      method:'DELETE',
+      credentials:'same-origin',
+      headers:{'X-CSRF-TOKEN':csrf,'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}
+    }).then(function(r){
+      return r.text().then(function(text){
+        var data=null;
+        try{data=text?JSON.parse(text):null;}catch(e){}
+        if(!r.ok){
+          var msg=(data&&data.message)?data.message:'Delete failed (HTTP '+r.status+')';
+          if(r.status===419)msg='Your CMS session expired. Reload the page and try again.';
+          throw new Error(msg);
+        }
+        return data;
       });
+    }).then(function(){
+      clearDeletedUrl(url);
+      cell.remove();
+      if(!grid.querySelector('.img-picker-cell'))grid.innerHTML='<div class="img-picker-none">No images yet. Upload one to get started.</div>';
+      showStatus('Image deleted successfully.',false);
+    }).catch(function(err){
+      button.disabled=false;
+      cell.classList.remove('is-deleting');
+      showStatus(err&&err.message?err.message:'Delete failed.',true);
+      alert(err&&err.message?err.message:'Delete failed.');
+    });
   }
 
   grid.addEventListener('click',function(e){
+    var del=e.target.closest('.img-picker-delete');
+    if(del){
+      e.preventDefault();e.stopPropagation();
+      var deleteCell=del.closest('.img-picker-cell');
+      if(deleteCell)deleteImage(del,deleteCell);
+      return;
+    }
+
     var cell=e.target.closest('.img-picker-cell');
     if(!cell)return;
     if(insert(cell.getAttribute('data-url'))){
@@ -181,7 +267,7 @@
 
     return fetch('{{ route("admin.homepage.images.upload") }}',{
       method:'POST',
-      headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}','Accept':'application/json','X-Requested-With':'XMLHttpRequest'},
+      headers:{'X-CSRF-TOKEN':csrf,'Accept':'application/json','X-Requested-With':'XMLHttpRequest'},
       credentials:'same-origin',
       body:fd
     }).then(function(r){
