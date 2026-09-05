@@ -21,8 +21,10 @@ $labels = [
 ];
 $homepageSections = $sections->where('section_key', '!=', 'operations')->values();
 $operations = $sections->firstWhere('section_key', 'operations');
+$maintenanceEnabled = (bool) (($operations?->data_ar['maintenance_enabled'] ?? true) && ($operations?->is_active ?? true));
+$portalEnabled = (bool) (($operations?->data_ar['portal_enabled'] ?? true) && ($operations?->is_active ?? true));
 $totalSections = $homepageSections->count() + 2;
-$totalActive = $homepageSections->where('is_active', true)->count() + ($operations?->is_active ? 2 : 0);
+$totalActive = $homepageSections->where('is_active', true)->count() + ($maintenanceEnabled ? 1 : 0) + ($portalEnabled ? 1 : 0);
 $operationsUpdated = $operations?->updated_at ? $operations->updated_at->diffForHumans() : '—';
 @endphp
 <style>
@@ -34,7 +36,7 @@ $operationsUpdated = $operations?->updated_at ? $operations->updated_at->diffFor
 <div class="hp-hero">
   <div class="hp-intro">
     <h2 style="margin:0;font-size:20px;color:#17243c">Website Content Management</h2>
-    <p>Manage all website areas from one consistent CMS list. Maintenance and Client Portal remain independently editable while appearing alongside the other sections.</p>
+    <p>Manage all 14 website sections from one consistent CMS list. Arabic is the primary editing source; English content is generated from Arabic and images are shared automatically.</p>
   </div>
   <a class="btn secondary" target="_blank" rel="noopener" href="{{ url('/') }}">View public site</a>
 </div>
@@ -66,21 +68,21 @@ $operationsUpdated = $operations?->updated_at ? $operations->updated_at->diffFor
   </div>
 @endforeach
 
-<div class="hp-card {{ $operations?->is_active ? '' : 'disabled' }}">
+<div class="hp-card {{ $maintenanceEnabled ? '' : 'disabled' }}">
   <div class="hp-ic">⚒</div>
   <div class="hp-card-body">
-    <div class="hp-top"><span class="hp-title">Maintenance <span class="hp-key">maintenance</span></span><span class="badge {{ $operations?->is_active ? 'on' : 'off' }}">{{ $operations?->is_active ? 'Active' : 'Off' }}</span></div>
-    <div class="hp-meta"><b>5</b> fields per language · separate CMS</div>
-    <div class="hp-foot"><span class="hp-meta" style="margin:0">Updated {{ $operationsUpdated }}</span><div class="hp-actions"><a class="btn" href="{{ route('admin.maintenance-cms') }}">Edit</a></div></div>
+    <div class="hp-top"><span class="hp-title">Maintenance <span class="hp-key">maintenance</span></span><span class="badge {{ $maintenanceEnabled ? 'on' : 'off' }}">{{ $maintenanceEnabled ? 'Active' : 'Off' }}</span></div>
+    <div class="hp-meta"><b>Display Mode + bilingual content</b> · separate CMS</div>
+    <div class="hp-foot"><span class="hp-meta" style="margin:0">Updated {{ $operationsUpdated }}</span><div class="hp-actions"><a class="btn" href="{{ route('admin.maintenance-cms') }}">Edit</a><form method="POST" action="{{ route('admin.maintenance-cms.toggle') }}" style="display:inline">@csrf<button class="btn btn-ghost" type="submit">{{ $maintenanceEnabled ? 'Disable' : 'Enable' }}</button></form></div></div>
   </div>
 </div>
 
-<div class="hp-card {{ $operations?->is_active ? '' : 'disabled' }}">
+<div class="hp-card {{ $portalEnabled ? '' : 'disabled' }}">
   <div class="hp-ic">▣</div>
   <div class="hp-card-body">
-    <div class="hp-top"><span class="hp-title">Client Portal <span class="hp-key">client_portal</span></span><span class="badge {{ $operations?->is_active ? 'on' : 'off' }}">{{ $operations?->is_active ? 'Active' : 'Off' }}</span></div>
-    <div class="hp-meta"><b>5</b> fields per language · separate CMS</div>
-    <div class="hp-foot"><span class="hp-meta" style="margin:0">Updated {{ $operationsUpdated }}</span><div class="hp-actions"><a class="btn" href="{{ route('admin.client-portal-cms') }}">Edit</a></div></div>
+    <div class="hp-top"><span class="hp-title">Client Portal <span class="hp-key">client_portal</span></span><span class="badge {{ $portalEnabled ? 'on' : 'off' }}">{{ $portalEnabled ? 'Active' : 'Off' }}</span></div>
+    <div class="hp-meta"><b>Display Mode + bilingual content</b> · separate CMS</div>
+    <div class="hp-foot"><span class="hp-meta" style="margin:0">Updated {{ $operationsUpdated }}</span><div class="hp-actions"><a class="btn" href="{{ route('admin.client-portal-cms') }}">Edit</a><form method="POST" action="{{ route('admin.client-portal-cms.toggle') }}" style="display:inline">@csrf<button class="btn btn-ghost" type="submit">{{ $portalEnabled ? 'Disable' : 'Enable' }}</button></form></div></div>
   </div>
 </div>
 </div>
