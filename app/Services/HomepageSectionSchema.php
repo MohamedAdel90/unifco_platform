@@ -20,8 +20,9 @@ class HomepageSectionSchema
                 ],
             ],
             'about' => [
-                'scalars' => ['kicker', 'title', 'text', 'button'],
+                'scalars' => ['image', 'kicker', 'title', 'text', 'button'],
                 'items' => [
+                    'profile_images' => ['image'],
                     'points' => ['icon', 'title', 'sub'],
                     'stats' => ['value', 'label', 'icon'],
                 ],
