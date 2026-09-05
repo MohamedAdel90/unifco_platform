@@ -25,13 +25,30 @@
         return true;
     })->values();
 
-    // Client logos are CMS-managed. Render every active uploaded image in the exact DB/CMS order.
-    // Do not deduplicate by client name because newly uploaded/reordered logos may intentionally
-    // have blank or repeated labels while their image paths are distinct.
-    $showcaseClients = collect($home['showcase_clients'] ?? [])->filter(function ($client) {
-        if (! is_array($client)) return false;
-        return trim((string) ($client[0] ?? '')) !== '';
-    })->values();
+    // The clients CMS repeater is the public-homepage source of truth.
+    // When it contains images, render every row exactly once and in the same order.
+    $cmsLogoRows = collect($home['logos'] ?? [])->map(function ($row, $index) use ($home) {
+        $image = is_array($row)
+            ? trim((string) ($row['image'] ?? $row[0] ?? ''))
+            : trim((string) $row);
+
+        if ($image === '') return null;
+
+        $legacy = $home['showcase_clients'][$index] ?? [];
+        $name = is_array($legacy) ? trim((string) ($legacy[1] ?? '')) : '';
+        if ($name === '') {
+            $name = ($home['lang'] ?? 'ar') === 'ar' ? 'عميل UNIFCO' : 'UNIFCO Client';
+        }
+
+        return [$image, $name];
+    })->filter()->values();
+
+    $showcaseClients = $cmsLogoRows->isNotEmpty()
+        ? $cmsLogoRows
+        : collect($home['showcase_clients'] ?? [])->filter(function ($client) {
+            if (! is_array($client)) return false;
+            return trim((string) ($client[0] ?? '')) !== '';
+        })->values();
 @endphp
 <section class="projects-showcase" id="projects" style="--showcase-dir:{{ $home['dir'] }}">
 <span class="showcase-anchor" id="unifco-project-showcase" aria-hidden="true"></span>
