@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CmsTranslationController;
+use App\Http\Controllers\Admin\HomepageImageController;
 use App\Http\Controllers\Admin\HomepageSectionController;
 use App\Models\HomepageSection;
 use App\Services\HomepageContentService;
@@ -9,6 +10,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/cms/translate-ar-en', [CmsTranslationController::class, 'translate'])
         ->name('cms.translate-ar-en');
+
+    Route::delete('/homepage/image-library/{image}', [HomepageImageController::class, 'destroy'])
+        ->where('image', '[0-9A-Fa-f-]{36}\\.(?:jpe?g|png|webp|gif)')
+        ->name('homepage.images.destroy');
 
     Route::post('/maintenance-cms/toggle', function () {
         abort_unless(request()->user()?->role === 'ADMIN', 403);
