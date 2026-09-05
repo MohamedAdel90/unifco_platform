@@ -3,10 +3,10 @@
     <strong>Image Picker</strong>
     <small id="img-picker-help">Choose an image field first, then select or upload an image.</small>
   </div>
-  <input type="file" id="img-picker-file" accept="image/*" style="display:none">
+  <input type="file" id="img-picker-file" accept="image/*,.heic,.heif" style="display:none">
   <div class="img-picker-toolbar">
     <button type="button" class="btn btn-sm" id="img-picker-upload-btn">Upload New Image</button>
-    <div class="img-picker-loading" id="img-picker-loading" style="display:none;font-size:11px;color:#728096">Uploading…</div>
+    <div class="img-picker-loading" id="img-picker-loading" style="display:none;font-size:11px;color:#728096">Preparing image…</div>
   </div>
   <div class="img-picker-grid" id="img-picker-grid"></div>
   <template id="img-picker-empty"><div class="img-picker-none">No images yet. Upload one to get started.</div></template>
@@ -55,7 +55,6 @@
   };
 
   var insert=function(url){
-    // Safety rule: never guess a target and never fill all empty image fields.
     var active=requireActive();
     if(!active)return false;
     commit(url,active);
@@ -75,7 +74,6 @@
     return input;
   };
 
-  // Field-level controls work for existing and dynamically added repeater rows.
   document.addEventListener('click',function(e){
     var upload=e.target.closest('.hp-img-upload');
     var choose=e.target.closest('.hp-img-select');
@@ -116,7 +114,7 @@
   });
 
   function loadImages(){
-    fetch('{{ route("admin.homepage.images.list") }}',{headers:{'Accept':'application/json'}})
+    fetch('{{ route("admin.homepage.images.list") }}',{headers:{'Accept':'application/json'},credentials:'same-origin'})
       .then(function(r){return r.json();})
       .then(function(data){
         grid.innerHTML='';
@@ -141,28 +139,86 @@
     }
   });
 
-  // The global upload button is intentionally disabled until a target is explicit.
   uploadBtn.addEventListener('click',function(){
     if(requireActive())pickerFile.click();
   });
 
+  function normalizeForUpload(file){
+    return new Promise(function(resolve){
+      var standard=/^image\/(jpeg|png|webp|gif)$/i.test(file.type||'');
+      var needsConversion=!standard || file.size>8*1024*1024;
+      if(!needsConversion){resolve(file);return;}
+
+      var url=URL.createObjectURL(file);
+      var img=new Image();
+      img.onload=function(){
+        try{
+          var maxSide=3200;
+          var scale=Math.min(1,maxSide/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));
+          var canvas=document.createElement('canvas');
+          canvas.width=Math.max(1,Math.round((img.naturalWidth||img.width)*scale));
+          canvas.height=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
+          var ctx=canvas.getContext('2d');
+          ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          canvas.toBlob(function(blob){
+            URL.revokeObjectURL(url);
+            if(!blob){resolve(file);return;}
+            resolve(new File([blob],(file.name||'homepage-image').replace(/\.[^.]+$/, '')+'.jpg',{type:'image/jpeg',lastModified:Date.now()}));
+          },'image/jpeg',0.92);
+        }catch(e){URL.revokeObjectURL(url);resolve(file);}
+      };
+      img.onerror=function(){URL.revokeObjectURL(url);resolve(file);};
+      img.src=url;
+    });
+  }
+
+  function uploadImage(file){
+    var fd=new FormData();
+    fd.append('file',file);
+    loading.textContent='Uploading…';
+    loading.style.display='inline';
+
+    return fetch('{{ route("admin.homepage.images.upload") }}',{
+      method:'POST',
+      headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}','Accept':'application/json','X-Requested-With':'XMLHttpRequest'},
+      credentials:'same-origin',
+      body:fd
+    }).then(function(r){
+      return r.text().then(function(text){
+        var data=null;
+        try{data=text?JSON.parse(text):null;}catch(e){}
+        if(!r.ok){
+          var msg=(data&&data.message)?data.message:'Upload failed (HTTP '+r.status+')';
+          if(r.status===419)msg='Your CMS session expired. Reload the page, sign in if requested, then upload again.';
+          throw new Error(msg);
+        }
+        return data;
+      });
+    });
+  }
+
   pickerFile.addEventListener('change',function(){
     if(!pickerFile.files.length)return;
     if(!requireActive()){pickerFile.value='';return;}
-    var fd=new FormData();fd.append('file',pickerFile.files[0]);
+    var original=pickerFile.files[0];
+    loading.textContent='Preparing image…';
     loading.style.display='inline';
-    fetch('{{ route("admin.homepage.images.upload") }}',{method:'POST',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}','Accept':'application/json'},body:fd})
-      .then(function(r){
-        if(!r.ok)throw new Error('upload failed');
-        return r.json();
-      })
+
+    normalizeForUpload(original)
+      .then(uploadImage)
       .then(function(data){
         loading.style.display='none';
         if(data && data.image && data.image.url){
           insert(data.image.url);
           loadImages();
+        }else{
+          throw new Error('Upload completed but no image URL was returned.');
         }
-      }).catch(function(){loading.style.display='none';alert('Upload failed');});
+      })
+      .catch(function(err){
+        loading.style.display='none';
+        alert(err && err.message ? err.message : 'Upload failed');
+      });
     pickerFile.value='';
   });
 
