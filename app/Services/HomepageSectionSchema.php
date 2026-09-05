@@ -8,7 +8,7 @@ class HomepageSectionSchema
     {
         return match ($sectionKey) {
             'hero' => [
-                'scalars' => ['display_mode', 'full_section_image', 'image', 'eyebrow', 'title', 'text', 'button'],
+                'scalars' => ['display_mode', 'render_mode', 'full_section_image', 'image', 'eyebrow', 'title', 'text', 'button'],
                 'items' => [
                     'proofs' => ['icon', 'label', 'sub'],
                 ],
