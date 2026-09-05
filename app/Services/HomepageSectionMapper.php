@@ -29,12 +29,15 @@ class HomepageSectionMapper
             ], ['items' => ['icon', 'title', 'subtitle']]),
 
             'about' => self::map($mapped, [
+                'image' => 'about_image',
+                'profile_images' => 'about_profile_images',
                 'kicker' => 'about_kicker',
                 'title' => 'about_title',
                 'text' => 'about_text',
                 'button' => 'about_button',
                 'points' => 'about_points',
             ], [
+                'profile_images' => ['image'],
                 'points' => ['icon', 'title', 'sub'],
                 'stats' => ['value', 'label', 'icon'],
             ]),
