@@ -23,30 +23,53 @@ class PublicHomeAboutProfilePresentation
 
         $isArabic = str_contains($html, '<html lang="ar"');
         $image = $isArabic
-            ? '/images/home/unifco-about-card-ar.webp?v=20260905-2'
-            : '/images/home/unifco-about-card-en.webp?v=20260905-2';
+            ? '/images/home/unifco-about-card-ar.webp?v=20260905-3'
+            : '/images/home/unifco-about-card-en.webp?v=20260905-3';
         $alt = $isArabic ? 'تعرف على UNIFCO' : 'About UNIFCO';
         $close = $isArabic ? 'إغلاق' : 'Close';
         $localeClass = $isArabic ? 'is-arabic' : 'is-english';
 
         $style = <<<'HTML'
 <style id="unifco-profile-modal-style">
-#unifco-profile-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:8px;background:rgba(5,18,39,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#unifco-profile-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:12px;background:rgba(5,18,39,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 #unifco-profile-modal.is-open{display:flex}
-.unifco-profile-dialog{position:relative;width:98vw;height:96vh;border-radius:18px;overflow:auto;background:#0a1730;box-shadow:0 34px 100px rgba(0,0,0,.45);-webkit-overflow-scrolling:touch}
-.unifco-profile-artwork{position:relative;display:flex;align-items:flex-start;justify-content:center;min-width:100%;min-height:100%}
-.unifco-profile-artwork img{display:block;height:auto;object-fit:contain;background:#fff}
-.unifco-profile-dialog.is-english .unifco-profile-artwork{align-items:center}
-.unifco-profile-dialog.is-english .unifco-profile-artwork img{width:auto;max-width:96vw;max-height:94vh;border-radius:16px}
-.unifco-profile-dialog.is-arabic .unifco-profile-artwork{justify-content:flex-start}
-.unifco-profile-dialog.is-arabic .unifco-profile-artwork img{width:384vw;max-width:none;max-height:none;border-radius:10px}
-.unifco-profile-close{position:fixed;z-index:4;top:18px;left:18px;width:44px;height:44px;border:1px solid rgba(18,43,82,.13);border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.96);color:#102b55;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.16)}
+.unifco-profile-dialog{position:relative;width:min(1440px,96vw);height:min(94vh,960px);border-radius:18px;overflow:auto;background:#0a1730;box-shadow:0 34px 100px rgba(0,0,0,.45);-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.unifco-profile-artwork{position:relative;display:flex;align-items:flex-start;justify-content:center;min-width:100%;min-height:100%;padding:8px;box-sizing:border-box}
+.unifco-profile-artwork img{display:block;width:auto;height:auto;max-width:100%;max-height:calc(94vh - 16px);object-fit:contain;border-radius:14px;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.16)}
+.unifco-profile-close{position:fixed;z-index:4;top:20px;left:20px;width:44px;height:44px;border:1px solid rgba(18,43,82,.13);border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.97);color:#102b55;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.16)}
 .unifco-profile-image-error{display:none;align-items:center;justify-content:center;min-height:55vh;width:100%;padding:32px;color:#fff;text-align:center;font-size:16px}
 .unifco-profile-artwork.has-error .unifco-profile-image-error{display:flex}
 .unifco-profile-artwork.has-error img{display:none}
 body.unifco-profile-open{overflow:hidden}
-@media(min-width:900px){.unifco-profile-dialog.is-arabic .unifco-profile-artwork img{width:180vw}}
-@media(max-width:620px){#unifco-profile-modal{padding:3px}.unifco-profile-dialog{width:99vw;height:97vh;border-radius:10px}.unifco-profile-dialog.is-english .unifco-profile-artwork img{max-width:98vw;max-height:95vh;border-radius:10px}.unifco-profile-dialog.is-arabic .unifco-profile-artwork img{width:392vw}.unifco-profile-close{top:12px;left:12px;width:38px;height:38px;font-size:22px}}
+
+/* Laptop / desktop: show the complete artwork large, centered, without distortion. */
+@media(min-width:900px){
+  .unifco-profile-dialog{width:min(1500px,96vw);height:min(94vh,1000px)}
+  .unifco-profile-artwork{align-items:center;padding:10px}
+  .unifco-profile-artwork img{max-width:100%;max-height:calc(94vh - 20px)}
+}
+
+/* Tablet: increase readability while preserving the full composition. */
+@media(min-width:621px) and (max-width:899px){
+  .unifco-profile-dialog{width:97vw;height:95vh}
+  .unifco-profile-artwork{justify-content:flex-start;min-width:145vw;padding:6px}
+  .unifco-profile-artwork img{width:145vw;max-width:none;max-height:none;border-radius:12px}
+}
+
+/* Mobile: render both Arabic and English cards at readable scale and allow natural scrolling. */
+@media(max-width:620px){
+  #unifco-profile-modal{padding:3px}
+  .unifco-profile-dialog{width:99vw;height:97vh;border-radius:10px}
+  .unifco-profile-artwork{justify-content:flex-start;align-items:flex-start;min-width:210vw;min-height:100%;padding:3px}
+  .unifco-profile-artwork img{width:210vw;max-width:none;max-height:none;border-radius:8px;box-shadow:none}
+  .unifco-profile-close{top:12px;left:12px;width:38px;height:38px;font-size:22px}
+}
+
+/* Small phones need slightly more zoom for legible body text. */
+@media(max-width:390px){
+  .unifco-profile-artwork{min-width:230vw}
+  .unifco-profile-artwork img{width:230vw}
+}
 </style>
 HTML;
 
@@ -74,7 +97,7 @@ HTML;
  const close=()=>{modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('unifco-profile-open');};
  const open=()=>{
    modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.classList.add('unifco-profile-open');
-   if(dialog&&dialog.classList.contains('is-arabic')){dialog.scrollTop=0;dialog.scrollLeft=0;}
+   if(dialog){dialog.scrollTop=0;dialog.scrollLeft=0;}
    modal.querySelector('[data-unifco-profile-close]')?.focus();
  };
  if(image){image.addEventListener('error',()=>{artwork?.classList.add('has-error');});}
