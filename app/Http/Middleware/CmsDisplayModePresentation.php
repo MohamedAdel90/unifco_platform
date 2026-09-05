@@ -50,7 +50,7 @@ class CmsDisplayModePresentation
 
         $injection = <<<'HTML'
 <style id="cms-display-mode-style">
-.cms-display-mode-box{margin:0 0 14px;padding:12px;border:1px solid #cfdced;border-radius:10px;background:#f7faff}.cms-display-mode-box label{display:block!important;margin:0 0 6px!important;font-size:11px!important;font-weight:800!important;color:#263b5d!important}.cms-display-mode-box select{width:100%;padding:9px 10px;border:1px solid #c8d5e5;border-radius:8px;background:#fff;color:#17243c;font-size:12px}.cms-full-image-field{margin-top:10px}.cms-full-image-field .hp-img-field{margin-top:4px}.cms-display-mode-help{margin-top:6px;font-size:10px;color:#6d7e96;line-height:1.45}
+.cms-display-mode-box{margin:0 0 14px;padding:12px;border:1px solid #cfdced;border-radius:10px;background:#f7faff}.cms-display-mode-box label{display:block!important;margin:0 0 6px!important;font-size:11px!important;font-weight:800!important;color:#263b5d!important}.cms-display-mode-box select{width:100%;padding:9px 10px;border:1px solid #c8d5e5;border-radius:8px;background:#fff;color:#17243c;font-size:12px}.cms-full-image-field{margin-top:10px}.cms-full-image-field .hp-img-field{margin-top:4px}.cms-display-mode-help{margin-top:6px;font-size:10px;color:#6d7e96;line-height:1.45}.cms-legacy-hero-mode{display:none!important}
 </style>
 <script>
 (function(){
@@ -78,18 +78,21 @@ class CmsDisplayModePresentation
 
   function fieldLocale(name){return name.indexOf('_ar_')!==-1?'ar':(name.indexOf('_en_')!==-1?'en':'');}
 
+  function hideLegacyHeroMode(locale){
+    var legacy=document.querySelector('[name="scalar_'+locale+'_render_mode"]');
+    if(!legacy)return;
+    legacy.value='background';
+    legacy.classList.add('cms-legacy-hero-mode');
+    var label=legacy.previousElementSibling;
+    if(label && label.tagName==='LABEL')label.classList.add('cms-legacy-hero-mode');
+    var help=document.querySelector('[data-hero-mode-help="'+locale+'"]');
+    if(help)help.classList.add('cms-legacy-hero-mode');
+  }
+
   function syncHeroCompatibility(select){
     if(!select || select.name.indexOf('scalar_')!==0 || !select.name.endsWith('_display_mode'))return;
     var locale=fieldLocale(select.name);
-    if(!locale)return;
-    var legacy=document.querySelector('[name="scalar_'+locale+'_render_mode"]');
-    if(legacy){
-      legacy.value='background';
-      var parent=legacy.closest('label')||legacy.parentElement;
-      if(parent)parent.style.display='none';
-      if(legacy.previousElementSibling && legacy.previousElementSibling.tagName==='LABEL')legacy.previousElementSibling.style.display='none';
-      var help=document.querySelector('[data-hero-mode-help="'+locale+'"]');if(help)help.style.display='none';
-    }
+    if(locale)hideLegacyHeroMode(locale);
   }
 
   function updateVisibility(select){
@@ -122,7 +125,7 @@ class CmsDisplayModePresentation
       var fullWrap=full.closest('.cms-full-image-field');
       var box=document.createElement('div');
       box.className='cms-display-mode-box';
-      box.innerHTML='<label>Display Mode</label><div class="cms-mode-slot"></div><div class="cms-display-mode-help">Structured Section keeps the editable CMS layout. Full Section Image replaces that layout with one complete image.</div>';
+      box.innerHTML='<label>Display Mode</label><div class="cms-mode-slot"></div><div class="cms-display-mode-help"><b>Structured Section</b>: editable CMS content. <b>Full Section Image</b>: one complete image replaces the structured layout.</div>';
       input.parentNode.insertBefore(box,input);
       box.querySelector('.cms-mode-slot').appendChild(input);
       if(fullWrap)box.appendChild(fullWrap);
@@ -144,6 +147,8 @@ class CmsDisplayModePresentation
 
   injectPortalFields();
   groupDisplayFields();
+  hideLegacyHeroMode('ar');
+  hideLegacyHeroMode('en');
 })();
 </script>
 HTML;
