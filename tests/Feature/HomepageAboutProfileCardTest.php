@@ -24,7 +24,7 @@ class HomepageAboutProfileCardTest extends TestCase
     {
         $html = $this->get('/?lang=en')->assertOk()->getContent();
 
-        $this->assertStringContainsString('/images/home/unifco-about-card-en.webp?v=20260905-3', $html);
+        $this->assertStringContainsString('/images/home/unifco-about-card-en.webp?v=20260905-4', $html);
         $this->assertStringContainsString('unifco-profile-dialog is-english', $html);
         $this->assertStringNotContainsString('/images/home/unifco-about-card-ar.webp', $html);
         $this->assertStringNotContainsString('class="unifco-profile-sheet"', $html);
@@ -34,21 +34,22 @@ class HomepageAboutProfileCardTest extends TestCase
     {
         $html = $this->get('/?lang=ar')->assertOk()->getContent();
 
-        $this->assertStringContainsString('/images/home/unifco-about-card-ar.webp?v=20260905-3', $html);
+        $this->assertStringContainsString('/images/home/unifco-about-card-ar.webp?v=20260905-4', $html);
         $this->assertStringContainsString('unifco-profile-dialog is-arabic', $html);
         $this->assertStringNotContainsString('/images/home/unifco-about-card-en.webp', $html);
         $this->assertStringNotContainsString('class="unifco-profile-sheet"', $html);
     }
 
-    public function test_profile_artwork_has_distinct_laptop_tablet_and_mobile_sizing(): void
+    public function test_profile_artwork_fits_without_horizontal_crop_on_mobile_and_laptop(): void
     {
         $html = $this->get('/?lang=ar')->assertOk()->getContent();
 
         $this->assertStringContainsString('@media(min-width:900px)', $html);
         $this->assertStringContainsString('@media(min-width:621px) and (max-width:899px)', $html);
         $this->assertStringContainsString('@media(max-width:620px)', $html);
-        $this->assertStringContainsString('width:210vw', $html);
-        $this->assertStringContainsString('width:min(1500px,96vw)', $html);
+        $this->assertStringContainsString('overflow-x:hidden', $html);
+        $this->assertStringContainsString('width:100%;max-width:100%', $html);
+        $this->assertStringNotContainsString('width:210vw', $html);
         $this->assertStringNotContainsString('width:392vw', $html);
     }
 }
