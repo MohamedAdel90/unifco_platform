@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\Admin\CmsTranslationController;
 use App\Http\Controllers\Admin\HomepageSectionController;
 use App\Models\HomepageSection;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
+    Route::post('/cms/translate-ar-en', [CmsTranslationController::class, 'translate'])
+        ->name('cms.translate-ar-en');
+
     Route::get('/maintenance-cms', function () {
         $section = HomepageSection::query()->where('section_key', 'operations')->firstOrFail();
         app(HomepageSectionController::class)->edit(request(), $section); // keeps the same admin authorization rule
