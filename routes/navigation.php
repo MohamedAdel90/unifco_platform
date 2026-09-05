@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BrandingController;
+use App\Http\Controllers\Admin\CmsImageTranslationController;
 use App\Http\Controllers\Admin\HomepageSectionController;
 use App\Http\Controllers\Admin\HomepageProjectController;
 use App\Http\Controllers\Admin\HomepageClientController;
@@ -53,6 +54,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/clients/{client}/toggle', [HomepageClientController::class, 'toggle'])->name('clients.toggle');
         Route::get('/images/list', [HomepageImageController::class, 'list'])->name('images.list');
         Route::post('/images/upload', [HomepageImageController::class, 'upload'])->name('images.upload');
+        Route::post('/images/translate', [CmsImageTranslationController::class, 'translate'])->name('images.translate');
     });
     Route::prefix('admin/users')->name('admin.users.')->group(function () {
         Route::get('/export/csv',[UserAdministrationController::class,'export'])->name('export');
