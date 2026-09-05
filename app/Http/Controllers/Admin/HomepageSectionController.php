@@ -29,6 +29,10 @@ class HomepageSectionController extends Controller
         $this->adminOnly($request);
         $schema = HomepageSectionSchema::fields($section->section_key);
 
+        if ($section->section_key === 'clients') {
+            $this->hydrateClientLogosForEditor($section);
+        }
+
         return view('admin.homepage.sections.edit', ['section' => $section, 'schema' => $schema]);
     }
 
@@ -222,6 +226,31 @@ class HomepageSectionController extends Controller
         $dataEn['items'] = $enItems;
 
         return [$dataAr, $dataEn];
+    }
+
+    private function hydrateClientLogosForEditor(HomepageSection $section): void
+    {
+        $ar = $section->data_ar ?? [];
+        $en = $section->data_en ?? [];
+
+        if ($this->logoPaths($ar['logos'] ?? []) !== [] || $this->logoPaths($en['logos'] ?? []) !== []) {
+            return;
+        }
+
+        $rows = HomepageClient::active()->ordered()->get()
+            ->map(fn (HomepageClient $client) => ['image' => (string) $client->image])
+            ->filter(fn (array $row) => trim($row['image']) !== '')
+            ->values()
+            ->all();
+
+        if ($rows === []) {
+            return;
+        }
+
+        $ar['logos'] = $rows;
+        $en['logos'] = $rows;
+        $section->setAttribute('data_ar', $ar);
+        $section->setAttribute('data_en', $en);
     }
 
     private function synchronizeClientLogos(array $dataAr, array $dataEn, array $existingAr, array $existingEn): array
