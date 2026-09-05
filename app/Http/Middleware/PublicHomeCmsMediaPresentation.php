@@ -51,7 +51,11 @@ class PublicHomeCmsMediaPresentation
             $html
         );
 
-        $override = '<style id="unifco-cms-about-media">#about .about-media{background-image:url(\''.$safeAbout.'\')!important;background-size:cover!important;background-position:center 34%!important}</style>';
+        $override = '<style id="unifco-cms-about-media">'
+            .'#about .about-media{background-image:url(\''.$safeAbout.'\')!important;background-size:cover!important;background-position:center 34%!important}'
+            .'.showcase-clients .client-card{min-height:120px!important;padding:8px 10px!important;background:#fff!important}'
+            .'.showcase-clients .client-card img{width:100%!important;height:96px!important;max-height:96px!important;object-fit:contain!important}'
+            .'</style>';
         $html = str_replace('</head>', $override.'</head>', $html);
 
         if ($locale === 'en') {
