@@ -24,18 +24,21 @@ class HomepageAboutProfileCardTest extends TestCase
     {
         $html = $this->get('/?lang=en')->assertOk()->getContent();
 
-        $this->assertStringContainsString('/images/home/unifco-about-card-en.webp', $html);
+        $this->assertStringContainsString('/images/home/unifco-about-card-en.webp?v=20260905-2', $html);
+        $this->assertStringContainsString('unifco-profile-dialog is-english', $html);
         $this->assertStringNotContainsString('/images/home/unifco-about-card-ar.webp', $html);
         $this->assertStringNotContainsString('class="unifco-profile-sheet"', $html);
         $this->assertStringNotContainsString('class="up-values"', $html);
         $this->assertStringNotContainsString('class="up-cards"', $html);
     }
 
-    public function test_arabic_homepage_uses_only_the_exact_approved_profile_card_artwork(): void
+    public function test_arabic_homepage_uses_only_the_exact_approved_profile_card_artwork_at_large_zoom(): void
     {
         $html = $this->get('/?lang=ar')->assertOk()->getContent();
 
-        $this->assertStringContainsString('/images/home/unifco-about-card-ar.webp', $html);
+        $this->assertStringContainsString('/images/home/unifco-about-card-ar.webp?v=20260905-2', $html);
+        $this->assertStringContainsString('unifco-profile-dialog is-arabic', $html);
+        $this->assertStringContainsString('width:392vw', $html);
         $this->assertStringNotContainsString('/images/home/unifco-about-card-en.webp', $html);
         $this->assertStringNotContainsString('class="unifco-profile-sheet"', $html);
         $this->assertStringNotContainsString('<h2 class="up-title">من نحن</h2>', $html);
