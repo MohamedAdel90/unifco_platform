@@ -245,86 +245,86 @@ No syntax errors detected in bootstrap/app.php
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 19.20ms DONE
+  Creating migration table ...................................... 11.49ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables .................. 736.74ms DONE
-  2026_08_14_000002_add_controls_and_transactions .............. 462.37ms DONE
-  2026_08_14_000003_add_operational_integration ................ 318.20ms DONE
-  2026_08_14_000005_create_platform_services_tables ............ 130.47ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ........ 83.93ms DONE
-  2026_08_15_000008_add_finance_core ........................... 377.06ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ....... 689.73ms DONE
-  2026_08_15_000010_add_hr_operations .......................... 434.95ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................ 230.29ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................ 254.93ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .............. 537.93ms DONE
-  2026_08_18_000014_add_public_site_requests .................... 21.21ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines . 478.39ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ........... 508.03ms DONE
-  2026_08_18_000017_expand_customer_portal_operations .......... 661.43ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps .......... 666.82ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  150.61ms DONE
-  2026_08_21_000020_add_emergency_request_details .............. 189.99ms DONE
-  2026_08_21_000021_add_customer_onboarding .................... 362.88ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile .... 161.09ms DONE
-  2026_08_21_000023_create_customer_messaging ................... 83.60ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 2.18ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ............... 893.11ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 416.93ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 60.02ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability ... 550.34ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  341.33ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 47.12ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation . 670.20ms DONE
-  2026_08_22_000032_add_work_order_part_requests ............... 453.72ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 462.37ms DONE
-  2026_08_22_000034_add_user_permission_overrides ............... 88.74ms DONE
-  2026_08_22_000035_add_user_security_metadata ................. 377.87ms DONE
-  2026_08_22_000036_add_user_session_version .................... 89.38ms DONE
+  2026_08_14_000001_create_unifco_core_tables .................. 729.00ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 466.85ms DONE
+  2026_08_14_000003_add_operational_integration ................ 280.02ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 149.84ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 91.25ms DONE
+  2026_08_15_000008_add_finance_core ........................... 397.06ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 666.51ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 459.77ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 235.20ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 256.67ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 555.98ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 23.12ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 473.90ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 516.97ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 640.16ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 656.40ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  149.15ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 192.55ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 297.86ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 147.31ms DONE
+  2026_08_21_000023_create_customer_messaging ................... 79.27ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.06ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 891.37ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 466.87ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 65.17ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 609.60ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  309.52ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 51.90ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 788.28ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 517.82ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 468.61ms DONE
+  2026_08_22_000034_add_user_permission_overrides .............. 111.83ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 352.44ms DONE
+  2026_08_22_000036_add_user_session_version .................... 86.60ms DONE
   2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 609.28ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 .................... 563.77ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ............. 451.07ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 373.50ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................ 709.54ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................ 857.55ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 .................. 360.19ms DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ................ 554.63ms DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................. 128.39ms DONE
-  2026_08_23_000047_create_branding_settings .................... 35.02ms DONE
-  2026_08_24_000048_upgrade_public_request_experience .......... 193.38ms DONE
-  2026_08_25_000049_rebuild_public_request_single_page ......... 317.93ms DONE
-  2026_08_26_000050_link_public_requests_to_asset_registry ...... 74.18ms DONE
-  2026_08_26_000051_build_service_request_workflow_foundation .. 559.15ms DONE
-  2026_08_27_000052_add_customer_portal_rbac_scopes ............. 38.85ms DONE
-  2026_08_27_000053_add_customer_portal_action_requests ......... 30.93ms DONE
-  2026_08_27_000054_add_customer_action_attachments ............. 50.29ms DONE
-  2026_08_27_000055_add_assignment_sla_to_customer_actions ...... 64.24ms DONE
-  2026_08_27_000056_add_customer_acquisition_lifecycle ......... 607.40ms DONE
-  2026_08_27_000057_add_acquisition_governance_fields .......... 563.31ms DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 618.97ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 510.43ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 418.78ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 382.93ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 680.43ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 820.04ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 377.84ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 543.68ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 131.18ms DONE
+  2026_08_23_000047_create_branding_settings .................... 32.75ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 200.18ms DONE
+  2026_08_25_000049_rebuild_public_request_single_page ......... 304.57ms DONE
+  2026_08_26_000050_link_public_requests_to_asset_registry ...... 68.92ms DONE
+  2026_08_26_000051_build_service_request_workflow_foundation .. 552.21ms DONE
+  2026_08_27_000052_add_customer_portal_rbac_scopes ............. 41.22ms DONE
+  2026_08_27_000053_add_customer_portal_action_requests ......... 41.84ms DONE
+  2026_08_27_000054_add_customer_action_attachments ............. 61.67ms DONE
+  2026_08_27_000055_add_assignment_sla_to_customer_actions ...... 72.00ms DONE
+  2026_08_27_000056_add_customer_acquisition_lifecycle ......... 575.18ms DONE
+  2026_08_27_000057_add_acquisition_governance_fields .......... 506.99ms DONE
   2026_08_27_000058_build_professional_asset_master .................. 1s DONE
-  2026_08_27_000059_normalize_user_status_semantics ............ 165.96ms DONE
-  2026_08_27_000060_build_asset_lifecycle_commissioning ........ 655.70ms DONE
-  2026_08_27_000061_normalize_asset_documents_for_professional_master  132.49ms DONE
-  2026_08_28_000020_add_asset_warranty_insurance_phase_d ....... 343.79ms DONE
-  2026_08_28_000070_build_asset_custody_transfers .............. 301.08ms DONE
-  2026_08_28_000080_complete_agreed_asset_phases_b_d ........... 675.96ms DONE
+  2026_08_27_000059_normalize_user_status_semantics ............ 154.45ms DONE
+  2026_08_27_000060_build_asset_lifecycle_commissioning ........ 681.96ms DONE
+  2026_08_27_000061_normalize_asset_documents_for_professional_master  137.36ms DONE
+  2026_08_28_000020_add_asset_warranty_insurance_phase_d ....... 347.36ms DONE
+  2026_08_28_000070_build_asset_custody_transfers .............. 377.93ms DONE
+  2026_08_28_000080_complete_agreed_asset_phases_b_d ........... 676.52ms DONE
   2026_08_28_000090_close_agreed_asset_a_d_gaps ...................... 1s DONE
   2026_08_28_000100_close_asset_acceptance_contract .................. 1s DONE
-  2026_08_28_000110_allow_staged_customer_pm_strategy ........... 31.05ms DONE
-  2026_08_28_000120_normalize_asset_warranty_expiry_date ........ 92.75ms DONE
-  2026_08_29_000060_professionalize_employee_identity_and_contact  474.61ms DONE
-  2026_08_29_000062_add_contract_start_date_to_employees ........ 69.83ms DONE
-  2026_08_30_075500_add_employee_contact_and_assignment_fields . 341.85ms DONE
-  2026_09_02_000001_create_homepage_sections_table .............. 34.74ms DONE
-  2026_09_02_000002_create_homepage_projects_table .............. 25.02ms DONE
-  2026_09_02_000003_create_homepage_clients_table ............... 24.58ms DONE
-  2026_09_03_120000_seed_default_asset_category_templates ........ 2.86ms DONE
-  2026_09_04_120100_set_current_hero_to_full_banner_mode ......... 1.53ms DONE
-  2026_09_04_153000_restore_homepage_service_images .............. 1.39ms DONE
-  2026_09_04_190000_set_generators_service_image ................. 0.65ms DONE
+  2026_08_28_000110_allow_staged_customer_pm_strategy ........... 22.10ms DONE
+  2026_08_28_000120_normalize_asset_warranty_expiry_date ........ 95.32ms DONE
+  2026_08_29_000060_professionalize_employee_identity_and_contact  478.58ms DONE
+  2026_08_29_000062_add_contract_start_date_to_employees ........ 70.69ms DONE
+  2026_08_30_075500_add_employee_contact_and_assignment_fields . 350.19ms DONE
+  2026_09_02_000001_create_homepage_sections_table .............. 31.87ms DONE
+  2026_09_02_000002_create_homepage_projects_table .............. 26.50ms DONE
+  2026_09_02_000003_create_homepage_clients_table ............... 25.01ms DONE
+  2026_09_03_120000_seed_default_asset_category_templates ........ 2.67ms DONE
+  2026_09_04_120100_set_current_hero_to_full_banner_mode ......... 1.69ms DONE
+  2026_09_04_153000_restore_homepage_service_images .............. 1.53ms DONE
+  2026_09_04_190000_set_generators_service_image ................. 0.56ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -335,71 +335,71 @@ No syntax errors detected in bootstrap/app.php
 
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrSelfServicePhase8Test[39m
-  [32;1m✓[39;22m[90m [39m[90memployee portal is scoped to linked employee and own payroll[39m[90m       [39m [90m28.64s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee can submit leave against own balance only[39m[90m                  [39m [90m0.82s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee can submit mission and update only own goal[39m[90m                [39m [90m0.83s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmanager portal exposes direct reports but not outside team or payro[39m[90m…[39m [90m0.82s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmanager can decide direct report leave but cannot touch outside tea[39m[90m…[39m [90m0.83s[39m  
-  [32;1m✓[39;22m[90m [39m[90munlinked user cannot open employee self service[39m[90m                     [39m [90m1.07s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee portal is scoped to linked employee and own payroll[39m[90m       [39m [90m29.97s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee can submit leave against own balance only[39m[90m                  [39m [90m0.73s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee can submit mission and update only own goal[39m[90m                [39m [90m0.74s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmanager portal exposes direct reports but not outside team or payro[39m[90m…[39m [90m0.73s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmanager can decide direct report leave but cannot touch outside tea[39m[90m…[39m [90m0.74s[39m  
+  [32;1m✓[39;22m[90m [39m[90munlinked user cannot open employee self service[39m[90m                     [39m [90m0.95s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase8 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrPerformancePhase7Test[39m
-  [32;1m✓[39;22m[90m [39m[90mgoals reviews and independent approval work[39m[90m                         [39m [90m0.59s[39m  
-  [32;1m✓[39;22m[90m [39m[90mprobation skill and development records are employee scoped[39m[90m         [39m [90m0.58s[39m  
-  [32;1m✓[39;22m[90m [39m[90mcareer action requires independent approval and effective date befo[39m[90m…[39m [90m0.57s[39m  
-  [32;1m✓[39;22m[90m [39m[90mperformance records are tenant scoped[39m[90m                               [39m [90m1.08s[39m  
+  [32;1m✓[39;22m[90m [39m[90mgoals reviews and independent approval work[39m[90m                         [39m [90m0.54s[39m  
+  [32;1m✓[39;22m[90m [39m[90mprobation skill and development records are employee scoped[39m[90m         [39m [90m0.52s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcareer action requires independent approval and effective date befo[39m[90m…[39m [90m0.51s[39m  
+  [32;1m✓[39;22m[90m [39m[90mperformance records are tenant scoped[39m[90m                               [39m [90m0.96s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase7 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrRecruitmentPhase6Test[39m
-  [32;1m✓[39;22m[90m [39m[90mrequisition requires independent approval then opens vacancy[39m[90m        [39m [90m0.59s[39m  
-  [32;1m✓[39;22m[90m [39m[90mcandidate interview offer hire creates employee contract and onboar[39m[90m…[39m [90m0.62s[39m  
-  [32;1m✓[39;22m[90m [39m[90mrecruitment is tenant scoped[39m[90m                                        [39m [90m1.07s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequisition requires independent approval then opens vacancy[39m[90m        [39m [90m0.53s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcandidate interview offer hire creates employee contract and onboar[39m[90m…[39m [90m0.56s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrecruitment is tenant scoped[39m[90m                                        [39m [90m0.95s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase6 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEndOfServicePhase5Test[39m
-  [32;1m✓[39;22m[90m [39m[90mstandard termination calculates full saudi eos and snapshot[39m[90m         [39m [90m0.56s[39m  
-  [32;1m✓[39;22m[90m [39m[90mresignation tiers and article 80 are enforced[39m[90m                       [39m [90m0.56s[39m  
-  [32;1m✓[39;22m[90m [39m[90mfinal settlement requires independent approval and can be marked pa[39m[90m…[39m [90m0.58s[39m  
-  [32;1m✓[39;22m[90m [39m[90mfinal settlements are tenant scoped[39m[90m                                 [39m [90m1.08s[39m  
+  [32;1m✓[39;22m[90m [39m[90mstandard termination calculates full saudi eos and snapshot[39m[90m         [39m [90m0.50s[39m  
+  [32;1m✓[39;22m[90m [39m[90mresignation tiers and article 80 are enforced[39m[90m                       [39m [90m0.50s[39m  
+  [32;1m✓[39;22m[90m [39m[90mfinal settlement requires independent approval and can be marked pa[39m[90m…[39m [90m0.52s[39m  
+  [32;1m✓[39;22m[90m [39m[90mfinal settlements are tenant scoped[39m[90m                                 [39m [90m0.96s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase5 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrBusinessTripsPhase4Test[39m
   [32;1m✓[39;22m[90m [39m[90mphase4 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmission request calculates per diem and links business context[39m[90m      [39m [90m0.55s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmission 360 renders business context[39m[90m                                [39m [90m0.57s[39m  
-  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own mission and full settlement is auditab[39m[90m…[39m [90m0.61s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmissions are tenant scoped[39m[90m                                          [39m [90m1.08s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmission request calculates per diem and links business context[39m[90m      [39m [90m0.49s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmission 360 renders business context[39m[90m                                [39m [90m0.50s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own mission and full settlement is auditab[39m[90m…[39m [90m0.55s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmissions are tenant scoped[39m[90m                                          [39m [90m0.96s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrPayrollPhase3Test[39m
-  [32;1m✓[39;22m[90m [39m[90mpayroll policy and run calculate saudi gosi and overtime[39m[90m            [39m [90m0.32s[39m  
-  [32;1m✓[39;22m[90m [39m[90mpayroll workspace and routes render[39m[90m                                 [39m [90m0.29s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll policy and run calculate saudi gosi and overtime[39m[90m            [39m [90m0.29s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll workspace and routes render[39m[90m                                 [39m [90m0.26s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrAttendanceLeavePhase2Test[39m
-  [32;1m✓[39;22m[90m [39m[90mattendance workspace calculates late minutes and overtime[39m[90m           [39m [90m0.30s[39m  
-  [32;1m✓[39;22m[90m [39m[90mramadan schedule uses reduced daily target[39m[90m                          [39m [90m0.29s[39m  
-  [32;1m✓[39;22m[90m [39m[90mleave policy balance accrual request and approval[39m[90m                   [39m [90m0.33s[39m  
+  [32;1m✓[39;22m[90m [39m[90mattendance workspace calculates late minutes and overtime[39m[90m           [39m [90m0.27s[39m  
+  [32;1m✓[39;22m[90m [39m[90mramadan schedule uses reduced daily target[39m[90m                          [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90mleave policy balance accrual request and approval[39m[90m                   [39m [90m0.30s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase2 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEmployeeCorePhase1Test[39m
-  [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render hr control center[39m[90m        [39m [90m0.32s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee directory can search private identifiers without exposing[39m[90m… [39m [90m0.31s[39m  
-  [32;1m✓[39;22m[90m [39m[90mnew employee route renders structured registration form[39m[90m             [39m [90m0.29s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee master generates sequence and stores structured profile an[39m[90m…[39m [90m0.34s[39m  
-  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.32s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render hr control center[39m[90m        [39m [90m0.29s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee directory can search private identifiers without exposing[39m[90m… [39m [90m0.28s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnew employee route renders structured registration form[39m[90m             [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee master generates sequence and stores structured profile an[39m[90m…[39m [90m0.31s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.28s[39m  
   [32;1m✓[39;22m[90m [39m[90mhr phase1 routes are registered[39m[90m                                     [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\Wave10HrOperationsTest[39m
-  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.59s[39m  
-  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.59s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.53s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.53s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\SidebarNavigationTest[39m
-  [32;1m✓[39;22m[90m [39m[90madmin sidebar renders grouped platform navigation[39m[90m                   [39m [90m0.33s[39m  
-  [32;1m✓[39;22m[90m [39m[90msidebar enhancer is available outside dashboard[39m[90m                     [39m [90m0.28s[39m  
-  [32;1m✓[39;22m[90m [39m[90musers workspace is real administration screen[39m[90m                       [39m [90m0.55s[39m  
-  [32;1m✓[39;22m[90m [39m[90mnon admin cannot open users workspace[39m[90m                               [39m [90m0.54s[39m  
+  [32;1m✓[39;22m[90m [39m[90madmin sidebar renders grouped platform navigation[39m[90m                   [39m [90m0.30s[39m  
+  [32;1m✓[39;22m[90m [39m[90msidebar enhancer is available outside dashboard[39m[90m                     [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90musers workspace is real administration screen[39m[90m                       [39m [90m0.49s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnon admin cannot open users workspace[39m[90m                               [39m [90m0.49s[39m  
   [32;1m✓[39;22m[90m [39m[90moperational wave routes are registered[39m[90m                              [39m [90m0.02s[39m  
-  [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.32s[39m  
+  [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.29s[39m  
 
   [90mTests:[39m    [32;1m46 passed[39;22m[90m (342 assertions)[39m
-  [90mDuration:[39m [39m50.27s[39m
+  [90mDuration:[39m [39m49.34s[39m
 
