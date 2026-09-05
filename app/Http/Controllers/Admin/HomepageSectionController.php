@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\HomepageClient;
 use App\Models\HomepageSection;
 use App\Services\HomepageContentService;
 use App\Services\HomepageHeroRenderer;
@@ -48,6 +49,10 @@ class HomepageSectionController extends Controller
             [$draftAr, $draftEn] = $this->synchronizeServiceImages($draftAr, $draftEn, $existingAr, $existingEn);
         }
 
+        if ($section->section_key === 'clients') {
+            [$draftAr, $draftEn] = $this->synchronizeClientLogos($draftAr, $draftEn, $existingAr, $existingEn);
+        }
+
         $draft = $locale === 'ar' ? $draftAr : $draftEn;
         $draftPublic = HomepageSectionMapper::toPublic($section->section_key, $draft);
 
@@ -56,6 +61,10 @@ class HomepageSectionController extends Controller
         $home['lang'] = $locale;
         $home['dir'] = $locale === 'ar' ? 'rtl' : 'ltr';
         $home['language'] = $locale === 'ar' ? 'EN' : 'AR';
+
+        if ($section->section_key === 'clients') {
+            $home['showcase_clients'] = $this->clientRowsForPreview($draft, $locale);
+        }
 
         $home['eyebrow'] = $home['hero_eyebrow'] ?? $home['eyebrow'] ?? '';
         $home['hero_proof'] = $home['hero_proofs'] ?? $home['hero_proof'] ?? [];
@@ -98,11 +107,20 @@ class HomepageSectionController extends Controller
             [$dataAr, $dataEn] = $this->synchronizeServiceImages($dataAr, $dataEn, $existingAr, $existingEn);
         }
 
+        if ($section->section_key === 'clients') {
+            [$dataAr, $dataEn] = $this->synchronizeClientLogos($dataAr, $dataEn, $existingAr, $existingEn);
+        }
+
         $section->update([
             'data_ar' => $dataAr,
             'data_en' => $dataEn,
             'sort_order' => $data['sort_order'] ?? $section->sort_order,
         ]);
+
+        if ($section->section_key === 'clients') {
+            $this->persistClientLogos($dataAr, $request->user()?->id);
+        }
+
         HomepageContentService::clearAllCache();
 
         return back()->with('status', 'Section "'.$section->section_key.'" updated. Public cache cleared.');
@@ -204,6 +222,89 @@ class HomepageSectionController extends Controller
         $dataEn['items'] = $enItems;
 
         return [$dataAr, $dataEn];
+    }
+
+    private function synchronizeClientLogos(array $dataAr, array $dataEn, array $existingAr, array $existingEn): array
+    {
+        $newAr = $this->logoPaths($dataAr['logos'] ?? []);
+        $newEn = $this->logoPaths($dataEn['logos'] ?? []);
+        $oldAr = $this->logoPaths($existingAr['logos'] ?? []);
+        $oldEn = $this->logoPaths($existingEn['logos'] ?? []);
+
+        $arChanged = $newAr !== $oldAr;
+        $enChanged = $newEn !== $oldEn;
+
+        if ($arChanged && ! $enChanged) {
+            $shared = $newAr;
+        } elseif ($enChanged && ! $arChanged) {
+            $shared = $newEn;
+        } elseif ($arChanged && $enChanged) {
+            $shared = $newAr !== [] ? $newAr : $newEn;
+        } else {
+            $shared = $newAr !== [] ? $newAr : ($newEn !== [] ? $newEn : ($oldAr !== [] ? $oldAr : $oldEn));
+        }
+
+        $rows = array_map(fn (string $image) => ['image' => $image], $shared);
+        $dataAr['logos'] = $rows;
+        $dataEn['logos'] = $rows;
+
+        return [$dataAr, $dataEn];
+    }
+
+    private function logoPaths(mixed $rows): array
+    {
+        if (! is_array($rows)) {
+            return [];
+        }
+
+        $paths = [];
+        foreach ($rows as $row) {
+            $image = is_array($row) ? trim((string) ($row['image'] ?? $row[0] ?? '')) : trim((string) $row);
+            if ($image !== '') {
+                $paths[] = $image;
+            }
+        }
+
+        return array_values($paths);
+    }
+
+    private function persistClientLogos(array $data, ?int $userId): void
+    {
+        $paths = $this->logoPaths($data['logos'] ?? []);
+        $clients = HomepageClient::query()->orderBy('sort_order')->orderBy('id')->get();
+
+        foreach ($paths as $index => $image) {
+            $client = $clients->get($index) ?? new HomepageClient();
+            $client->fill([
+                'sort_order' => $index + 1,
+                'is_active' => true,
+                'image' => $image,
+                'updated_by' => $userId,
+            ]);
+            if (! $client->exists) {
+                $client->name_ar = '';
+                $client->name_en = '';
+            }
+            $client->save();
+        }
+
+        foreach ($clients->slice(count($paths)) as $client) {
+            $client->update(['is_active' => false, 'updated_by' => $userId]);
+        }
+
+        HomepageClient::clearCache();
+    }
+
+    private function clientRowsForPreview(array $data, string $locale): array
+    {
+        $paths = $this->logoPaths($data['logos'] ?? []);
+        $existing = HomepageClient::query()->orderBy('sort_order')->orderBy('id')->get();
+
+        return array_map(function (string $image, int $index) use ($existing, $locale) {
+            $name = (string) ($existing->get($index)?->{"name_{$locale}"} ?? '');
+
+            return [$image, $name];
+        }, $paths, array_keys($paths));
     }
 
     private function itemsByNumber(array $items, bool $includeIndex = false): array
