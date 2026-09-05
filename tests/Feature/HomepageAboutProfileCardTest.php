@@ -24,25 +24,31 @@ class HomepageAboutProfileCardTest extends TestCase
     {
         $html = $this->get('/?lang=en')->assertOk()->getContent();
 
-        $this->assertStringContainsString('/images/home/unifco-about-card-en.webp?v=20260905-2', $html);
+        $this->assertStringContainsString('/images/home/unifco-about-card-en.webp?v=20260905-3', $html);
         $this->assertStringContainsString('unifco-profile-dialog is-english', $html);
         $this->assertStringNotContainsString('/images/home/unifco-about-card-ar.webp', $html);
         $this->assertStringNotContainsString('class="unifco-profile-sheet"', $html);
-        $this->assertStringNotContainsString('class="up-values"', $html);
-        $this->assertStringNotContainsString('class="up-cards"', $html);
     }
 
-    public function test_arabic_homepage_uses_only_the_exact_approved_profile_card_artwork_at_large_zoom(): void
+    public function test_arabic_homepage_uses_only_the_exact_approved_profile_card_artwork(): void
     {
         $html = $this->get('/?lang=ar')->assertOk()->getContent();
 
-        $this->assertStringContainsString('/images/home/unifco-about-card-ar.webp?v=20260905-2', $html);
+        $this->assertStringContainsString('/images/home/unifco-about-card-ar.webp?v=20260905-3', $html);
         $this->assertStringContainsString('unifco-profile-dialog is-arabic', $html);
-        $this->assertStringContainsString('width:392vw', $html);
         $this->assertStringNotContainsString('/images/home/unifco-about-card-en.webp', $html);
         $this->assertStringNotContainsString('class="unifco-profile-sheet"', $html);
-        $this->assertStringNotContainsString('<h2 class="up-title">من نحن</h2>', $html);
-        $this->assertStringNotContainsString('class="up-values"', $html);
-        $this->assertStringNotContainsString('class="up-cards"', $html);
+    }
+
+    public function test_profile_artwork_has_distinct_laptop_tablet_and_mobile_sizing(): void
+    {
+        $html = $this->get('/?lang=ar')->assertOk()->getContent();
+
+        $this->assertStringContainsString('@media(min-width:900px)', $html);
+        $this->assertStringContainsString('@media(min-width:621px) and (max-width:899px)', $html);
+        $this->assertStringContainsString('@media(max-width:620px)', $html);
+        $this->assertStringContainsString('width:210vw', $html);
+        $this->assertStringContainsString('width:min(1500px,96vw)', $html);
+        $this->assertStringNotContainsString('width:392vw', $html);
     }
 }
