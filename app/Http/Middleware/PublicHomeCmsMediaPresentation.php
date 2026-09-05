@@ -39,7 +39,7 @@ class PublicHomeCmsMediaPresentation
         if ($profileImage === '') {
             $profileImage = $locale === 'en'
                 ? '/images/home/unifco-about-card-en.webp'
-                : '/images/unifco-facility-hero.jpg';
+                : '/images/home/unifco-about-card-ar.webp';
         }
 
         $safeAbout = htmlspecialchars($aboutImage, ENT_QUOTES, 'UTF-8');
