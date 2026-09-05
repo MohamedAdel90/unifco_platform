@@ -26,8 +26,9 @@
         update();
     });
 
-    // Make the Client Account button functional in both Arabic and English.
-    // The public homepage is guest-facing and Laravel exposes the login route at /login.
+    // The approved portal artwork contains the visible "Client Account Login" button
+    // inside the image itself. Make the artwork clickable so tapping that visual button
+    // reliably opens Laravel's /login page in both Arabic and English.
     var wireClientLoginButton = function () {
         var portalCard = document.querySelector('.portal-card');
         if (!portalCard) return;
@@ -44,15 +45,31 @@
                 button.removeAttribute('onclick');
             } else {
                 button.setAttribute('type', 'button');
-                button.onclick = function () { window.location.href = '/login'; };
+                button.onclick = function () { window.location.assign('/login'); };
             }
             button.setAttribute('data-client-login', 'true');
         });
+
+        var portalImage = portalCard.querySelector('.portal-device');
+        if (portalImage && portalImage.getAttribute('data-client-login-image') !== 'true') {
+            portalImage.setAttribute('data-client-login-image', 'true');
+            portalImage.setAttribute('role', 'link');
+            portalImage.setAttribute('tabindex', '0');
+            portalImage.setAttribute('aria-label', (document.documentElement.lang || '').toLowerCase().indexOf('en') === 0 ? 'Client Account Login' : 'دخول حساب العميل');
+            portalImage.style.cursor = 'pointer';
+
+            var openLogin = function () { window.location.assign('/login'); };
+            portalImage.addEventListener('click', openLogin);
+            portalImage.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openLogin();
+                }
+            });
+        }
     };
 
     // Keep the About UNIFCO lightbox reliable in both Arabic and English.
-    // The modal is created dynamically, so repair its image after it opens and
-    // use the repository-backed locale image instead of a stale/broken CMS URL.
     var locale = (document.documentElement.getAttribute('lang') || 'ar').toLowerCase();
     var aboutImage = locale.indexOf('en') === 0
         ? '/images/home/unifco-about-card-en.webp'
@@ -77,33 +94,23 @@
         for (var i = 0; i < images.length; i += 1) {
             var image = images[i];
             var marker = (image.getAttribute('alt') || '') + ' ' + (image.getAttribute('src') || '');
-            if (/about\s+unifco|unifco\s+facilities|من\s+نحن|about-card|unifco-facility-hero/i.test(marker)) {
-                return true;
-            }
+            if (/about\s+unifco|unifco\s+facilities|من\s+نحن|about-card|unifco-facility-hero/i.test(marker)) return true;
         }
-
         return false;
     };
 
     var fixAboutDialog = function () {
         var selector = '[role="dialog"],.modal,.about-modal,[class*="modal"],[class*="lightbox"],[class*="overlay"]';
-        var candidates = Array.prototype.slice.call(document.querySelectorAll(selector));
-
-        candidates.forEach(function (dialog) {
+        Array.prototype.slice.call(document.querySelectorAll(selector)).forEach(function (dialog) {
             if (!looksLikeAbout(dialog)) return;
-
             dialog.classList.add('unifco-about-modal-fixed');
             var images = Array.prototype.slice.call(dialog.querySelectorAll('img'));
-
             images.forEach(function (image) {
                 var alt = image.getAttribute('alt') || '';
                 var src = image.getAttribute('src') || '';
                 var isAboutImage = images.length === 1 || /about\s+unifco|unifco\s+facilities|من\s+نحن|about-card|unifco-facility-hero/i.test(alt + ' ' + src);
                 if (!isAboutImage) return;
-
-                image.onerror = function () {
-                    if (image.getAttribute('src') !== aboutImage) image.setAttribute('src', aboutImage);
-                };
+                image.onerror = function () { if (image.getAttribute('src') !== aboutImage) image.setAttribute('src', aboutImage); };
                 if (image.getAttribute('src') !== aboutImage) image.setAttribute('src', aboutImage);
             });
         });
@@ -121,7 +128,6 @@
     document.addEventListener('click', function (event) {
         var trigger = event.target && event.target.closest ? event.target.closest('a,button') : null;
         if (!isAboutTrigger(trigger)) return;
-
         window.setTimeout(fixAboutDialog, 0);
         window.setTimeout(fixAboutDialog, 80);
         window.setTimeout(fixAboutDialog, 250);
