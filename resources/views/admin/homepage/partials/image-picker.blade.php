@@ -21,6 +21,7 @@
 .img-picker-cell span{display:block;font-size:9px;color:#526177;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .img-picker-cell:hover{border-color:#2563eb;box-shadow:0 2px 8px rgba(37,99,235,.15)}
 .img-picker-none{font-size:12px;color:#728096;padding:24px;text-align:center;border:1px dashed #bcc7d6;border-radius:10px}
+.cms-auto-note{margin:10px 0 0;padding:9px 11px;border-radius:8px;background:#eef7ff;border:1px solid #cfe2f6;color:#35506e;font-size:10.5px;line-height:1.5}.cms-auto-note b{color:#17366c}.cms-translating{outline:2px solid #d7e6f8!important}.cms-translated{outline:2px solid #b9e3c9!important}
 </style>
 <script>
 (function(){
@@ -68,7 +69,7 @@
     document.querySelectorAll('[data-img-field]').forEach(function(f){f.classList.remove('active-img-field');});
     field.classList.add('active-img-field');
     if(help){
-      help.textContent='Target: '+targetLabel(input)+'. Only this field will be changed.';
+      help.textContent='Target: '+targetLabel(input)+'. The same image will be synchronized to Arabic and English.';
       help.style.color='#1f4e9c';
     }
     return input;
@@ -223,5 +224,103 @@
   });
 
   loadImages();
+})();
+</script>
+
+<div class="cms-auto-note"><b>Automatic bilingual mode:</b> every image is shared between Arabic and English. Arabic text is translated into the matching English field automatically while you type.</div>
+<script>
+(function(){
+  var translateUrl='{{ route("admin.cms.translate-ar-en") }}';
+  var csrf='{{ csrf_token() }}';
+  var timers=new WeakMap();
+  var syncingImage=false;
+
+  function counterpartName(name,toLocale){
+    if(!name)return '';
+    if(toLocale==='en'){
+      if(name.indexOf('scalar_ar_')===0)return name.replace('scalar_ar_','scalar_en_');
+      if(name.indexOf('item_ar_')===0)return name.replace('item_ar_','item_en_');
+      if(name.indexOf('check_ar_')===0)return name.replace('check_ar_','check_en_');
+    }else{
+      if(name.indexOf('scalar_en_')===0)return name.replace('scalar_en_','scalar_ar_');
+      if(name.indexOf('item_en_')===0)return name.replace('item_en_','item_ar_');
+      if(name.indexOf('check_en_')===0)return name.replace('check_en_','check_ar_');
+    }
+    return '';
+  }
+
+  function isImageField(input){
+    var name=(input.name||'').toLowerCase();
+    return input.classList.contains('img-picker-target') || /(^|_)image($|_|\[)/.test(name) || name.indexOf('_image')!==-1;
+  }
+
+  function findCounterpart(input,toLocale){
+    var target=counterpartName(input.name||'',toLocale);
+    if(!target)return null;
+    try{return document.querySelector('[name="'+CSS.escape(target)+'"]');}catch(e){return document.getElementsByName(target)[0]||null;}
+  }
+
+  function syncImage(input){
+    if(syncingImage || !isImageField(input))return;
+    var name=input.name||'';
+    var to=name.indexOf('_ar_')!==-1?'en':(name.indexOf('_en_')!==-1?'ar':'');
+    if(!to)return;
+    var other=findCounterpart(input,to);
+    if(!other)return;
+    syncingImage=true;
+    other.value=input.value;
+    other.dispatchEvent(new Event('input',{bubbles:true}));
+    syncingImage=false;
+  }
+
+  function hasArabic(text){return /[\u0600-\u06FF]/.test(text||'');}
+
+  function translate(input){
+    var text=(input.value||'').trim();
+    if(!text || !hasArabic(text) || isImageField(input))return;
+    var english=findCounterpart(input,'en');
+    if(!english)return;
+
+    english.classList.add('cms-translating');
+    fetch(translateUrl,{
+      method:'POST',
+      credentials:'same-origin',
+      headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':csrf,'X-Requested-With':'XMLHttpRequest'},
+      body:JSON.stringify({text:text})
+    }).then(function(r){
+      if(!r.ok)throw new Error('translation failed');
+      return r.json();
+    }).then(function(data){
+      if(typeof data.translation==='string'){
+        english.value=data.translation;
+        english.dispatchEvent(new Event('input',{bubbles:true}));
+        english.classList.remove('cms-translating');
+        english.classList.add('cms-translated');
+        setTimeout(function(){english.classList.remove('cms-translated');},700);
+      }
+    }).catch(function(){english.classList.remove('cms-translating');});
+  }
+
+  document.addEventListener('input',function(e){
+    var input=e.target;
+    if(!(input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement))return;
+
+    if(isImageField(input)){
+      syncImage(input);
+      return;
+    }
+
+    var name=input.name||'';
+    if(name.indexOf('scalar_ar_')!==0 && name.indexOf('item_ar_')!==0 && name.indexOf('check_ar_')!==0)return;
+
+    var old=timers.get(input);
+    if(old)clearTimeout(old);
+    timers.set(input,setTimeout(function(){translate(input);},650));
+  });
+
+  document.addEventListener('change',function(e){
+    var input=e.target;
+    if(input instanceof HTMLInputElement && isImageField(input))syncImage(input);
+  });
 })();
 </script>
