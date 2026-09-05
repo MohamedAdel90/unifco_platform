@@ -26,6 +26,30 @@
         update();
     });
 
+    // Make the Client Account button functional in both Arabic and English.
+    // The public homepage is guest-facing and Laravel exposes the login route at /login.
+    var wireClientLoginButton = function () {
+        var portalCard = document.querySelector('.portal-card');
+        if (!portalCard) return;
+
+        var buttons = Array.prototype.slice.call(portalCard.querySelectorAll('a.btn,button.btn,a,button'));
+        buttons.forEach(function (button) {
+            var text = String(button.textContent || '').replace(/\s+/g, ' ').trim();
+            var isClientLogin = /دخول\s+حساب\s+العميل|client\s+(account\s+)?login|login\s+to\s+client|enter\s+client/i.test(text);
+            if (!isClientLogin) return;
+
+            if (button.tagName.toLowerCase() === 'a') {
+                button.setAttribute('href', '/login');
+                button.removeAttribute('target');
+                button.removeAttribute('onclick');
+            } else {
+                button.setAttribute('type', 'button');
+                button.onclick = function () { window.location.href = '/login'; };
+            }
+            button.setAttribute('data-client-login', 'true');
+        });
+    };
+
     // Keep the About UNIFCO lightbox reliable in both Arabic and English.
     // The modal is created dynamically, so repair its image after it opens and
     // use the repository-backed locale image instead of a stale/broken CMS URL.
@@ -104,9 +128,13 @@
     });
 
     if (window.MutationObserver && document.body) {
-        var observer = new MutationObserver(function () { fixAboutDialog(); });
+        var observer = new MutationObserver(function () {
+            fixAboutDialog();
+            wireClientLoginButton();
+        });
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
+    wireClientLoginButton();
     fixAboutDialog();
 })();
