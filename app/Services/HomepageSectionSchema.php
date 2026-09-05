@@ -63,6 +63,9 @@ class HomepageSectionSchema
             ],
             'clients' => [
                 'scalars' => ['title', 'text', 'more', 'button'],
+                'items' => [
+                    'logos' => ['image'],
+                ],
             ],
             'emergency' => [
                 'scalars' => ['title', 'text', 'button', 'contact', 'photo_alt', 'support', 'call', 'email'],
