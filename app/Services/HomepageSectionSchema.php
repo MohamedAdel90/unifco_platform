@@ -46,7 +46,10 @@ class HomepageSectionSchema
                 ],
             ],
             'operations' => [
-                'scalars' => ['maintenance_title', 'maintenance_text', 'maintenance_button', 'portal_title', 'portal_text', 'portal_button'],
+                'scalars' => [
+                    'maintenance_image', 'maintenance_title', 'maintenance_text', 'maintenance_button',
+                    'portal_image', 'portal_title', 'portal_text', 'portal_button',
+                ],
                 'checks' => ['maintenance_checks', 'portal_checks'],
             ],
             'why' => [
