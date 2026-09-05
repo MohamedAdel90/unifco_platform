@@ -25,17 +25,12 @@
         return true;
     })->values();
 
-    $clientSeen = [];
-    $showcaseClients = collect($home['showcase_clients'] ?? [])->filter(function ($client) use (&$clientSeen, $normalizeShowcaseText) {
+    // Client logos are CMS-managed. Render every active uploaded image in the exact DB/CMS order.
+    // Do not deduplicate by client name because newly uploaded/reordered logos may intentionally
+    // have blank or repeated labels while their image paths are distinct.
+    $showcaseClients = collect($home['showcase_clients'] ?? [])->filter(function ($client) {
         if (! is_array($client)) return false;
-
-        $name = $normalizeShowcaseText($client[1] ?? '');
-        $image = $normalizeShowcaseText(parse_url((string) ($client[0] ?? ''), PHP_URL_PATH) ?: ($client[0] ?? ''));
-        $identity = $name !== '' ? 'name:'.$name : 'image:'.$image;
-
-        if ($identity === 'image:' || isset($clientSeen[$identity])) return false;
-        $clientSeen[$identity] = true;
-        return true;
+        return trim((string) ($client[0] ?? '')) !== '';
     })->values();
 @endphp
 <section class="projects-showcase" id="projects" style="--showcase-dir:{{ $home['dir'] }}">
@@ -60,7 +55,7 @@
 <header class="showcase-heading"><h2>{{ $home['clients_title'] }}</h2><p>{{ $home['clients_text'] }}</p></header>
 <div class="showcase-rail-shell" data-showcase-carousel>
 <button class="showcase-arrow prev" type="button" data-showcase-prev aria-label="{{ $home['carousel_previous'] }}" aria-controls="client-showcase-rail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
-<div class="showcase-rail client-rail" id="client-showcase-rail" data-showcase-rail tabindex="0">
+<div class="showcase-rail client-rail" id="client-showcase-rail" data-showcase-rail tabindex="0" style="direction:ltr">
 @foreach($showcaseClients as $client)<article class="client-card"><img src="{{ $client[0] }}" alt="{{ $client[1] }}" loading="lazy"></article>@endforeach
 <article class="client-card more"><strong>+</strong><span>{{ $home['more_clients'] }}</span></article>
 </div>
