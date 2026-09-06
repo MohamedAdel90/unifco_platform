@@ -203,22 +203,10 @@ class HomepageSectionController extends Controller
 
             $arChanged = $arIndex !== null && $newAr !== $oldAr;
             $enChanged = $enIndex !== null && $newEn !== $oldEn;
+            $englishWasInherited = $oldEn === '' || $oldEn === $oldAr;
 
-            if ($arChanged && ! $enChanged) {
-                $shared = $newAr;
-            } elseif ($enChanged && ! $arChanged) {
-                $shared = $newEn;
-            } elseif ($arChanged && $enChanged) {
-                $shared = $newAr === $newEn ? $newAr : ($newAr !== '' ? $newAr : $newEn);
-            } else {
-                $shared = $newAr !== '' ? $newAr : ($newEn !== '' ? $newEn : ($oldAr !== '' ? $oldAr : $oldEn));
-            }
-
-            if ($arIndex !== null) {
-                $arItems[$arIndex]['image'] = $shared;
-            }
-            if ($enIndex !== null) {
-                $enItems[$enIndex]['image'] = $shared;
+            if ($enIndex !== null && $arChanged && ! $enChanged && $englishWasInherited) {
+                $enItems[$enIndex]['image'] = $newAr;
             }
         }
 
@@ -262,20 +250,11 @@ class HomepageSectionController extends Controller
 
         $arChanged = $newAr !== $oldAr;
         $enChanged = $newEn !== $oldEn;
+        $englishWasInherited = $oldEn === [] || $oldEn === $oldAr;
 
-        if ($arChanged && ! $enChanged) {
-            $shared = $newAr;
-        } elseif ($enChanged && ! $arChanged) {
-            $shared = $newEn;
-        } elseif ($arChanged && $enChanged) {
-            $shared = $newAr !== [] ? $newAr : $newEn;
-        } else {
-            $shared = $newAr !== [] ? $newAr : ($newEn !== [] ? $newEn : ($oldAr !== [] ? $oldAr : $oldEn));
+        if ($arChanged && ! $enChanged && $englishWasInherited) {
+            $dataEn['logos'] = array_map(fn (string $image) => ['image' => $image], $newAr);
         }
-
-        $rows = array_map(fn (string $image) => ['image' => $image], $shared);
-        $dataAr['logos'] = $rows;
-        $dataEn['logos'] = $rows;
 
         return [$dataAr, $dataEn];
     }
