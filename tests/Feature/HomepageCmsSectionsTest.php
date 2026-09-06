@@ -146,6 +146,41 @@ class HomepageCmsSectionsTest extends TestCase
         $response->assertDontSee('name="item_{{$locale}}_{{$listKey}}_{{$i}}_{{$f}}"', false);
     }
 
+    public function test_section_editor_scopes_image_library_and_uploads_to_the_current_section(): void
+    {
+        $admin = $this->admin();
+        $section = HomepageSection::query()->create([
+            'section_key' => 'services',
+            'is_active' => true,
+            'sort_order' => 30,
+            'data_ar' => [],
+            'data_en' => [],
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.homepage.sections.edit', $section));
+
+        $response->assertOk();
+        $response->assertSee('unifco-homepage-cms-isolation-script-v1', false);
+        $response->assertSee('var section="services"', false);
+        $response->assertSee("u.searchParams.set('section',section)", false);
+        $response->assertSee("options.body.append('section',section)", false);
+        $response->assertSee('Image Library is isolated to this section', false);
+        $response->assertSee('Open live section', false);
+    }
+
+    public function test_section_isolation_presentation_is_not_injected_outside_the_editor(): void
+    {
+        $this->actingAs($this->admin())
+            ->get(route('admin.homepage.sections.index'))
+            ->assertOk()
+            ->assertDontSee('unifco-homepage-cms-isolation-script-v1', false);
+
+        $this->get(route('public.home'))
+            ->assertOk()
+            ->assertDontSee('unifco-homepage-cms-isolation-script-v1', false);
+    }
+
     public function test_services_save_preserves_existing_image_when_an_unrelated_field_is_not_submitted(): void
     {
         $admin = $this->admin();
