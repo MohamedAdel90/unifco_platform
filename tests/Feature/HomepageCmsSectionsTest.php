@@ -131,7 +131,11 @@ class HomepageCmsSectionsTest extends TestCase
             foreach ($schema['items'] ?? [] as $listKey => $itemFields) {
                 foreach ([3, 8] as $rowIndex) {
                     foreach ($itemFields as $field) {
-                        $payload["item_{$locale}_{$listKey}_{$rowIndex}_{$field}"] = "{$key}-{$locale}-{$listKey}-{$rowIndex}-{$field}";
+                        $value = $key === 'clients' && $field === 'image'
+                            ? "{$key}-shared-{$listKey}-{$rowIndex}-{$field}"
+                            : "{$key}-{$locale}-{$listKey}-{$rowIndex}-{$field}";
+
+                        $payload["item_{$locale}_{$listKey}_{$rowIndex}_{$field}"] = $value;
                     }
                 }
             }
