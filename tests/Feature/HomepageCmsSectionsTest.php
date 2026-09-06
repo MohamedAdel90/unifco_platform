@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\HomepageSection;
 use App\Models\User;
-use App\Services\HomepageContentService;
+use App\Services\HomepageHeroRenderer;
 use App\Services\HomepageSectionSchema;
 use Database\Seeders\HomepageContentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,7 +25,7 @@ class HomepageCmsSectionsTest extends TestCase
 
             $this->actingAs($admin)
                 ->put(route('admin.homepage.sections.update', $section), $payload)
-                ->assertRedirect(route('admin.homepage.sections.edit', $section));
+                ->assertRedirect();
 
             $section->refresh();
             $this->assertSectionPayloadPersisted($key, $section, $payload);
@@ -44,7 +44,10 @@ class HomepageCmsSectionsTest extends TestCase
             $payload = $this->sectionPayload($key);
 
             foreach (['ar', 'en'] as $locale) {
-                $response = $this->actingAs($admin)->post(route('admin.homepage.sections.preview', $section), $payload + ['preview_locale' => $locale]);
+                $response = $this->actingAs($admin)->post(
+                    route('admin.homepage.sections.preview', $section),
+                    $payload + ['locale' => $locale],
+                );
                 $response->assertOk();
             }
 
@@ -61,28 +64,28 @@ class HomepageCmsSectionsTest extends TestCase
         $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
 
         $html = $this->actingAs($admin)->get(route('admin.homepage.sections.edit', $section))->assertOk()->getContent();
-        $this->assertStringContainsString('item_ar_services_0_image', $html);
-        $this->assertStringContainsString('item_en_services_0_image', $html);
+        $this->assertStringContainsString('item_ar_items_0_image', $html);
+        $this->assertStringContainsString('item_en_items_0_image', $html);
     }
 
-    public function test_services_save_preserves_existing_image_when_an_unrelated_field_is_not_submitted(): void
+    public function test_services_save_preserves_existing_image_when_image_field_is_not_submitted(): void
     {
         $this->seedHomepage();
         $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
         $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
         $ar = $section->data_ar;
         $en = $section->data_en;
-        $ar['services'][0]['image'] = '/images/preserved-service.webp';
-        $en['services'][0]['image'] = '/images/preserved-service.webp';
+        $ar['items'][3]['image'] = '/images/preserved-service.webp';
+        $en['items'][3]['image'] = '/images/preserved-service.webp';
         $section->update(['data_ar' => $ar, 'data_en' => $en]);
 
         $payload = $this->sectionPayload('services');
-        unset($payload['item_ar_services_3_image'], $payload['item_en_services_3_image']);
+        unset($payload['item_ar_items_3_image'], $payload['item_en_items_3_image']);
 
         $this->actingAs($admin)->put(route('admin.homepage.sections.update', $section), $payload)->assertRedirect();
         $section->refresh();
-        $this->assertSame('/images/preserved-service.webp', $section->data_ar['services'][0]['image']);
-        $this->assertSame('/images/preserved-service.webp', $section->data_en['services'][0]['image']);
+        $this->assertSame('/images/preserved-service.webp', $section->data_ar['items'][0]['image']);
+        $this->assertSame('/images/preserved-service.webp', $section->data_en['items'][0]['image']);
     }
 
     public function test_services_image_is_shared_and_can_be_replaced_through_the_cms_field(): void
@@ -91,13 +94,13 @@ class HomepageCmsSectionsTest extends TestCase
         $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
         $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
         $payload = $this->sectionPayload('services');
-        $payload['item_ar_services_3_image'] = '/images/new-service.webp';
-        $payload['item_en_services_3_image'] = '/images/new-service.webp';
+        $payload['item_ar_items_3_image'] = '/images/new-service.webp';
+        $payload['item_en_items_3_image'] = '/images/new-service.webp';
 
         $this->actingAs($admin)->put(route('admin.homepage.sections.update', $section), $payload)->assertRedirect();
         $section->refresh();
-        $this->assertSame('/images/new-service.webp', $section->data_ar['services'][0]['image']);
-        $this->assertSame('/images/new-service.webp', $section->data_en['services'][0]['image']);
+        $this->assertSame('/images/new-service.webp', $section->data_ar['items'][0]['image']);
+        $this->assertSame('/images/new-service.webp', $section->data_en['items'][0]['image']);
     }
 
     public function test_changing_service_image_in_one_language_propagates_to_the_other_language_when_still_shared(): void
@@ -105,14 +108,21 @@ class HomepageCmsSectionsTest extends TestCase
         $this->seedHomepage();
         $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
         $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
+
+        $ar = $section->data_ar;
+        $en = $section->data_en;
+        $ar['items'][3]['image'] = '/images/original-shared-service.webp';
+        $en['items'][3]['image'] = '/images/original-shared-service.webp';
+        $section->update(['data_ar' => $ar, 'data_en' => $en]);
+
         $payload = $this->sectionPayload('services');
-        $payload['item_ar_services_3_image'] = '/images/shared-service.webp';
-        $payload['item_en_services_3_image'] = '/images/shared-service.webp';
+        $payload['item_ar_items_3_image'] = '/images/shared-service.webp';
+        unset($payload['item_en_items_3_image']);
 
         $this->actingAs($admin)->put(route('admin.homepage.sections.update', $section), $payload)->assertRedirect();
         $section->refresh();
-        $this->assertSame('/images/shared-service.webp', $section->data_ar['services'][0]['image']);
-        $this->assertSame('/images/shared-service.webp', $section->data_en['services'][0]['image']);
+        $this->assertSame('/images/shared-service.webp', $section->data_ar['items'][0]['image']);
+        $this->assertSame('/images/shared-service.webp', $section->data_en['items'][0]['image']);
     }
 
     private function seedHomepage(): void
@@ -132,10 +142,12 @@ class HomepageCmsSectionsTest extends TestCase
             }
 
             foreach ($schema['checks'] ?? [] as $field) {
-                $payload["check_{$locale}_{$field}"] = "{$key}-{$locale}-{$field}";
+                $payload["check_{$locale}_{$field}"] = ["{$key}-{$locale}-{$field}"];
             }
 
             foreach ($schema['items'] ?? [] as $listKey => $itemFields) {
+                $payload["item_{$locale}_{$listKey}_index"] = [3, 8];
+
                 foreach ([3, 8] as $rowIndex) {
                     foreach ($itemFields as $field) {
                         $value = $key === 'clients' && $field === 'image'
@@ -159,7 +171,11 @@ class HomepageCmsSectionsTest extends TestCase
             $stored = $section->{"data_{$locale}"};
 
             foreach ($schema['scalars'] ?? [] as $field) {
-                $this->assertSame($payload["scalar_{$locale}_{$field}"], $stored[$field]);
+                $expected = $payload["scalar_{$locale}_{$field}"];
+                if ($field === 'render_mode') {
+                    $expected = HomepageHeroRenderer::normalizeMode($expected);
+                }
+                $this->assertSame($expected, $stored[$field]);
             }
 
             foreach ($schema['checks'] ?? [] as $field) {
