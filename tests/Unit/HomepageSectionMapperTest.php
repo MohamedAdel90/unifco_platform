@@ -57,6 +57,21 @@ class HomepageSectionMapperTest extends TestCase
         $this->assertArrayNotHasKey('render_mode', $mapped);
     }
 
+    public function test_hero_full_section_image_mode_uses_the_complete_artwork_once_without_cms_overlay(): void
+    {
+        $mapped = HomepageSectionMapper::toPublic('hero', [
+            'display_mode' => 'full_section_image',
+            'full_section_image' => '/storage/homepage-media/hero-complete.webp',
+            'render_mode' => 'background',
+            'image' => '/old-background.webp',
+            'title' => 'This title must not be drawn over the artwork',
+        ]);
+
+        $this->assertSame('full_banner', $mapped['hero_render_mode']);
+        $this->assertSame('/storage/homepage-media/hero-complete.webp', $mapped['hero_image']);
+        $this->assertSame('This title must not be drawn over the artwork', $mapped['hero_title']);
+    }
+
     public function test_services_more_keeps_the_public_more_key(): void
     {
         $mapped = HomepageSectionMapper::toPublic('services', ['more' => 'Read more']);
