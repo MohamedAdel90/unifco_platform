@@ -50,9 +50,34 @@ class PublicSparePartsDedicatedPageTest extends TestCase
 
             $response->assertOk()
                 ->assertSee('id="request-selector-bar"', false)
-                ->assertSee('position:sticky!important', false)
+                ->assertSee('position:sticky', false)
                 ->assertSee($locale === 'ar' ? 'نوع الخدمة المطلوبة' : 'Required Service')
                 ->assertSee($locale === 'ar' ? 'عرض سعر قطع غيار' : 'Spare Parts Quotation');
         }
+    }
+
+    public function test_the_entire_upper_request_chrome_is_shared_by_maintenance_and_spare_parts(): void
+    {
+        foreach (['ar', 'en'] as $locale) {
+            foreach (['/maintenance?lang='.$locale, '/maintenance/spare-parts?lang='.$locale] as $url) {
+                $response = $this->get($url);
+
+                $response->assertOk()
+                    ->assertSee('id="unifco-request-chrome"', false)
+                    ->assertSee('id="request-selector-bar"', false)
+                    ->assertSee($locale === 'ar' ? 'خدمة أسرع تبدأ بطلب أوضح' : 'A faster service starts with a clearer request')
+                    ->assertSee($locale === 'ar' ? 'نوع العميل' : 'Customer Type')
+                    ->assertSee($locale === 'ar' ? 'نوع الخدمة المطلوبة' : 'Required Service')
+                    ->assertSee($locale === 'ar' ? 'نوع الطلب' : 'Request Type');
+            }
+        }
+    }
+
+    public function test_legacy_maintenance_selector_is_hidden_below_the_shared_chrome(): void
+    {
+        $response = $this->get('/maintenance?lang=ar');
+
+        $response->assertOk()
+            ->assertSee('#maintenance-form > .panel:first-of-type{display:none!important}', false);
     }
 }
