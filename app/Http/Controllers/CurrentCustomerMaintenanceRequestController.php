@@ -14,19 +14,29 @@ class CurrentCustomerMaintenanceRequestController extends Controller
         return view('public.current-customer-maintenance-request');
     }
 
+    public function spareParts(): View
+    {
+        return view('public.spare-parts-request');
+    }
+
     public function customer(Request $request): JsonResponse
     {
-        $data = $request->validate(['customer_number' => ['required','string','max:80']]);
+        $data = $request->validate(['customer_number' => ['required','string','max:180']]);
         $customerNumber = trim($data['customer_number']);
 
-        $customerQuery = DB::table('customers')->where('customer_code', $customerNumber);
-        if (ctype_digit($customerNumber)) {
-            $customerQuery->orWhere('id', (int) $customerNumber);
-        }
+        $customerQuery = DB::table('customers')->where(function ($query) use ($customerNumber) {
+            $query->where('customer_code', $customerNumber)
+                ->orWhere('phone', $customerNumber)
+                ->orWhere('email', $customerNumber);
+
+            if (ctype_digit($customerNumber)) {
+                $query->orWhere('id', (int) $customerNumber);
+            }
+        });
         $customer = $customerQuery->first();
 
         if (! $customer) {
-            return response()->json(['message' => 'لم يتم العثور على رقم العميل.'], 404);
+            return response()->json(['message' => 'لم يتم العثور على العميل بهذه البيانات.'], 404);
         }
 
         $sites = DB::table('customer_sites')->where('customer_id', $customer->id)
