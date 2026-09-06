@@ -2,11 +2,12 @@
 
 use App\Http\Controllers\CurrentCustomerMaintenanceRequestController;
 use App\Http\Middleware\PublicCurrentMaintenanceFormEnhancements;
+use App\Http\Middleware\PublicMaintenanceSparePartsBridge;
 use Illuminate\Support\Facades\Route;
 
 // Public Maintenance portal (canonical routes).
 Route::get('/maintenance', [CurrentCustomerMaintenanceRequestController::class, 'create'])
-    ->middleware(PublicCurrentMaintenanceFormEnhancements::class)
+    ->middleware([PublicCurrentMaintenanceFormEnhancements::class, PublicMaintenanceSparePartsBridge::class])
     ->name('public.current-maintenance');
 Route::get('/maintenance/customer', [CurrentCustomerMaintenanceRequestController::class, 'customer'])
     ->middleware('throttle:30,1')
