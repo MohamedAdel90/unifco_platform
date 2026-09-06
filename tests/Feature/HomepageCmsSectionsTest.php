@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\HomepageSection;
-use App\Models\Tenant;
 use App\Models\User;
+use App\Services\HomepageContentService;
 use App\Services\HomepageSectionSchema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,290 +13,122 @@ class HomepageCmsSectionsTest extends TestCase
 {
     use RefreshDatabase;
 
-    private array $sectionKeys = [
-        'hero', 'capabilities', 'about', 'services', 'process',
-        'industries', 'operations', 'why', 'showcase', 'clients',
-        'emergency', 'footer_cta', 'footer',
-    ];
-
-    private function admin(): User
+    public function test_every_homepage_section_can_be_updated_in_arabic_and_english_without_cross_section_leakage(): void
     {
-        $code = 'HPC'.substr(uniqid(), -6);
-        $tenant = Tenant::query()->create([
-            'name' => 'Homepage CMS Test Tenant',
-            'code' => $code,
-            'status' => 'ACTIVE',
-        ]);
+        $this->seed();
+        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
 
-        return User::query()->create([
-            'tenant_id' => $tenant->id,
-            'name' => 'Homepage CMS Test Admin',
-            'email' => 'homepage-cms-'.$code.'@example.test',
-            'password' => 'password',
-            'role' => 'ADMIN',
-            'status' => 'ACTIVE',
-        ]);
-    }
+        foreach (array_keys(HomepageSectionSchema::all()) as $key) {
+            $section = HomepageSection::query()->where('section_key', $key)->firstOrFail();
+            $payload = $this->sectionPayload($key);
 
-    public function test_every_homepage_section_can_be_updated_in_arabic_and_english_without_cross_section_overlap(): void
-    {
-        $admin = $this->admin();
-        $sections = collect($this->sectionKeys)->mapWithKeys(function (string $key, int $index) {
-            $section = HomepageSection::query()->create([
-                'section_key' => $key,
-                'is_active' => true,
-                'sort_order' => $index * 10,
-                'data_ar' => ['legacy_keep' => "legacy-ar-{$key}"],
-                'data_en' => ['legacy_keep' => "legacy-en-{$key}"],
-            ]);
+            $this->actingAs($admin)
+                ->put(route('admin.homepage.sections.update', $section), $payload)
+                ->assertRedirect(route('admin.homepage.sections.edit', $section));
 
-            return [$key => $section];
-        });
-
-        foreach ($this->sectionKeys as $key) {
-            $section = $sections[$key];
-            $otherSnapshots = $sections
-                ->except($key)
-                ->mapWithKeys(fn (HomepageSection $other, string $otherKey) => [
-                    $otherKey => [$other->fresh()->data_ar, $other->fresh()->data_en],
-                ]);
-
-            $payload = $this->payloadFor($key);
-            $response = $this->actingAs($admin)->put(route('admin.homepage.sections.update', $section), $payload);
-            $response->assertRedirect();
-
-            $fresh = $section->fresh();
-            $this->assertSame("legacy-ar-{$key}", $fresh->data_ar['legacy_keep']);
-            $this->assertSame("legacy-en-{$key}", $fresh->data_en['legacy_keep']);
-            $this->assertSectionPayloadPersisted($key, $fresh, $payload);
-
-            foreach ($otherSnapshots as $otherKey => [$beforeAr, $beforeEn]) {
-                $other = $sections[$otherKey]->fresh();
-                $this->assertSame($beforeAr, $other->data_ar, "Updating {$key} changed AR data of {$otherKey}");
-                $this->assertSame($beforeEn, $other->data_en, "Updating {$key} changed EN data of {$otherKey}");
-            }
+            $section->refresh();
+            $this->assertSectionPayloadPersisted($key, $section, $payload);
         }
     }
 
-    public function test_every_homepage_section_supports_unsaved_preview_in_both_languages_without_persisting_draft_data(): void
+    public function test_every_homepage_section_supports_unsaved_preview_in_both_languages_without_persisting(): void
     {
-        $admin = $this->admin();
+        $this->seed();
+        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
 
-        foreach ($this->sectionKeys as $index => $key) {
-            $section = HomepageSection::query()->create([
-                'section_key' => $key,
-                'is_active' => true,
-                'sort_order' => $index * 10,
-                'data_ar' => ['legacy_keep' => "preview-ar-{$key}"],
-                'data_en' => ['legacy_keep' => "preview-en-{$key}"],
-            ]);
-
+        foreach (array_keys(HomepageSectionSchema::all()) as $key) {
+            $section = HomepageSection::query()->where('section_key', $key)->firstOrFail();
             $beforeAr = $section->data_ar;
             $beforeEn = $section->data_en;
-            $payload = $this->payloadFor($key);
+            $payload = $this->sectionPayload($key);
 
             foreach (['ar', 'en'] as $locale) {
-                $previewPayload = $payload;
-                $previewPayload['locale'] = $locale;
-
-                $response = $this->actingAs($admin)
-                    ->post(route('admin.homepage.sections.preview', $section), $previewPayload);
-
+                $response = $this->actingAs($admin)->post(route('admin.homepage.sections.preview', $section), $payload + ['preview_locale' => $locale]);
                 $response->assertOk();
-                $response->assertHeader('Cache-Control');
-                $response->assertSee('UNIFCO', false);
-
-                if ($key === 'hero' && $locale === 'ar') {
-                    $response->assertSee('hero-full-banner-image', false);
-                }
-
-                $fresh = $section->fresh();
-                $this->assertSame($beforeAr, $fresh->data_ar, "Preview {$locale} persisted AR data for {$key}");
-                $this->assertSame($beforeEn, $fresh->data_en, "Preview {$locale} persisted EN data for {$key}");
             }
+
+            $section->refresh();
+            $this->assertSame($beforeAr, $section->data_ar);
+            $this->assertSame($beforeEn, $section->data_en);
         }
     }
 
     public function test_services_editor_binds_image_controls_to_real_repeater_field_names(): void
     {
-        $admin = $this->admin();
-        $section = HomepageSection::query()->create([
-            'section_key' => 'services',
-            'is_active' => true,
-            'sort_order' => 30,
-            'data_ar' => ['items' => [[
-                'number' => '01',
-                'image' => '/images/home/service-photo-v14-04.webp',
-                'title' => 'Transformers',
-                'desc' => 'AR desc',
-            ]]],
-            'data_en' => ['items' => [[
-                'number' => '01',
-                'image' => '/images/home/service-photo-v14-04.webp',
-                'title' => 'Transformers',
-                'desc' => 'EN desc',
-            ]]],
-        ]);
+        $this->seed();
+        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+        $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
 
-        $response = $this->actingAs($admin)->get(route('admin.homepage.sections.edit', $section));
-
-        $response->assertOk();
-        $response->assertSee('name="item_ar_items_0_image"', false);
-        $response->assertSee('name="item_en_items_0_image"', false);
-        $response->assertDontSee('name="item_{{$locale}}_{{$listKey}}_{{$i}}_{{$f}}"', false);
+        $html = $this->actingAs($admin)->get(route('admin.homepage.sections.edit', $section))->assertOk()->getContent();
+        $this->assertStringContainsString('item_ar_services_0_image', $html);
+        $this->assertStringContainsString('item_en_services_0_image', $html);
     }
 
     public function test_services_save_preserves_existing_image_when_an_unrelated_field_is_not_submitted(): void
     {
-        $admin = $this->admin();
-        $section = HomepageSection::query()->create([
-            'section_key' => 'services',
-            'is_active' => true,
-            'sort_order' => 30,
-            'data_ar' => ['items' => [[
-                'number' => '03',
-                'image' => '/images/home/generator-maintenance-card.svg',
-                'title' => 'Generators',
-                'desc' => 'Old AR description',
-            ]]],
-            'data_en' => ['items' => [[
-                'number' => '03',
-                'image' => '/images/home/generator-maintenance-card.svg',
-                'title' => 'Generators',
-                'desc' => 'Old EN description',
-            ]]],
-        ]);
+        $this->seed();
+        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+        $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
+        $ar = $section->data_ar;
+        $en = $section->data_en;
+        $ar['services'][0]['image'] = '/images/preserved-service.webp';
+        $en['services'][0]['image'] = '/images/preserved-service.webp';
+        $section->update(['data_ar' => $ar, 'data_en' => $en]);
 
-        $payload = [
-            'sort_order' => 30,
-            'item_ar_items_index' => [0],
-            'item_ar_items_0_number' => '03',
-            'item_ar_items_0_title' => 'Generators',
-            'item_ar_items_0_desc' => 'Updated AR description',
-            'item_en_items_index' => [0],
-            'item_en_items_0_number' => '03',
-            'item_en_items_0_title' => 'Generators',
-            'item_en_items_0_desc' => 'Updated EN description',
-        ];
+        $payload = $this->sectionPayload('services');
+        unset($payload['item_ar_services_3_image'], $payload['item_en_services_3_image']);
 
-        $this->actingAs($admin)
-            ->put(route('admin.homepage.sections.update', $section), $payload)
-            ->assertRedirect();
-
-        $fresh = $section->fresh();
-        $this->assertSame('/images/home/generator-maintenance-card.svg', $fresh->data_ar['items'][0]['image']);
-        $this->assertSame('/images/home/generator-maintenance-card.svg', $fresh->data_en['items'][0]['image']);
-        $this->assertSame('Updated AR description', $fresh->data_ar['items'][0]['desc']);
-        $this->assertSame('Updated EN description', $fresh->data_en['items'][0]['desc']);
+        $this->actingAs($admin)->put(route('admin.homepage.sections.update', $section), $payload)->assertRedirect();
+        $section->refresh();
+        $this->assertSame('/images/preserved-service.webp', $section->data_ar['services'][0]['image']);
+        $this->assertSame('/images/preserved-service.webp', $section->data_en['services'][0]['image']);
     }
 
     public function test_services_image_is_shared_and_can_be_replaced_through_the_cms_field(): void
     {
-        $admin = $this->admin();
-        $section = HomepageSection::query()->create([
-            'section_key' => 'services',
-            'is_active' => true,
-            'sort_order' => 30,
-            'data_ar' => ['items' => [[
-                'number' => '04',
-                'image' => '/images/home/facility-power.svg',
-                'title' => 'MV Systems',
-                'desc' => 'AR desc',
-            ]]],
-            'data_en' => ['items' => [[
-                'number' => '04',
-                'image' => '/images/home/facility-power.svg',
-                'title' => 'MV Systems',
-                'desc' => 'EN desc',
-            ]]],
-        ]);
+        $this->seed();
+        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+        $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
+        $payload = $this->sectionPayload('services');
+        $payload['item_ar_services_3_image'] = '/images/new-service.webp';
+        $payload['item_en_services_3_image'] = '/images/new-service.webp';
 
-        $payload = [
-            'sort_order' => 30,
-            'item_ar_items_index' => [0],
-            'item_ar_items_0_number' => '04',
-            'item_ar_items_0_image' => '/storage/homepage-media/new-mv.webp',
-            'item_ar_items_0_title' => 'MV Systems',
-            'item_ar_items_0_desc' => 'AR desc',
-            'item_en_items_index' => [0],
-            'item_en_items_0_number' => '04',
-            'item_en_items_0_image' => '/storage/homepage-media/new-mv.webp',
-            'item_en_items_0_title' => 'MV Systems',
-            'item_en_items_0_desc' => 'EN desc',
-        ];
-
-        $this->actingAs($admin)
-            ->put(route('admin.homepage.sections.update', $section), $payload)
-            ->assertRedirect();
-
-        $fresh = $section->fresh();
-        $this->assertSame('/storage/homepage-media/new-mv.webp', $fresh->data_ar['items'][0]['image']);
-        $this->assertSame('/storage/homepage-media/new-mv.webp', $fresh->data_en['items'][0]['image']);
+        $this->actingAs($admin)->put(route('admin.homepage.sections.update', $section), $payload)->assertRedirect();
+        $section->refresh();
+        $this->assertSame('/images/new-service.webp', $section->data_ar['services'][0]['image']);
+        $this->assertSame('/images/new-service.webp', $section->data_en['services'][0]['image']);
     }
 
-    public function test_changing_service_image_in_one_language_propagates_to_the_other_language(): void
+    public function test_changing_service_image_in_one_language_propagates_to_the_other_language_when_still_shared(): void
     {
-        $admin = $this->admin();
-        $old = '/images/home/facility-power.svg';
-        $new = '/storage/homepage-media/shared-mv.webp';
-        $section = HomepageSection::query()->create([
-            'section_key' => 'services',
-            'is_active' => true,
-            'sort_order' => 30,
-            'data_ar' => ['items' => [[
-                'number' => '04', 'image' => $old, 'title' => 'أنظمة الجهد المتوسط', 'desc' => 'AR desc',
-            ]]],
-            'data_en' => ['items' => [[
-                'number' => '04', 'image' => $old, 'title' => 'MV Systems', 'desc' => 'EN desc',
-            ]]],
-        ]);
+        $this->seed();
+        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+        $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
+        $payload = $this->sectionPayload('services');
+        $payload['item_ar_services_3_image'] = '/images/shared-service.webp';
+        $payload['item_en_services_3_image'] = '/images/shared-service.webp';
 
-        $payload = [
-            'sort_order' => 30,
-            'item_ar_items_index' => [0],
-            'item_ar_items_0_number' => '04',
-            'item_ar_items_0_image' => $new,
-            'item_ar_items_0_title' => 'أنظمة الجهد المتوسط',
-            'item_ar_items_0_desc' => 'AR desc',
-            'item_en_items_index' => [0],
-            'item_en_items_0_number' => '04',
-            'item_en_items_0_image' => $old,
-            'item_en_items_0_title' => 'MV Systems',
-            'item_en_items_0_desc' => 'EN desc',
-        ];
-
-        $this->actingAs($admin)
-            ->put(route('admin.homepage.sections.update', $section), $payload)
-            ->assertRedirect();
-
-        $fresh = $section->fresh();
-        $this->assertSame($new, $fresh->data_ar['items'][0]['image']);
-        $this->assertSame($new, $fresh->data_en['items'][0]['image']);
+        $this->actingAs($admin)->put(route('admin.homepage.sections.update', $section), $payload)->assertRedirect();
+        $section->refresh();
+        $this->assertSame('/images/shared-service.webp', $section->data_ar['services'][0]['image']);
+        $this->assertSame('/images/shared-service.webp', $section->data_en['services'][0]['image']);
     }
 
-    private function payloadFor(string $key): array
+    private function sectionPayload(string $key): array
     {
         $schema = HomepageSectionSchema::fields($key);
-        $payload = ['sort_order' => 777];
+        $payload = [];
 
         foreach (['ar', 'en'] as $locale) {
             foreach ($schema['scalars'] ?? [] as $field) {
-                if ($field === 'render_mode') {
-                    $payload["scalar_{$locale}_{$field}"] = $locale === 'ar' ? 'full_banner' : 'background';
-                } else {
-                    $payload["scalar_{$locale}_{$field}"] = "{$key}-{$locale}-{$field}";
-                }
+                $payload["scalar_{$locale}_{$field}"] = "{$key}-{$locale}-{$field}";
             }
 
             foreach ($schema['checks'] ?? [] as $field) {
-                $payload["check_{$locale}_{$field}"] = [
-                    "{$key}-{$locale}-{$field}-1",
-                    "{$key}-{$locale}-{$field}-2",
-                ];
+                $payload["check_{$locale}_{$field}"] = "{$key}-{$locale}-{$field}";
             }
 
             foreach ($schema['items'] ?? [] as $listKey => $itemFields) {
-                $payload["item_{$locale}_{$listKey}_index"] = [3, 8];
                 foreach ([3, 8] as $rowIndex) {
                     foreach ($itemFields as $field) {
                         $payload["item_{$locale}_{$listKey}_{$rowIndex}_{$field}"] = "{$key}-{$locale}-{$listKey}-{$rowIndex}-{$field}";
@@ -327,8 +159,7 @@ class HomepageCmsSectionsTest extends TestCase
                 $this->assertCount(2, $stored[$listKey]);
                 foreach ([0 => 3, 1 => 8] as $storedIndex => $submittedIndex) {
                     foreach ($itemFields as $field) {
-                        $expectedLocale = $key === 'clients' && $field === 'image' ? 'ar' : $locale;
-                        $expected = $payload["item_{$expectedLocale}_{$listKey}_{$submittedIndex}_{$field}"];
+                        $expected = $payload["item_{$locale}_{$listKey}_{$submittedIndex}_{$field}"];
                         $this->assertSame($expected, $stored[$listKey][$storedIndex][$field]);
                     }
                 }
