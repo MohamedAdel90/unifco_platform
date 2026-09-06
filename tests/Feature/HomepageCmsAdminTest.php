@@ -58,6 +58,62 @@ class HomepageCmsAdminTest extends TestCase
             ->assertDontSee('Edit JSON');
     }
 
+    public function test_separate_cms_cards_show_their_saved_display_modes(): void
+    {
+        HomepageSection::create([
+            'section_key' => 'operations',
+            'sort_order' => 60,
+            'is_active' => true,
+            'data_ar' => [
+                'maintenance_display_mode' => 'full_section_image',
+                'portal_display_mode' => 'structured',
+            ],
+            'data_en' => [
+                'maintenance_display_mode' => 'structured',
+                'portal_display_mode' => 'full_section_image',
+            ],
+        ]);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.homepage.sections.index'))
+            ->assertOk()
+            ->assertSee('Display Mode:', false)
+            ->assertSee('AR <b>Full Section Image</b> · EN <b>Structured Section</b>', false)
+            ->assertSee('AR <b>Structured Section</b> · EN <b>Full Section Image</b>', false)
+            ->assertDontSee('Display Mode + bilingual content', false);
+    }
+
+    public function test_separate_cms_editors_render_display_mode_fields_directly(): void
+    {
+        HomepageSection::create([
+            'section_key' => 'operations',
+            'sort_order' => 60,
+            'is_active' => true,
+            'data_ar' => [
+                'maintenance_display_mode' => 'full_section_image',
+                'portal_display_mode' => 'structured',
+            ],
+            'data_en' => [
+                'maintenance_display_mode' => 'structured',
+                'portal_display_mode' => 'full_section_image',
+            ],
+        ]);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.maintenance-cms'))
+            ->assertOk()
+            ->assertSee('name="scalar_ar_maintenance_display_mode"', false)
+            ->assertSee('value="full_section_image"', false)
+            ->assertSee('name="scalar_en_maintenance_full_section_image"', false);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.client-portal-cms'))
+            ->assertOk()
+            ->assertSee('name="scalar_ar_portal_display_mode"', false)
+            ->assertSee('name="scalar_en_portal_display_mode"', false)
+            ->assertSee('value="full_section_image"', false);
+    }
+
     public function test_admin_can_open_section_edit(): void
     {
         $section = $this->makeSection();
