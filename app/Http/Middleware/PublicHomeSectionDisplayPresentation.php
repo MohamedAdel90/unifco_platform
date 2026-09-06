@@ -49,6 +49,9 @@ class PublicHomeSectionDisplayPresentation
         $script = <<<'HTML'
 <style id="unifco-full-section-image-style">
 .unifco-full-section-image{width:100%;margin:0;padding:0;line-height:0;background:#fff;overflow:hidden}.unifco-full-section-image img{display:block;width:100%;height:auto;max-width:none;margin:0;padding:0;object-fit:contain}.unifco-full-card-image{height:100%;min-height:100%;display:flex;align-items:center;justify-content:center;background:#fff}.unifco-full-card-image img{width:100%;height:100%;object-fit:cover}
+.unifco-full-hero-image{position:relative;left:50%;transform:translateX(-50%);width:min(1400px,calc(100vw - 48px));max-width:none;margin:20px 0 18px;border-radius:14px;background:#071f4d;box-shadow:0 14px 36px rgba(7,31,77,.13);overflow:hidden}.unifco-full-hero-image img{width:100%;height:auto;max-height:none;object-fit:contain;object-position:center center}
+@media(max-width:900px){.unifco-full-hero-image{width:calc(100vw - 24px);margin:12px 0 12px;border-radius:10px;box-shadow:0 8px 22px rgba(7,31,77,.11)}}
+@media(max-width:520px){.unifco-full-hero-image{width:100vw;margin:0;border-radius:0;box-shadow:none}.unifco-full-hero-image img{width:100%;height:auto}}
 </style>
 <script>
 (function(){
@@ -85,7 +88,13 @@ class PublicHomeSectionDisplayPresentation
     if(!item || item.mode!=='full_section_image' || !item.image)return;
     var target=findTarget(key);if(!target)return;
     var wrapper=document.createElement('div');
-    wrapper.className=(key==='maintenance'||key==='portal'||key==='showcase'||key==='emergency')?'unifco-full-section-image unifco-full-card-image':'unifco-full-section-image';
+    if(key==='hero'){
+      wrapper.className='unifco-full-section-image unifco-full-hero-image';
+    }else if(key==='maintenance'||key==='portal'||key==='showcase'||key==='emergency'){
+      wrapper.className='unifco-full-section-image unifco-full-card-image';
+    }else{
+      wrapper.className='unifco-full-section-image';
+    }
     var img=document.createElement('img');img.src=item.image;img.alt='';wrapper.appendChild(img);
     target.replaceWith(wrapper);
   }
