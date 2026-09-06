@@ -3,6 +3,7 @@
 use App\Http\Controllers\CurrentCustomerMaintenanceRequestController;
 use App\Http\Middleware\PublicCurrentMaintenanceFormEnhancements;
 use App\Http\Middleware\PublicMaintenanceSparePartsBridge;
+use App\Http\Middleware\PublicSparePartsSummaryLayout;
 use Illuminate\Support\Facades\Route;
 
 // Public Maintenance portal (canonical routes).
@@ -13,6 +14,7 @@ Route::get('/maintenance', [CurrentCustomerMaintenanceRequestController::class, 
 // Dedicated spare-parts experience. This intentionally renders its own Blade
 // instead of layering spare-parts UI over the legacy generic quotation form.
 Route::get('/maintenance/spare-parts', [CurrentCustomerMaintenanceRequestController::class, 'spareParts'])
+    ->middleware(PublicSparePartsSummaryLayout::class)
     ->name('public.current-maintenance.spare-parts');
 
 Route::get('/maintenance/customer', [CurrentCustomerMaintenanceRequestController::class, 'customer'])
