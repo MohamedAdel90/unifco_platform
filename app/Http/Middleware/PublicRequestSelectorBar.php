@@ -21,6 +21,12 @@ class PublicRequestSelectorBar
             return $response;
         }
 
+        // This middleware can be reached through more than one presentation layer.
+        // Never inject the shared request chrome twice into the same response.
+        if (str_contains($html, 'id="unifco-request-chrome"')) {
+            return $response;
+        }
+
         $lang = $request->query('lang', 'ar') === 'en' ? 'en' : 'ar';
         $isAr = $lang === 'ar';
         $isSpare = $request->routeIs('public.current-maintenance.spare-parts');
@@ -31,7 +37,6 @@ class PublicRequestSelectorBar
 
         $styles = <<<'HTML'
 <style id="unifco-request-selector-bar-style">
-/* One shared upper request shell. It stays visually identical while only the body below changes. */
 body > header.top,
 body > .page-head{display:none!important}
 #maintenance-form > .panel:first-of-type{display:none!important}
@@ -122,6 +127,9 @@ HTML;
   const spareUrl={$spareJson};
   function ready(fn){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fn); else fn(); }
   ready(function(){
+    const chromeNodes=Array.from(document.querySelectorAll('#unifco-request-chrome'));
+    chromeNodes.slice(1).forEach(function(node){ node.remove(); });
+
     const service=document.getElementById('persistent-service-type');
     const subtype=document.getElementById('persistent-service-subtype');
     if(!service||!subtype)return;
