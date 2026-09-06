@@ -14,15 +14,7 @@ class HomepageSectionMapper
         $mapped = $data;
 
         return match ($sectionKey) {
-            'hero' => self::map($mapped, [
-                'render_mode' => 'hero_render_mode',
-                'image' => 'hero_image',
-                'eyebrow' => 'hero_eyebrow',
-                'title' => 'hero_title',
-                'text' => 'hero_text',
-                'button' => 'explore',
-                'proofs' => 'hero_proofs',
-            ], ['proofs' => ['icon', 'label', 'sub']]),
+            'hero' => self::mapHero($mapped),
 
             'capabilities' => self::map($mapped, [
                 'items' => 'capabilities',
@@ -111,6 +103,32 @@ class HomepageSectionMapper
 
             default => $mapped,
         };
+    }
+
+    private static function mapHero(array $data): array
+    {
+        $displayMode = (string) ($data['display_mode'] ?? 'structured');
+        $fullSectionImage = trim((string) ($data['full_section_image'] ?? ''));
+
+        $data = self::map($data, [
+            'render_mode' => 'hero_render_mode',
+            'image' => 'hero_image',
+            'eyebrow' => 'hero_eyebrow',
+            'title' => 'hero_title',
+            'text' => 'hero_text',
+            'button' => 'explore',
+            'proofs' => 'hero_proofs',
+        ], ['proofs' => ['icon', 'label', 'sub']]);
+
+        // Website CMS "Full Section Image" is the authoritative presentation
+        // mode for Hero. The artwork already contains its text/buttons, so the
+        // legacy overlay must be hidden and the complete artwork used once.
+        if ($displayMode === 'full_section_image' && $fullSectionImage !== '') {
+            $data['hero_render_mode'] = HomepageHeroRenderer::MODE_FULL_BANNER;
+            $data['hero_image'] = $fullSectionImage;
+        }
+
+        return $data;
     }
 
     private static function map(array $data, array $aliases, array $listFields = []): array
