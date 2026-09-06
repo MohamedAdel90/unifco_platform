@@ -54,6 +54,38 @@ class HomepageHeroRendererTest extends TestCase
         $this->assertStringContainsString('aria-label="تواصل معنا"', $html);
     }
 
+    public function test_full_banner_mode_replaces_old_proof_area_with_approved_three_icon_strip(): void
+    {
+        $renderer = new HomepageHeroRenderer();
+        $html = $renderer->render($this->html, [
+            'hero_render_mode' => 'full_banner',
+            'hero_image' => '/images/full-banner.webp',
+            'lang' => 'ar',
+        ]);
+
+        $this->assertSame(1, substr_count($html, 'class="hero-approved-proofs"'));
+        $this->assertSame(3, substr_count($html, 'class="hero-approved-proof"'));
+        $this->assertStringContainsString('تغطية شاملة', $html);
+        $this->assertStringContainsString('الجودة المعتمدة', $html);
+        $this->assertStringContainsString('دعم على مدار 24/7', $html);
+        $this->assertStringNotContainsString('متجر المرافق الواحد', $html);
+    }
+
+    public function test_english_full_banner_keeps_approved_icon_meanings_in_english_without_translating_one_facility_shop(): void
+    {
+        $renderer = new HomepageHeroRenderer();
+        $html = $renderer->render($this->html, [
+            'hero_render_mode' => 'full_banner',
+            'hero_image' => '/images/full-banner-en.webp',
+            'lang' => 'en',
+        ]);
+
+        $this->assertStringContainsString('Nationwide Coverage', $html);
+        $this->assertStringContainsString('Certified Quality', $html);
+        $this->assertStringContainsString('24/7 Support', $html);
+        $this->assertStringNotContainsString('متجر المرافق الواحد', $html);
+    }
+
     public function test_invalid_mode_falls_back_to_background_mode(): void
     {
         $renderer = new HomepageHeroRenderer();
