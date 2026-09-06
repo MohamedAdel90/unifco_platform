@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\HomepageSection;
+use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\HomepageContentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,7 +16,22 @@ class HomepageCmsImageResizeControlsTest extends TestCase
     public function test_homepage_image_fields_expose_editable_pixel_dimensions_and_resize_action(): void
     {
         $this->seed(HomepageContentSeeder::class);
-        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+
+        $tenant = Tenant::query()->create([
+            'name' => 'Test Tenant',
+            'code' => 'TEST',
+            'status' => 'ACTIVE',
+        ]);
+
+        $admin = User::query()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Homepage CMS Admin',
+            'email' => 'homepage-cms-admin@example.test',
+            'password' => 'password',
+            'role' => 'ADMIN',
+            'status' => 'ACTIVE',
+        ]);
+
         $section = HomepageSection::query()->where('section_key', 'hero')->firstOrFail();
 
         $html = $this->actingAs($admin)
