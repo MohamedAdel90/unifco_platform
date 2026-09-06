@@ -6,50 +6,35 @@ use Tests\TestCase;
 
 class HomepageAboutProfileCardTest extends TestCase
 {
-    public function test_homepage_about_profile_modal_is_available_in_both_locales(): void
+    public function test_homepage_about_action_links_to_about_route_in_both_locales(): void
     {
         foreach (['ar', 'en'] as $locale) {
             $html = $this->get('/?lang='.$locale)->assertOk()->getContent();
 
-            $this->assertStringContainsString('id="unifco-profile-modal"', $html);
-            $this->assertStringContainsString('id="unifco-profile-modal-script"', $html);
-            $this->assertStringContainsString("document.querySelector('#about .about-copy > .btn')", $html);
-            $this->assertStringContainsString("trigger.setAttribute('href','#unifco-profile-modal')", $html);
-            $this->assertStringContainsString('aria-haspopup', $html);
-            $this->assertStringContainsString('class="unifco-profile-artwork"', $html);
+            $this->assertStringContainsString('/about?lang='.$locale, $html);
+            $this->assertStringNotContainsString('id="about-company-trigger"', $html);
         }
     }
 
-    public function test_english_homepage_uses_only_the_exact_approved_profile_card_artwork(): void
+    public function test_legacy_about_profile_modal_is_not_rendered_anymore(): void
     {
-        $html = $this->get('/?lang=en')->assertOk()->getContent();
+        foreach (['ar', 'en'] as $locale) {
+            $html = $this->get('/?lang='.$locale)->assertOk()->getContent();
 
-        $this->assertStringContainsString('/images/home/unifco-about-card-en.webp?v=20260905-4', $html);
-        $this->assertStringContainsString('unifco-profile-dialog is-english', $html);
-        $this->assertStringNotContainsString('/images/home/unifco-about-card-ar.webp', $html);
-        $this->assertStringNotContainsString('class="unifco-profile-sheet"', $html);
+            $this->assertStringNotContainsString('id="unifco-profile-modal"', $html);
+            $this->assertStringNotContainsString('id="unifco-profile-modal-script"', $html);
+            $this->assertStringNotContainsString('/images/home/unifco-about-card-en.webp', $html);
+            $this->assertStringNotContainsString('/images/home/unifco-about-card-ar.webp', $html);
+        }
     }
 
-    public function test_arabic_homepage_uses_only_the_exact_approved_profile_card_artwork(): void
+    public function test_homepage_keeps_responsive_layout_without_legacy_profile_artwork_rules(): void
     {
         $html = $this->get('/?lang=ar')->assertOk()->getContent();
 
-        $this->assertStringContainsString('/images/home/unifco-about-card-ar.webp?v=20260905-4', $html);
-        $this->assertStringContainsString('unifco-profile-dialog is-arabic', $html);
-        $this->assertStringNotContainsString('/images/home/unifco-about-card-en.webp', $html);
-        $this->assertStringNotContainsString('class="unifco-profile-sheet"', $html);
-    }
-
-    public function test_profile_artwork_fits_without_horizontal_crop_on_mobile_and_laptop(): void
-    {
-        $html = $this->get('/?lang=ar')->assertOk()->getContent();
-
-        $this->assertStringContainsString('@media(min-width:900px)', $html);
-        $this->assertStringContainsString('@media(min-width:621px) and (max-width:899px)', $html);
-        $this->assertStringContainsString('@media(max-width:620px)', $html);
-        $this->assertStringContainsString('overflow-x:hidden', $html);
-        $this->assertStringContainsString('width:100%;max-width:100%', $html);
         $this->assertStringNotContainsString('width:210vw', $html);
         $this->assertStringNotContainsString('width:392vw', $html);
+        $this->assertStringNotContainsString('unifco-profile-dialog', $html);
+        $this->assertStringNotContainsString('unifco-profile-artwork', $html);
     }
 }
