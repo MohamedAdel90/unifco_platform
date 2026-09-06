@@ -22,7 +22,9 @@ class PublicHomeSectionDisplayPresentation
             return $response;
         }
 
-        $locale = str_contains($html, '<html lang="en"') ? 'en' : 'ar';
+        // The public homepage locale is selected by the lang query parameter.
+        // Do not infer it from serialized HTML because attribute formatting/order can vary.
+        $locale = $request->query('lang') === 'en' ? 'en' : 'ar';
         $payload = [];
 
         foreach (HomepageSection::query()->where('is_active', true)->get() as $section) {
