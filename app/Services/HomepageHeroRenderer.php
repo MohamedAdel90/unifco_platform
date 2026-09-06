@@ -58,23 +58,63 @@ CSS;
 .hero-inner{display:none!important}
 .hero-full-banner{position:relative!important;width:50%!important;max-width:1024px!important;min-width:720px!important;line-height:0!important;margin:0 auto!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important}
 .hero-full-banner-image{display:block!important;width:100%!important;height:auto!important;max-width:none!important;object-fit:contain!important;object-position:center!important;margin:0!important;padding:0!important}
-.hero-banner-hotspot{position:absolute!important;z-index:5!important;display:block!important;background:transparent!important;border:0!important;border-radius:8px!important;cursor:pointer!important;line-height:1!important;font-size:0!important;color:transparent!important;text-indent:-9999px!important;overflow:hidden!important}
+.hero-banner-hotspot{position:absolute!important;z-index:8!important;display:block!important;background:transparent!important;border:0!important;border-radius:8px!important;cursor:pointer!important;line-height:1!important;font-size:0!important;color:transparent!important;text-indent:-9999px!important;overflow:hidden!important}
 .hero-banner-hotspot:focus-visible{outline:3px solid #fff!important;outline-offset:3px!important;box-shadow:0 0 0 5px rgba(206,18,45,.92)!important}
 .hero-banner-hotspot--contact{left:15.4%!important;top:60.0%!important;width:23.0%!important;height:8.8%!important}
 .hero-banner-hotspot--request{left:39.6%!important;top:60.0%!important;width:24.2%!important;height:8.8%!important}
-@media(max-width:1100px){.hero-full-banner{width:72%!important;min-width:0!important}.hero{padding:18px 0!important}}
+.hero-approved-proofs{position:absolute!important;z-index:7!important;left:15.2%!important;top:68.3%!important;width:48.8%!important;min-height:12.4%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;direction:ltr!important;align-items:center!important;padding:1.1% 1.2%!important;box-sizing:border-box!important;background:linear-gradient(90deg,rgba(5,28,59,.96),rgba(6,31,65,.92))!important;color:#fff!important;line-height:1.25!important}
+.hero-approved-proof{min-width:0!important;display:grid!important;grid-template-columns:auto 1fr!important;align-items:center!important;gap:7%!important;padding:0 7%!important;box-sizing:border-box!important;direction:rtl!important;text-align:right!important;border-left:1px solid rgba(255,255,255,.55)!important}
+.hero-approved-proof:first-child{border-left:0!important}
+.hero-approved-proof svg{width:31px!important;height:31px!important;min-width:31px!important;display:block!important;fill:none!important;stroke:#fff!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.hero-approved-proof-copy{min-width:0!important;line-height:1.25!important}
+.hero-approved-proof b{display:block!important;margin:0 0 4px!important;color:#fff!important;font-size:12px!important;font-weight:800!important;white-space:nowrap!important;line-height:1.3!important}
+.hero-approved-proof small{display:block!important;color:#eef4fb!important;font-size:9px!important;font-weight:500!important;white-space:nowrap!important;line-height:1.3!important}
+html[dir="ltr"] .hero-approved-proof{direction:ltr!important;text-align:left!important}
+@media(max-width:1100px){.hero-full-banner{width:72%!important;min-width:0!important}.hero{padding:18px 0!important}.hero-approved-proof svg{width:28px!important;height:28px!important;min-width:28px!important}.hero-approved-proof b{font-size:11px!important}.hero-approved-proof small{font-size:8px!important}}
 @media(max-width:820px){.hero-full-banner{width:94%!important;min-width:0!important}.hero{padding:12px 0!important}}
-@media(max-width:700px){.hero-full-banner{width:100%!important}.hero{padding:0!important}.hero-banner-hotspot{min-height:34px}}
+@media(max-width:700px){.hero-full-banner{width:100%!important}.hero{padding:0!important}.hero-banner-hotspot{min-height:34px}.hero-approved-proofs{left:10%!important;top:69%!important;width:57%!important;min-height:13%!important}.hero-approved-proof{gap:5%!important;padding:0 4%!important}.hero-approved-proof svg{width:24px!important;height:24px!important;min-width:24px!important}.hero-approved-proof b{font-size:9px!important}.hero-approved-proof small{font-size:7px!important}}
+@media(max-width:460px){.hero-approved-proofs{left:8%!important;width:62%!important}.hero-approved-proof svg{width:20px!important;height:20px!important;min-width:20px!important}.hero-approved-proof b{font-size:8px!important}.hero-approved-proof small{font-size:6px!important}}
 </style>
 CSS;
 
             $requestUrl = htmlspecialchars((string) ($home['request_service_url'] ?? '/request-service'), ENT_QUOTES, 'UTF-8');
             $contactUrl = '#contact';
-            $requestLabel = ($home['lang'] ?? 'ar') === 'ar' ? 'طلب الخدمة' : 'Request Service';
-            $contactLabel = ($home['lang'] ?? 'ar') === 'ar' ? 'تواصل معنا' : 'Contact Us';
+            $isArabic = ($home['lang'] ?? 'ar') === 'ar';
+            $requestLabel = $isArabic ? 'طلب الخدمة' : 'Request Service';
+            $contactLabel = $isArabic ? 'تواصل معنا' : 'Contact Us';
+
+            // ONE FACILITY SHOP remains part of the approved artwork exactly as-is.
+            // Only the old proof/icon area is covered and replaced with these approved icons.
+            $proofs = $isArabic
+                ? [
+                    ['location', 'تغطية شاملة', 'جميع مدن المملكة'],
+                    ['shield', 'الجودة المعتمدة', 'معايير عالمية'],
+                    ['headset', 'دعم على مدار 24/7', 'فريق متخصص'],
+                ]
+                : [
+                    ['location', 'Nationwide Coverage', 'Across the Kingdom'],
+                    ['shield', 'Certified Quality', 'Global Standards'],
+                    ['headset', '24/7 Support', 'Specialist Team'],
+                ];
+
+            $icons = [
+                'location' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>',
+                'shield' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 4.7-2.9 8.3-7 10-4.1-1.7-7-5.3-7-10V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>',
+                'headset' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13v-2a8 8 0 0 1 16 0v2"/><path d="M4 13h3v6H5a1 1 0 0 1-1-1v-5Zm16 0h-3v6h2a1 1 0 0 0 1-1v-5Z"/><path d="M17 19c0 1.1-.9 2-2 2h-3"/></svg>',
+            ];
+
+            $proofHtml = '<div class="hero-approved-proofs" aria-label="'.htmlspecialchars($isArabic ? 'مزايا الخدمة' : 'Service highlights', ENT_QUOTES, 'UTF-8').'">';
+            foreach ($proofs as [$icon, $title, $subtitle]) {
+                $proofHtml .= '<div class="hero-approved-proof">'
+                    .$icons[$icon]
+                    .'<span class="hero-approved-proof-copy"><b>'.htmlspecialchars($title, ENT_QUOTES, 'UTF-8').'</b><small>'.htmlspecialchars($subtitle, ENT_QUOTES, 'UTF-8').'</small></span>'
+                    .'</div>';
+            }
+            $proofHtml .= '</div>';
 
             $banner = '<div class="hero-full-banner">'
                 .'<img class="hero-full-banner-image" src="'.$safeHtmlImage.'" alt="UNIFCO Hero Banner">'
+                .$proofHtml
                 .'<a class="hero-banner-hotspot hero-banner-hotspot--contact" href="'.$contactUrl.'" aria-label="'.htmlspecialchars($contactLabel, ENT_QUOTES, 'UTF-8').'">'.$contactLabel.'</a>'
                 .'<a class="hero-banner-hotspot hero-banner-hotspot--request" href="'.$requestUrl.'" aria-label="'.htmlspecialchars($requestLabel, ENT_QUOTES, 'UTF-8').'">'.$requestLabel.'</a>'
                 .'</div>';
