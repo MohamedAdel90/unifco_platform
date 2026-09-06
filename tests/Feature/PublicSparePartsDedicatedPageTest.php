@@ -42,4 +42,17 @@ class PublicSparePartsDedicatedPageTest extends TestCase
                 ->assertSee('grid-column:1 !important', false);
         }
     }
+
+    public function test_common_request_selector_stays_above_the_request_without_repeating_selection_data(): void
+    {
+        foreach (['ar', 'en'] as $locale) {
+            $response = $this->get('/maintenance/spare-parts?lang='.$locale);
+
+            $response->assertOk()
+                ->assertSee('id="request-selector-bar"', false)
+                ->assertSee('position:sticky!important', false)
+                ->assertSee($locale === 'ar' ? 'نوع الخدمة المطلوبة' : 'Required Service')
+                ->assertSee($locale === 'ar' ? 'عرض سعر قطع غيار' : 'Spare Parts Quotation');
+        }
+    }
 }
