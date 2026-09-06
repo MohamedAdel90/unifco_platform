@@ -4,6 +4,27 @@ namespace App\Services;
 
 class HomepageSectionSchema
 {
+    public static function all(): array
+    {
+        $keys = [
+            'hero',
+            'capabilities',
+            'about',
+            'services',
+            'process',
+            'industries',
+            'operations',
+            'why',
+            'showcase',
+            'clients',
+            'emergency',
+            'footer_cta',
+            'footer',
+        ];
+
+        return array_combine($keys, array_map(fn (string $key) => self::fields($key), $keys));
+    }
+
     public static function fields(string $sectionKey): array
     {
         return match ($sectionKey) {
