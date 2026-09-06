@@ -31,6 +31,29 @@ class PublicHomeAboutProfilePresentation
 
         $style = <<<'HTML'
 <style id="unifco-profile-modal-style">
+/* Homepage hero: 50% of the previous visual scale, including all internal content. */
+.hero{min-height:250px!important}
+.hero-copy{width:min(270px,47%)!important;padding:29px 0 25px!important}
+.hero-eyebrow{font-size:8px!important;letter-spacing:.02em!important}
+.hero h1{font-size:clamp(19px,2.15vw,29px)!important;line-height:1.25!important;margin:4.5px 0 7px!important;max-width:270px!important}
+.hero p{font-size:7px!important;line-height:2!important;max-width:260px!important}
+.hero-actions{gap:6px!important;margin-top:12px!important}
+.hero-actions .btn{min-height:21px!important;padding:5px 9px!important;border-radius:4px!important;font-size:5.5px!important;gap:4px!important}
+.hero-proof{margin-top:17px!important}
+.hero .proof{gap:5px!important;min-width:73px!important;padding-inline:9px!important}
+.hero .proof-icon{width:19px!important;height:19px!important}
+.hero .proof-icon svg{width:9px!important;height:9px!important}
+.hero .proof b{font-size:5.5px!important}
+.hero .proof small{font-size:4.5px!important}
+.hero:after{height:2px!important}
+@media(max-width:700px){
+  .hero{min-height:250px!important}
+  .hero-copy{width:min(270px,72%)!important;padding:24px 0 22px!important}
+  .hero h1{font-size:clamp(18px,6vw,25px)!important}
+  .hero p{font-size:7px!important;max-width:245px!important}
+  .hero-proof{margin-top:14px!important;flex-wrap:wrap!important}
+}
+
 #unifco-profile-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(5,18,39,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 #unifco-profile-modal.is-open{display:flex}
 .unifco-profile-dialog{position:relative;width:min(1480px,96vw);max-height:94vh;overflow:auto;border-radius:18px;background:#0a1730;box-shadow:0 34px 100px rgba(0,0,0,.45);-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
