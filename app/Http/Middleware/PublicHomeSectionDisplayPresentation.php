@@ -29,10 +29,23 @@ class PublicHomeSectionDisplayPresentation
             $data = $locale === 'en' ? ($section->data_en ?? []) : ($section->data_ar ?? []);
 
             if ($section->section_key === 'operations') {
+                $operationLinks = [
+                    'maintenance' => [
+                        'href' => route('public.request-service'),
+                        'label' => $locale === 'en' ? 'Explore Maintenance Services' : 'تعرف على خدمات الصيانة',
+                    ],
+                    'portal' => [
+                        'href' => route('login'),
+                        'label' => $locale === 'en' ? 'Client Login' : 'دخول حساب العميل',
+                    ],
+                ];
+
                 foreach (['maintenance', 'portal'] as $prefix) {
                     $payload[$prefix] = [
                         'mode' => $data[$prefix.'_display_mode'] ?? 'structured',
                         'image' => $data[$prefix.'_full_section_image'] ?? '',
+                        'href' => $operationLinks[$prefix]['href'],
+                        'label' => $operationLinks[$prefix]['label'],
                     ];
                 }
                 continue;
@@ -48,10 +61,10 @@ class PublicHomeSectionDisplayPresentation
 
         $script = <<<'HTML'
 <style id="unifco-full-section-image-style">
-.unifco-full-section-image{width:100%;margin:0;padding:0;line-height:0;background:#fff;overflow:hidden}.unifco-full-section-image img{display:block;width:100%;height:auto;max-width:none;margin:0;padding:0;object-fit:contain}.unifco-full-card-image{height:100%;min-height:100%;display:flex;align-items:center;justify-content:center;background:#fff}.unifco-full-card-image img{width:100%;height:100%;object-fit:cover}
+.unifco-full-section-image{width:100%;margin:0;padding:0;line-height:0;background:#fff;overflow:hidden}.unifco-full-section-image img{display:block;width:100%;height:auto;max-width:none;margin:0;padding:0;object-fit:contain}.unifco-full-card-image{position:relative;height:100%;min-height:100%;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden}.unifco-full-card-image img{width:100%;height:100%;object-fit:cover}.unifco-full-card-hotspot{position:absolute;z-index:8;display:block;background:transparent;border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}.unifco-full-card-hotspot:focus-visible{outline:3px solid #fff;outline-offset:2px;box-shadow:0 0 0 5px rgba(206,18,45,.9)}.unifco-full-card-hotspot--maintenance{left:41.5%;top:86.2%;width:55.5%;height:10.2%}.unifco-full-card-hotspot--portal{left:57.5%;top:78.3%;width:39%;height:11.8%}
 .unifco-full-hero-image{position:relative;left:50%;transform:translateX(-50%);width:min(1400px,calc(100vw - 48px));max-width:none;margin:20px 0 18px;border-radius:14px;background:#071f4d;box-shadow:0 14px 36px rgba(7,31,77,.13);overflow:hidden}.unifco-full-hero-image img{width:100%;height:auto;max-height:none;object-fit:contain;object-position:center center}
 @media(max-width:900px){.unifco-full-hero-image{width:calc(100vw - 24px);margin:12px 0 12px;border-radius:10px;box-shadow:0 8px 22px rgba(7,31,77,.11)}}
-@media(max-width:520px){.unifco-full-hero-image{width:100vw;margin:0;border-radius:0;box-shadow:none}.unifco-full-hero-image img{width:100%;height:auto}}
+@media(max-width:520px){.unifco-full-hero-image{width:100vw;margin:0;border-radius:0;box-shadow:none}.unifco-full-hero-image img{width:100%;height:auto}.unifco-full-card-hotspot--maintenance{left:40.5%;top:85.7%;width:57%;height:11%}.unifco-full-card-hotspot--portal{left:56.5%;top:77.5%;width:40.5%;height:13%}}
 </style>
 <script>
 (function(){
@@ -84,6 +97,17 @@ class PublicHomeSectionDisplayPresentation
     return null;
   }
 
+  function addHotspot(wrapper,key,item){
+    if((key!=='maintenance'&&key!=='portal')||!item.href)return;
+    var link=document.createElement('a');
+    link.className='unifco-full-card-hotspot unifco-full-card-hotspot--'+key;
+    link.href=item.href;
+    link.setAttribute('aria-label',item.label||'Open');
+    link.setAttribute('title',item.label||'Open');
+    link.setAttribute('data-operation-action',key);
+    wrapper.appendChild(link);
+  }
+
   function apply(key,item){
     if(!item || item.mode!=='full_section_image' || !item.image)return;
     var target=findTarget(key);if(!target)return;
@@ -96,6 +120,7 @@ class PublicHomeSectionDisplayPresentation
       wrapper.className='unifco-full-section-image';
     }
     var img=document.createElement('img');img.src=item.image;img.alt='';wrapper.appendChild(img);
+    addHotspot(wrapper,key,item);
     target.replaceWith(wrapper);
   }
 
