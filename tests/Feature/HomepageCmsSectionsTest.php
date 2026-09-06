@@ -181,6 +181,34 @@ class HomepageCmsSectionsTest extends TestCase
             ->assertDontSee('unifco-homepage-cms-isolation-script-v1', false);
     }
 
+    public function test_maintenance_full_section_image_exposes_a_dynamic_accessible_cta(): void
+    {
+        HomepageSection::query()->create([
+            'section_key' => 'operations',
+            'is_active' => true,
+            'sort_order' => 60,
+            'data_ar' => [
+                'maintenance_display_mode' => 'full_section_image',
+                'maintenance_full_section_image' => '/storage/homepage-media/maintenance-ar.webp',
+            ],
+            'data_en' => [
+                'maintenance_display_mode' => 'full_section_image',
+                'maintenance_full_section_image' => '/storage/homepage-media/maintenance-en.webp',
+            ],
+        ]);
+
+        $this->get(route('public.home', ['lang' => 'ar']))
+            ->assertOk()
+            ->assertSee('unifco-maintenance-image-cta', false)
+            ->assertSee('/request-service?lang=ar', false)
+            ->assertSee('تعرّف على خدمات الصيانة', false);
+
+        $this->get(route('public.home', ['lang' => 'en']))
+            ->assertOk()
+            ->assertSee('/request-service?lang=en', false)
+            ->assertSee('Explore Maintenance Services', false);
+    }
+
     public function test_services_save_preserves_existing_image_when_an_unrelated_field_is_not_submitted(): void
     {
         $admin = $this->admin();
