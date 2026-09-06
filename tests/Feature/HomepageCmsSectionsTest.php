@@ -362,8 +362,7 @@ class HomepageCmsSectionsTest extends TestCase
                 $this->assertCount(2, $stored[$listKey]);
                 foreach ([0 => 3, 1 => 8] as $storedIndex => $submittedIndex) {
                     foreach ($itemFields as $field) {
-                        $expectedLocale = $key === 'clients' && $field === 'image' ? 'ar' : $locale;
-                        $expected = $payload["item_{$expectedLocale}_{$listKey}_{$submittedIndex}_{$field}"];
+                        $expected = $payload["item_{$locale}_{$listKey}_{$submittedIndex}_{$field}"];
                         $this->assertSame($expected, $stored[$listKey][$storedIndex][$field]);
                     }
                 }
