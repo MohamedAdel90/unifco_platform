@@ -51,6 +51,7 @@ class CmsDisplayModePresentation
         $injection = <<<'HTML'
 <style id="cms-display-mode-style">
 .cms-display-mode-box{margin:0 0 14px;padding:12px;border:1px solid #cfdced;border-radius:10px;background:#f7faff}.cms-display-mode-box label{display:block!important;margin:0 0 6px!important;font-size:11px!important;font-weight:800!important;color:#263b5d!important}.cms-display-mode-box select{width:100%;padding:9px 10px;border:1px solid #c8d5e5;border-radius:8px;background:#fff;color:#17243c;font-size:12px}.cms-full-image-field{margin-top:10px}.cms-full-image-field .hp-img-field{margin-top:4px}.cms-display-mode-help{margin-top:6px;font-size:10px;color:#6d7e96;line-height:1.45}.cms-legacy-hero-mode{display:none!important}
+.cms-image-dimensions{grid-column:1/-1;display:flex;align-items:center;gap:6px;margin-top:3px;padding:6px 8px;border:1px solid #d9e5f2;border-radius:7px;background:#f7faff;color:#526780;font-size:10px;font-weight:700;line-height:1.35}.cms-image-dimensions strong{color:#17366c;font-size:10px}.cms-image-dimensions[data-state="loading"]{color:#7b8798}.cms-image-dimensions[data-state="error"]{color:#9b3444;background:#fff7f8;border-color:#f0d7dc}.cms-image-dimensions[data-state="empty"]{color:#8592a4;background:#fafbfd}.cms-image-dimensions .cms-image-ratio{font-weight:600;color:#73839a}
 </style>
 <script>
 (function(){
@@ -145,10 +146,86 @@ class CmsDisplayModePresentation
     });
   }
 
+  function gcd(a,b){while(b){var t=b;b=a%b;a=t;}return a||1;}
+
+  function dimensionHost(input){
+    return input.closest('.hp-img-field') || input.closest('[data-img-field]') || input.parentElement;
+  }
+
+  function ensureDimensionBadge(input){
+    if(!input)return null;
+    var host=dimensionHost(input);
+    if(!host)return null;
+    var badge=host.querySelector(':scope > .cms-image-dimensions');
+    if(!badge){
+      badge=document.createElement('div');
+      badge.className='cms-image-dimensions';
+      badge.setAttribute('data-state','empty');
+      host.appendChild(badge);
+    }
+    return badge;
+  }
+
+  function setDimensionText(input,state,html){
+    var badge=ensureDimensionBadge(input);
+    if(!badge)return;
+    badge.setAttribute('data-state',state);
+    badge.innerHTML=html;
+  }
+
+  function updateImageDimensions(input){
+    if(!input)return;
+    var src=String(input.value||'').trim();
+    var token=String(Date.now())+Math.random();
+    input.dataset.dimensionToken=token;
+    if(!src){
+      setDimensionText(input,'empty','<strong>Image dimensions:</strong> No image selected');
+      return;
+    }
+    setDimensionText(input,'loading','<strong>Image dimensions:</strong> Reading…');
+    var img=new Image();
+    img.onload=function(){
+      if(input.dataset.dimensionToken!==token)return;
+      var w=img.naturalWidth||img.width||0;
+      var h=img.naturalHeight||img.height||0;
+      if(!w||!h){setDimensionText(input,'error','<strong>Image dimensions:</strong> Unable to read');return;}
+      var d=gcd(w,h),rw=Math.round(w/d),rh=Math.round(h/d);
+      var ratio=(rw<=40&&rh<=40)?rw+':'+rh:(w/h).toFixed(2)+':1';
+      setDimensionText(input,'ready','<strong>Image dimensions:</strong> '+w+' × '+h+' px <span class="cms-image-ratio">• Ratio '+ratio+'</span>');
+    };
+    img.onerror=function(){
+      if(input.dataset.dimensionToken!==token)return;
+      setDimensionText(input,'error','<strong>Image dimensions:</strong> Could not read this image');
+    };
+    img.src=src;
+  }
+
+  function scanImageDimensions(root){
+    root=root||document;
+    var inputs=[];
+    if(root.matches && root.matches('.img-picker-target,.hp-img-input,[data-img-input]'))inputs.push(root);
+    if(root.querySelectorAll)root.querySelectorAll('.img-picker-target,.hp-img-input,[data-img-input]').forEach(function(i){inputs.push(i);});
+    inputs.forEach(function(input){
+      if(input.dataset.dimensionReady==='1')return;
+      input.dataset.dimensionReady='1';
+      input.addEventListener('input',function(){updateImageDimensions(input);});
+      input.addEventListener('change',function(){updateImageDimensions(input);});
+      updateImageDimensions(input);
+    });
+  }
+
   injectPortalFields();
   groupDisplayFields();
   hideLegacyHeroMode('ar');
   hideLegacyHeroMode('en');
+  scanImageDimensions(document);
+
+  var observer=new MutationObserver(function(records){
+    records.forEach(function(record){
+      record.addedNodes.forEach(function(node){if(node.nodeType===1)scanImageDimensions(node);});
+    });
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
 HTML;
