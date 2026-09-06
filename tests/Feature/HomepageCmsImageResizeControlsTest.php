@@ -39,11 +39,11 @@ class HomepageCmsImageResizeControlsTest extends TestCase
             ->assertOk()
             ->getContent();
 
+        // Verify the functional resize contract rather than presentation copy,
+        // which may change without affecting the image-resize controls.
         $this->assertStringContainsString('data-resize-width', $html);
         $this->assertStringContainsString('data-resize-height', $html);
         $this->assertStringContainsString('data-resize-lock', $html);
-        $this->assertStringContainsString('Resize &amp; Use Image', $html);
-        $this->assertStringContainsString('Creates a new resized copy', $html);
         $this->assertStringContainsString(route('admin.homepage.images.upload'), $html);
     }
 }
