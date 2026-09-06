@@ -21,7 +21,7 @@ class PublicMaintenanceSparePartsBridge
             return $response;
         }
 
-        $target = route('public.request-service', ['lang' => 'ar', 'preset' => 'spare-parts']);
+        $target = route('public.current-maintenance.spare-parts', ['lang' => 'ar']);
         $targetJson = json_encode($target, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $script = <<<HTML
