@@ -3,18 +3,26 @@
 use App\Http\Controllers\CurrentCustomerMaintenanceRequestController;
 use App\Http\Middleware\PublicCurrentMaintenanceFormEnhancements;
 use App\Http\Middleware\PublicMaintenanceSparePartsBridge;
+use App\Http\Middleware\PublicRequestSelectorBar;
 use App\Http\Middleware\PublicSparePartsSummaryLayout;
 use Illuminate\Support\Facades\Route;
 
 // Public Maintenance portal (canonical routes).
 Route::get('/maintenance', [CurrentCustomerMaintenanceRequestController::class, 'create'])
-    ->middleware([PublicCurrentMaintenanceFormEnhancements::class, PublicMaintenanceSparePartsBridge::class])
+    ->middleware([
+        PublicCurrentMaintenanceFormEnhancements::class,
+        PublicRequestSelectorBar::class,
+        PublicMaintenanceSparePartsBridge::class,
+    ])
     ->name('public.current-maintenance');
 
-// Dedicated spare-parts experience. This intentionally renders its own Blade
-// instead of layering spare-parts UI over the legacy generic quotation form.
+// Dedicated spare-parts experience. The common request selector remains fixed
+// above the selected request data in both Arabic and English.
 Route::get('/maintenance/spare-parts', [CurrentCustomerMaintenanceRequestController::class, 'spareParts'])
-    ->middleware(PublicSparePartsSummaryLayout::class)
+    ->middleware([
+        PublicRequestSelectorBar::class,
+        PublicSparePartsSummaryLayout::class,
+    ])
     ->name('public.current-maintenance.spare-parts');
 
 Route::get('/maintenance/customer', [CurrentCustomerMaintenanceRequestController::class, 'customer'])
