@@ -17,15 +17,19 @@ use App\Http\Controllers\EAM\AssetReliabilityController;
 use App\Http\Controllers\EAM\AssetSparePartController;
 use App\Http\Controllers\Maintenance\WorkOrderController;
 use App\Http\Controllers\PublicSiteController;
+use App\Http\Controllers\PublicSparePartsLookupController;
+use App\Http\Middleware\PublicSparePartsRequestPresentation;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicSiteController::class, 'home'])->name('public.home');
 Route::get('/about', fn () => redirect()->route('public.home'))->name('public.about');
 Route::get('/industries', fn () => redirect()->route('public.home'))->name('public.industries');
 Route::get('/services', fn () => redirect()->route('public.home'))->name('public.services');
-Route::get('/request-quote', [PublicSiteController::class, 'quote'])->name('public.quote');
-Route::get('/request-service', [PublicSiteController::class, 'quote'])->name('public.request-service');
+Route::get('/request-quote', [PublicSiteController::class, 'quote'])->middleware(PublicSparePartsRequestPresentation::class)->name('public.quote');
+Route::get('/request-service', [PublicSiteController::class, 'quote'])->middleware(PublicSparePartsRequestPresentation::class)->name('public.request-service');
 Route::get('/emergency-maintenance', [PublicSiteController::class, 'emergency'])->name('public.emergency');
+Route::get('/asset-lookup', [PublicSiteController::class, 'assetLookup'])->middleware('throttle:60,1')->name('public.asset.lookup');
+Route::get('/spare-parts-lookup', PublicSparePartsLookupController::class)->middleware('throttle:60,1')->name('public.spare-parts.lookup');
 Route::post('/service-requests', [PublicSiteController::class, 'store'])->middleware('throttle:10,1')->name('public.request.store');
 Route::get('/request-received/{reference}', [PublicSiteController::class, 'received'])->name('public.request.received');
 
