@@ -30,4 +30,16 @@ class PublicSparePartsDedicatedPageTest extends TestCase
             ->assertSee('name="request_subtype" value="SPARE_PARTS_QUOTE"', false)
             ->assertSee('action="'.route('public.request.store').'"', false);
     }
+
+    public function test_summary_is_forced_to_the_physical_left_in_arabic_and_english(): void
+    {
+        foreach (['ar', 'en'] as $locale) {
+            $response = $this->get('/maintenance/spare-parts?lang='.$locale);
+
+            $response->assertOk()
+                ->assertSee('id="unifco-spare-summary-left-layout"', false)
+                ->assertSee('grid-template-areas:"summary main"', false)
+                ->assertSee('grid-column:1 !important', false);
+        }
+    }
 }
