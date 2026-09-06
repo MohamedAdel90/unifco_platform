@@ -2,12 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Models\HomepageSection;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class HomepageOperationsArtworkActionsTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_operations_full_image_actions_target_maintenance_and_client_login(): void
     {
+        $this->createOperationsSection();
+
         $html = $this->get('/?lang=ar')->assertOk()->getContent();
 
         $this->assertStringContainsString('unifco-full-card-hotspot--maintenance', $html);
@@ -21,11 +27,31 @@ class HomepageOperationsArtworkActionsTest extends TestCase
 
     public function test_english_operations_actions_use_the_same_destinations_with_english_labels(): void
     {
+        $this->createOperationsSection();
+
         $html = $this->get('/?lang=en')->assertOk()->getContent();
 
         $this->assertStringContainsString(route('public.request-service'), $html);
         $this->assertStringContainsString(route('login'), $html);
         $this->assertStringContainsString('Explore Maintenance Services', $html);
         $this->assertStringContainsString('Client Login', $html);
+    }
+
+    private function createOperationsSection(): void
+    {
+        $fullImageData = [
+            'maintenance_display_mode' => 'full_section_image',
+            'maintenance_full_section_image' => '/images/test-maintenance.webp',
+            'portal_display_mode' => 'full_section_image',
+            'portal_full_section_image' => '/images/test-portal.webp',
+        ];
+
+        HomepageSection::query()->create([
+            'section_key' => 'operations',
+            'is_active' => true,
+            'sort_order' => 70,
+            'data_ar' => $fullImageData,
+            'data_en' => $fullImageData,
+        ]);
     }
 }
