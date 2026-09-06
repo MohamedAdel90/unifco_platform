@@ -43,6 +43,13 @@
   <section class="cms-card">
     <h3>{{ $language }}</h3>
 
+    <input type="text"
+           name="scalar_{{ $locale }}_{{ $prefix }}_display_mode"
+           value="{{ old('scalar_'.$locale.'_'.$prefix.'_display_mode', $section->{'data_'.$locale}[$prefix.'_display_mode'] ?? 'structured') }}">
+    <input type="text"
+           name="scalar_{{ $locale }}_{{ $prefix }}_full_section_image"
+           value="{{ old('scalar_'.$locale.'_'.$prefix.'_full_section_image', $section->{'data_'.$locale}[$prefix.'_full_section_image'] ?? '') }}">
+
     <label>{{ $labels['image'] }} ({{ strtoupper($locale) }})</label>
     @include('admin.homepage.sections.partials.image-field', [
       'name' => 'scalar_'.$locale.'_'.$prefix.'_image',
