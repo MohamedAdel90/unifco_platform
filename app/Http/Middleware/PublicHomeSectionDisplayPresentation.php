@@ -34,6 +34,13 @@ class PublicHomeSectionDisplayPresentation
                         'mode' => $data[$prefix.'_display_mode'] ?? 'structured',
                         'image' => $data[$prefix.'_full_section_image'] ?? '',
                     ];
+
+                    if ($prefix === 'maintenance') {
+                        $payload[$prefix]['cta_url'] = route('public.request-service', ['lang' => $locale]);
+                        $payload[$prefix]['cta_label'] = $locale === 'en'
+                            ? 'Explore Maintenance Services'
+                            : 'تعرّف على خدمات الصيانة';
+                    }
                 }
                 continue;
             }
@@ -48,7 +55,7 @@ class PublicHomeSectionDisplayPresentation
 
         $script = <<<'HTML'
 <style id="unifco-full-section-image-style">
-.unifco-full-section-image{width:100%;margin:0;padding:0;line-height:0;background:#fff;overflow:hidden}.unifco-full-section-image img{display:block;width:100%;height:auto;max-width:none;margin:0;padding:0;object-fit:contain}.unifco-full-card-image{height:100%;min-height:100%;display:flex;align-items:center;justify-content:center;background:#fff}.unifco-full-card-image img{width:100%;height:100%;object-fit:cover}
+.unifco-full-section-image{width:100%;margin:0;padding:0;line-height:0;background:#fff;overflow:hidden}.unifco-full-section-image img{display:block;width:100%;height:auto;max-width:none;margin:0;padding:0;object-fit:contain}.unifco-full-card-image{height:100%;min-height:100%;display:flex;align-items:center;justify-content:center;background:#fff;position:relative}.unifco-full-card-image img{width:100%;height:100%;object-fit:cover}.unifco-maintenance-image-cta{position:absolute;z-index:2;left:42%;right:2.2%;bottom:6%;height:7.5%;min-height:34px;border-radius:8px;line-height:normal;text-indent:-9999px;overflow:hidden}.unifco-maintenance-image-cta:focus-visible{outline:3px solid #fff;outline-offset:-5px;box-shadow:0 0 0 5px #ed1b2f}
 </style>
 <script>
 (function(){
@@ -86,7 +93,16 @@ class PublicHomeSectionDisplayPresentation
     var target=findTarget(key);if(!target)return;
     var wrapper=document.createElement('div');
     wrapper.className=(key==='maintenance'||key==='portal'||key==='showcase'||key==='emergency')?'unifco-full-section-image unifco-full-card-image':'unifco-full-section-image';
+    wrapper.setAttribute('data-full-section-key',key);
     var img=document.createElement('img');img.src=item.image;img.alt='';wrapper.appendChild(img);
+    if(key==='maintenance' && item.cta_url){
+      var cta=document.createElement('a');
+      cta.className='unifco-maintenance-image-cta';
+      cta.href=item.cta_url;
+      cta.textContent=item.cta_label||'Explore Maintenance Services';
+      cta.setAttribute('aria-label',item.cta_label||'Explore Maintenance Services');
+      wrapper.appendChild(cta);
+    }
     target.replaceWith(wrapper);
   }
 
