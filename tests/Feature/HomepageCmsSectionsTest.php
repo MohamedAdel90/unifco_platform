@@ -116,6 +116,9 @@ class HomepageCmsSectionsTest extends TestCase
         $section->update(['data_ar' => $ar, 'data_en' => $en]);
 
         $payload = $this->sectionPayload('services');
+        $serviceNumber = (string) ($ar['items'][3]['number'] ?? '04');
+        $payload['item_ar_items_3_number'] = $serviceNumber;
+        $payload['item_en_items_3_number'] = $serviceNumber;
         $payload['item_ar_items_3_image'] = '/images/shared-service.webp';
         unset($payload['item_en_items_3_image']);
 
