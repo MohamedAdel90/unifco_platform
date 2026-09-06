@@ -21,6 +21,9 @@ class PublicHomeOperationsPresentation
             return $response;
         }
 
+        $loginUrl = route('login');
+        $safeLoginUrl = htmlspecialchars($loginUrl, ENT_QUOTES, 'UTF-8');
+
         $style = <<<'HTML'
 <style id="unifco-operations-layout-final">
 /* Final, isolated presentation for the two operations cards. */
@@ -49,7 +52,7 @@ class PublicHomeOperationsPresentation
 .portal-card>p{grid-area:copy!important;margin:0!important;color:#68758a!important;font-size:11px!important;line-height:1.9!important}
 .portal-card .check-grid{grid-area:checks!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:11px 16px!important;margin:20px 0 24px!important}
 .portal-card .check{font-size:10px!important;color:#071f4d!important;font-weight:800!important;white-space:normal!important}
-.portal-card>.btn{grid-area:button!important;justify-self:start!important;align-self:start!important;width:auto!important;min-width:180px!important;display:inline-flex!important}
+.portal-card>.btn{grid-area:button!important;justify-self:start!important;align-self:start!important;width:auto!important;min-width:180px!important;display:inline-flex!important;z-index:8!important;pointer-events:auto!important;cursor:pointer!important;touch-action:manipulation!important}
 .portal-device{grid-area:device!important;position:relative!important;z-index:2!important;right:auto!important;left:auto!important;bottom:auto!important;top:auto!important;transform:none!important;transform-origin:center!important;justify-self:end!important;align-self:center!important;width:100%!important;height:320px!important;max-width:100%!important;max-height:320px!important;margin:0!important;object-fit:contain!important;object-position:center!important;filter:drop-shadow(0 22px 24px rgba(9,29,58,.17))!important;pointer-events:none!important}
 
 @media(max-width:1180px){
@@ -81,7 +84,9 @@ class PublicHomeOperationsPresentation
 </style>
 HTML;
 
-        $response->setContent(str_replace('</head>', $style."\n</head>", $html));
+        $script = '<script id="unifco-portal-login-action">document.addEventListener("DOMContentLoaded",function(){var b=document.querySelector(".portal-card > .btn");if(!b)return;b.setAttribute("href","'.$safeLoginUrl.'");b.setAttribute("role","link");b.addEventListener("click",function(e){e.preventDefault();window.location.assign("'.$safeLoginUrl.'");});});</script>';
+
+        $response->setContent(str_replace('</head>', $style."\n".$script."\n</head>", $html));
         return $response;
     }
 }
