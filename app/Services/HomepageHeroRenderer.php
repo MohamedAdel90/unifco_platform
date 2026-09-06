@@ -53,16 +53,18 @@ CSS;
         if ($mode === self::MODE_FULL_BANNER) {
             $modeCss = <<<'CSS'
 <style id="unifco-home-hero-mode">
-.hero{min-height:0!important;display:block!important;background:none!important;background-image:none!important}
+.hero{min-height:0!important;display:flex!important;justify-content:center!important;align-items:flex-start!important;padding:22px 0!important;background:#fff!important;background-image:none!important}
 .hero::before,.hero::after{display:none!important;content:none!important;background:none!important}
 .hero-inner{display:none!important}
-.hero-full-banner{position:relative!important;width:100%!important;line-height:0!important}
+.hero-full-banner{position:relative!important;width:50%!important;max-width:1024px!important;min-width:720px!important;line-height:0!important;margin:0 auto!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important}
 .hero-full-banner-image{display:block!important;width:100%!important;height:auto!important;max-width:none!important;object-fit:contain!important;object-position:center!important;margin:0!important;padding:0!important}
 .hero-banner-hotspot{position:absolute!important;z-index:5!important;display:block!important;background:transparent!important;border:0!important;border-radius:8px!important;cursor:pointer!important;line-height:1!important;font-size:0!important;color:transparent!important;text-indent:-9999px!important;overflow:hidden!important}
 .hero-banner-hotspot:focus-visible{outline:3px solid #fff!important;outline-offset:3px!important;box-shadow:0 0 0 5px rgba(206,18,45,.92)!important}
 .hero-banner-hotspot--contact{left:15.4%!important;top:60.0%!important;width:23.0%!important;height:8.8%!important}
 .hero-banner-hotspot--request{left:39.6%!important;top:60.0%!important;width:24.2%!important;height:8.8%!important}
-@media(max-width:700px){.hero-banner-hotspot{min-height:34px}}
+@media(max-width:1100px){.hero-full-banner{width:72%!important;min-width:0!important}.hero{padding:18px 0!important}}
+@media(max-width:820px){.hero-full-banner{width:94%!important;min-width:0!important}.hero{padding:12px 0!important}}
+@media(max-width:700px){.hero-full-banner{width:100%!important}.hero{padding:0!important}.hero-banner-hotspot{min-height:34px}}
 </style>
 CSS;
 
