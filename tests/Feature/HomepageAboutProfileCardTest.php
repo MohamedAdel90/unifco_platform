@@ -11,9 +11,12 @@ class HomepageAboutProfileCardTest extends TestCase
         foreach (['ar', 'en'] as $locale) {
             $html = $this->get('/?lang='.$locale)->assertOk()->getContent();
 
-            $this->assertStringContainsString('id="about-company-trigger"', $html);
             $this->assertStringContainsString('id="unifco-profile-modal"', $html);
             $this->assertStringContainsString('id="unifco-profile-modal-script"', $html);
+            $this->assertStringContainsString("document.querySelector('#about .about-copy > .btn')", $html);
+            $this->assertStringContainsString("trigger.setAttribute('href','#unifco-profile-modal')", $html);
+            $this->assertStringContainsString("trigger.setAttribute('aria-haspopup','dialog')", $html);
+            $this->assertStringNotContainsString('id="about-company-trigger"', $html);
         }
     }
 
@@ -32,5 +35,7 @@ class HomepageAboutProfileCardTest extends TestCase
 
         $this->assertStringContainsString('unifco-profile-dialog', $html);
         $this->assertStringContainsString('unifco-profile-artwork', $html);
+        $this->assertStringContainsString('overflow-x:hidden', $html);
+        $this->assertStringContainsString('width:100%;max-width:100%', $html);
     }
 }
