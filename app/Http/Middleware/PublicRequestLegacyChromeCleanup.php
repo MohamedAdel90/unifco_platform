@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\HomepageContentService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,35 +25,54 @@ class PublicRequestLegacyChromeCleanup
             return $response;
         }
 
-        // Legacy global presentation middleware still decorates the maintenance
-        // route after the dedicated shared chrome has been rendered. Strip those
-        // legacy shells so only the approved fixed upper section remains.
+        $locale = $request->query('lang', 'ar') === 'en' ? 'en' : 'ar';
+        $home = app(HomepageContentService::class)->getContent($locale);
+        $sharedHeader = view('public.partials.site-header', compact('home', 'locale'))->render();
+
+        // This middleware is intentionally the final response pass for the
+        // maintenance request experience. Remove every legacy/generated header
+        // and then place exactly the same shared homepage header inside the
+        // persistent request chrome. Keeping it inside the chrome also avoids
+        // the old selector CSS rule that hides body > header.top.
         $patterns = [
+            '/<header class="uf-request-nav">.*?<\/header>/s',
             '/<header class="current-service-nav">.*?<\/header>/s',
+            '/<header class="top request-homepage-header">.*?<\/header>/s',
+            '/<header class="top site-header"[^>]*>.*?<\/header>/s',
             '/<header class="top">.*?<\/header>/s',
             '/<div class="page-head">.*?<\/div>/s',
             '/<section class="request-clarity-hero">.*?<\/section>/s',
             '/<div class="request-ticket-note">.*?<\/div>/s',
             '/<section class="panel request-selector-panel">.*?<\/section>/s',
+            '/<style id="unifco-shared-site-header-style">.*?<\/style>/s',
+            '/<script id="unifco-shared-site-header-script">.*?<\/script>/s',
         ];
 
         foreach ($patterns as $pattern) {
             $html = preg_replace($pattern, '', $html) ?? $html;
         }
 
-        // Enforce exactly one shared chrome even if another presentation layer
-        // accidentally duplicates it in a future change.
+        // Enforce exactly one request chrome if a previous presentation layer
+        // accidentally duplicated it.
         $first = strpos($html, '<div id="unifco-request-chrome">');
         if ($first !== false) {
-            $next = strpos($html, '<div id="unifco-request-chrome">', $first + 1);
-            while ($next !== false) {
-                $end = strpos($html, '</div>', $next);
+            $nextChrome = strpos($html, '<div id="unifco-request-chrome">', $first + 1);
+            while ($nextChrome !== false) {
+                $end = strpos($html, '</div>', $nextChrome);
                 if ($end === false) {
                     break;
                 }
-                $html = substr($html, 0, $next).substr($html, $end + 6);
-                $next = strpos($html, '<div id="unifco-request-chrome">', $first + 1);
+                $html = substr($html, 0, $nextChrome).substr($html, $end + 6);
+                $nextChrome = strpos($html, '<div id="unifco-request-chrome">', $first + 1);
             }
+        }
+
+        if (str_contains($html, '<div id="unifco-request-chrome">')) {
+            $html = str_replace(
+                '<div id="unifco-request-chrome">',
+                '<div id="unifco-request-chrome">'.$sharedHeader,
+                $html
+            );
         }
 
         $response->setContent($html);
