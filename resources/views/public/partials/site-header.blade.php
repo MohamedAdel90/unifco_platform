@@ -2,6 +2,8 @@
     $headerHome = $home ?? app(\App\Services\HomepageContentService::class)->getContent($locale ?? 'ar');
     $headerLocale = $headerHome['lang'] ?? ($locale ?? 'ar');
     $headerBase = route($headerLocale === 'ar' ? 'public.home' : 'public.home.en');
+    $languageTarget = $headerLocale === 'ar' ? 'en' : 'ar';
+    $languageUrl = route('public.home', ['lang' => $languageTarget]);
     $headerLabels = $headerLocale === 'ar' ? [
         'home' => 'الرئيسية',
         'about' => 'تعرف علينا',
@@ -60,12 +62,12 @@
 <header class="top site-header" data-shared-site-header="1">
 <div class="wrap nav">
 <a class="brand-link" href="{{ $headerBase }}"><span class="site-logo-frame"><img class="site-logo" src="{{ route('brand.logo') }}" alt="UNIFCO"></span><span class="brand-copy"><strong>UNIFCO</strong><small>ONE FACILITY SHOP</small></span></a>
-<div class="nav-actions"><a class="lang" href="{{ $headerLocale==='ar' ? route('public.home.en') : route('public.home') }}">{{ $headerLocale==='ar' ? 'EN' : 'AR' }}</a><a class="header-btn" href="{{ route('login') }}">{{ $headerHome['login'] }}</a><a class="header-btn red" href="{{ route('public.request-service') }}">{{ $headerHome['request'] }}</a></div>
+<div class="nav-actions"><a class="lang" href="{{ $languageUrl }}" data-language-switch="{{ $languageTarget }}">{{ strtoupper($languageTarget) }}</a><a class="header-btn" href="{{ route('login') }}">{{ $headerHome['login'] }}</a><a class="header-btn red" href="{{ route('public.request-service') }}">{{ $headerHome['request'] }}</a></div>
 <nav class="nav-links public-primary-nav" aria-label="{{ $headerLocale==='ar' ? 'التنقل الرئيسي' : 'Primary navigation' }}">
 @foreach($headerItems as [$key,$target])<a href="{{ $headerBase.$target }}"><span class="nav-icon">{!! $headerIcons[$key] !!}</span><span class="nav-label">{{ $headerLabels[$key] }}</span></a>@endforeach
 </nav>
 <button class="menu-toggle" type="button" aria-label="Menu" data-shared-menu-toggle>☰</button>
 </div>
-<nav class="wrap mobile-menu" data-shared-mobile-menu>@foreach($headerItems as [$key,$target])<a href="{{ $headerBase.$target }}">{{ $headerLabels[$key] }}</a>@endforeach<a href="{{ route('login') }}">{{ $headerHome['login'] }}</a><a href="{{ route('public.request-service') }}">{{ $headerHome['request'] }}</a><a href="{{ $headerLocale==='ar' ? route('public.home.en') : route('public.home') }}">{{ $headerLocale==='ar' ? 'EN' : 'AR' }}</a></nav>
+<nav class="wrap mobile-menu" data-shared-mobile-menu>@foreach($headerItems as [$key,$target])<a href="{{ $headerBase.$target }}">{{ $headerLabels[$key] }}</a>@endforeach<a href="{{ route('login') }}">{{ $headerHome['login'] }}</a><a href="{{ route('public.request-service') }}">{{ $headerHome['request'] }}</a><a href="{{ $languageUrl }}" data-language-switch="{{ $languageTarget }}">{{ strtoupper($languageTarget) }}</a></nav>
 </header>
 <script id="unifco-shared-site-header-script">document.querySelectorAll('[data-shared-site-header]').forEach(function(h){const t=h.querySelector('[data-shared-menu-toggle]'),m=h.querySelector('[data-shared-mobile-menu]');if(!t||!m)return;t.addEventListener('click',function(){m.classList.toggle('open')});m.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){m.classList.remove('open')})})});</script>
