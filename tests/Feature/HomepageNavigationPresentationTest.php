@@ -14,9 +14,9 @@ class HomepageNavigationPresentationTest extends TestCase
 
             $html = $response->getContent();
 
-            $this->assertStringContainsString('id="public-home-nav-presentation"', $html);
-            $this->assertStringContainsString('.public-primary-nav .nav-icon svg{display:block;width:21px;height:21px;fill:none;stroke:currentColor', $html);
-            $this->assertStringContainsString('.public-primary-nav>a{display:inline-flex;flex-direction:column;align-items:center;justify-content:center', $html);
+            $this->assertStringContainsString('id="unifco-shared-site-header-style"', $html);
+            $this->assertStringContainsString('.site-header .nav-icon svg{display:block!important;width:21px!important;height:21px!important;fill:none!important;stroke:currentColor', $html);
+            $this->assertStringContainsString('.site-header .nav-links>a{position:relative!important;display:inline-flex!important;flex-direction:column!important;align-items:center!important;justify-content:center', $html);
             $this->assertStringContainsString('.service-grid{display:grid;grid-template-columns:repeat(6,1fr)', $html);
             $this->assertStringNotContainsString('dynamic-brand-logo-presentation', $html);
             $this->assertStringNotContainsString('grid-template-columns:repeat(auto-fit,minmax(205px,1fr))', $html);

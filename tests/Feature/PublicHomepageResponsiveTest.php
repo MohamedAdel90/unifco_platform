@@ -35,7 +35,7 @@ class PublicHomepageResponsiveTest extends TestCase
             ->assertSee('showcase-project-card', false)
             ->assertSee('showcase-clients', false)
             ->assertSee('emergency-banner', false)
-            ->assertSee('id="mobile-menu"', false)
+            ->assertSee('data-shared-mobile-menu', false)
             ->assertSee('href="'.route('login').'"', false)
             ->assertSee('/css/home-showcase.css', false)
             ->assertSee('/js/home-showcase.js', false)
