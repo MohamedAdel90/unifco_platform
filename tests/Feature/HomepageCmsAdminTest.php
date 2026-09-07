@@ -96,6 +96,59 @@ class HomepageCmsAdminTest extends TestCase
             ->assertJsonStructure(['images']);
     }
 
+    public function test_icon_library_contains_all_built_in_homepage_icons(): void
+    {
+        $response = $this->actingAs($this->admin())
+            ->getJson(route('admin.homepage.images.list', ['section' => 'icons']))
+            ->assertOk()
+            ->assertJsonPath('context', 'icons');
+
+        $names = collect($response->json('images'))->pluck('name');
+        foreach (['shield.svg', 'settings.svg', 'building.svg', 'monitor.svg', 'team.svg', 'chart.svg', 'calendar.svg'] as $icon) {
+            $this->assertTrue($names->contains($icon), "Missing built-in icon {$icon}");
+        }
+    }
+
+    public function test_every_homepage_icon_field_uses_the_image_icon_picker(): void
+    {
+        $section = HomepageSection::create([
+            'section_key' => 'hero', 'sort_order' => 1, 'is_active' => true,
+            'data_ar' => ['proofs' => [['icon' => 'shield', 'label' => 'الجودة', 'sub' => 'معايير عالمية']]],
+            'data_en' => ['proofs' => [['icon' => 'shield', 'label' => 'Quality', 'sub' => 'Global standards']]],
+        ]);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.homepage.sections.edit', $section))
+            ->assertOk()
+            ->assertSee('Homepage Icon Library')
+            ->assertSee('Choose from library')
+            ->assertSee('icon-picker-target')
+            ->assertSee('/images/home/icons/shield.svg');
+    }
+
+    public function test_changing_an_inherited_arabic_icon_synchronizes_the_english_icon(): void
+    {
+        $section = HomepageSection::create([
+            'section_key' => 'hero', 'sort_order' => 1, 'is_active' => true,
+            'data_ar' => ['proofs' => [['icon' => 'shield', 'label' => 'الجودة', 'sub' => 'معايير عالمية']]],
+            'data_en' => ['proofs' => [['icon' => 'shield', 'label' => 'Quality', 'sub' => 'Global standards']]],
+        ]);
+
+        $this->actingAs($this->admin())->put(route('admin.homepage.sections.update', $section), [
+            'item_ar_proofs_index' => [0],
+            'item_ar_proofs_0_icon' => '/images/home/icons/settings.svg',
+            'item_ar_proofs_0_label' => 'الجودة',
+            'item_ar_proofs_0_sub' => 'معايير عالمية',
+            'item_en_proofs_index' => [0],
+            'item_en_proofs_0_label' => 'Quality',
+            'item_en_proofs_0_sub' => 'Global standards',
+        ])->assertRedirect();
+
+        $section->refresh();
+        $this->assertSame('/images/home/icons/settings.svg', $section->data_ar['proofs'][0]['icon']);
+        $this->assertSame('/images/home/icons/settings.svg', $section->data_en['proofs'][0]['icon']);
+    }
+
     public function test_non_admin_cannot_access_sections(): void
     {
         $this->actingAs($this->regularUser())

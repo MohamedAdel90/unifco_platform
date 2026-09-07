@@ -137,6 +137,7 @@ class HomepageImageController extends Controller
         $clients = $this->staticImages(public_path('images/home/clients'), 'clients');
 
         $static = match ($sectionKey) {
+            'icons' => $this->staticImages(public_path('images/home/icons'), 'icons'),
             'projects' => $projects,
             'clients' => $clients,
             default => $staticHome,

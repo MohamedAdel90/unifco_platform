@@ -58,7 +58,7 @@ HTML;
     try{
       var u=new URL(url,window.location.origin);
       if(u.pathname===new URL(listUrl,window.location.origin).pathname || u.pathname===new URL(uploadUrl,window.location.origin).pathname){
-        u.searchParams.set('section',section);
+        if(!u.searchParams.has('section'))u.searchParams.set('section',section);
         return u.toString();
       }
     }catch(e){}
@@ -109,8 +109,10 @@ HTML;
     return originalFetch(requestInput,options).then(function(response){
       var listPath=new URL(listUrl,window.location.origin).pathname;
       var responsePath='';
-      try{responsePath=new URL(scopedUrl,window.location.origin).pathname;}catch(e){}
+      var requestedSection='';
+      try{var parsedResponseUrl=new URL(scopedUrl,window.location.origin);responsePath=parsedResponseUrl.pathname;requestedSection=parsedResponseUrl.searchParams.get('section')||'';}catch(e){}
       if(method!=='GET' || responsePath!==listPath || !response.ok)return response;
+      if(requestedSection && requestedSection!==section)return response;
 
       return response.clone().json().then(function(data){
         var current=currentImageValues();

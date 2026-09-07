@@ -61,12 +61,13 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 if (array_key_exists(0, $item)) {
-                    return [(string) ($item[0] ?? ''), (string) ($item[1] ?? '')];
+                    return [(string) ($item[0] ?? ''), (string) ($item[1] ?? ''), (string) ($item[2] ?? '')];
                 }
 
                 return [
                     (string) ($item['value'] ?? $item['number'] ?? $item['metric'] ?? ''),
                     (string) ($item['label'] ?? $item['title'] ?? $item['text'] ?? ''),
+                    (string) ($item['icon'] ?? ''),
                 ];
             }, is_array($home['stats'] ?? null) ? $home['stats'] : []));
 
