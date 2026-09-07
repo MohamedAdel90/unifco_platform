@@ -52,7 +52,7 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('class="nav-links public-primary-nav"', false)
             ->assertSee('class="nav-actions"', false)
             ->assertSee('class="header-btn red"', false)
-            ->assertSee('id="requestCenterAction"', false)
+            ->assertSee('id="requestForm"', false)
             ->assertSee('طلب خدمة', false)
             ->assertSee('تسجيل الدخول', false)
             ->assertDontSee('class="request-pill"', false)
