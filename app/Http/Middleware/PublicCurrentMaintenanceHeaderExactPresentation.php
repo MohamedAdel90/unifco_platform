@@ -25,17 +25,29 @@ class PublicCurrentMaintenanceHeaderExactPresentation
         $home = app(\App\Services\HomepageContentService::class)->getContent($locale);
         $header = view('public.partials.site-header', compact('home', 'locale'))->render();
 
+        // Remove any previously injected copies of the shared header assets so
+        // the page always ends with one deterministic header implementation.
+        $html = preg_replace('/<style id="unifco-shared-site-header-style">.*?<\/style>/s', '', $html) ?? $html;
+        $html = preg_replace('/<script id="unifco-shared-site-header-script">.*?<\/script>/s', '', $html) ?? $html;
+
         $patterns = [
             '/<header class="current-service-nav">.*?<\/header>/s',
-            '/<header class="top">.*?<\/header>/s',
+            '/<header class="top request-homepage-header">.*?<\/header>/s',
             '/<header class="top site-header"[^>]*>.*?<\/header>/s',
+            '/<header class="top">.*?<\/header>/s',
         ];
 
+        $replaced = false;
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $html)) {
                 $html = preg_replace($pattern, $header, $html, 1) ?? $html;
+                $replaced = true;
                 break;
             }
+        }
+
+        if (! $replaced) {
+            $html = str_replace('<body>', '<body>'.$header, $html);
         }
 
         $response->setContent($html);
