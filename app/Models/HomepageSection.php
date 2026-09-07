@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\HomepageSectionMapper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -56,6 +57,8 @@ class HomepageSection extends Model
 
     public function getData(string $locale): array
     {
-        return $this->{"data_{$locale}"} ?? [];
+        $data = $this->{"data_{$locale}"} ?? [];
+
+        return HomepageSectionMapper::toPublic($this->section_key, $data);
     }
 }

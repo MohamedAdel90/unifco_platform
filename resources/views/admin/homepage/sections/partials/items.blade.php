@@ -11,9 +11,10 @@
               <label>{{ $f }}</label>
               @if($f==='image')
                 @include('admin.homepage.sections.partials.image-field', [
-                  'name'=>'item_{{$locale}}_{{$listKey}}_{{$i}}_{{$f}}',
+                  'name'=>"item_{$locale}_{$listKey}_{$i}_{$f}",
                   'value'=>$row[$f] ?? '',
-                  'placeholder'=>'/images/...'
+                  'placeholder'=>'/images/...',
+                  'label'=>strtoupper($locale).' '.$listKey.' #'.($i+1).' image'
                 ])
               @elseif($f==='desc')
                 <textarea name="item_{{$locale}}_{{$listKey}}_{{$i}}_{{$f}}">{{ $row[$f] ?? '' }}</textarea>
@@ -36,9 +37,10 @@
             <label>{{ $f }}</label>
             @if($f==='image')
               @include('admin.homepage.sections.partials.image-field', [
-                'name'=>'item_{{$locale}}_{{$listKey}}_'.$IDX.'_{{$f}}',
+                'name'=>'item_'.$locale.'_'.$listKey.'_'.$IDX.'_'.$f,
                 'value'=>'',
-                'placeholder'=>'/images/...'
+                'placeholder'=>'/images/...',
+                'label'=>strtoupper($locale).' '.$listKey.' new image'
               ])
             @elseif($f==='desc')
               <textarea name="item_{{$locale}}_{{$listKey}}_<?= '{{index}}' ?>_{{$f}}"></textarea>

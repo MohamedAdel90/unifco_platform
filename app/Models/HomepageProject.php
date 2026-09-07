@@ -52,6 +52,8 @@ class HomepageProject extends Model
     {
         Cache::forget('homepage_content_ar');
         Cache::forget('homepage_content_en');
+        Cache::forget('homepage_projects_ar');
+        Cache::forget('homepage_projects_en');
     }
 
     public function toArrayForLocale(string $locale): array

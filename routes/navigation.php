@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BrandingController;
+use App\Http\Controllers\Admin\CmsImageTranslationController;
 use App\Http\Controllers\Admin\HomepageSectionController;
 use App\Http\Controllers\Admin\HomepageProjectController;
 use App\Http\Controllers\Admin\HomepageClientController;
@@ -34,6 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin/homepage')->name('admin.homepage.')->group(function () {
         Route::get('/sections', [HomepageSectionController::class, 'index'])->name('sections.index');
         Route::get('/sections/{section}/edit', [HomepageSectionController::class, 'edit'])->name('sections.edit');
+        Route::post('/sections/{section}/preview', [HomepageSectionController::class, 'preview'])->name('sections.preview');
         Route::put('/sections/{section}', [HomepageSectionController::class, 'update'])->name('sections.update');
         Route::post('/sections/{section}/toggle', [HomepageSectionController::class, 'toggle'])->name('sections.toggle');
         Route::get('/projects', [HomepageProjectController::class, 'index'])->name('projects.index');
@@ -52,6 +54,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/clients/{client}/toggle', [HomepageClientController::class, 'toggle'])->name('clients.toggle');
         Route::get('/images/list', [HomepageImageController::class, 'list'])->name('images.list');
         Route::post('/images/upload', [HomepageImageController::class, 'upload'])->name('images.upload');
+        Route::post('/images/translate', [CmsImageTranslationController::class, 'translate'])->name('images.translate');
     });
     Route::prefix('admin/users')->name('admin.users.')->group(function () {
         Route::get('/export/csv',[UserAdministrationController::class,'export'])->name('export');
