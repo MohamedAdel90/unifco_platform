@@ -16,11 +16,12 @@ use App\Http\Controllers\EAM\AssetMeterController;
 use App\Http\Controllers\EAM\AssetReliabilityController;
 use App\Http\Controllers\EAM\AssetSparePartController;
 use App\Http\Controllers\Maintenance\WorkOrderController;
+use App\Http\Controllers\PublicAboutController;
 use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicSiteController::class, 'home'])->name('public.home');
-Route::get('/about', fn () => redirect()->route('public.home'))->name('public.about');
+Route::get('/about', PublicAboutController::class)->name('public.about');
 Route::get('/industries', fn () => redirect()->route('public.home'))->name('public.industries');
 Route::get('/services', fn () => redirect()->route('public.home'))->name('public.services');
 Route::get('/request-quote', [PublicSiteController::class, 'quote'])->name('public.quote');
