@@ -1,0 +1,3 @@
+UNIFCO homepage maintenance image redeploy marker.
+Purpose: force a clean production checkout so public/images/home/about-technician-v14.webp is materialized on the production server.
+Date: 2026-09-05

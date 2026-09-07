@@ -498,3 +498,16 @@ html[dir="rtl"] .showcase-arrow svg {
     .showcase-rail { grid-auto-columns: 88%; }
     .client-rail { grid-auto-columns: 72%; }
 }
+
+/* Deliver the approved homepage technician artwork even when the application server's local asset path is stale. */
+#about .about-media {
+    background-image: url('https://raw.githubusercontent.com/MohamedAdel90/unifco_platform/main/public/images/home/about-technician-v14.webp');
+    background-size: cover;
+    background-position: center 34%;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+}
+
+#about .about-media > img {
+    visibility: hidden;
+}

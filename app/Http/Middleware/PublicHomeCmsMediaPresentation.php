@@ -1,0 +1,125 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use App\Services\HomepageContentService;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class PublicHomeCmsMediaPresentation
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $response = $next($request);
+
+        if (! $request->routeIs('public.home') || ! method_exists($response, 'getContent') || ! method_exists($response, 'setContent')) {
+            return $response;
+        }
+
+        $html = (string) $response->getContent();
+        if ($html === '') {
+            return $response;
+        }
+
+        $locale = str_contains($html, '<html lang="en"') ? 'en' : 'ar';
+        $home = app(HomepageContentService::class)->getContent($locale);
+
+        $aboutImage = trim((string) ($home['about_image'] ?? ''));
+        if ($aboutImage === '') {
+            $aboutImage = '/images/home/about-technician-v14.webp';
+        }
+
+        $profileImage = '';
+        $profileRows = $home['about_profile_images'] ?? [];
+        if (is_array($profileRows) && isset($profileRows[0]) && is_array($profileRows[0])) {
+            $profileImage = trim((string) ($profileRows[0][0] ?? ''));
+        }
+
+        if ($profileImage === '') {
+            $profileImage = $locale === 'en'
+                ? '/images/home/unifco-about-card-en.webp'
+                : '/images/home/unifco-about-card-ar.webp';
+        }
+
+        $safeAbout = htmlspecialchars($aboutImage, ENT_QUOTES, 'UTF-8');
+        $safeProfile = htmlspecialchars($profileImage, ENT_QUOTES, 'UTF-8');
+
+        $html = str_replace(
+            '<img src="/images/home/about-technician-v14.webp" alt="UNIFCO">',
+            '<img src="'.$safeAbout.'" alt="UNIFCO">',
+            $html
+        );
+
+        $override = '<style id="unifco-cms-about-media">'
+            .'#about .about-media{background-image:url(\''.$safeAbout.'\')!important;background-size:cover!important;background-position:center 34%!important}'
+            .'.showcase-clients .client-card{min-height:120px!important;padding:8px 10px!important;background:#fff!important}'
+            .'.showcase-clients .client-card img{width:100%!important;height:96px!important;max-height:96px!important;object-fit:contain!important}'
+            .'.process-icon svg{width:31px!important;height:31px!important;stroke:#fff!important;fill:none!important;stroke-width:1.9!important;stroke-linecap:round!important;stroke-linejoin:round!important}'
+            .'.portal-card{border:1px solid #dfe6ef!important;border-radius:18px!important;background:linear-gradient(145deg,#fff,#f8fafc)!important;box-shadow:0 18px 42px rgba(7,31,77,.10)!important}'
+            .'.portal-card .check-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:16px 28px!important;margin:20px 0 24px!important}'
+            .'.portal-card .check{display:flex!important;align-items:center!important;gap:10px!important;font-weight:800!important;color:#071f4d!important;font-size:13px!important}'
+            .'.portal-card .check:before{content:""!important;width:42px!important;height:42px!important;flex:0 0 42px!important;border-radius:50%!important;background:#d80f2d!important;background-repeat:no-repeat!important;background-position:center!important;background-size:23px 23px!important;box-shadow:0 6px 14px rgba(216,15,45,.15)!important}'
+            .'.portal-card .check:nth-child(1):before{background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M6 3h12v18H6zM9 7h6M9 11h6M9 15h4%27/%3E%3C/svg%3E")!important}'
+            .'.portal-card .check:nth-child(2):before{background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 21V8l8-4 8 4v13M9 21v-5h6v5M8 10h.01M12 10h.01M16 10h.01%27/%3E%3C/svg%3E")!important}'
+            .'.portal-card .check:nth-child(3):before{background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.2 2.2-3-3z%27/%3E%3C/svg%3E")!important}'
+            .'.portal-card .check:nth-child(4):before{background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M6 3h12v18H6zM9 7h6M9 11h6M9 15h4M15 17h3%27/%3E%3C/svg%3E")!important}'
+            .'.portal-card .check:nth-child(5):before{background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Crect x=%273%27 y=%275%27 width=%2718%27 height=%2716%27 rx=%272%27/%3E%3Cpath d=%27M7 3v4M17 3v4M3 10h18%27/%3E%3C/svg%3E")!important}'
+            .'.portal-card .check:nth-child(6):before{background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 20V10M10 20V4M16 20v-7M22 20H2%27/%3E%3C/svg%3E")!important}'
+            .'.portal-device{width:96%!important;height:auto!important;max-height:330px!important;margin:24px auto 12px!important;object-fit:contain!important;filter:drop-shadow(0 18px 24px rgba(9,29,58,.18))!important}'
+            .'@media(max-width:820px){'
+                .'.portal-card{display:flex!important;flex-direction:column!important;padding:34px 24px 28px!important}'
+                .'.portal-card h2{order:1!important;width:100%!important;text-align:right!important;margin-bottom:10px!important}'
+                .'.portal-card>p{order:2!important;width:100%!important;text-align:right!important;margin:0 0 4px!important}'
+                .'.portal-card .portal-device{order:3!important;margin:26px auto 18px!important;width:92%!important;max-height:390px!important}'
+                .'.portal-card .check-grid{order:4!important;width:100%!important;grid-template-columns:1fr 1fr!important;gap:18px 20px!important;margin:10px 0 26px!important}'
+                .'.portal-card .check{font-size:12px!important;line-height:1.5!important}'
+                .'.portal-card .check:before{width:46px!important;height:46px!important;flex-basis:46px!important;background-size:25px 25px!important}'
+                .'.portal-card>.btn{order:5!important;width:100%!important;min-height:58px!important;font-size:15px!important;border-radius:10px!important}'
+            .'}'
+            .'@media(max-width:560px){'
+                .'.portal-card{padding:28px 18px 24px!important}'
+                .'.portal-card .check-grid{gap:15px 12px!important}'
+                .'.portal-card .check{font-size:11px!important;gap:8px!important}'
+                .'.portal-card .check:before{width:42px!important;height:42px!important;flex-basis:42px!important;background-size:23px 23px!important}'
+            .'}'
+            .'</style>';
+        $html = str_replace('</head>', $override.'</head>', $html);
+
+        if ($locale === 'en') {
+            $html = str_replace(
+                '<img src="/images/home/unifco-about-card-en.webp" alt="About UNIFCO Facilities Contracting">',
+                '<img src="'.$safeProfile.'" alt="About UNIFCO Facilities Contracting">',
+                $html
+            );
+        } else {
+            $html = str_replace(
+                '<img src="/images/unifco-facility-hero.jpg" alt="UNIFCO Facilities Management">',
+                '<img src="'.$safeProfile.'" alt="UNIFCO Facilities Management">',
+                $html
+            );
+        }
+
+        $processIcons = <<<'HTML'
+<script id="unifco-process-icons">
+document.addEventListener('DOMContentLoaded', function () {
+    const icons = [
+        `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 4.5h11l4 4V19"/><path d="M19 4.5V9h4"/><path d="M11 12.5l1.7 1.7 3-3.2M11 18l1.7 1.7 2.3-2.5M10 24h4"/><circle cx="22" cy="22" r="5"/><path d="m25.7 25.7 3.3 3.3"/></svg>`,
+        `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="8" y="6" width="16" height="22" rx="2"/><path d="M12 6V4h8v2M12 13h4M12 19c2-3 5-3 8-6M17 21l3-2 2 3"/><circle cx="13" cy="23" r="1.5"/></svg>`,
+        `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M20.5 5.5a6 6 0 0 0-7.2 7.7L5.8 20.7a3 3 0 0 0 4.2 4.2l7.5-7.5a6 6 0 0 0 7.7-7.2l-3.6 3.6-3.4-.8-.8-3.4z"/><circle cx="23.5" cy="23.5" r="4.2"/><path d="M23.5 17.7v2M23.5 27.3v2M17.7 23.5h2M27.3 23.5h2"/></svg>`,
+        `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M26 11a11 11 0 1 0 1 12"/><path d="M26 6v5h-5"/><path d="M9 23v-5h4v5M15 23v-9h4v9M21 23v-6h4v6"/></svg>`
+    ];
+
+    document.querySelectorAll('.process-step .process-icon').forEach(function (node, index) {
+        if (icons[index]) node.innerHTML = icons[index];
+    });
+});
+</script>
+HTML;
+        $html = str_replace('</body>', $processIcons.'</body>', $html);
+
+        $response->setContent($html);
+
+        return $response;
+    }
+}
