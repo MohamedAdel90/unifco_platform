@@ -48,6 +48,7 @@ class HomepageSectionController extends Controller
         $existingEn = $section->data_en ?? [];
         $draftAr = $this->assemble($request, $schema, 'ar', $existingAr);
         $draftEn = $this->assemble($request, $schema, 'en', $existingEn);
+        [$draftAr, $draftEn] = $this->synchronizeIcons($draftAr, $draftEn, $existingAr, $existingEn, $schema);
 
         if ($section->section_key === 'services') {
             [$draftAr, $draftEn] = $this->synchronizeServiceImages($draftAr, $draftEn, $existingAr, $existingEn);
@@ -106,6 +107,8 @@ class HomepageSectionController extends Controller
             $dataAr = $this->assemble($request, $schema, 'ar', $existingAr);
             $dataEn = $this->assemble($request, $schema, 'en', $existingEn);
         }
+
+        [$dataAr, $dataEn] = $this->synchronizeIcons($dataAr, $dataEn, $existingAr, $existingEn, $schema);
 
         if ($section->section_key === 'services') {
             [$dataAr, $dataEn] = $this->synchronizeServiceImages($dataAr, $dataEn, $existingAr, $existingEn);
@@ -212,6 +215,42 @@ class HomepageSectionController extends Controller
 
         $dataAr['items'] = $arItems;
         $dataEn['items'] = $enItems;
+
+        return [$dataAr, $dataEn];
+    }
+
+    private function synchronizeIcons(array $dataAr, array $dataEn, array $existingAr, array $existingEn, array $schema): array
+    {
+        foreach (($schema['items'] ?? []) as $listKey => $fields) {
+            if (! in_array('icon', $fields, true)) {
+                continue;
+            }
+
+            $arItems = is_array($dataAr[$listKey] ?? null) ? $dataAr[$listKey] : [];
+            $enItems = is_array($dataEn[$listKey] ?? null) ? $dataEn[$listKey] : [];
+            $oldArItems = is_array($existingAr[$listKey] ?? null) ? $existingAr[$listKey] : [];
+            $oldEnItems = is_array($existingEn[$listKey] ?? null) ? $existingEn[$listKey] : [];
+
+            foreach ($arItems as $index => $arItem) {
+                if (! isset($enItems[$index]) || ! is_array($arItem) || ! is_array($enItems[$index])) {
+                    continue;
+                }
+
+                $newAr = trim((string) ($arItem['icon'] ?? ''));
+                $newEn = trim((string) ($enItems[$index]['icon'] ?? ''));
+                $oldAr = trim((string) ($oldArItems[$index]['icon'] ?? ''));
+                $oldEn = trim((string) ($oldEnItems[$index]['icon'] ?? ''));
+                $arChanged = $newAr !== $oldAr;
+                $enChanged = $newEn !== $oldEn;
+                $englishWasInherited = $oldEn === '' || $oldEn === $oldAr;
+
+                if ($arChanged && ! $enChanged && $englishWasInherited) {
+                    $enItems[$index]['icon'] = $newAr;
+                }
+            }
+
+            $dataEn[$listKey] = $enItems;
+        }
 
         return [$dataAr, $dataEn];
     }

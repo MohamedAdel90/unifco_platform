@@ -16,6 +16,12 @@
                   'placeholder'=>'/images/...',
                   'label'=>strtoupper($locale).' '.$listKey.' #'.($i+1).' image'
                 ])
+              @elseif($f==='icon')
+                @include('admin.homepage.sections.partials.icon-field', [
+                  'name'=>"item_{$locale}_{$listKey}_{$i}_{$f}",
+                  'value'=>$row[$f] ?? '',
+                  'label'=>strtoupper($locale).' '.$listKey.' #'.($i+1).' icon'
+                ])
               @elseif($f==='desc')
                 <textarea name="item_{{$locale}}_{{$listKey}}_{{$i}}_{{$f}}">{{ $row[$f] ?? '' }}</textarea>
               @else
@@ -41,6 +47,12 @@
                 'value'=>'',
                 'placeholder'=>'/images/...',
                 'label'=>strtoupper($locale).' '.$listKey.' new image'
+              ])
+            @elseif($f==='icon')
+              @include('admin.homepage.sections.partials.icon-field', [
+                'name'=>'item_'.$locale.'_'.$listKey.'_'.$IDX.'_'.$f,
+                'value'=>'',
+                'label'=>strtoupper($locale).' '.$listKey.' new icon'
               ])
             @elseif($f==='desc')
               <textarea name="item_{{$locale}}_{{$listKey}}_<?= '{{index}}' ?>_{{$f}}"></textarea>

@@ -152,6 +152,9 @@
 @endif
 
 @include('admin.homepage.partials.image-picker')
+@if(collect($items)->contains(fn($fields) => in_array('icon', $fields, true)))
+  @include('admin.homepage.partials.icon-picker')
+@endif
 
 <div class="form-actions">
   <label style="font-size:12px;font-weight:700;color:#374151;margin:0">Sort order:</label>

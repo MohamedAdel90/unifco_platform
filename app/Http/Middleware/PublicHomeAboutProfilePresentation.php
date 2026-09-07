@@ -42,7 +42,7 @@ class PublicHomeAboutProfilePresentation
 .hero-proof{margin-top:17px!important}
 .hero .proof{gap:5px!important;min-width:73px!important;padding-inline:9px!important}
 .hero .proof-icon{width:19px!important;height:19px!important}
-.hero .proof-icon svg{width:9px!important;height:9px!important}
+.hero .proof-icon svg,.hero .proof-icon .home-icon-image{width:9px!important;height:9px!important;object-fit:contain!important}
 .hero .proof b{font-size:5.5px!important}
 .hero .proof small{font-size:4.5px!important}
 .hero:after{height:2px!important}

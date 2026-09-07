@@ -39,13 +39,12 @@ class PublicRequestWizardTest extends TestCase
         return $assetId;
     }
 
-    public function test_public_request_page_is_single_page_bilingual_and_reuses_homepage_header(): void
+    public function test_public_request_page_is_single_page_bilingual_and_reuses_shared_homepage_header(): void
     {
         $this->get('/request-service')->assertOk()
             ->assertSee('خدمة أسرع تبدأ بطلب أوضح', false)
             ->assertSee('خطوات بسيطة تساعد فريق UNIFCO على فهم الخدمة المطلوبة بشكل سريع وواضح.', false)
             ->assertSee('class="top site-header"', false)
-            ->assertSee('data-shared-site-header="1"', false)
             ->assertSee('class="wrap nav"', false)
             ->assertSee('class="brand-link"', false)
             ->assertSee('class="site-logo-frame"', false)
@@ -53,10 +52,9 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('class="nav-links public-primary-nav"', false)
             ->assertSee('class="nav-actions"', false)
             ->assertSee('class="header-btn red"', false)
-            ->assertSee('تسجيل الدخول', false)
+            ->assertSee('id="requestForm"', false)
             ->assertSee('طلب خدمة', false)
-            ->assertDontSee('class="request-homepage-header"', false)
-            ->assertDontSee('id="requestCenterAction"', false)
+            ->assertSee('تسجيل الدخول', false)
             ->assertDontSee('class="request-pill"', false)
             ->assertDontSee('class="primary-nav"', false)
             ->assertSee('طلب عرض سعر', false)
@@ -79,17 +77,16 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('A faster service starts with a clearer request', false)
             ->assertSee('Simple steps help the UNIFCO team understand the required service quickly and clearly.', false)
             ->assertSee('Request Service', false)
-            ->assertSee('Sign In', false)
             ->assertSee('Scan Equipment QR', false)
             ->assertSee('enter the Asset ID manually', false)
             ->assertSee('Home', false)
             ->assertSee('About Us', false)
             ->assertSee('Services', false)
-            ->assertSee('Industries', false)
-            ->assertSee('Projects', false)
             ->assertSee('Clients', false)
+            ->assertSee('Projects', false)
             ->assertSee('Careers', false)
             ->assertSee('Contact Us', false)
+            ->assertSee('Sign In', false)
             ->assertSee('Request a Quotation', false)
             ->assertSee('Spare Parts Quotation', false)
             ->assertSee('Maintenance Contract Quotation', false)
