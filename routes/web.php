@@ -82,6 +82,8 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('crm')->name('crm.')->group(function () {
         Route::get('/customers',[CustomerController::class,'index'])->middleware('permission:crm.customer.read')->name('customers.index');
+        Route::get('/customers/export',[CustomerController::class,'export'])->middleware('permission:crm.customer.read')->name('customers.export');
+        Route::post('/customers/import',[CustomerController::class,'import'])->middleware('permission:crm.customer.manage')->name('customers.import');
         Route::get('/customers/create',[CustomerController::class,'create'])->middleware('permission:crm.customer.manage')->name('customers.create');
         Route::post('/customers',[CustomerController::class,'store'])->middleware('permission:crm.customer.manage')->name('customers.store');
         Route::get('/customers/{customer}/edit',[CustomerController::class,'edit'])->middleware('permission:crm.customer.manage')->name('customers.edit');
