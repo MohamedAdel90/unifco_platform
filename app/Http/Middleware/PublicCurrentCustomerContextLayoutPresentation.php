@@ -22,9 +22,9 @@ class PublicCurrentCustomerContextLayoutPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-context-layout-v5">
+<style id="unifco-customer-context-layout-v6">
 .uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:stretch!important;margin-bottom:14px!important;direction:ltr!important}
-.uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:block!important;align-self:stretch!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;padding:18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
+.uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:stretch!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;padding:18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
 .uf-customer-context-layout>.uf-context-details{grid-area:details!important;display:grid!important;grid-template-rows:auto 1fr!important;gap:14px!important;align-self:stretch!important;min-width:0!important;width:100%!important;height:100%!important;direction:rtl!important}
 .uf-customer-context-layout>.uf-context-details>.panel{display:block!important;margin:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
@@ -47,14 +47,15 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-context-customer #customer_number{width:100%!important;max-width:none!important}
 .uf-context-customer>#customer-status{width:100%!important;max-width:none!important;margin:10px 0 0!important}
 .uf-context-customer>#customer-status.ok{display:none!important}
-.uf-context-customer>#uf-current-customer-card{display:block!important;width:100%!important;max-width:none!important;margin:12px 0 0!important;justify-self:stretch!important;align-self:stretch!important}
+.uf-context-customer>#uf-current-customer-card{display:flex!important;flex-direction:column!important;flex:1 1 auto!important;width:100%!important;max-width:none!important;margin:12px 0 0!important;justify-self:stretch!important;align-self:stretch!important}
 .uf-context-customer>#uf-current-customer-card[hidden]{display:none!important}
 .uf-context-customer>#uf-current-customer-card .uf-customer-profile-head{display:flex!important;width:100%!important;min-height:68px!important;padding:10px 13px!important;box-sizing:border-box!important}
-.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{display:grid!important;width:100%!important;max-width:none!important;padding:10px 13px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;box-sizing:border-box!important}
+.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{display:grid!important;flex:1 1 auto!important;width:100%!important;max-width:none!important;padding:10px 13px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;box-sizing:border-box!important}
 .uf-context-customer>#uf-current-customer-card .uf-customer-info-item{min-width:0!important;min-height:48px!important;padding:6px 10px!important}
 .uf-context-customer>#uf-current-customer-card .uf-customer-profile-foot{width:100%!important;padding:0 13px 11px!important;box-sizing:border-box!important}
 .uf-context-customer>#uf-current-customer-card .uf-company-name{max-width:300px!important}
 .uf-context-customer>.hint,.uf-context-customer>.helper,.uf-context-customer>p{width:100%!important;max-width:none!important}
+.uf-context-customer.uf-customer-loaded .uf-hide-after-load{display:none!important}
 .uf-customer-context-layout .disabled-section{opacity:.48}
 .uf-customer-context-layout .disabled-section:not(.uf-context-customer){pointer-events:none}
 @media(max-width:1180px){.uf-customer-context-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer .uf-address-item{grid-column:span 1!important}}
@@ -65,7 +66,7 @@ class PublicCurrentCustomerContextLayoutPresentation
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-context-layout-script-v5">
+<script id="unifco-customer-context-layout-script-v6">
 (()=>{
     const routine=document.getElementById('routine-form');
     const contract=document.getElementById('contract-section');
@@ -94,7 +95,8 @@ HTML;
     details.className='uf-context-details';
 
     customer.classList.add('uf-context-customer');
-    customer.style.setProperty('display','block','important');
+    customer.style.setProperty('display','flex','important');
+    customer.style.setProperty('flex-direction','column','important');
     customer.style.setProperty('width','100%','important');
     customer.style.setProperty('max-width','none','important');
 
@@ -103,10 +105,17 @@ HTML;
     const lookup=input?.closest('.lookup-row') || customer.querySelector('.lookup-row');
     const status=document.getElementById('customer-status');
     const card=document.getElementById('uf-current-customer-card');
+    const autoHint=document.getElementById('customer-auto-hint');
+    const originalField=input?.closest('.field');
 
     if(lookup && lookup.parentElement!==customer) title?.after(lookup);
     if(status && status.parentElement!==customer) (lookup||title)?.after(status);
     if(card && card.parentElement!==customer) (status||lookup||title)?.after(card);
+
+    if(originalField && originalField!==lookup){
+        originalField.classList.add('uf-hide-after-load');
+    }
+    autoHint?.classList.add('uf-hide-after-load');
 
     customer.parentNode.insertBefore(layout,customer);
     layout.appendChild(details);
@@ -114,7 +123,6 @@ HTML;
     details.appendChild(contract);
     details.appendChild(site);
 
-    // The large map/preview area is no longer needed in this compact context layout.
     site.querySelectorAll('#map,.map,.site-map').forEach(el=>el.remove());
 
     const siteSelect=document.getElementById('site_id');
@@ -167,6 +175,15 @@ HTML;
         if(siteSelect.value) syncAddressFromSelectedSite(0);
         else if(addressInput && !(addressInput.value||'').trim()) setAddressState('');
     }
+
+    const syncLoadedState=()=>{
+        const loaded=!!(status?.classList.contains('ok') || (card && !card.hidden));
+        customer.classList.toggle('uf-customer-loaded',loaded);
+    };
+    if(status) new MutationObserver(syncLoadedState).observe(status,{attributes:true,childList:true,subtree:true});
+    if(card) new MutationObserver(syncLoadedState).observe(card,{attributes:true,attributeFilter:['hidden','class','style']});
+    input?.addEventListener('input',()=>customer.classList.remove('uf-customer-loaded'));
+    syncLoadedState();
 })();
 </script>
 HTML;
