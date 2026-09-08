@@ -22,22 +22,25 @@ class PublicCurrentCustomerContextLayoutPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-context-layout-v4">
-.uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:start!important;margin-bottom:14px!important;direction:ltr!important}
-.uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:block!important;align-self:start!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;padding:18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
+<style id="unifco-customer-context-layout-v5">
+.uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:stretch!important;margin-bottom:14px!important;direction:ltr!important}
+.uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:block!important;align-self:stretch!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;padding:18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
-.uf-customer-context-layout>.uf-context-details{grid-area:details!important;display:flex!important;flex-direction:column!important;gap:14px!important;align-self:start!important;min-width:0!important;width:100%!important;direction:rtl!important}
-.uf-customer-context-layout>.uf-context-details>.panel{display:block!important;align-self:start!important;margin:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
+.uf-customer-context-layout>.uf-context-details{grid-area:details!important;display:grid!important;grid-template-rows:auto 1fr!important;gap:14px!important;align-self:stretch!important;min-width:0!important;width:100%!important;height:100%!important;direction:rtl!important}
+.uf-customer-context-layout>.uf-context-details>.panel{display:block!important;margin:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
+.uf-context-details #site-section{height:100%!important}
 .uf-context-customer>.section-title,.uf-context-details .section-title{margin-bottom:14px!important}
 .uf-context-customer>.section-title{font-size:16px!important}
 .uf-context-details .section-title{font-size:15px!important}
 .uf-context-details #contract-section,.uf-context-details #site-section{padding:17px 18px!important}
 .uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{display:grid!important;grid-template-columns:1.35fr 1fr 1fr!important;gap:12px!important;width:100%!important;max-width:none!important}
 .uf-context-details #contract-section .span2,.uf-context-details #site-section .span2{grid-column:span 1!important}
-.uf-context-details #site-section .map,.uf-context-details #site-section .site-map,.uf-context-details #site-section [id*="map"]{height:92px!important;min-height:92px!important;max-height:92px!important;margin-top:12px!important;border-radius:9px!important}
+.uf-context-details #site-section .map,.uf-context-details #site-section .site-map,.uf-context-details #site-section #map{display:none!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important}
 .uf-context-details .field{min-width:0!important;max-width:none!important}
 .uf-context-details .field label{font-size:11px!important;margin-bottom:6px!important}
 .uf-context-details input,.uf-context-details select{width:100%!important;max-width:none!important;height:42px!important;font-size:11px!important;box-sizing:border-box!important}
+.uf-context-details .uf-db-address{background:#f3f7fb!important;color:#173a69!important;cursor:not-allowed!important}
+.uf-context-details .uf-manual-address{background:#fff!important;cursor:text!important}
 
 .uf-context-customer>.lookup-row{display:grid!important;grid-template-columns:minmax(0,1fr) 155px!important;gap:10px!important;width:100%!important;max-width:none!important;margin:0!important}
 .uf-context-customer>.lookup-row>*{min-width:0!important;max-width:none!important;width:100%!important}
@@ -55,14 +58,14 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-customer-context-layout .disabled-section{opacity:.48}
 .uf-customer-context-layout .disabled-section:not(.uf-context-customer){pointer-events:none}
 @media(max-width:1180px){.uf-customer-context-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer .uf-address-item{grid-column:span 1!important}}
-@media(max-width:1050px){.uf-customer-context-layout{grid-template-columns:1fr!important;grid-template-areas:"customer" "details"!important;direction:rtl!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:repeat(2,1fr)!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:1050px){.uf-customer-context-layout{grid-template-columns:1fr!important;grid-template-areas:"customer" "details"!important;direction:rtl!important}.uf-customer-context-layout>.uf-context-customer{height:auto!important}.uf-customer-context-layout>.uf-context-details{height:auto!important;grid-template-rows:auto auto!important}.uf-context-details #site-section{height:auto!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:repeat(2,1fr)!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:760px){.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer .uf-address-item{grid-column:span 1!important}}
-@media(max-width:620px){.uf-customer-context-layout{gap:10px!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:1fr!important}.uf-context-details #site-section .map,.uf-context-details #site-section .site-map,.uf-context-details #site-section [id*="map"]{height:84px!important;min-height:84px!important;max-height:84px!important}.uf-context-customer>.lookup-row{grid-template-columns:1fr!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:1fr!important}}
+@media(max-width:620px){.uf-customer-context-layout{gap:10px!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:1fr!important}.uf-context-customer>.lookup-row{grid-template-columns:1fr!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:1fr!important}}
 </style>
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-context-layout-script-v4">
+<script id="unifco-customer-context-layout-script-v5">
 (()=>{
     const routine=document.getElementById('routine-form');
     const contract=document.getElementById('contract-section');
@@ -92,8 +95,6 @@ HTML;
 
     customer.classList.add('uf-context-customer');
     customer.style.setProperty('display','block','important');
-    customer.style.setProperty('height','auto','important');
-    customer.style.setProperty('min-height','0','important');
     customer.style.setProperty('width','100%','important');
     customer.style.setProperty('max-width','none','important');
 
@@ -103,21 +104,69 @@ HTML;
     const status=document.getElementById('customer-status');
     const card=document.getElementById('uf-current-customer-card');
 
-    if(lookup && lookup.parentElement!==customer){
-        title?.after(lookup);
-    }
-    if(status && status.parentElement!==customer){
-        (lookup||title)?.after(status);
-    }
-    if(card && card.parentElement!==customer){
-        (status||lookup||title)?.after(card);
-    }
+    if(lookup && lookup.parentElement!==customer) title?.after(lookup);
+    if(status && status.parentElement!==customer) (lookup||title)?.after(status);
+    if(card && card.parentElement!==customer) (status||lookup||title)?.after(card);
 
     customer.parentNode.insertBefore(layout,customer);
     layout.appendChild(details);
     layout.appendChild(customer);
     details.appendChild(contract);
     details.appendChild(site);
+
+    // The large map/preview area is no longer needed in this compact context layout.
+    site.querySelectorAll('#map,.map,.site-map').forEach(el=>el.remove());
+
+    const siteSelect=document.getElementById('site_id');
+    const visibleAddress=document.getElementById('visible_site_address');
+    const storedAddress=document.getElementById('site_address');
+    const addressInput=(visibleAddress && visibleAddress.type!=='hidden') ? visibleAddress : ((storedAddress && storedAddress.type!=='hidden') ? storedAddress : visibleAddress);
+
+    const setAddressState=(dbValue)=>{
+        if(!addressInput)return;
+        const value=(dbValue||'').trim();
+        if(value){
+            addressInput.value=value;
+            addressInput.readOnly=true;
+            addressInput.classList.add('uf-db-address');
+            addressInput.classList.remove('uf-manual-address');
+            addressInput.placeholder='';
+            addressInput.title='تم تحميل العنوان من بيانات الموقع المسجلة';
+        }else{
+            addressInput.readOnly=false;
+            addressInput.classList.remove('uf-db-address');
+            addressInput.classList.add('uf-manual-address');
+            addressInput.placeholder='أدخل العنوان يدوياً';
+            addressInput.title='لا يوجد عنوان مسجل للموقع؛ يرجى إدخاله يدوياً';
+        }
+    };
+
+    const syncAddressFromSelectedSite=(attempt=0)=>{
+        const stored=(storedAddress?.value||'').trim();
+        const visible=(visibleAddress?.value||'').trim();
+        const dbValue=stored||visible;
+        if(dbValue){
+            setAddressState(dbValue);
+            return;
+        }
+        if(attempt<7){
+            setTimeout(()=>syncAddressFromSelectedSite(attempt+1),100);
+            return;
+        }
+        setAddressState('');
+    };
+
+    if(siteSelect){
+        siteSelect.addEventListener('change',()=>{
+            if(addressInput){
+                addressInput.readOnly=true;
+                addressInput.classList.remove('uf-manual-address');
+            }
+            setTimeout(()=>syncAddressFromSelectedSite(0),0);
+        });
+        if(siteSelect.value) syncAddressFromSelectedSite(0);
+        else if(addressInput && !(addressInput.value||'').trim()) setAddressState('');
+    }
 })();
 </script>
 HTML;
