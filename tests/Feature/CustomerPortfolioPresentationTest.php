@@ -51,9 +51,11 @@ class CustomerPortfolioPresentationTest extends TestCase
         $this->actingAs($user)->get('/crm/customers?q=Riyadh&city=Riyadh')
             ->assertOk()->assertSee('Riyadh Facilities')->assertDontSee('Jeddah Trading');
 
-        $this->actingAs($user)->get('/crm/customers/export?q=Riyadh')
-            ->assertOk()->assertHeader('Content-Type','text/csv; charset=UTF-8')
-            ->assertSee('Riyadh Facilities')->assertDontSee('Jeddah Trading');
+        $response=$this->actingAs($user)->get('/crm/customers/export?q=Riyadh');
+        $response->assertOk()->assertHeader('Content-Type','text/csv; charset=UTF-8');
+        $csv=$response->streamedContent();
+        $this->assertStringContainsString('Riyadh Facilities',$csv);
+        $this->assertStringNotContainsString('Jeddah Trading',$csv);
     }
 
     public function test_customer_csv_import_creates_customer_records(): void
