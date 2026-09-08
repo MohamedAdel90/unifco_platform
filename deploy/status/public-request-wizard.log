@@ -251,86 +251,86 @@ No syntax errors detected in database/migrations/2026_08_25_000049_rebuild_publi
 
    INFO  Preparing database.  
 
-  Creating migration table ....................................... 8.75ms DONE
+  Creating migration table ...................................... 20.64ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables .................. 595.85ms DONE
-  2026_08_14_000002_add_controls_and_transactions .............. 409.50ms DONE
-  2026_08_14_000003_add_operational_integration ................ 266.77ms DONE
-  2026_08_14_000005_create_platform_services_tables ............ 115.16ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ........ 76.34ms DONE
-  2026_08_15_000008_add_finance_core ........................... 326.81ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ....... 564.99ms DONE
-  2026_08_15_000010_add_hr_operations .......................... 367.83ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................ 196.03ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................ 213.71ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .............. 465.37ms DONE
-  2026_08_18_000014_add_public_site_requests .................... 18.33ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines . 398.36ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ........... 462.07ms DONE
-  2026_08_18_000017_expand_customer_portal_operations .......... 536.75ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps .......... 562.34ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  132.24ms DONE
-  2026_08_21_000020_add_emergency_request_details .............. 158.47ms DONE
-  2026_08_21_000021_add_customer_onboarding .................... 254.26ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile .... 135.07ms DONE
-  2026_08_21_000023_create_customer_messaging ................... 73.31ms DONE
+  2026_08_14_000001_create_unifco_core_tables .................. 746.21ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 566.42ms DONE
+  2026_08_14_000003_add_operational_integration ................ 305.87ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 141.23ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 96.74ms DONE
+  2026_08_15_000008_add_finance_core ........................... 435.05ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 740.93ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 468.78ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 242.70ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 255.74ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 539.70ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 23.43ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 495.38ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 534.47ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 622.41ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 699.18ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  150.87ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 187.05ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 279.74ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 140.60ms DONE
+  2026_08_21_000023_create_customer_messaging ................... 73.90ms DONE
   2026_08_21_000024_provision_witco_portal_admin ................. 1.98ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ............... 755.17ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 394.19ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 58.34ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability ... 504.78ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  277.24ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 41.57ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation . 652.29ms DONE
-  2026_08_22_000032_add_work_order_part_requests ............... 471.39ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 474.68ms DONE
-  2026_08_22_000034_add_user_permission_overrides ............... 83.02ms DONE
-  2026_08_22_000035_add_user_security_metadata ................. 325.30ms DONE
-  2026_08_22_000036_add_user_session_version .................... 76.79ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 870.95ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 435.54ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 55.01ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 592.41ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  296.32ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 50.50ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 751.07ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 517.19ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 475.91ms DONE
+  2026_08_22_000034_add_user_permission_overrides ............... 94.78ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 346.83ms DONE
+  2026_08_22_000036_add_user_session_version .................... 85.87ms DONE
   2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 537.00ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 .................... 420.82ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ............. 421.07ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 352.16ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................ 595.60ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................ 722.17ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 .................. 356.27ms DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ................ 488.13ms DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................. 114.24ms DONE
-  2026_08_23_000047_create_branding_settings .................... 23.95ms DONE
-  2026_08_24_000048_upgrade_public_request_experience .......... 165.67ms DONE
-  2026_08_25_000049_rebuild_public_request_single_page ......... 272.59ms DONE
-  2026_08_26_000050_link_public_requests_to_asset_registry ...... 64.22ms DONE
-  2026_08_26_000051_build_service_request_workflow_foundation .. 535.70ms DONE
-  2026_08_27_000052_add_customer_portal_rbac_scopes ............. 35.82ms DONE
-  2026_08_27_000053_add_customer_portal_action_requests ......... 28.61ms DONE
-  2026_08_27_000054_add_customer_action_attachments ............. 45.16ms DONE
-  2026_08_27_000055_add_assignment_sla_to_customer_actions ...... 60.24ms DONE
-  2026_08_27_000056_add_customer_acquisition_lifecycle ......... 548.32ms DONE
-  2026_08_27_000057_add_acquisition_governance_fields .......... 442.89ms DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 607.54ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 516.17ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 416.04ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 378.31ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 679.21ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 809.59ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 374.07ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 516.07ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 131.17ms DONE
+  2026_08_23_000047_create_branding_settings .................... 30.67ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 203.80ms DONE
+  2026_08_25_000049_rebuild_public_request_single_page ......... 325.07ms DONE
+  2026_08_26_000050_link_public_requests_to_asset_registry ...... 73.11ms DONE
+  2026_08_26_000051_build_service_request_workflow_foundation .. 559.47ms DONE
+  2026_08_27_000052_add_customer_portal_rbac_scopes ............. 52.50ms DONE
+  2026_08_27_000053_add_customer_portal_action_requests ......... 35.89ms DONE
+  2026_08_27_000054_add_customer_action_attachments ............. 50.17ms DONE
+  2026_08_27_000055_add_assignment_sla_to_customer_actions ...... 74.84ms DONE
+  2026_08_27_000056_add_customer_acquisition_lifecycle ......... 602.88ms DONE
+  2026_08_27_000057_add_acquisition_governance_fields .......... 519.32ms DONE
   2026_08_27_000058_build_professional_asset_master .................. 1s DONE
-  2026_08_27_000059_normalize_user_status_semantics ............ 147.08ms DONE
-  2026_08_27_000060_build_asset_lifecycle_commissioning ........ 585.68ms DONE
-  2026_08_27_000061_normalize_asset_documents_for_professional_master  107.46ms DONE
-  2026_08_28_000020_add_asset_warranty_insurance_phase_d ....... 320.84ms DONE
-  2026_08_28_000070_build_asset_custody_transfers .............. 259.63ms DONE
-  2026_08_28_000080_complete_agreed_asset_phases_b_d ........... 613.48ms DONE
+  2026_08_27_000059_normalize_user_status_semantics ............ 151.84ms DONE
+  2026_08_27_000060_build_asset_lifecycle_commissioning ........ 637.95ms DONE
+  2026_08_27_000061_normalize_asset_documents_for_professional_master  128.21ms DONE
+  2026_08_28_000020_add_asset_warranty_insurance_phase_d ....... 349.40ms DONE
+  2026_08_28_000070_build_asset_custody_transfers .............. 306.21ms DONE
+  2026_08_28_000080_complete_agreed_asset_phases_b_d ........... 630.08ms DONE
   2026_08_28_000090_close_agreed_asset_a_d_gaps ...................... 1s DONE
   2026_08_28_000100_close_asset_acceptance_contract .................. 1s DONE
-  2026_08_28_000110_allow_staged_customer_pm_strategy ........... 27.21ms DONE
-  2026_08_28_000120_normalize_asset_warranty_expiry_date ....... 117.55ms DONE
-  2026_08_29_000060_professionalize_employee_identity_and_contact  470.60ms DONE
-  2026_08_29_000062_add_contract_start_date_to_employees ........ 73.98ms DONE
-  2026_08_30_075500_add_employee_contact_and_assignment_fields . 371.94ms DONE
-  2026_09_02_000001_create_homepage_sections_table .............. 31.16ms DONE
-  2026_09_02_000002_create_homepage_projects_table .............. 25.35ms DONE
-  2026_09_02_000003_create_homepage_clients_table ............... 24.02ms DONE
-  2026_09_03_120000_seed_default_asset_category_templates ........ 2.62ms DONE
-  2026_09_04_120100_set_current_hero_to_full_banner_mode ......... 1.41ms DONE
-  2026_09_04_153000_restore_homepage_service_images .............. 1.44ms DONE
-  2026_09_04_190000_set_generators_service_image ................. 0.53ms DONE
+  2026_08_28_000110_allow_staged_customer_pm_strategy ........... 27.56ms DONE
+  2026_08_28_000120_normalize_asset_warranty_expiry_date ........ 98.47ms DONE
+  2026_08_29_000060_professionalize_employee_identity_and_contact  492.89ms DONE
+  2026_08_29_000062_add_contract_start_date_to_employees ........ 68.18ms DONE
+  2026_08_30_075500_add_employee_contact_and_assignment_fields . 366.72ms DONE
+  2026_09_02_000001_create_homepage_sections_table .............. 29.41ms DONE
+  2026_09_02_000002_create_homepage_projects_table .............. 24.62ms DONE
+  2026_09_02_000003_create_homepage_clients_table ............... 23.18ms DONE
+  2026_09_03_120000_seed_default_asset_category_templates ........ 2.77ms DONE
+  2026_09_04_120100_set_current_hero_to_full_banner_mode ......... 1.40ms DONE
+  2026_09_04_153000_restore_homepage_service_images .............. 1.41ms DONE
+  2026_09_04_190000_set_generators_service_image ................. 0.57ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -341,12 +341,12 @@ No syntax errors detected in database/migrations/2026_08_25_000049_rebuild_publi
 
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\PublicRequestWizardTest[39m
-  [32;1m✓[39;22m[90m [39m[90mpublic request page is single page bilingual and reuses shared hom[39m[90m…[39m [90m26.16s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpublic request page is single page bilingual and reuses shared hom[39m[90m…[39m [90m28.29s[39m  
   [32;1m✓[39;22m[90m [39m[90masset qr lookup returns registry data and request links authoritati[39m[90m…[39m [90m0.09s[39m  
-  [32;1m✓[39;22m[90m [39m[90mticket prefixes and serial sequence are generated as requested[39m[90m      [39m [90m0.13s[39m  
+  [32;1m✓[39;22m[90m [39m[90mticket prefixes and serial sequence are generated as requested[39m[90m      [39m [90m0.14s[39m  
   [32;1m✓[39;22m[90m [39m[90mpipeline failure does not block ticket reference or receipt redirec[39m[90m…[39m [90m0.03s[39m  
   [32;1m✓[39;22m[90m [39m[90mticket receipt shows request details and appointment[39m[90m                [39m [90m0.06s[39m  
 
   [90mTests:[39m    [32;1m5 passed[39;22m[90m (85 assertions)[39m
-  [90mDuration:[39m [39m26.56s[39m
+  [90mDuration:[39m [39m28.69s[39m
 
