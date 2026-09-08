@@ -69,7 +69,9 @@ HTML;
         $html = str_replace('<div class="status" id="customer-status"></div>', '<div class="status" id="customer-status"></div>'.$card, $html);
 
         $style = <<<'HTML'
-<style id="unifco-current-customer-card-style-v2">
+<style id="unifco-current-customer-card-style-v3">
+#customer-status.ok{display:none!important}
+.uf-legacy-customer-field-hidden{display:none!important}
 .uf-customer-profile-card{margin-top:10px;border:1px solid #c9e7dd;border-radius:10px;background:linear-gradient(90deg,#f8fffc 0%,#f4fcf9 100%);direction:rtl;overflow:hidden;font-family:inherit;color:#0b2f63;box-shadow:0 2px 7px rgba(16,99,76,.025)}
 .uf-customer-profile-card[hidden]{display:none!important}
 .uf-customer-profile-head{min-height:70px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid #deece8}
@@ -95,7 +97,7 @@ HTML;
         $html = str_replace('</head>', $style.'</head>', $html);
 
         $script = <<<'HTML'
-<script id="unifco-current-customer-card-script-v2">
+<script id="unifco-current-customer-card-script-v3">
 (()=>{
     const status=document.getElementById('customer-status');
     const input=document.getElementById('customer_number');
@@ -106,6 +108,24 @@ HTML;
     const field=(id)=>((document.getElementById(id)?.value)||'').trim();
     const setText=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value||'—'};
     const toggle=(id,value)=>{const el=document.getElementById(id);if(el)el.hidden=!value};
+
+    const hideLegacyCustomerFields=()=>{
+        ['company_name','responsible_person','mobile','email','customer_city','customer_address'].forEach(id=>{
+            const el=document.getElementById(id);
+            if(!el)return;
+            let node=el.parentElement;
+            let chosen=null;
+            while(node&&node!==document.body){
+                if(node.matches?.('form,section'))break;
+                const labels=node.querySelectorAll('label');
+                const controls=node.querySelectorAll('input,select,textarea');
+                if(labels.length&&controls.length<=2){chosen=node;break;}
+                node=node.parentElement;
+            }
+            (chosen||el.parentElement)?.classList.add('uf-legacy-customer-field-hidden');
+        });
+    };
+    hideLegacyCustomerFields();
 
     const render=()=>{
         if(!status.classList.contains('ok')){card.hidden=true;return;}
@@ -132,6 +152,7 @@ HTML;
             toggle('uf-current-customer-email-wrap',email);
             toggle('uf-current-customer-city-wrap',city);
             toggle('uf-current-customer-address-wrap',address);
+            hideLegacyCustomerFields();
             card.hidden=false;
         },100);
     };
