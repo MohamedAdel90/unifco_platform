@@ -119,7 +119,6 @@ HTML;
  const setFiles=(input,files)=>{if(typeof DataTransfer==='undefined')return false;const dt=new DataTransfer();files.forEach(f=>dt.items.add(f));input.files=dt.files;return true;};
  const rowInputs=row=>[...row.querySelectorAll('input[type=file]')].filter(i=>i.dataset.ufVideo!=='1');
  const rowEntries=row=>rowInputs(row).flatMap(input=>[...(input.files||[])].map((file,index)=>({file,input,index})));
- const signature=f=>[f.name,f.size,f.lastModified].join('|');
 
  const enforceRowLimit=(row,changedInput)=>{
    const others=rowInputs(row).filter(i=>i!==changedInput).flatMap(i=>[...(i.files||[])]);
@@ -130,8 +129,7 @@ HTML;
    return false;
  };
  const showError=(row,msg='')=>{let e=row.querySelector('.uf-row-error');if(!e){e=document.createElement('div');e.className='uf-row-error';row.appendChild(e);}e.textContent=msg;e.classList.toggle('show',!!msg);if(msg)setTimeout(()=>{if(e.textContent===msg)e.classList.remove('show');},3500);};
-
- const removeEntry=(row,input,index)=>{const files=[...(input.files||[])];if(!files[index])return;setFiles(input,files.filter((_,i)=>i!==index));input.dispatchEvent(new Event('change',{bubbles:true}));setTimeout(()=>renderRow(row),0);};
+ const removeEntry=(row,input,index)=>{const files=[...(input.files||[])];if(!files[index])return;setFiles(input,files.filter((_,i)=>i!==index));input.dispatchEvent(new Event('change',{bubbles:true}));};
 
  const renderRow=row=>{
    if(row.id==='uf-video-upload-row')return;
@@ -174,7 +172,7 @@ HTML;
  const renderVideo=(file,row,duration)=>{const strip=row.querySelector('.uf-compact-preview-strip');strip.innerHTML='';const item=document.createElement('button');item.type='button';item.className='uf-compact-preview';item.title='اضغط لمعاينة الفيديو';const url=URL.createObjectURL(file);item.dataset.previewUrl=url;const video=document.createElement('video');video.src=url;video.muted=true;video.preload='metadata';video.playsInline=true;item.appendChild(video);const play=document.createElement('span');play.className='uf-video-play';play.textContent='▶';item.appendChild(play);const dur=document.createElement('span');dur.className='uf-video-duration';dur.textContent='00:'+String(Math.ceil(duration)).padStart(2,'0');item.appendChild(dur);const remove=document.createElement('button');remove.type='button';remove.className='uf-compact-remove';remove.textContent='×';remove.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();URL.revokeObjectURL(url);clearVideo(row.querySelector('#uf-video-input'),row);});item.appendChild(remove);item.addEventListener('click',()=>openPreview(file));strip.appendChild(item);row.classList.add('has-compact-previews');const badge=row.querySelector('.uf-file-count');if(badge)badge.textContent='1';showError(row,'');};
 
  const init=()=>{const rows=rowsRoot();if(!rows)return false;rows.querySelectorAll('.uf-upload-row').forEach(decorateRow);ensureVideoRow();return true;};
- const start=()=>{if(init()){const rows=rowsRoot();new MutationObserver(()=>init()).observe(rows,{childList:true,subtree:true});return true;}return false;};
+ const start=()=>init();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{if(!start()){let n=0,t=setInterval(()=>{if(start()||++n>50)clearInterval(t)},80);}});else if(!start()){let n=0,t=setInterval(()=>{if(start()||++n>50)clearInterval(t)},80);}
 })();
 </script>
