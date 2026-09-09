@@ -246,87 +246,88 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
 
    INFO  Preparing database.  
 
-  Creating migration table ...................................... 19.13ms DONE
+  Creating migration table ...................................... 11.08ms DONE
 
    INFO  Running migrations.  
 
-  2026_08_14_000001_create_unifco_core_tables .................. 754.09ms DONE
-  2026_08_14_000002_add_controls_and_transactions .............. 455.69ms DONE
-  2026_08_14_000003_add_operational_integration ................ 311.59ms DONE
-  2026_08_14_000005_create_platform_services_tables ............ 149.54ms DONE
-  2026_08_14_000006_create_runtime_security_queue_tables ........ 98.01ms DONE
-  2026_08_15_000008_add_finance_core ........................... 448.52ms DONE
-  2026_08_15_000009_add_procurement_inventory_operations ....... 691.20ms DONE
-  2026_08_15_000010_add_hr_operations .......................... 431.22ms DONE
-  2026_08_15_000011_add_crm_projects_operations ................ 231.03ms DONE
-  2026_08_15_000012_add_manufacturing_expansion ................ 260.80ms DONE
-  2026_08_15_000013_add_maintenance_eam_expansion .............. 572.60ms DONE
-  2026_08_18_000014_add_public_site_requests .................... 22.42ms DONE
-  2026_08_18_000015_link_public_requests_to_business_pipelines . 494.51ms DONE
-  2026_08_18_000016_add_customer_portal_contract_360 ........... 536.35ms DONE
-  2026_08_18_000017_expand_customer_portal_operations .......... 714.66ms DONE
-  2026_08_19_000018_close_field_service_baseline_gaps .......... 662.83ms DONE
-  2026_08_19_000019_add_customer_acceptance_and_report_distribution  156.96ms DONE
-  2026_08_21_000020_add_emergency_request_details .............. 195.20ms DONE
-  2026_08_21_000021_add_customer_onboarding .................... 304.67ms DONE
-  2026_08_21_000022_expand_customer_success_partner_profile .... 164.90ms DONE
-  2026_08_21_000023_create_customer_messaging ................... 97.89ms DONE
-  2026_08_21_000024_provision_witco_portal_admin ................. 2.41ms DONE
-  2026_08_21_000025_build_asset_master_phase_one ............... 919.14ms DONE
-  2026_08_21_000026_asset_templates_and_pm_foundation .......... 437.92ms DONE
-  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 57.68ms DONE
-  2026_08_21_000028_add_work_order_execution_and_reliability ... 597.02ms DONE
-  2026_08_21_000029_add_asset_health_and_replacement_intelligence  330.00ms DONE
-  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 47.54ms DONE
-  2026_08_22_000031_build_warehouse_field_inventory_foundation . 866.14ms DONE
-  2026_08_22_000032_add_work_order_part_requests ............... 485.88ms DONE
-  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 521.37ms DONE
-  2026_08_22_000034_add_user_permission_overrides .............. 109.06ms DONE
-  2026_08_22_000035_add_user_security_metadata ................. 387.25ms DONE
-  2026_08_22_000036_add_user_session_version .................... 93.83ms DONE
+  2026_08_14_000001_create_unifco_core_tables .................. 780.31ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 470.73ms DONE
+  2026_08_14_000003_add_operational_integration ................ 309.07ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 137.43ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ........ 94.37ms DONE
+  2026_08_15_000008_add_finance_core ........................... 422.58ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 725.46ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 467.70ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 250.13ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 273.73ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 558.61ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 24.39ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 506.15ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 517.42ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 645.96ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 671.21ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  163.19ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 203.56ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 298.38ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 145.55ms DONE
+  2026_08_21_000023_create_customer_messaging ................... 85.21ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.09ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 881.10ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 481.00ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 64.52ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 568.21ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  343.22ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 51.63ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 800.19ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 573.37ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 489.88ms DONE
+  2026_08_22_000034_add_user_permission_overrides ............... 95.38ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 378.58ms DONE
+  2026_08_22_000036_add_user_session_version .................... 88.41ms DONE
   2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
-  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 596.06ms DONE
-  2026_08_23_000039_build_hr_payroll_phase3 .................... 510.60ms DONE
-  2026_08_23_000040_build_hr_business_trips_phase4 ............. 432.41ms DONE
-  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 415.04ms DONE
-  2026_08_23_000042_build_hr_recruitment_phase6 ................ 686.13ms DONE
-  2026_08_23_000043_build_hr_performance_phase7 ................ 811.42ms DONE
-  2026_08_23_000044_build_hr_documents_phase9 .................. 399.52ms DONE
-  2026_08_23_000045_build_hr_compliance_phase10 ................ 557.66ms DONE
-  2026_08_23_000046_build_hr_analytics_phase11 ................. 124.74ms DONE
-  2026_08_23_000047_create_branding_settings .................... 30.53ms DONE
-  2026_08_24_000048_upgrade_public_request_experience .......... 177.85ms DONE
-  2026_08_25_000049_rebuild_public_request_single_page ......... 307.84ms DONE
-  2026_08_26_000050_link_public_requests_to_asset_registry ...... 74.69ms DONE
-  2026_08_26_000051_build_service_request_workflow_foundation .. 626.60ms DONE
-  2026_08_27_000052_add_customer_portal_rbac_scopes ............. 44.10ms DONE
-  2026_08_27_000053_add_customer_portal_action_requests ......... 35.41ms DONE
-  2026_08_27_000054_add_customer_action_attachments ............. 52.37ms DONE
-  2026_08_27_000055_add_assignment_sla_to_customer_actions ...... 66.45ms DONE
-  2026_08_27_000056_add_customer_acquisition_lifecycle ......... 592.02ms DONE
-  2026_08_27_000057_add_acquisition_governance_fields .......... 560.13ms DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 632.08ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 500.03ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 468.13ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 346.03ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 669.61ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 812.80ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 368.98ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 547.05ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 141.52ms DONE
+  2026_08_23_000047_create_branding_settings .................... 29.26ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 188.32ms DONE
+  2026_08_25_000049_rebuild_public_request_single_page ......... 311.84ms DONE
+  2026_08_26_000050_link_public_requests_to_asset_registry ...... 75.19ms DONE
+  2026_08_26_000051_build_service_request_workflow_foundation .. 575.20ms DONE
+  2026_08_27_000052_add_customer_portal_rbac_scopes ............. 42.45ms DONE
+  2026_08_27_000053_add_customer_portal_action_requests ......... 34.43ms DONE
+  2026_08_27_000054_add_customer_action_attachments ............. 59.37ms DONE
+  2026_08_27_000055_add_assignment_sla_to_customer_actions ...... 60.01ms DONE
+  2026_08_27_000056_add_customer_acquisition_lifecycle ......... 576.86ms DONE
+  2026_08_27_000057_add_acquisition_governance_fields .......... 491.22ms DONE
   2026_08_27_000058_build_professional_asset_master .................. 1s DONE
-  2026_08_27_000059_normalize_user_status_semantics ............ 167.04ms DONE
-  2026_08_27_000060_build_asset_lifecycle_commissioning ........ 743.05ms DONE
-  2026_08_27_000061_normalize_asset_documents_for_professional_master  154.02ms DONE
-  2026_08_28_000020_add_asset_warranty_insurance_phase_d ....... 380.04ms DONE
-  2026_08_28_000070_build_asset_custody_transfers .............. 324.79ms DONE
-  2026_08_28_000080_complete_agreed_asset_phases_b_d ........... 670.26ms DONE
+  2026_08_27_000059_normalize_user_status_semantics ............ 160.20ms DONE
+  2026_08_27_000060_build_asset_lifecycle_commissioning ........ 737.25ms DONE
+  2026_08_27_000061_normalize_asset_documents_for_professional_master  138.54ms DONE
+  2026_08_28_000020_add_asset_warranty_insurance_phase_d ....... 360.63ms DONE
+  2026_08_28_000070_build_asset_custody_transfers .............. 384.29ms DONE
+  2026_08_28_000080_complete_agreed_asset_phases_b_d ........... 669.84ms DONE
   2026_08_28_000090_close_agreed_asset_a_d_gaps ...................... 1s DONE
   2026_08_28_000100_close_asset_acceptance_contract .................. 1s DONE
-  2026_08_28_000110_allow_staged_customer_pm_strategy ........... 21.86ms DONE
-  2026_08_28_000120_normalize_asset_warranty_expiry_date ....... 101.66ms DONE
-  2026_08_29_000060_professionalize_employee_identity_and_contact  491.05ms DONE
-  2026_08_29_000062_add_contract_start_date_to_employees ........ 75.98ms DONE
-  2026_08_30_075500_add_employee_contact_and_assignment_fields . 366.28ms DONE
-  2026_09_02_000001_create_homepage_sections_table .............. 31.61ms DONE
-  2026_09_02_000002_create_homepage_projects_table .............. 26.35ms DONE
-  2026_09_02_000003_create_homepage_clients_table ............... 26.17ms DONE
-  2026_09_03_120000_seed_default_asset_category_templates ........ 2.91ms DONE
-  2026_09_04_120100_set_current_hero_to_full_banner_mode ......... 1.62ms DONE
-  2026_09_04_153000_restore_homepage_service_images .............. 1.46ms DONE
+  2026_08_28_000110_allow_staged_customer_pm_strategy ........... 22.72ms DONE
+  2026_08_28_000120_normalize_asset_warranty_expiry_date ....... 100.03ms DONE
+  2026_08_29_000060_professionalize_employee_identity_and_contact  472.28ms DONE
+  2026_08_29_000062_add_contract_start_date_to_employees ........ 68.79ms DONE
+  2026_08_30_075500_add_employee_contact_and_assignment_fields . 349.03ms DONE
+  2026_09_02_000001_create_homepage_sections_table .............. 32.67ms DONE
+  2026_09_02_000002_create_homepage_projects_table .............. 25.35ms DONE
+  2026_09_02_000003_create_homepage_clients_table ............... 27.47ms DONE
+  2026_09_03_120000_seed_default_asset_category_templates ........ 2.68ms DONE
+  2026_09_04_120100_set_current_hero_to_full_banner_mode ......... 1.63ms DONE
+  2026_09_04_153000_restore_homepage_service_images .............. 1.50ms DONE
   2026_09_04_190000_set_generators_service_image ................. 0.56ms DONE
-  2026_09_09_120000_seed_current_customer_asset_uat_dataset ...... 1.24ms DONE
+  2026_09_09_120000_seed_current_customer_asset_uat_dataset ...... 1.19ms DONE
+  2026_09_09_140900_update_uat_customer_code_to_100 .............. 1.16ms DONE
 
 
    INFO  Compiled views cleared successfully.  
@@ -337,12 +338,12 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
 
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrAnalyticsPhase11Test[39m
-  [32;1m✓[39;22m[90m [39m[90mhr analytics dashboard calculates workforce signals[39m[90m                [39m [90m30.39s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr analytics dashboard calculates workforce signals[39m[90m                [39m [90m29.56s[39m  
   [32;1m✓[39;22m[90m [39m[90mworkforce plan can be saved and compared to actuals[39m[90m                 [39m [90m0.30s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase11 routes are registered[39m[90m                                       [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrCompliancePhase10Test[39m
-  [32;1m✓[39;22m[90m [39m[90mcompliance dashboard is available to hr admin[39m[90m                       [39m [90m0.28s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcompliance dashboard is available to hr admin[39m[90m                       [39m [90m0.27s[39m  
   [32;1m✓[39;22m[90m [39m[90mscan creates actionable readiness cases without inventing official[39m[90m… [39m [90m0.30s[39m  
   [32;1m✓[39;22m[90m [39m[90mqiwa and gosi evidence can be recorded then scan clears source find[39m[90m…[39m [90m0.33s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase10 routes are registered[39m[90m                                       [39m [90m0.02s[39m  
@@ -350,14 +351,14 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrDocumentsPhase9Test[39m
   [32;1m✓[39;22m[90m [39m[90memployee can submit own salary certificate request[39m[90m                  [39m [90m0.73s[39m  
   [32;1m✓[39;22m[90m [39m[90mprofile update is applied only after independent approval[39m[90m           [39m [90m0.73s[39m  
-  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own request[39m[90m                                [39m [90m0.72s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own request[39m[90m                                [39m [90m0.73s[39m  
   [32;1m✓[39;22m[90m [39m[90mapproved letter can be issued as immutable snapshot and opened by o[39m[90m…[39m [90m0.80s[39m  
   [32;1m✓[39;22m[90m [39m[90mhr reader does not require an employee link to open requests[39m[90m        [39m [90m0.95s[39m  
   [32;1m✓[39;22m[90m [39m[90munlinked user cannot open employee document self service[39m[90m            [39m [90m0.95s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase9 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrSelfServicePhase8Test[39m
-  [32;1m✓[39;22m[90m [39m[90memployee portal is scoped to linked employee and own payroll[39m[90m        [39m [90m0.75s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee portal is scoped to linked employee and own payroll[39m[90m        [39m [90m0.76s[39m  
   [32;1m✓[39;22m[90m [39m[90memployee can submit leave against own balance only[39m[90m                  [39m [90m0.72s[39m  
   [32;1m✓[39;22m[90m [39m[90memployee can submit mission and update only own goal[39m[90m                [39m [90m0.74s[39m  
   [32;1m✓[39;22m[90m [39m[90mmanager portal exposes direct reports but not outside team or payro[39m[90m…[39m [90m0.73s[39m  
@@ -368,19 +369,19 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrPerformancePhase7Test[39m
   [32;1m✓[39;22m[90m [39m[90mgoals reviews and independent approval work[39m[90m                         [39m [90m0.53s[39m  
   [32;1m✓[39;22m[90m [39m[90mprobation skill and development records are employee scoped[39m[90m         [39m [90m0.53s[39m  
-  [32;1m✓[39;22m[90m [39m[90mcareer action requires independent approval and effective date befo[39m[90m…[39m [90m0.52s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcareer action requires independent approval and effective date befo[39m[90m…[39m [90m0.51s[39m  
   [32;1m✓[39;22m[90m [39m[90mperformance records are tenant scoped[39m[90m                               [39m [90m0.96s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase7 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrRecruitmentPhase6Test[39m
-  [32;1m✓[39;22m[90m [39m[90mrequisition requires independent approval then opens vacancy[39m[90m        [39m [90m0.53s[39m  
-  [32;1m✓[39;22m[90m [39m[90mcandidate interview offer hire creates employee contract and onboar[39m[90m…[39m [90m0.56s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequisition requires independent approval then opens vacancy[39m[90m        [39m [90m0.52s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcandidate interview offer hire creates employee contract and onboar[39m[90m…[39m [90m0.57s[39m  
   [32;1m✓[39;22m[90m [39m[90mrecruitment is tenant scoped[39m[90m                                        [39m [90m0.95s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase6 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEndOfServicePhase5Test[39m
   [32;1m✓[39;22m[90m [39m[90mstandard termination calculates full saudi eos and snapshot[39m[90m         [39m [90m0.51s[39m  
-  [32;1m✓[39;22m[90m [39m[90mresignation tiers and article 80 are enforced[39m[90m                       [39m [90m0.51s[39m  
+  [32;1m✓[39;22m[90m [39m[90mresignation tiers and article 80 are enforced[39m[90m                       [39m [90m0.50s[39m  
   [32;1m✓[39;22m[90m [39m[90mfinal settlement requires independent approval and can be marked pa[39m[90m…[39m [90m0.52s[39m  
   [32;1m✓[39;22m[90m [39m[90mfinal settlements are tenant scoped[39m[90m                                 [39m [90m0.96s[39m  
   [32;1m✓[39;22m[90m [39m[90mphase5 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
@@ -388,8 +389,8 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrBusinessTripsPhase4Test[39m
   [32;1m✓[39;22m[90m [39m[90mphase4 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
   [32;1m✓[39;22m[90m [39m[90mmission request calculates per diem and links business context[39m[90m      [39m [90m0.49s[39m  
-  [32;1m✓[39;22m[90m [39m[90mmission 360 renders business context[39m[90m                                [39m [90m0.51s[39m  
-  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own mission and full settlement is auditab[39m[90m…[39m [90m0.56s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmission 360 renders business context[39m[90m                                [39m [90m0.50s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own mission and full settlement is auditab[39m[90m…[39m [90m0.55s[39m  
   [32;1m✓[39;22m[90m [39m[90mmissions are tenant scoped[39m[90m                                          [39m [90m0.96s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrPayrollPhase3Test[39m
@@ -412,7 +413,7 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\Wave10HrOperationsTest[39m
   [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.53s[39m  
-  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.54s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.53s[39m  
 
   [30;42;1m PASS [39;49;22m[39m Tests\Feature\SidebarNavigationTest[39m
   [32;1m✓[39;22m[90m [39m[90madmin sidebar renders grouped platform navigation[39m[90m                   [39m [90m0.30s[39m  
@@ -423,5 +424,5 @@ No syntax errors detected in database/migrations/2026_08_23_000046_build_hr_anal
   [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.29s[39m  
 
   [90mTests:[39m    [32;1m60 passed[39;22m[90m (411 assertions)[39m
-  [90mDuration:[39m [39m56.75s[39m
+  [90mDuration:[39m [39m55.86s[39m
 
