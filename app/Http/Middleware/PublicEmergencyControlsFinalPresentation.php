@@ -22,8 +22,8 @@ class PublicEmergencyControlsFinalPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-emergency-controls-final-v1">
-/* Final alignment for emergency controls only. Attachment styles are intentionally untouched. */
+<style id="unifco-emergency-controls-final-v2">
+/* Final emergency controls layout. Keep the agreed two-column layout until true phone widths. */
 .uf-details-pane.uf-emergency-details .uf-emergency-grid2{
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
   column-gap:18px!important;
@@ -47,16 +47,12 @@ class PublicEmergencyControlsFinalPresentation
   gap:7px!important;
   align-items:stretch!important;
 }
-/* State remains three equal choices. */
-.uf-details-pane.uf-emergency-details [data-em-group="state"]{min-width:0!important}
 .uf-details-pane.uf-emergency-details .uf-emergency-block:has([data-em-group="state"]) .uf-emergency-chips{
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
 }
-/* Impact is now two equal choices after removing Limited. */
 .uf-details-pane.uf-emergency-details .uf-emergency-block:has([data-em-group="impact"]) .uf-emergency-chips{
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
 }
-/* Safety and site status are 70% of the former visual height, centered in their column. */
 .uf-details-pane.uf-emergency-details .uf-emergency-block:has([data-em-group="safety"]) .uf-emergency-chips,
 .uf-details-pane.uf-emergency-details .uf-emergency-block:has([data-em-group="site-status"]) .uf-emergency-chips{
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
@@ -69,7 +65,6 @@ class PublicEmergencyControlsFinalPresentation
   font-size:8.6px!important;
   border-radius:7px!important;
 }
-/* Start-time buttons use equal widths and no 'منذ' prefix. */
 .uf-details-pane.uf-emergency-details .uf-emergency-block:has([data-em-group="started"]) .uf-emergency-chips{
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
 }
@@ -78,7 +73,6 @@ class PublicEmergencyControlsFinalPresentation
   min-height:38px!important;
   font-size:8.8px!important;
 }
-/* Priority is deliberately half-width and centered while the heading aligns with the other headings. */
 .uf-details-pane.uf-emergency-details .uf-emergency-block:has(.uf-emergency-priority)>label{
   width:100%!important;
   text-align:right!important;
@@ -99,7 +93,6 @@ class PublicEmergencyControlsFinalPresentation
   text-align:center!important;
   line-height:1.65!important;
 }
-/* Selected choices become a deeper shade of the same semantic color. */
 .uf-details-pane.uf-emergency-details .uf-emergency-chip.em-green.active{
   background:#ccefd9!important;
   border-color:#159653!important;
@@ -124,7 +117,7 @@ class PublicEmergencyControlsFinalPresentation
   color:#0b55ad!important;
   box-shadow:inset 0 0 0 1px #176dca!important;
 }
-@container (max-width:680px){
+@container (max-width:380px){
   .uf-details-pane.uf-emergency-details .uf-emergency-grid2{
     grid-template-columns:1fr!important;
     gap:13px!important;
@@ -134,16 +127,14 @@ class PublicEmergencyControlsFinalPresentation
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-emergency-controls-final-script-v1">
+<script id="unifco-emergency-controls-final-script-v2">
 (()=>{
   const apply=()=>{
     const fields=document.getElementById('uf-emergency-fields');
     if(!fields)return false;
 
-    /* Remove the 'Limited' impact option while keeping the two operational-impact choices. */
     fields.querySelector('[data-em-group="impact"][data-value="LIMITED"]')?.remove();
 
-    /* Shorten the start-time labels visually and in the stored emergency context. */
     const relabel={
       'منذ عدة ساعات':'عدة ساعات',
       'منذ عدة أيام':'عدة أيام'
@@ -152,10 +143,8 @@ HTML;
       const old=btn.dataset.value||'';
       if(relabel[old]){
         btn.dataset.value=relabel[old];
-        const icon=btn.querySelector('.em-ico');
-        const txt=relabel[old];
         btn.childNodes.forEach(n=>{if(n.nodeType===3)n.textContent='';});
-        btn.appendChild(document.createTextNode(' '+txt));
+        btn.appendChild(document.createTextNode(' '+relabel[old]));
       }
     });
     return true;
