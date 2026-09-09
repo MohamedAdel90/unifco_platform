@@ -22,14 +22,14 @@ class PublicUnifiedAssetIssueWorkspacePolishPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-unified-asset-issue-workspace-polish-v1">
+<style id="unifco-unified-asset-issue-workspace-polish-v2">
 .uf-asset-searchbar{display:grid!important;grid-template-columns:minmax(0,1fr) 124px 124px!important;gap:8px!important;align-items:center!important;direction:rtl!important}
 .uf-asset-searchbar input{grid-column:1!important;min-width:0!important}
 .uf-search-btn{grid-column:2!important;height:42px!important;border:1px solid #08295d!important;background:#08295d!important;color:#fff!important;border-radius:7px!important;font:900 11px Cairo!important;cursor:pointer!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important}
 .uf-search-btn:hover{background:#0b3a7b!important;border-color:#0b3a7b!important}
 .uf-qr-btn{grid-column:3!important;height:42px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important}
-.uf-search-btn svg,.uf-qr-btn svg,.uf-title-icon svg,.uf-label-icon svg,.uf-attach-title svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
-.uf-pane-copy b,.uf-detail-field>label,.uf-attach-title{display:flex!important;align-items:center!important;gap:7px!important}
+.uf-search-btn svg,.uf-qr-btn svg,.uf-title-icon svg,.uf-label-icon svg,.uf-attach-title svg,.uf-upload-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.uf-pane-copy b,.uf-detail-field>label,.uf-attach-title,.uf-upload-row b{display:flex!important;align-items:center!important;gap:7px!important}
 .uf-title-icon,.uf-label-icon{display:inline-flex;align-items:center;justify-content:center;color:#1976e8}
 .uf-detail-field>label .uf-label-icon{color:#153a71}
 .uf-chip-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
@@ -49,7 +49,7 @@ class PublicUnifiedAssetIssueWorkspacePolishPresentation
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-unified-asset-issue-workspace-polish-script-v1">
+<script id="unifco-unified-asset-issue-workspace-polish-script-v2">
 (()=>{
   const $=id=>document.getElementById(id);
   const icons={
@@ -69,17 +69,24 @@ HTML;
     const input=$('uf-asset-search');
     const qr=$('uf-qr');
     if(!bar||!input||!qr) return;
+
     let search=$('uf-search');
     if(!search){
       search=document.createElement('button');
       search.type='button'; search.id='uf-search'; search.className='uf-search-btn';
       search.innerHTML=icons.search+'<span>بحث</span>';
-      bar.appendChild(search);
       search.addEventListener('click',()=>input.dispatchEvent(new Event('input',{bubbles:true})));
       input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();search.click();}});
     }
     if(!qr.querySelector('svg')) qr.innerHTML=icons.qr+'<span>مسح QR</span>';
-    bar.append(input,search,qr);
+
+    // Reorder only when needed. Re-appending existing nodes on every mutation caused an endless DOM loop.
+    const expected=[input,search,qr];
+    const actual=[...bar.children].filter(el=>expected.includes(el));
+    const needsOrder=actual.length!==3 || actual.some((el,i)=>el!==expected[i]);
+    if(needsOrder){
+      expected.forEach(el=>bar.appendChild(el));
+    }
   };
 
   const iconize=()=>{
@@ -98,14 +105,20 @@ HTML;
   };
 
   const normalizeStates=()=>{
-    const row=document.querySelector('[data-chip-name="equipment_state"]')?.closest('.uf-chip-row');
+    const stateButtons=[...document.querySelectorAll('[data-chip-name="equipment_state"]')];
+    const row=stateButtons[0]?.closest('.uf-chip-row');
     if(!row) return;
-    let partial=[...row.querySelectorAll('[data-chip-name="equipment_state"]')].find(x=>x.dataset.value==='تعمل مع وجود مشكلة');
-    if(partial){partial.dataset.value='تعمل جزئياً';partial.textContent='تعمل جزئياً';}
+
+    const oldPartial=stateButtons.find(x=>x.dataset.value==='تعمل مع وجود مشكلة');
+    if(oldPartial){oldPartial.dataset.value='تعمل جزئياً';oldPartial.textContent='تعمل جزئياً';}
+
     let running=[...row.querySelectorAll('[data-chip-name="equipment_state"]')].find(x=>x.dataset.value==='تعمل');
     if(!running){
-      running=document.createElement('button'); running.type='button'; running.className='uf-chip'; running.dataset.chipName='equipment_state'; running.dataset.value='تعمل'; running.textContent='تعمل'; row.appendChild(running);
+      running=document.createElement('button');
+      running.type='button'; running.className='uf-chip'; running.dataset.chipName='equipment_state'; running.dataset.value='تعمل'; running.textContent='تعمل';
+      row.appendChild(running);
     }
+
     row.querySelectorAll('[data-chip-name="equipment_state"]').forEach(btn=>{
       if(btn.dataset.ufPolishBound==='1') return;
       btn.dataset.ufPolishBound='1';
@@ -121,6 +134,7 @@ HTML;
     document.querySelectorAll('.uf-upload-row').forEach(row=>{
       const title=row.querySelector('b');
       if(title&&!title.querySelector('svg')) title.insertAdjacentHTML('afterbegin',icons.paperclip);
+
       row.querySelectorAll('.uf-upload-btn').forEach(btn=>{
         if(btn.dataset.ufPolishBound==='1') return;
         btn.dataset.ufPolishBound='1';
@@ -135,23 +149,34 @@ HTML;
           catch(_){ input.click(); }
         },true);
       });
+
       row.querySelectorAll('.uf-upload-input').forEach(input=>{
         if(input.dataset.ufPolishChange==='1') return;
         input.dataset.ufPolishChange='1';
         input.addEventListener('change',()=>{
-          const all=[...document.querySelectorAll('.uf-upload-input')];
-          const count=all.reduce((n,i)=>n+(i.files?.length||0),0);
+          const count=[...document.querySelectorAll('.uf-upload-input')].reduce((n,i)=>n+(i.files?.length||0),0);
           const summary=$('uf-files-summary');
-          if(summary){summary.textContent=count?`تمت إضافة ${count} مرفق/مرفقات`:'لا توجد مرفقات مضافة حالياً';summary.classList.toggle('has-files',count>0);}
+          if(summary){
+            summary.textContent=count?`تمت إضافة ${count} مرفق/مرفقات`:'لا توجد مرفقات مضافة حالياً';
+            summary.classList.toggle('has-files',count>0);
+          }
         });
       });
     });
   };
 
   const apply=()=>{addSearchButton();iconize();normalizeStates();fixAttachments();};
+  const scheduleApply=()=>requestAnimationFrame(()=>requestAnimationFrame(apply));
+
   apply();
-  const root=$('uf-request-workspace');
-  if(root) new MutationObserver(()=>apply()).observe(root,{childList:true,subtree:true});
+
+  // Re-apply only after controls that legitimately rebuild the dynamic details panel.
+  document.addEventListener('change',e=>{
+    if(['service-type','service-subtype','contract_no','site_id','asset-list'].includes(e.target?.id)) scheduleApply();
+  });
+  document.addEventListener('click',e=>{
+    if(e.target?.closest('.uf-mode-btn')) scheduleApply();
+  });
 })();
 </script>
 HTML;
