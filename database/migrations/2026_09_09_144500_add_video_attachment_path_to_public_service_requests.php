@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::table('public_service_requests', function (Blueprint $table): void {
+            if (! Schema::hasColumn('public_service_requests', 'video_attachment_path')) {
+                $table->string('video_attachment_path')->nullable()->after('previous_report_paths');
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('public_service_requests', function (Blueprint $table): void {
+            if (Schema::hasColumn('public_service_requests', 'video_attachment_path')) {
+                $table->dropColumn('video_attachment_path');
+            }
+        });
+    }
+};
