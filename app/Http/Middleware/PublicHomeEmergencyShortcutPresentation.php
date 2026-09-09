@@ -20,6 +20,7 @@ class PublicHomeEmergencyShortcutPresentation
 
         if ($request->routeIs('public.home')) {
             $lockedEmergencyUrl = route('public.current-maintenance', ['emergency' => 1]);
+            $lockedQuotationUrl = route('public.current-maintenance', ['quotation' => 1]);
 
             $html = str_replace(
                 'href="/request-service">طلب صيانة طارئة</a>',
@@ -27,10 +28,26 @@ class PublicHomeEmergencyShortcutPresentation
                 $html
             );
 
-            // Compatibility with any alternate rendering of the same CTA.
             $html = preg_replace(
                 '~href=("|\')/emergency-maintenance\1([^>]*>\s*طلب صيانة طارئة\s*</a>)~u',
                 'href="'.e($lockedEmergencyUrl).'"$2',
+                $html
+            ) ?? $html;
+
+            // Route every visible homepage "اطلب عرض سعر" CTA to the unified request form.
+            $html = preg_replace_callback(
+                '~<a\b([^>]*)>(\s*(?:<[^>]+>\s*)*اطلب عرض سعر(?:\s*<[^>]+>)*\s*)</a>~u',
+                static function (array $m) use ($lockedQuotationUrl): string {
+                    $attrs = preg_replace('~\s+href=("|\')[^"\']*\1~i', '', $m[1]) ?? $m[1];
+                    return '<a href="'.e($lockedQuotationUrl).'"'.$attrs.'>'.$m[2].'</a>';
+                },
+                $html
+            ) ?? $html;
+
+            // Compatibility with direct legacy quotation links even if the CTA markup changes.
+            $html = preg_replace(
+                '~href=("|\')(?:/request-quote|/request-service\?[^"\']*quote[^"\']*)\1([^>]*>[^<]*اطلب عرض سعر[^<]*</a>)~u',
+                'href="'.e($lockedQuotationUrl).'"$2',
                 $html
             ) ?? $html;
 
@@ -38,11 +55,12 @@ class PublicHomeEmergencyShortcutPresentation
             return $response;
         }
 
-        if (! $request->routeIs('public.current-maintenance') || ! $request->boolean('emergency')) {
+        if (! $request->routeIs('public.current-maintenance')) {
             return $response;
         }
 
-        $lock = <<<'HTML'
+        if ($request->boolean('emergency')) {
+            $lock = <<<'HTML'
 <style id="unifco-locked-emergency-request-style">
 #service-type:disabled,#service-subtype:disabled{opacity:1!important;background:#f1f5fa!important;color:#071f4d!important;border-color:#b7c9df!important;cursor:not-allowed!important;font-weight:900!important}
 .uf-emergency-entry-note{margin:0 0 12px;padding:10px 13px;border:1px solid #f2b3bc;border-radius:9px;background:#fff5f6;color:#a91027;font-size:10px;font-weight:800;line-height:1.7}
@@ -72,7 +90,6 @@ class PublicHomeEmergencyShortcutPresentation
        subtype.dispatchEvent(new Event('change',{bubbles:true}));
      }
    }
-   // Lock only after the unified workspace has received the change events.
    queueMicrotask(()=>{
      if(service){service.value='maintenance';service.disabled=true;service.setAttribute('aria-disabled','true');}
      if(subtype){subtype.value='urgent';subtype.disabled=true;subtype.setAttribute('aria-disabled','true');}
@@ -86,17 +103,90 @@ class PublicHomeEmergencyShortcutPresentation
      workspace.before(note);
    }
  };
- const start=()=>{
-   apply();
-   [120,350,800,1500].forEach(ms=>setTimeout(apply,ms));
- };
+ const start=()=>{ apply(); [120,350,800,1500].forEach(ms=>setTimeout(apply,ms)); };
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
 })();
 </script>
 HTML;
+            $html = str_replace('</body>', $lock.'</body>', $html);
+            $response->setContent($html);
+            return $response;
+        }
 
-        $html = str_replace('</body>', $lock.'</body>', $html);
-        $response->setContent($html);
+        if ($request->boolean('quotation')) {
+            $lock = <<<'HTML'
+<style id="unifco-locked-quotation-request-style">
+#service-type:disabled{opacity:1!important;background:#f1f5fa!important;color:#071f4d!important;border-color:#b7c9df!important;cursor:not-allowed!important;font-weight:900!important}
+.uf-quotation-entry-note{margin:0 0 12px;padding:10px 13px;border:1px solid #c8dcf5;border-radius:9px;background:#f4f9ff;color:#0c417e;font-size:10px;font-weight:800;line-height:1.7}
+</style>
+<script id="unifco-locked-quotation-request-script">
+(()=>{
+ const allowedText=['قطع غيار','زيارة فنية','عقد صيانة'];
+ const allowedValue=v=>/spare|parts|visit|contract|quotation/i.test(v||'');
+ const syncHidden=()=>{
+   const subtype=document.getElementById('service-subtype');
+   if(!subtype)return;
+   const label=(subtype.selectedOptions[0]?.textContent||'').trim();
+   const hiddenSubtype=document.querySelector('input[name="request_subtype"]');
+   const intent=document.querySelector('input[name="request_intent"]');
+   const category=document.querySelector('input[name="service_category"]');
+   const urgency=document.querySelector('input[name="urgency"]');
+   if(intent)intent.value='QUOTATION';
+   if(urgency)urgency.value='NORMAL';
+   if(/قطع غيار/.test(label)){ if(hiddenSubtype)hiddenSubtype.value='SPARE_PARTS_QUOTE'; if(category)category.value='SPARE_PARTS'; }
+   else if(/زيارة فنية/.test(label)){ if(hiddenSubtype)hiddenSubtype.value='TECHNICAL_VISIT'; if(category)category.value='TECHNICAL_VISIT'; }
+   else if(/عقد صيانة/.test(label)){ if(hiddenSubtype)hiddenSubtype.value='MAINTENANCE_CONTRACT_QUOTE'; if(category)category.value='MAINTENANCE_CONTRACT'; }
+ };
+ const restrictSubtype=()=>{
+   const subtype=document.getElementById('service-subtype');
+   if(!subtype)return false;
+   [...subtype.options].forEach(o=>{
+     const text=(o.textContent||'').trim();
+     const keep=allowedText.some(t=>text.includes(t))||allowedValue(o.value);
+     o.hidden=!keep;
+     o.disabled=!keep;
+   });
+   const available=[...subtype.options].filter(o=>!o.disabled&&!o.hidden);
+   if(available.length && !available.includes(subtype.selectedOptions[0])){
+     subtype.value=available[0].value;
+     subtype.dispatchEvent(new Event('change',{bubbles:true}));
+   }
+   syncHidden();
+   return available.length>0;
+ };
+ const apply=()=>{
+   const service=document.getElementById('service-type');
+   const subtype=document.getElementById('service-subtype');
+   if(service){
+     service.disabled=false;
+     if(service.value!=='quotation'){
+       service.value='quotation';
+       service.dispatchEvent(new Event('change',{bubbles:true}));
+     }
+   }
+   setTimeout(()=>{
+     restrictSubtype();
+     if(service){service.value='quotation';service.disabled=true;service.setAttribute('aria-disabled','true');}
+     if(subtype){subtype.disabled=false;subtype.removeAttribute('aria-disabled');}
+     const workspace=document.getElementById('uf-request-workspace');
+     if(workspace && !document.getElementById('uf-quotation-entry-note')){
+       const note=document.createElement('div');
+       note.id='uf-quotation-entry-note';
+       note.className='uf-quotation-entry-note';
+       note.textContent='تم فتح النموذج كطلب عرض سعر. نوع الخدمة ثابت، ويمكنك اختيار نوع عرض السعر: قطع غيار، زيارة فنية، أو عقد صيانة.';
+       workspace.before(note);
+     }
+   },20);
+ };
+ document.addEventListener('change',e=>{if(e.target?.id==='service-subtype')syncHidden()});
+ const start=()=>{apply();[120,350,800,1500].forEach(ms=>setTimeout(apply,ms));};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+HTML;
+            $html = str_replace('</body>', $lock.'</body>', $html);
+            $response->setContent($html);
+        }
 
         return $response;
     }
