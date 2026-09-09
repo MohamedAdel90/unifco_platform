@@ -22,34 +22,29 @@ class PublicUnifiedAssetIssueWorkspacePolishPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-unified-asset-issue-workspace-polish-v2">
-.uf-asset-searchbar{display:grid!important;grid-template-columns:minmax(0,1fr) 124px 124px!important;gap:8px!important;align-items:center!important;direction:rtl!important}
-.uf-asset-searchbar input{grid-column:1!important;min-width:0!important}
-.uf-search-btn{grid-column:2!important;height:42px!important;border:1px solid #08295d!important;background:#08295d!important;color:#fff!important;border-radius:7px!important;font:900 11px Cairo!important;cursor:pointer!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important}
-.uf-search-btn:hover{background:#0b3a7b!important;border-color:#0b3a7b!important}
-.uf-qr-btn{grid-column:3!important;height:42px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important}
-.uf-search-btn svg,.uf-qr-btn svg,.uf-title-icon svg,.uf-label-icon svg,.uf-attach-title svg,.uf-upload-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
-.uf-pane-copy b,.uf-detail-field>label,.uf-attach-title,.uf-upload-row b{display:flex!important;align-items:center!important;gap:7px!important}
-.uf-title-icon,.uf-label-icon{display:inline-flex;align-items:center;justify-content:center;color:#1976e8}
-.uf-detail-field>label .uf-label-icon{color:#153a71}
-.uf-chip-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
-.uf-chip[data-value="غير معروف"]{display:none!important}
-.uf-chip[data-value="متوقفة"]{border-color:#efc1c6!important;background:#fff6f7!important;color:#c82935!important}
-.uf-chip[data-value="تعمل جزئياً"],.uf-chip[data-value="تعمل مع وجود مشكلة"]{border-color:#f2d49a!important;background:#fff9ec!important;color:#bf7b06!important}
-.uf-chip[data-value="تعمل"]{border-color:#b9e5ca!important;background:#f0fbf4!important;color:#15934c!important}
-.uf-chip.active[data-value="متوقفة"]{background:#fde6e8!important;border-color:#e14a55!important;box-shadow:inset 0 0 0 1px #e14a55!important}
-.uf-chip.active[data-value="تعمل جزئياً"],.uf-chip.active[data-value="تعمل مع وجود مشكلة"]{background:#fff0cf!important;border-color:#dfa323!important;box-shadow:inset 0 0 0 1px #dfa323!important}
-.uf-chip.active[data-value="تعمل"]{background:#def6e7!important;border-color:#21a75d!important;box-shadow:inset 0 0 0 1px #21a75d!important}
-.uf-upload-row{position:relative!important}
-.uf-upload-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;min-width:120px!important}
-.uf-upload-btn:disabled{opacity:.55!important;cursor:not-allowed!important}
-.uf-files-summary.has-files{background:#eef9f2!important;border-color:#b9e3c7!important;color:#16733c!important}
-@media(max-width:650px){.uf-asset-searchbar{grid-template-columns:1fr 1fr!important}.uf-asset-searchbar input{grid-column:1/-1!important}.uf-search-btn{grid-column:1!important}.uf-qr-btn{grid-column:2!important}.uf-chip-row{grid-template-columns:1fr!important}}
+<style id="unifco-unified-asset-issue-workspace-polish-v3">
+/* Approved 4/5 workspace: compact, equal visual rhythm, no artificial vertical stretching */
+.uf-workspace{display:grid!important;grid-template-columns:minmax(0,3fr) minmax(360px,2fr)!important;grid-template-areas:"asset details"!important;gap:16px!important;align-items:start!important;margin:0 0 14px!important;direction:rtl!important}
+.uf-workspace>.panel{height:auto!important;min-height:0!important;align-self:start!important;margin:0!important;padding:18px 20px!important;border:1px solid #dfe7f1!important;border-radius:14px!important;box-shadow:0 8px 24px rgba(7,31,77,.045)!important;background:#fff!important}
+.uf-asset-pane{grid-area:asset!important}.uf-details-pane{grid-area:details!important}
+.uf-pane-head{display:flex!important;align-items:flex-start!important;gap:10px!important;margin-bottom:15px!important}
+.uf-pane-head .num{width:26px!important;height:26px!important;flex:0 0 26px!important;background:#0b2d60!important;font-size:10px!important}
+.uf-pane-copy{min-width:0!important;flex:1!important}.uf-pane-copy b{display:flex!important;align-items:center!important;gap:8px!important;font-size:18px!important;font-weight:900!important;color:#08295d!important;line-height:1.45!important;margin:0!important}.uf-pane-copy small{display:block!important;margin-top:3px!important;font-size:9.5px!important;line-height:1.6!important;color:#8392a8!important;font-weight:600!important}
+.uf-title-icon,.uf-label-icon{display:inline-flex!important;align-items:center!important;justify-content:center!important;color:#1976e8!important;flex:0 0 auto!important}.uf-title-icon svg{width:21px!important;height:21px!important}.uf-label-icon svg{width:15px!important;height:15px!important}.uf-search-btn svg,.uf-qr-btn svg,.uf-upload-btn svg,.uf-attach-title svg,.uf-upload-row b svg{width:15px!important;height:15px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;stroke-linecap:round!important;stroke-linejoin:round!important;flex:0 0 15px!important;max-width:15px!important;max-height:15px!important}
+.uf-mode-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-bottom:12px!important}.uf-mode{min-height:74px!important;border:1px solid #d4dfec!important;border-radius:10px!important;background:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:12px!important;color:#102f5f!important;cursor:pointer!important;font-family:Cairo!important;font-weight:900!important;padding:10px 14px!important}.uf-mode.active{border:1.5px solid #2d7ff0!important;background:#f8fbff!important;box-shadow:inset 0 0 0 1px rgba(45,127,240,.05)!important}.uf-mode .dot{width:18px!important;height:18px!important;flex:0 0 18px!important;border:2px solid #8ba3c0!important;border-radius:50%!important;display:grid!important;place-items:center!important}.uf-mode.active .dot:after{content:""!important;width:8px!important;height:8px!important;border-radius:50%!important;background:#2380f4!important}.uf-mode-text{display:flex!important;flex-direction:column!important;text-align:right!important}.uf-mode-text strong{font-size:12.5px!important;line-height:1.45!important}.uf-mode-text span{font-size:9px!important;color:#788ba5!important;font-weight:700!important;margin-top:2px!important}
+.uf-contract-strip{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;min-height:44px!important;padding:9px 13px!important;border-radius:8px!important;background:#f1f6fc!important;margin-bottom:12px!important;color:#173866!important;font-size:10px!important;font-weight:800!important;white-space:nowrap!important;overflow:hidden!important}.uf-contract-strip strong{font-size:12px!important;color:#08295d!important}.uf-contract-project{display:inline-flex!important;align-items:center!important;gap:6px!important;min-width:0!important;color:#08295d!important;font-size:11px!important;font-weight:900!important}.uf-contract-project:before{content:""!important;width:1px!important;height:20px!important;background:#c8d6e8!important;margin-inline:4px 2px!important;flex:0 0 1px!important}.uf-contract-project span{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;max-width:310px!important}.uf-contract-doc{display:inline-flex!important;color:#1674d1!important;flex:0 0 auto!important}.uf-contract-doc svg{width:15px!important;height:15px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important}
+.uf-asset-searchbar{display:grid!important;grid-template-columns:minmax(0,1fr) 124px 124px!important;gap:8px!important;align-items:center!important;direction:rtl!important;margin-bottom:10px!important}.uf-asset-searchbar input{grid-column:1!important;min-width:0!important;height:42px!important;border-radius:7px!important;padding-inline:13px 38px!important;background:#fff!important}.uf-asset-searchbar{position:relative!important}.uf-asset-searchbar:after{content:"⌕"!important;position:absolute!important;right:13px!important;top:7px!important;font-size:23px!important;color:#7c94b5!important;pointer-events:none!important}.uf-search-btn{grid-column:2!important;height:42px!important;border:1px solid #08295d!important;background:#08295d!important;color:#fff!important;border-radius:7px!important;font:900 10.5px Cairo!important;cursor:pointer!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important}.uf-search-btn:hover{background:#0b3a7b!important}.uf-qr-btn{grid-column:3!important;height:42px!important;border:1px solid #cbd9e9!important;background:#fff!important;color:#0a356b!important;border-radius:7px!important;font:900 10.5px Cairo!important;cursor:pointer!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important}
+.uf-asset-count{font-size:10px!important;font-weight:900!important;color:#173866!important;margin:4px 0 8px!important}.uf-asset-results{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;max-height:none!important;overflow:visible!important;padding:1px!important}.uf-asset-option{position:relative!important;border:1px solid #d7e2ef!important;border-radius:10px!important;padding:10px 11px 11px!important;background:#fff!important;cursor:pointer!important;min-height:154px!important;text-align:right!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important}.uf-asset-option.active{border:1.5px solid #2380f4!important;background:#f8fbff!important;box-shadow:inset 0 0 0 1px rgba(35,128,244,.04)!important}.uf-asset-option:before{content:""!important;width:16px!important;height:16px!important;border:2px solid #95abc5!important;border-radius:50%!important;position:absolute!important;left:11px!important;top:12px!important;background:#fff!important}.uf-asset-option.active:before{border-color:#2380f4!important;box-shadow:inset 0 0 0 4px #fff!important;background:#2380f4!important}.uf-asset-thumb{height:52px!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:4px 0 7px!important;color:#1d64a8!important}.uf-asset-thumb svg{width:58px!important;height:46px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.25!important;stroke-linecap:round!important;stroke-linejoin:round!important}.uf-asset-option strong{display:block!important;color:#08295d!important;font-size:11px!important;margin-bottom:3px!important;text-align:center!important}.uf-asset-option span{display:block!important;color:#617895!important;font-size:8.8px!important;line-height:1.6!important;text-align:center!important}.uf-asset-option .code{display:block!important;background:transparent!important;color:#2f5f95!important;font-weight:900!important;font-size:10px!important;padding:0!important}.uf-empty-assets{padding:18px!important;border:1px dashed #c8d6e7!important;border-radius:9px!important;color:#72839b!important;font-size:10px!important;text-align:center!important;grid-column:1/-1!important;min-height:64px!important;display:grid!important;place-items:center!important}
+.uf-selected-asset{display:none!important;margin-top:10px!important;padding:0!important;border:1px solid #d9e5f2!important;border-radius:10px!important;background:#fff!important;overflow:hidden!important}.uf-selected-asset.show{display:block!important}.uf-selected-title{font-size:11px!important;font-weight:900!important;color:#08295d!important;padding:9px 12px!important;border-bottom:1px solid #e1e9f2!important;background:#fbfdff!important}.uf-selected-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:0!important;padding:8px 10px!important}.uf-selected-grid div{font-size:8.5px!important;color:#8290a4!important;padding:5px 9px!important;border-left:1px solid #e2e9f1!important}.uf-selected-grid div:nth-child(3n){border-left:0!important}.uf-selected-grid b{display:block!important;margin-top:2px!important;font-size:10px!important;color:#173866!important}.uf-selected-grid:after{content:"حالة الضمان   ساري"!important;grid-column:1/-1!important;margin-top:7px!important;padding:7px 10px!important;border-radius:6px!important;background:#ecf9f0!important;color:#168447!important;font-size:9.5px!important;font-weight:900!important;text-align:right!important}
+.uf-manual-grid{display:none!important;grid-template-columns:repeat(2,1fr)!important;gap:9px!important}.uf-manual-grid.show{display:grid!important}.uf-manual-grid .span2{grid-column:1/-1!important}
+.uf-details-pane textarea{min-height:108px!important;height:108px!important}.uf-detail-field{margin-bottom:10px!important}.uf-detail-field>label{display:flex!important;align-items:center!important;gap:7px!important;margin-bottom:6px!important;font-size:10.5px!important;font-weight:900!important;color:#08295d!important}.uf-chip-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}.uf-chip{min-height:36px!important;padding:0 9px!important;border:1px solid #d6e1ed!important;border-radius:7px!important;background:#fff!important;color:#24466f!important;font:800 9.5px Cairo!important;cursor:pointer!important}.uf-chip[data-value="غير معروف"]{display:none!important}.uf-chip[data-value="متوقفة"]{border-color:#f1c0c6!important;background:#fff5f6!important;color:#c82c38!important}.uf-chip[data-value="تعمل جزئياً"],.uf-chip[data-value="تعمل مع وجود مشكلة"]{border-color:#efd093!important;background:#fff8e9!important;color:#bd7902!important}.uf-chip[data-value="تعمل"]{border-color:#b8e1c7!important;background:#eefaf2!important;color:#168e49!important}.uf-chip.active[data-value="متوقفة"]{background:#fde5e8!important;border-color:#e54854!important;box-shadow:inset 0 0 0 1px #e54854!important}.uf-chip.active[data-value="تعمل جزئياً"],.uf-chip.active[data-value="تعمل مع وجود مشكلة"]{background:#fff0d0!important;border-color:#dca11d!important;box-shadow:inset 0 0 0 1px #dca11d!important}.uf-chip.active[data-value="تعمل"]{background:#def5e6!important;border-color:#20a359!important;box-shadow:inset 0 0 0 1px #20a359!important}.uf-attach-title{display:flex!important;align-items:center!important;gap:7px!important;font-size:11px!important;font-weight:900!important;color:#08295d!important;margin:13px 0 8px!important}.uf-upload-row{display:grid!important;grid-template-columns:minmax(120px,1fr) 126px 126px!important;gap:7px!important;align-items:center!important;border:1px dashed #cfdbea!important;border-radius:8px!important;padding:8px 9px!important;margin-bottom:7px!important;position:relative!important;min-height:52px!important}.uf-upload-row b{display:flex!important;align-items:center!important;gap:7px!important;font-size:9.5px!important;color:#173866!important}.uf-upload-row b svg{color:#173866!important}.uf-upload-btn{height:34px!important;padding:0 9px!important;border-radius:6px!important;font:900 9px Cairo!important;cursor:pointer!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;min-width:0!important}.uf-upload-btn.camera{background:#071f4d!important;color:#fff!important;border:1px solid #071f4d!important}.uf-upload-btn.device{background:#176dca!important;color:#fff!important;border:1px solid #176dca!important}.uf-upload-input{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}.uf-files-summary{margin-top:8px!important;padding:8px 10px!important;border:1px solid #dce6f1!important;border-radius:8px!important;background:#f8fbff!important;color:#73849c!important;font-size:8.8px!important;text-align:center!important}.uf-files-summary.has-files{background:#eef9f2!important;border-color:#b9e3c7!important;color:#16733c!important}
+@media(max-width:1100px){.uf-workspace{grid-template-columns:1fr!important;grid-template-areas:"asset" "details"!important}.uf-asset-results{grid-template-columns:repeat(2,1fr)!important}}
+@media(max-width:650px){.uf-workspace>.panel{padding:14px!important}.uf-mode-grid,.uf-manual-grid{grid-template-columns:1fr!important}.uf-asset-searchbar{grid-template-columns:1fr 1fr!important}.uf-asset-searchbar input{grid-column:1/-1!important}.uf-search-btn{grid-column:1!important}.uf-qr-btn{grid-column:2!important}.uf-asset-results{grid-template-columns:1fr!important}.uf-selected-grid{grid-template-columns:1fr 1fr!important}.uf-selected-grid div{border-left:0!important}.uf-chip-row{grid-template-columns:1fr!important}.uf-upload-row{grid-template-columns:1fr 1fr!important}.uf-upload-row b{grid-column:1/-1!important}.uf-contract-strip{flex-wrap:wrap!important;white-space:normal!important}.uf-contract-project:before{display:none!important}}
 </style>
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-unified-asset-issue-workspace-polish-script-v2">
+<script id="unifco-unified-asset-issue-workspace-polish-script-v3">
 (()=>{
   const $=id=>document.getElementById(id);
   const icons={
@@ -57,126 +52,96 @@ HTML;
     qr:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2M18 14h2M14 18h6M18 16v4"/></svg>',
     asset:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="5"/><path d="M8.5 8.5 6 6M18 18l-2.5-2.5M15.5 8.5 18 6M6 18l2.5-2.5"/></svg>',
     issue:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 19h18.4z"/><path d="M12 9v4M12 17h.01"/></svg>',
-    paperclip:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20.5 11.5-8.9 8.9a5 5 0 0 1-7.1-7.1l9.6-9.6a3.5 3.5 0 0 1 5 5l-9.6 9.6a2 2 0 1 1-2.8-2.8l8.9-8.9"/></svg>',
+    paperclip:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 12.5 6.7-6.7a3.2 3.2 0 0 1 4.5 4.5l-8.1 8.1a5 5 0 0 1-7.1-7.1l8-8"/></svg>',
     camera:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"/><circle cx="12" cy="14" r="3.5"/></svg>',
     upload:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>',
     status:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
-    description:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>'
+    description:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+    doc:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5M10 12h6M10 16h6"/></svg>',
+    machine:'<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="10" y="14" width="36" height="22" rx="4"/><path d="M46 20h8v10h-8M16 14V9h18v5M17 36v5M39 36v5M22 20h12M22 25h12M22 30h12"/><circle cx="16" cy="25" r="3"/></svg>'
   };
 
   const addSearchButton=()=>{
-    const bar=document.querySelector('.uf-asset-searchbar');
-    const input=$('uf-asset-search');
-    const qr=$('uf-qr');
-    if(!bar||!input||!qr) return;
-
+    const bar=document.querySelector('.uf-asset-searchbar'), input=$('uf-asset-search'), qr=$('uf-qr');
+    if(!bar||!input||!qr)return;
     let search=$('uf-search');
     if(!search){
-      search=document.createElement('button');
-      search.type='button'; search.id='uf-search'; search.className='uf-search-btn';
-      search.innerHTML=icons.search+'<span>بحث</span>';
+      search=document.createElement('button');search.type='button';search.id='uf-search';search.className='uf-search-btn';search.innerHTML=icons.search+'<span>بحث</span>';
       search.addEventListener('click',()=>input.dispatchEvent(new Event('input',{bubbles:true})));
       input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();search.click();}});
     }
-    if(!qr.querySelector('svg')) qr.innerHTML=icons.qr+'<span>مسح QR</span>';
-
-    // Reorder only when needed. Re-appending existing nodes on every mutation caused an endless DOM loop.
-    const expected=[input,search,qr];
-    const actual=[...bar.children].filter(el=>expected.includes(el));
-    const needsOrder=actual.length!==3 || actual.some((el,i)=>el!==expected[i]);
-    if(needsOrder){
-      expected.forEach(el=>bar.appendChild(el));
-    }
+    qr.innerHTML=icons.qr+'<span>مسح QR</span>';
+    const expected=[input,search,qr], actual=[...bar.children].filter(el=>expected.includes(el));
+    if(actual.length!==3||actual.some((el,i)=>el!==expected[i])) expected.forEach(el=>bar.appendChild(el));
   };
 
   const iconize=()=>{
-    const assetTitle=document.querySelector('.uf-asset-pane .uf-pane-copy b');
-    const detailsTitle=document.querySelector('.uf-details-pane .uf-pane-copy b');
-    if(assetTitle&&!assetTitle.querySelector('.uf-title-icon')) assetTitle.insertAdjacentHTML('afterbegin','<span class="uf-title-icon">'+icons.asset+'</span>');
-    if(detailsTitle&&!detailsTitle.querySelector('.uf-title-icon')) detailsTitle.insertAdjacentHTML('afterbegin','<span class="uf-title-icon">'+icons.issue+'</span>');
+    const assetTitle=document.querySelector('.uf-asset-pane .uf-pane-copy b'), detailsTitle=document.querySelector('.uf-details-pane .uf-pane-copy b');
+    if(assetTitle&&!assetTitle.querySelector('.uf-title-icon'))assetTitle.insertAdjacentHTML('afterbegin','<span class="uf-title-icon">'+icons.asset+'</span>');
+    if(detailsTitle&&!detailsTitle.querySelector('.uf-title-icon'))detailsTitle.insertAdjacentHTML('afterbegin','<span class="uf-title-icon">'+icons.issue+'</span>');
     document.querySelectorAll('.uf-detail-field>label').forEach(label=>{
-      if(label.querySelector('.uf-label-icon')) return;
-      const txt=label.textContent||'';
-      const svg=/حالة المعدة/.test(txt)?icons.status:/نوع المشكلة/.test(txt)?icons.issue:icons.description;
+      if(label.querySelector('.uf-label-icon'))return;
+      const txt=label.textContent||'', svg=/حالة المعدة/.test(txt)?icons.status:/نوع المشكلة/.test(txt)?icons.issue:icons.description;
       label.insertAdjacentHTML('afterbegin','<span class="uf-label-icon">'+svg+'</span>');
     });
-    const attach=document.querySelector('.uf-attach-title');
-    if(attach&&!attach.querySelector('svg')) attach.insertAdjacentHTML('afterbegin',icons.paperclip);
+    const attach=document.querySelector('.uf-attach-title');if(attach&&!attach.querySelector('svg'))attach.insertAdjacentHTML('afterbegin',icons.paperclip);
+  };
+
+  const decorateContract=()=>{
+    const strip=document.querySelector('.uf-contract-strip'), label=$('uf-contract-label'), title=$('contract_title');
+    if(!strip||!label)return;
+    if(!strip.querySelector('.uf-contract-doc'))strip.insertAdjacentHTML('afterbegin','<span class="uf-contract-doc">'+icons.doc+'</span>');
+    let project=strip.querySelector('.uf-contract-project');
+    if(!project){project=document.createElement('span');project.className='uf-contract-project';project.innerHTML='<b>المشروع:</b><span>—</span>';strip.appendChild(project);}
+    const projectText=(title?.value||'').trim();project.querySelector('span').textContent=projectText||'—';
+  };
+
+  const decorateAssetCards=()=>{
+    document.querySelectorAll('.uf-asset-option').forEach(card=>{
+      if(card.querySelector('.uf-asset-thumb'))return;
+      card.insertAdjacentHTML('afterbegin','<span class="uf-asset-thumb">'+icons.machine+'</span>');
+    });
   };
 
   const normalizeStates=()=>{
-    const stateButtons=[...document.querySelectorAll('[data-chip-name="equipment_state"]')];
-    const row=stateButtons[0]?.closest('.uf-chip-row');
-    if(!row) return;
-
-    const oldPartial=stateButtons.find(x=>x.dataset.value==='تعمل مع وجود مشكلة');
-    if(oldPartial){oldPartial.dataset.value='تعمل جزئياً';oldPartial.textContent='تعمل جزئياً';}
-
+    const row=document.querySelector('[data-chip-name="equipment_state"]')?.closest('.uf-chip-row');if(!row)return;
+    const buttons=[...row.querySelectorAll('[data-chip-name="equipment_state"]')];
+    const partialOld=buttons.find(x=>x.dataset.value==='تعمل مع وجود مشكلة');
+    const partialNew=buttons.find(x=>x.dataset.value==='تعمل جزئياً');
+    if(partialOld&&partialNew&&partialOld!==partialNew){partialOld.remove();}
+    else if(partialOld){partialOld.dataset.value='تعمل جزئياً';partialOld.textContent='تعمل جزئياً';}
     let running=[...row.querySelectorAll('[data-chip-name="equipment_state"]')].find(x=>x.dataset.value==='تعمل');
-    if(!running){
-      running=document.createElement('button');
-      running.type='button'; running.className='uf-chip'; running.dataset.chipName='equipment_state'; running.dataset.value='تعمل'; running.textContent='تعمل';
-      row.appendChild(running);
-    }
-
+    if(!running){running=document.createElement('button');running.type='button';running.className='uf-chip';running.dataset.chipName='equipment_state';running.dataset.value='تعمل';running.textContent='تعمل';row.appendChild(running);}
     row.querySelectorAll('[data-chip-name="equipment_state"]').forEach(btn=>{
-      if(btn.dataset.ufPolishBound==='1') return;
-      btn.dataset.ufPolishBound='1';
-      btn.addEventListener('click',()=>{
-        row.querySelectorAll('[data-chip-name="equipment_state"]').forEach(x=>x.classList.remove('active'));
-        btn.classList.add('active');
-        const hidden=$('equipment_state'); if(hidden) hidden.value=btn.dataset.value||'';
-      });
+      if(btn.dataset.ufPolishBound==='1')return;btn.dataset.ufPolishBound='1';
+      btn.addEventListener('click',()=>{row.querySelectorAll('[data-chip-name="equipment_state"]').forEach(x=>x.classList.remove('active'));btn.classList.add('active');const hidden=$('equipment_state');if(hidden)hidden.value=btn.dataset.value||'';});
     });
   };
 
   const fixAttachments=()=>{
     document.querySelectorAll('.uf-upload-row').forEach(row=>{
-      const title=row.querySelector('b');
-      if(title&&!title.querySelector('svg')) title.insertAdjacentHTML('afterbegin',icons.paperclip);
-
+      const title=row.querySelector('b');if(title&&!title.querySelector('svg'))title.insertAdjacentHTML('afterbegin',icons.paperclip);
       row.querySelectorAll('.uf-upload-btn').forEach(btn=>{
-        if(btn.dataset.ufPolishBound==='1') return;
-        btn.dataset.ufPolishBound='1';
-        const target=btn.dataset.ufFile;
-        if(btn.classList.contains('camera')&&!btn.querySelector('svg')) btn.insertAdjacentHTML('afterbegin',icons.camera);
-        if(btn.classList.contains('device')&&!btn.querySelector('svg')) btn.insertAdjacentHTML('afterbegin',icons.upload);
-        btn.addEventListener('click',e=>{
-          e.preventDefault(); e.stopPropagation();
-          const input=$(target||'');
-          if(!input) return;
-          try{ if(typeof input.showPicker==='function') input.showPicker(); else input.click(); }
-          catch(_){ input.click(); }
-        },true);
+        if(btn.dataset.ufPolishBound==='1')return;btn.dataset.ufPolishBound='1';const target=btn.dataset.ufFile;
+        if(btn.classList.contains('camera')&&!btn.querySelector('svg'))btn.insertAdjacentHTML('afterbegin',icons.camera);
+        if(btn.classList.contains('device')&&!btn.querySelector('svg'))btn.insertAdjacentHTML('afterbegin',icons.upload);
+        btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const input=$(target||'');if(!input)return;try{typeof input.showPicker==='function'?input.showPicker():input.click();}catch(_){input.click();}},true);
       });
-
       row.querySelectorAll('.uf-upload-input').forEach(input=>{
-        if(input.dataset.ufPolishChange==='1') return;
-        input.dataset.ufPolishChange='1';
-        input.addEventListener('change',()=>{
-          const count=[...document.querySelectorAll('.uf-upload-input')].reduce((n,i)=>n+(i.files?.length||0),0);
-          const summary=$('uf-files-summary');
-          if(summary){
-            summary.textContent=count?`تمت إضافة ${count} مرفق/مرفقات`:'لا توجد مرفقات مضافة حالياً';
-            summary.classList.toggle('has-files',count>0);
-          }
-        });
+        if(input.dataset.ufPolishChange==='1')return;input.dataset.ufPolishChange='1';
+        input.addEventListener('change',()=>{const count=[...document.querySelectorAll('.uf-upload-input')].reduce((n,i)=>n+(i.files?.length||0),0),summary=$('uf-files-summary');if(summary){summary.textContent=count?`تمت إضافة ${count} مرفق/مرفقات`:'لا توجد مرفقات مضافة حالياً';summary.classList.toggle('has-files',count>0);}});
       });
     });
   };
 
-  const apply=()=>{addSearchButton();iconize();normalizeStates();fixAttachments();};
-  const scheduleApply=()=>requestAnimationFrame(()=>requestAnimationFrame(apply));
-
+  const apply=()=>{addSearchButton();iconize();decorateContract();decorateAssetCards();normalizeStates();fixAttachments();};
+  const scheduleApply=(delay=0)=>setTimeout(()=>requestAnimationFrame(apply),delay);
   apply();
-
-  // Re-apply only after controls that legitimately rebuild the dynamic details panel.
   document.addEventListener('change',e=>{
-    if(['service-type','service-subtype','contract_no','site_id','asset-list'].includes(e.target?.id)) scheduleApply();
+    if(['service-type','service-subtype','contract_no','site_id','asset-list'].includes(e.target?.id)){scheduleApply(60);scheduleApply(350);}
   });
-  document.addEventListener('click',e=>{
-    if(e.target?.closest('.uf-mode-btn')) scheduleApply();
-  });
+  document.addEventListener('input',e=>{if(e.target?.id==='contract_title')scheduleApply(0);});
+  document.addEventListener('click',e=>{if(e.target?.closest('[data-uf-mode]'))scheduleApply(0);});
 })();
 </script>
 HTML;
