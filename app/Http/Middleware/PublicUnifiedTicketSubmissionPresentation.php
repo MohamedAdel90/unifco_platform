@@ -22,23 +22,24 @@ class PublicUnifiedTicketSubmissionPresentation
         }
 
         $script = <<<'HTML'
-<script id="unifco-unified-ticket-submit-v2">
+<script id="unifco-unified-ticket-submit-v3">
 (()=>{
   const $=id=>document.getElementById(id);
   const form=$('maintenance-form');
   if(!form)return;
 
   const ensureHidden=(name,value)=>{
-    let el=form.querySelector(`input[name="${name}"]`);
+    let el=form.querySelector(`input[type="hidden"][name="${name}"]`);
     if(!el){el=document.createElement('input');el.type='hidden';el.name=name;form.appendChild(el)}
     el.value=value??'';
     return el;
   };
 
-  const firstVisibleValue=selector=>{
+  const valueOf=(selector)=>{
     const els=[...form.querySelectorAll(selector)];
-    const el=els.find(x=>x.offsetParent!==null && String(x.value||'').trim()) || els.find(x=>String(x.value||'').trim());
-    return el?String(el.value||'').trim():'';
+    const visible=els.find(x=>x.offsetParent!==null && String(x.value||'').trim());
+    const any=els.find(x=>String(x.value||'').trim());
+    return String((visible||any)?.value||'').trim();
   };
 
   const syncTicketFields=()=>{
@@ -47,50 +48,54 @@ class PublicUnifiedTicketSubmissionPresentation
     let intent='SERVICE_REQUEST', requestSubtype='ROUTINE_MAINTENANCE', category='MAINTENANCE', urgency='NORMAL', serviceOther='';
 
     if(service==='maintenance'){
-      intent='SERVICE_REQUEST';
       if(subtype==='urgent') { requestSubtype='URGENT_MAINTENANCE'; urgency='EMERGENCY'; }
-      else requestSubtype='ROUTINE_MAINTENANCE';
-    } else if(service==='quotation'){
+    }else if(service==='quotation'){
       intent='QUOTATION'; category='QUOTATION';
       if(subtype==='contract') requestSubtype='MAINTENANCE_CONTRACT_QUOTE';
       else { requestSubtype='SPARE_PARTS_QUOTE'; if(subtype==='visit') serviceOther='زيارة فنية'; }
-    } else {
+    }else{
       intent='CONSULTATION'; category='CONSULTATION'; requestSubtype='TECHNICAL_CONSULTATION';
     }
 
+    ensureHidden('unified_public_request','1');
     ensureHidden('request_intent',intent);
     ensureHidden('request_subtype',requestSubtype);
     ensureHidden('service_category',category);
     ensureHidden('urgency',urgency);
     if(serviceOther) ensureHidden('service_other',serviceOther);
 
-    const visibleDetails=firstVisibleValue('#uf-detail-fields textarea, #uf-detail-fields input[type="text"], textarea[name="details"]');
-    const namedDetails=form.querySelector('[name="details"]');
-    if(!namedDetails || !String(namedDetails.value||'').trim()) ensureHidden('details',visibleDetails||'تفاصيل الطلب');
+    const details=valueOf('#uf-detail-fields textarea,#uf-detail-fields input[type="text"],textarea[name="details"]');
+    ensureHidden('details',details||'تفاصيل الطلب');
 
-    const date=firstVisibleValue('#uf-visit-reception input[type="date"], input[name="requested_date"]');
-    const time=firstVisibleValue('#uf-visit-reception input[type="time"], input[name="requested_time"]');
+    const date=valueOf('#uf-visit-reception input[type="date"],input[name="requested_date"]');
+    const time=valueOf('#uf-visit-reception input[type="time"],input[name="requested_time"]');
     ensureHidden('requested_date',date||new Date().toISOString().slice(0,10));
     ensureHidden('requested_time',time||'09:00');
 
     form.action='/service-requests';
     form.method='post';
     form.enctype='multipart/form-data';
+
+    // Legacy presentation layers leave hidden controls marked required. They must not
+    // prevent the unified form from reaching the server; server validation remains authoritative.
+    form.querySelectorAll('[required]').forEach(el=>{
+      const hidden=el.offsetParent===null || el.closest('.uf-old-workspace-source') || el.closest('.hidden');
+      if(hidden) el.required=false;
+    });
   };
 
   $('service-type')?.addEventListener('change',()=>setTimeout(syncTicketFields,0));
   $('service-subtype')?.addEventListener('change',()=>setTimeout(syncTicketFields,0));
 
   form.addEventListener('submit',e=>{
-    syncTicketFields();
-    if(!form.checkValidity()){
-      e.preventDefault();
-      form.reportValidity();
-      return;
-    }
-    // Prevent legacy submit listeners from cancelling a valid unified request.
-    // Do not preventDefault here: the browser continues with the normal POST.
+    if(form.dataset.ufNativeSubmitting==='1')return;
+    e.preventDefault();
     e.stopImmediatePropagation();
+    syncTicketFields();
+    form.dataset.ufNativeSubmitting='1';
+    // Bypass every legacy submit listener. The POST then reaches Laravel where all
+    // required request data is normalized and validated before ticket issuance.
+    HTMLFormElement.prototype.submit.call(form);
   },true);
 
   syncTicketFields();
