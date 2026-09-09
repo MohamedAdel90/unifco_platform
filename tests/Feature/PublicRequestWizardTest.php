@@ -120,6 +120,22 @@ class PublicRequestWizardTest extends TestCase
         ]);
     }
 
+    public function test_current_customer_maintenance_workspace_has_interactive_timing_icons_and_attachment_previews(): void
+    {
+        $this->get('/request-service/current-maintenance')->assertOk()
+            ->assertSee('unifco-unified-asset-issue-workspace-polish-v4', false)
+            ->assertSee('unifco-unified-asset-issue-workspace-polish-script-v4', false)
+            ->assertSee('uf-file-count', false)
+            ->assertSee('uf-upload-preview', false)
+            ->assertSee('renderAttachmentPreviews', false)
+            ->assertSee('activateChip', false)
+            ->assertSee("time:'<svg", false)
+            ->assertSee("registered:'<svg", false)
+            ->assertSee("manual:'<svg", false)
+            ->assertSee('align-items:stretch!important', false)
+            ->assertSee('height:100%!important', false);
+    }
+
     public function test_ticket_prefixes_and_serial_sequence_are_generated_as_requested(): void
     {
         $this->post('/service-requests', $this->payload('QUOTATION','SPARE_PARTS_QUOTE'))->assertRedirect();
