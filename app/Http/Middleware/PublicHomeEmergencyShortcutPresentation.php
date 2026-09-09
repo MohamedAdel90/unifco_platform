@@ -34,7 +34,6 @@ class PublicHomeEmergencyShortcutPresentation
                 $html
             ) ?? $html;
 
-            // Route every visible homepage "اطلب عرض سعر" CTA to the unified request form.
             $html = preg_replace_callback(
                 '~<a\b([^>]*)>(\s*(?:<[^>]+>\s*)*اطلب عرض سعر(?:\s*<[^>]+>)*\s*)</a>~u',
                 static function (array $m) use ($lockedQuotationUrl): string {
@@ -44,12 +43,34 @@ class PublicHomeEmergencyShortcutPresentation
                 $html
             ) ?? $html;
 
-            // Compatibility with direct legacy quotation links even if the CTA markup changes.
             $html = preg_replace(
                 '~href=("|\')(?:/request-quote|/request-service\?[^"\']*quote[^"\']*)\1([^>]*>[^<]*اطلب عرض سعر[^<]*</a>)~u',
                 'href="'.e($lockedQuotationUrl).'"$2',
                 $html
             ) ?? $html;
+
+            $emergencyUrlJson = json_encode($lockedEmergencyUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $homeFix = <<<HTML
+<script id="unifco-home-emergency-shortcut-runtime-fix">
+(()=>{
+ const emergencyUrl={$emergencyUrlJson};
+ const apply=()=>{
+   document.querySelectorAll('.unifco-emergency-cta a, a[href="/request-service"]').forEach(a=>{
+     const text=(a.textContent||'').replace(/\s+/g,' ').trim();
+     if(text.includes('طلب صيانة طارئة')) a.setAttribute('href', emergencyUrl);
+   });
+ };
+ const start=()=>{
+   apply();
+   const observer=new MutationObserver(apply);
+   observer.observe(document.documentElement,{childList:true,subtree:true});
+   [50,150,350,800,1500].forEach(ms=>setTimeout(apply,ms));
+ };
+ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
+})();
+</script>
+HTML;
+            $html = str_replace('</body>', $homeFix.'</body>', $html);
 
             $response->setContent($html);
             return $response;
