@@ -123,11 +123,13 @@ class PublicRequestWizardTest extends TestCase
     public function test_current_customer_maintenance_workspace_has_interactive_timing_icons_and_attachment_previews(): void
     {
         $this->get('/request-service/current-maintenance')->assertOk()
-            ->assertSee('unifco-unified-asset-issue-workspace-polish-v4', false)
-            ->assertSee('unifco-unified-asset-issue-workspace-polish-script-v4', false)
+            ->assertSee('unifco-unified-asset-issue-workspace-polish-v5', false)
+            ->assertSee('unifco-unified-asset-issue-workspace-polish-script-v5', false)
             ->assertSee('uf-file-count', false)
-            ->assertSee('uf-upload-preview', false)
+            ->assertSee('uf-preview-groups', false)
             ->assertSee('renderAttachmentPreviews', false)
+            ->assertSee('preserveInputFiles', false)
+            ->assertSee('capture="environment" multiple', false)
             ->assertSee('activateChip', false)
             ->assertSee("time:'<svg", false)
             ->assertSee("registered:'<svg", false)
