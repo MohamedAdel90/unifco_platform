@@ -54,17 +54,32 @@ class PublicHomeEmergencyShortcutPresentation
 <script id="unifco-home-emergency-shortcut-runtime-fix">
 (()=>{
  const emergencyUrl={$emergencyUrlJson};
+ const isEmergencyAnchor=a=>{
+   if(!a) return false;
+   const text=(a.textContent||'').replace(/\s+/g,' ').trim();
+   return text.includes('طلب صيانة طارئة');
+ };
  const apply=()=>{
-   document.querySelectorAll('.unifco-emergency-cta a, a[href="/request-service"]').forEach(a=>{
-     const text=(a.textContent||'').replace(/\s+/g,' ').trim();
-     if(text.includes('طلب صيانة طارئة')) a.setAttribute('href', emergencyUrl);
+   document.querySelectorAll('a').forEach(a=>{
+     if(isEmergencyAnchor(a)) a.setAttribute('href', emergencyUrl);
    });
+ };
+ const forceNavigate=event=>{
+   const a=event.target?.closest?.('a');
+   if(!isEmergencyAnchor(a)) return;
+   event.preventDefault();
+   event.stopPropagation();
+   if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+   window.location.assign(emergencyUrl);
  };
  const start=()=>{
    apply();
+   document.addEventListener('click',forceNavigate,true);
+   document.addEventListener('touchend',forceNavigate,true);
    const observer=new MutationObserver(apply);
    observer.observe(document.documentElement,{childList:true,subtree:true});
-   [50,150,350,800,1500].forEach(ms=>setTimeout(apply,ms));
+   [0,50,150,350,800,1500,3000].forEach(ms=>setTimeout(apply,ms));
+   window.addEventListener('pageshow',apply,{passive:true});
  };
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
 })();
