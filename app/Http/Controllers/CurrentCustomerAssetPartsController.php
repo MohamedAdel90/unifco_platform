@@ -11,14 +11,24 @@ class CurrentCustomerAssetPartsController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'customer_id' => ['required','integer'],
+            'customer_number' => ['required','string','max:80'],
             'contract_no' => ['nullable','string','max:120'],
             'asset_id' => ['required','integer'],
         ]);
 
+        $customerNumber = trim($data['customer_number']);
+        $customerQuery = DB::table('customers')->where('customer_code', $customerNumber);
+        if (ctype_digit($customerNumber)) {
+            $customerQuery->orWhere('id', (int) $customerNumber);
+        }
+        $customer = $customerQuery->first(['id']);
+        if (! $customer) {
+            return response()->json(['message' => 'لم يتم العثور على العميل الحالي.'], 404);
+        }
+
         $asset = DB::table('assets')
             ->where('id', $data['asset_id'])
-            ->where('customer_id', $data['customer_id'])
+            ->where('customer_id', $customer->id)
             ->when(! empty($data['contract_no']), fn ($q) => $q->where('contract_reference', $data['contract_no']))
             ->first(['id','asset_code','name','manufacturer','model_no']);
 
