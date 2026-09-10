@@ -97,6 +97,8 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('preserveInputFiles', false)
             ->assertSee('capture="environment" multiple', false)
             ->assertSee('activateChip', false)
+            ->assertSee("!customerCard.closest('.uf-customer-context-layout')", false)
+            ->assertSee('.uf-customer-context-layout>.uf-context-details:only-child{grid-area:auto!important;grid-column:1/-1!important}', false)
             ->assertSee("time:'<svg", false)
             ->assertSee("registered:'<svg", false)
             ->assertSee("manual:'<svg", false)

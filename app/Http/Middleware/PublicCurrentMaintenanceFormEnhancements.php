@@ -78,7 +78,7 @@ HTML;
 
     /* Keep the customer card in the unified form regardless of service/request type. */
     const routine = $('routine-form');
-    if (routine && routine.contains(customerCard)) {
+    if (routine && routine.contains(customerCard) && !customerCard.closest('.uf-customer-context-layout')) {
       routine.parentNode.insertBefore(customerCard, routine);
     }
 
