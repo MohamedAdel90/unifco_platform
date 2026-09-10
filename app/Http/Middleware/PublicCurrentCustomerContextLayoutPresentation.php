@@ -27,6 +27,7 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:stretch!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;padding:18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
 .uf-customer-context-layout>.uf-context-details{grid-area:details!important;display:grid!important;grid-template-rows:auto 1fr!important;gap:14px!important;align-self:stretch!important;min-width:0!important;width:100%!important;height:100%!important;direction:rtl!important}
+.uf-customer-context-layout>.uf-context-details:only-child{grid-area:auto!important;grid-column:1/-1!important}
 .uf-customer-context-layout>.uf-context-details>.panel{display:block!important;margin:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-context-details #site-section{height:100%!important}
 .uf-context-customer>.section-title,.uf-context-details .section-title{margin-bottom:14px!important}
