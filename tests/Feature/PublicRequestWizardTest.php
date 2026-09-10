@@ -47,7 +47,7 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('طلب خدمة', false)
             ->assertSee('نموذج UNIFCO الموحد للعملاء الحاليين والجدد وجميع أنواع طلبات الخدمة.', false)
             ->assertSee('id="maintenance-form"', false)
-            ->assertSee('بيانات العميل الحالي', false)
+            ->assertSee('بيانات العميل', false)
             ->assertSee('بيانات العقد', false)
             ->assertSee('الموقع والتواصل', false)
             ->assertSee('المعدة وبياناتها', false)
