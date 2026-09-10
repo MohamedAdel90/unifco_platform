@@ -45,9 +45,9 @@ class PublicRequestWizardTest extends TestCase
 
         $response
             ->assertSee('طلب خدمة', false)
-            ->assertSee('النموذج الحالي مخصص لطلب صيانة عادية لعميل حالي ومسجل لدى UNIFCO.', false)
+            ->assertSee('نموذج UNIFCO الموحد للعملاء الحاليين والجدد وجميع أنواع طلبات الخدمة.', false)
             ->assertSee('id="maintenance-form"', false)
-            ->assertSee('بيانات العميل الحالي', false)
+            ->assertSee('بيانات العميل', false)
             ->assertSee('بيانات العقد', false)
             ->assertSee('الموقع والتواصل', false)
             ->assertSee('المعدة وبياناتها', false)
@@ -84,9 +84,9 @@ class PublicRequestWizardTest extends TestCase
         ]);
     }
 
-    public function test_current_customer_maintenance_workspace_has_interactive_timing_icons_and_attachment_previews(): void
+    public function test_unified_request_workspace_has_interactive_timing_icons_and_attachment_previews(): void
     {
-        $this->get('/request-service/current-maintenance')->assertOk()
+        $this->get('/request-service')->assertOk()
             ->assertSee('unifco-unified-asset-issue-workspace-polish-v6', false)
             ->assertSee('unifco-unified-asset-issue-workspace-polish-script-v6', false)
             ->assertSee('uf-file-count', false)
@@ -102,6 +102,13 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee("manual:'<svg", false)
             ->assertSee('align-items:stretch!important', false)
             ->assertSee('height:100%!important', false);
+    }
+
+    public function test_legacy_request_entry_points_redirect_to_the_unified_form(): void
+    {
+        $this->get('/request-service/current-maintenance')->assertRedirect('/request-service');
+        $this->get('/request-quote')->assertRedirect('/request-service?quotation=1');
+        $this->get('/emergency-maintenance')->assertRedirect('/request-service?emergency=1');
     }
 
     public function test_ticket_prefixes_and_serial_sequence_are_generated_as_requested(): void

@@ -33,7 +33,7 @@ html[dir="rtl"] .process-step:not(:last-child):after{content:"←";right:auto;le
 </style>
 <script id="unifco-maintenance-approved-runtime-v2-script">
 (()=>{
- const maintenanceUrl=@json(route('public.current-maintenance'));
+ const maintenanceUrl=@json(route('public.request-service'));
  const visual=`<div class="ufm-approved" aria-label="من الصيانة التفاعلية إلى التشغيل المخطط">
    <div class="ufm-photo">
      <img src="/images/home/about-reference-technician.png?v=20260910-7" alt="فني صيانة UNIFCO">

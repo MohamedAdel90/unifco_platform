@@ -33,22 +33,6 @@ HTML;
         return response(str_replace('</head>',$cairo.'</head>',$html))->header('X-UNIFCO-Release','home-company-profile-20260830-01')->header('Cache-Control','no-cache, no-store, must-revalidate');
     }
 
-    public function quote(): Response
-    {
-        return response(view('public.request',['type'=>'QUOTATION'])->render())
-            ->header('Cache-Control','no-cache, no-store, must-revalidate')
-            ->header('Pragma','no-cache')
-            ->header('Expires','0');
-    }
-
-    public function emergency(): Response
-    {
-        return response(view('public.request',['type'=>'EMERGENCY_MAINTENANCE'])->render())
-            ->header('Cache-Control','no-cache, no-store, must-revalidate')
-            ->header('Pragma','no-cache')
-            ->header('Expires','0');
-    }
-
     public function assetLookup(Request $request): JsonResponse
     {
         $data=$request->validate(['key'=>['required','string','max:200']]); $key=trim($data['key']);

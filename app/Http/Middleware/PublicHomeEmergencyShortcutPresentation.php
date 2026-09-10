@@ -19,9 +19,9 @@ class PublicHomeEmergencyShortcutPresentation
         $html = (string) $response->getContent();
 
         if ($request->routeIs('public.home')) {
-            $lockedEmergencyUrl = route('public.current-maintenance', ['emergency' => 1]);
-            $lockedQuotationUrl = route('public.current-maintenance', ['quotation' => 1]);
-            $maintenanceUrl = route('public.current-maintenance');
+            $lockedEmergencyUrl = route('public.request-service', ['emergency' => 1]);
+            $lockedQuotationUrl = route('public.request-service', ['quotation' => 1]);
+            $maintenanceUrl = route('public.request-service');
 
             $html = str_replace(
                 'href="/request-service">طلب صيانة طارئة</a>',
@@ -115,7 +115,7 @@ HTML;
             return $response;
         }
 
-        if (! $request->routeIs('public.current-maintenance')) {
+        if (! $request->routeIs('public.request-service')) {
             return $response;
         }
 

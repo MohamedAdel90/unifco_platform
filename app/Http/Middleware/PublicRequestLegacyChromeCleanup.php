@@ -13,7 +13,7 @@ class PublicRequestLegacyChromeCleanup
     {
         $response = $next($request);
 
-        if (! $request->routeIs('public.current-maintenance', 'public.current-maintenance.spare-parts')
+        if (! $request->routeIs('public.request-service')
             || ! method_exists($response, 'getContent')
             || ! method_exists($response, 'setContent')) {
             return $response;

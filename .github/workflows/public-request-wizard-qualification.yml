@@ -5,13 +5,15 @@ on:
     branches: [main]
     paths:
       - 'app/Http/Controllers/PublicSiteController.php'
+      - 'app/Http/Controllers/UnifiedServiceRequestController.php'
       - 'app/Http/Middleware/BrandingPresentation.php'
       - 'app/Http/Middleware/PublicRequestAttachmentsPresentation.php'
       - 'app/Http/Middleware/PublicRequestHeaderMatch.php'
       - 'app/Models/PublicServiceRequest.php'
       - 'app/Services/PublicRequestPipelineService.php'
       - 'bootstrap/app.php'
-      - 'resources/views/public/request.blade.php'
+      - 'resources/views/public/service-request.blade.php'
+      - 'routes/public.php'
       - 'resources/views/public/received.blade.php'
       - 'database/migrations/2026_08_24_000048_upgrade_public_request_experience.php'
       - 'database/migrations/2026_08_25_000049_rebuild_public_request_single_page.php'
