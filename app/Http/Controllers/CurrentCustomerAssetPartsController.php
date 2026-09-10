@@ -88,9 +88,7 @@ class CurrentCustomerAssetPartsController extends Controller
                 });
         }
 
-        // Backward-compatible source: parts/materials historically used on this asset.
-        // This also makes the selector useful on installations created before
-        // asset_spare_parts/BOM data was introduced.
+        // Backward-compatible source: distinct parts/materials historically used on this asset.
         if ($parts->isEmpty() && Schema::hasTable('maintenance_materials') && Schema::hasTable('work_orders') && Schema::hasTable('items')) {
             $rows = DB::table('maintenance_materials as mm')
                 ->join('work_orders as wo', 'wo.id', '=', 'mm.work_order_id')
@@ -102,14 +100,13 @@ class CurrentCustomerAssetPartsController extends Controller
                     });
                 })
                 ->orderBy('i.name')
+                ->distinct()
                 ->get([
                     'i.id as item_id',
                     'i.item_code',
                     'i.name as item_name',
                     'i.uom',
-                    DB::raw('MAX(mm.quantity) as recommended_quantity'),
-                ])
-                ->groupBy('i.id', 'i.item_code', 'i.name', 'i.uom');
+                ]);
 
             $parts = $rows->map(function ($row) use ($asset) {
                 return [
@@ -119,7 +116,7 @@ class CurrentCustomerAssetPartsController extends Controller
                     'part_no' => $row->item_code,
                     'manufacturer' => $asset->manufacturer,
                     'uom' => $row->uom ?: 'EA',
-                    'recommended_quantity' => max(1, (float) $row->recommended_quantity),
+                    'recommended_quantity' => 1,
                     'asset_id' => $asset->id,
                     'asset_code' => $asset->asset_code,
                     'asset_name' => $asset->name,
