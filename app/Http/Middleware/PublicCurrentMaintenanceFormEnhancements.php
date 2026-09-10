@@ -21,11 +21,19 @@ class PublicCurrentMaintenanceFormEnhancements
         $styles = <<<'HTML'
 <style id="unifco-current-maintenance-form-enhancements">
 /* Customer lookup: compact number field + blue data button */
-#routine-form .lookup-row{display:flex!important;align-items:center!important;gap:10px!important;width:100%!important;max-width:none!important}
-#routine-form #customer_number{width:50%!important;flex:0 0 50%!important;min-width:0!important}
-#routine-form #customer-lookup{width:auto!important;min-width:138px!important;flex:0 0 auto!important;background:#1769c2!important;border:1px solid #1769c2!important;color:#fff!important;box-shadow:0 4px 12px rgba(23,105,194,.16)!important}
-#routine-form #customer-lookup:hover{background:#105aa9!important;border-color:#105aa9!important}
-#routine-form #customer-lookup:disabled{opacity:.68!important;cursor:wait!important}
+#routine-form .lookup-row,.uf-customer-card .lookup-row{display:flex!important;align-items:center!important;gap:10px!important;width:100%!important;max-width:none!important}
+#routine-form #customer_number,.uf-customer-card #customer_number{width:50%!important;flex:0 0 50%!important;min-width:0!important}
+#routine-form #customer-lookup,.uf-customer-card #customer-lookup{width:auto!important;min-width:138px!important;flex:0 0 auto!important;background:#1769c2!important;border:1px solid #1769c2!important;color:#fff!important;box-shadow:0 4px 12px rgba(23,105,194,.16)!important}
+#routine-form #customer-lookup:hover,.uf-customer-card #customer-lookup:hover{background:#105aa9!important;border-color:#105aa9!important}
+#routine-form #customer-lookup:disabled,.uf-customer-card #customer-lookup:disabled{opacity:.68!important;cursor:wait!important}
+
+/* Keep one stable current-customer card visible for every service-request type. */
+.uf-customer-card{background:#f0fbf4!important;border:1px solid #9bd6ab!important;box-shadow:0 8px 24px rgba(25,135,84,.07)!important;min-height:214px}
+.uf-customer-card .section-title{color:#0f6531!important}
+.uf-customer-card input[readonly]{background:rgba(255,255,255,.82)!important;border-color:#c8e7d1!important}
+.uf-customer-card #customer-status{display:block!important;min-height:34px;margin-top:9px;padding:9px 12px;border-radius:7px;font-size:10px;font-weight:800;background:#e8f7ed;border:1px solid #b9dfc4;color:#39724b}
+.uf-customer-card #customer-status.ok{background:#e4f6e9!important;border-color:#8fd19f!important;color:#12652a!important}
+.uf-customer-card #customer-status.bad{background:#fff0f2!important;border-color:#f2b2bb!important;color:#b20d22!important}
 
 /* Colored semantic icons for form sub-headings */
 .uf-field-label{display:flex!important;align-items:center!important;gap:6px!important}
@@ -33,9 +41,10 @@ class PublicCurrentMaintenanceFormEnhancements
 .uf-field-icon svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
 @media(max-width:700px){
-  #routine-form .lookup-row{align-items:stretch!important;flex-wrap:wrap!important}
-  #routine-form #customer_number{width:100%!important;flex:1 1 100%!important}
-  #routine-form #customer-lookup{width:100%!important;min-width:0!important}
+  #routine-form .lookup-row,.uf-customer-card .lookup-row{align-items:stretch!important;flex-wrap:wrap!important}
+  #routine-form #customer_number,.uf-customer-card #customer_number{width:100%!important;flex:1 1 100%!important}
+  #routine-form #customer-lookup,.uf-customer-card #customer-lookup{width:100%!important;min-width:0!important}
+  .uf-customer-card{min-height:0}
 }
 </style>
 HTML;
@@ -48,8 +57,24 @@ HTML;
     const customerInput = document.getElementById('customer_number');
     const lookupButton = document.getElementById('customer-lookup');
     const status = document.getElementById('customer-status');
+    const routine = document.getElementById('routine-form');
+
+    /* The customer identity block is shared by every request type. Move the same
+       DOM node outside the type-specific routine section so changing the service
+       type never swaps, hides, or resizes the customer card. */
+    if (routine) {
+      const customerCard = routine.querySelector(':scope > section.panel');
+      if (customerCard) {
+        customerCard.classList.add('uf-customer-card');
+        routine.parentNode.insertBefore(customerCard, routine);
+      }
+    }
 
     if (lookupButton) lookupButton.textContent = 'جلب البيانات';
+    if (status && !status.textContent.trim()) {
+      status.className = 'status';
+      status.textContent = 'بانتظار إدخال رقم العميل';
+    }
 
     /* Automatic customer lookup after typing, on Enter, and on leaving the field. */
     if (customerInput && lookupButton) {
@@ -57,13 +82,20 @@ HTML;
       let lastAutoValue = '';
       let inFlightValue = '';
 
+      const resetWaitingState = function(){
+        if (status) {
+          status.className = 'status';
+          status.textContent = 'بانتظار إدخال رقم العميل';
+        }
+      };
+
       const runLookup = function(force){
         const value = customerInput.value.trim();
         clearTimeout(timer);
         if (!value) {
           lastAutoValue = '';
           inFlightValue = '';
-          if (status) { status.className = 'status'; status.textContent = ''; }
+          resetWaitingState();
           return;
         }
         if (!force && (value === lastAutoValue || value === inFlightValue)) return;
@@ -77,7 +109,7 @@ HTML;
         const value = customerInput.value.trim();
         if (value !== lastAutoValue) lastAutoValue = '';
         clearTimeout(timer);
-        if (!value) return;
+        if (!value) { resetWaitingState(); return; }
         timer = window.setTimeout(function(){ runLookup(false); }, 700);
       });
       customerInput.addEventListener('blur', function(){ runLookup(false); });
@@ -114,7 +146,7 @@ HTML;
       [/وصف العطل|وصف المشكلة|العطل/, 'fault', '#dc3545'], [/مرفق|صورة|تقرير/, 'upload', '#1769c2']
     ];
 
-    document.querySelectorAll('#routine-form .field > label, #routine-form .upload > b').forEach(function(label){
+    document.querySelectorAll('#routine-form .field > label, #routine-form .upload > b, .uf-customer-card .field > label').forEach(function(label){
       if (label.querySelector('.uf-field-icon')) return;
       const text = (label.textContent || '').replace(/\*/g,'').trim();
       const rule = rules.find(function(r){ return r[0].test(text); });
