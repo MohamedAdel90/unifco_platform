@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CurrentCustomerAssetPartsController extends Controller
 {
@@ -36,36 +37,41 @@ class CurrentCustomerAssetPartsController extends Controller
             return response()->json(['message' => 'الأصل المحدد غير مرتبط بالعميل أو العقد الحالي.'], 404);
         }
 
-        $parts = DB::table('asset_part_installations as api')
-            ->leftJoin('items as i', 'i.id', '=', 'api.item_id')
-            ->where('api.asset_id', $asset->id)
-            ->whereNull('api.removed_at')
-            ->orderByDesc('api.installed_at')
-            ->get([
-                'api.id',
-                'api.item_id',
-                'api.installed_part_number',
-                'api.installed_manufacturer',
-                'api.quantity',
-                'i.item_code',
-                'i.name as item_name',
-                'i.uom',
-            ])
-            ->map(function ($row) use ($asset) {
-                return [
-                    'id' => $row->id,
-                    'item_id' => $row->item_id,
-                    'name' => $row->item_name ?: ($row->installed_part_number ?: 'قطعة غيار'),
-                    'part_no' => $row->installed_part_number ?: $row->item_code,
-                    'manufacturer' => $row->installed_manufacturer ?: $asset->manufacturer,
-                    'uom' => $row->uom ?: 'EA',
-                    'asset_id' => $asset->id,
-                    'asset_code' => $asset->asset_code,
-                    'asset_name' => $asset->name,
-                ];
-            })
-            ->unique(fn ($row) => ($row['item_id'] ?: 'x').'-'.($row['part_no'] ?: 'na'))
-            ->values();
+        $parts = collect();
+
+        if (Schema::hasTable('asset_spare_parts')) {
+            $parts = DB::table('asset_spare_parts as asp')
+                ->join('items as i', 'i.id', '=', 'asp.item_id')
+                ->where('asp.asset_id', $asset->id)
+                ->where(function ($q) {
+                    $q->whereNull('i.status')->orWhere('i.status', 'ACTIVE');
+                })
+                ->orderBy('i.name')
+                ->get([
+                    'asp.id',
+                    'asp.item_id',
+                    'asp.manufacturer_part_no',
+                    'asp.recommended_quantity',
+                    'asp.preferred_supplier',
+                    'i.item_code',
+                    'i.name as item_name',
+                    'i.uom',
+                ])
+                ->map(function ($row) use ($asset) {
+                    return [
+                        'id' => $row->id,
+                        'item_id' => $row->item_id,
+                        'name' => $row->item_name ?: 'قطعة غيار',
+                        'part_no' => $row->manufacturer_part_no ?: $row->item_code,
+                        'manufacturer' => $row->preferred_supplier ?: $asset->manufacturer,
+                        'uom' => $row->uom ?: 'EA',
+                        'recommended_quantity' => (float) $row->recommended_quantity,
+                        'asset_id' => $asset->id,
+                        'asset_code' => $asset->asset_code,
+                        'asset_name' => $asset->name,
+                    ];
+                });
+        }
 
         return response()->json([
             'asset' => [
@@ -73,7 +79,7 @@ class CurrentCustomerAssetPartsController extends Controller
                 'asset_code' => $asset->asset_code,
                 'name' => $asset->name,
             ],
-            'parts' => $parts,
+            'parts' => $parts->values(),
         ])->header('Cache-Control', 'no-store, private');
     }
 }
