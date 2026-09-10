@@ -14,7 +14,6 @@ class CurrentCustomerAssetPartsController extends Controller
         $data = $request->validate([
             'customer_number' => ['required','string','max:80'],
             'contract_no' => ['nullable','string','max:120'],
-            // The unified selector can submit either the numeric DB id or an asset code.
             'asset_id' => ['required','string','max:160'],
         ]);
 
@@ -50,9 +49,17 @@ class CurrentCustomerAssetPartsController extends Controller
         }
 
         $parts = collect();
+        $imageColumn = $this->itemImageColumn();
 
-        // Preferred source: explicitly linked spare parts / BOM records.
         if (Schema::hasTable('asset_spare_parts') && Schema::hasTable('items')) {
+            $columns = [
+                'asp.id','asp.item_id','asp.manufacturer_part_no','asp.recommended_quantity','asp.preferred_supplier',
+                'i.item_code','i.name as item_name','i.uom',
+            ];
+            if ($imageColumn) {
+                $columns[] = DB::raw('i.'.$imageColumn.' as item_image');
+            }
+
             $parts = DB::table('asset_spare_parts as asp')
                 ->join('items as i', 'i.id', '=', 'asp.item_id')
                 ->where('asp.asset_id', $asset->id)
@@ -62,16 +69,7 @@ class CurrentCustomerAssetPartsController extends Controller
                     });
                 })
                 ->orderBy('i.name')
-                ->get([
-                    'asp.id',
-                    'asp.item_id',
-                    'asp.manufacturer_part_no',
-                    'asp.recommended_quantity',
-                    'asp.preferred_supplier',
-                    'i.item_code',
-                    'i.name as item_name',
-                    'i.uom',
-                ])
+                ->get($columns)
                 ->map(function ($row) use ($asset) {
                     return [
                         'id' => $row->id,
@@ -80,6 +78,7 @@ class CurrentCustomerAssetPartsController extends Controller
                         'part_no' => $row->manufacturer_part_no ?: $row->item_code,
                         'manufacturer' => $row->preferred_supplier ?: $asset->manufacturer,
                         'uom' => $row->uom ?: 'EA',
+                        'image_url' => $this->imageUrl($row->item_image ?? null),
                         'recommended_quantity' => max(1, (float) $row->recommended_quantity),
                         'asset_id' => $asset->id,
                         'asset_code' => $asset->asset_code,
@@ -88,8 +87,12 @@ class CurrentCustomerAssetPartsController extends Controller
                 });
         }
 
-        // Backward-compatible source: distinct parts/materials historically used on this asset.
         if ($parts->isEmpty() && Schema::hasTable('maintenance_materials') && Schema::hasTable('work_orders') && Schema::hasTable('items')) {
+            $columns = ['i.id as item_id','i.item_code','i.name as item_name','i.uom'];
+            if ($imageColumn) {
+                $columns[] = DB::raw('i.'.$imageColumn.' as item_image');
+            }
+
             $rows = DB::table('maintenance_materials as mm')
                 ->join('work_orders as wo', 'wo.id', '=', 'mm.work_order_id')
                 ->join('items as i', 'i.id', '=', 'mm.item_id')
@@ -101,12 +104,7 @@ class CurrentCustomerAssetPartsController extends Controller
                 })
                 ->orderBy('i.name')
                 ->distinct()
-                ->get([
-                    'i.id as item_id',
-                    'i.item_code',
-                    'i.name as item_name',
-                    'i.uom',
-                ]);
+                ->get($columns);
 
             $parts = $rows->map(function ($row) use ($asset) {
                 return [
@@ -116,6 +114,7 @@ class CurrentCustomerAssetPartsController extends Controller
                     'part_no' => $row->item_code,
                     'manufacturer' => $asset->manufacturer,
                     'uom' => $row->uom ?: 'EA',
+                    'image_url' => $this->imageUrl($row->item_image ?? null),
                     'recommended_quantity' => 1,
                     'asset_id' => $asset->id,
                     'asset_code' => $asset->asset_code,
@@ -132,5 +131,33 @@ class CurrentCustomerAssetPartsController extends Controller
             ],
             'parts' => $parts->values(),
         ])->header('Cache-Control', 'no-store, private');
+    }
+
+    private function itemImageColumn(): ?string
+    {
+        if (! Schema::hasTable('items')) {
+            return null;
+        }
+
+        foreach (['image_path','image','photo_path','thumbnail_path','thumbnail','photo'] as $column) {
+            if (Schema::hasColumn('items', $column)) {
+                return $column;
+            }
+        }
+
+        return null;
+    }
+
+    private function imageUrl(?string $value): ?string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+        if (preg_match('#^https?://#i', $value) || str_starts_with($value, 'data:') || str_starts_with($value, '/')) {
+            return $value;
+        }
+
+        return asset('storage/'.ltrim($value, '/'));
     }
 }
