@@ -39,61 +39,25 @@ class PublicRequestWizardTest extends TestCase
         return $assetId;
     }
 
-    public function test_public_request_page_is_single_page_bilingual_and_reuses_shared_homepage_header(): void
+    public function test_public_request_service_uses_current_maintenance_workspace(): void
     {
-        $this->get('/request-service')->assertOk()
-            ->assertSee('خدمة أسرع تبدأ بطلب أوضح', false)
-            ->assertSee('خطوات بسيطة تساعد فريق UNIFCO على فهم الخدمة المطلوبة بشكل سريع وواضح.', false)
-            ->assertSee('class="top site-header"', false)
-            ->assertSee('class="wrap nav"', false)
-            ->assertSee('class="brand-link"', false)
-            ->assertSee('class="site-logo-frame"', false)
-            ->assertSee('class="brand-copy"', false)
-            ->assertSee('class="nav-links public-primary-nav"', false)
-            ->assertSee('class="nav-actions"', false)
-            ->assertSee('class="header-btn red"', false)
-            ->assertSee('id="requestForm"', false)
-            ->assertSee('طلب خدمة', false)
-            ->assertSee('تسجيل الدخول', false)
-            ->assertDontSee('class="request-pill"', false)
-            ->assertDontSee('class="primary-nav"', false)
-            ->assertSee('طلب عرض سعر', false)
-            ->assertSee('عرض سعر قطع غيار', false)
-            ->assertSee('عرض سعر عقد صيانة', false)
-            ->assertSee('خدمات الصيانة العادية', false)
-            ->assertSee('خدمات الصيانة الطارئة', false)
-            ->assertSee('id="technicalConsultationSubtype"', false)
-            ->assertSee('id="assetQrSection"', false)
-            ->assertSee('مسح QR للمعدة', false)
-            ->assertSee('إدخال رقم الأصل', false)
-            ->assertSee('#map{height:220px', false)
-            ->assertSee('public-request-camera-attachments', false)
-            ->assertSee('التقاط صورة', false)
-            ->assertSee('اختيار من الجهاز', false)
-            ->assertDontSee('id="subConsult"', false)
-            ->assertDontSee('UNIFCO · ONE FACILITY SHOP', false);
+        $response = $this->get('/request-service')->assertOk();
 
-        $this->get('/request-service?lang=en')->assertOk()
-            ->assertSee('A faster service starts with a clearer request', false)
-            ->assertSee('Simple steps help the UNIFCO team understand the required service quickly and clearly.', false)
-            ->assertSee('Request Service', false)
-            ->assertSee('Scan Equipment QR', false)
-            ->assertSee('enter the Asset ID manually', false)
-            ->assertSee('Home', false)
-            ->assertSee('About Us', false)
-            ->assertSee('Services', false)
-            ->assertSee('Clients', false)
-            ->assertSee('Projects', false)
-            ->assertSee('Careers', false)
-            ->assertSee('Contact Us', false)
-            ->assertSee('Sign In', false)
-            ->assertSee('Request a Quotation', false)
-            ->assertSee('Spare Parts Quotation', false)
-            ->assertSee('Maintenance Contract Quotation', false)
-            ->assertSee('Routine Maintenance', false)
-            ->assertSee('Emergency Maintenance', false)
-            ->assertSee('Take Photo', false)
-            ->assertSee('Choose from Device', false);
+        $response
+            ->assertSee('طلب خدمة', false)
+            ->assertSee('النموذج الحالي مخصص لطلب صيانة عادية لعميل حالي ومسجل لدى UNIFCO.', false)
+            ->assertSee('id="maintenance-form"', false)
+            ->assertSee('بيانات العميل الحالي', false)
+            ->assertSee('بيانات العقد', false)
+            ->assertSee('الموقع والتواصل', false)
+            ->assertSee('المعدة وبياناتها', false)
+            ->assertSee('اختيار من معدات العقد', false)
+            ->assertSee('مسح / إدخال QR', false)
+            ->assertSee('رقم الأصل', false)
+            ->assertSee('السيريال نمبر', false)
+            ->assertSee('معدة غير تعاقدية', false)
+            ->assertDontSee('خدمة أسرع تبدأ بطلب أوضح', false)
+            ->assertDontSee('id="requestForm"', false);
     }
 
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
