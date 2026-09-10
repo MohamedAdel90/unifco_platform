@@ -23,15 +23,14 @@ class PublicCurrentCustomerServiceCorePresentation
 
         $style = <<<'HTML'
 <style id="unifco-current-customer-service-core-v1">
-.uf-service-core-note{margin:10px 0 0;padding:10px 12px;border:1px solid #dbe5f0;border-radius:9px;background:#f8fbff;color:#5e718d;font-size:10px;font-weight:700;line-height:1.75}
-.uf-service-core-note strong{color:#0b2c59}
+.uf-service-core-note{display:none!important}
 .uf-service-tail-placeholder{display:none;margin:0 0 14px;padding:16px 18px;border:1px dashed #c8d6e7;border-radius:12px;background:#fbfdff;color:#60738f;font-size:11px;line-height:1.9;text-align:right}
 .uf-service-tail-placeholder.show{display:block}
 .uf-service-tail-placeholder b{display:block;color:#0b2c59;font-size:13px;margin-bottom:3px}
 #routine-form.uf-core-only>section.panel.uf-service-tail-section{display:none!important}
 #routine-form.uf-current-customer-active{display:block!important}
 #future-box.uf-core-hidden{display:none!important}
-@media(max-width:700px){.uf-service-core-note,.uf-service-tail-placeholder{font-size:10px}}
+@media(max-width:700px){.uf-service-tail-placeholder{font-size:10px}}
 </style>
 HTML;
 
@@ -42,8 +41,9 @@ HTML;
     const subtype=document.getElementById('service-subtype');
     const routine=document.getElementById('routine-form');
     const future=document.getElementById('future-box');
-    const selector=document.querySelector('.request-selector-panel') || service?.closest('section.panel');
     if(!service||!subtype||!routine)return;
+
+    document.querySelectorAll('.uf-service-core-note').forEach(el=>el.remove());
 
     const currentButton=document.querySelector('[data-customer-kind="current"]');
     const newButton=document.querySelector('[data-customer-kind="new"]');
@@ -57,13 +57,6 @@ HTML;
 
     const serviceLabels={maintenance:'صيانة',quotation:'عرض سعر',consultation:'استشارة فنية'};
     const subtypeLabels={routine:'صيانة عادية',urgent:'صيانة طارئة',parts:'قطع غيار',visit:'زيارة فنية',contract:'عقد صيانة',technical:'استشارة فنية'};
-
-    let note=selector?.querySelector('.uf-service-core-note');
-    if(!note&&selector){
-        note=document.createElement('div');
-        note.className='uf-service-core-note';
-        selector.appendChild(note);
-    }
 
     let placeholder=document.getElementById('uf-service-tail-placeholder');
     if(!placeholder){
@@ -95,12 +88,10 @@ HTML;
         future?.classList.add('uf-core-hidden');
         if(future)future.style.display='none';
 
+        document.querySelectorAll('.uf-service-core-note').forEach(el=>el.remove());
+
         const routineMaintenance=service.value==='maintenance'&&subtype.value==='routine';
         routine.classList.toggle('uf-core-only',!routineMaintenance);
-
-        if(note){
-            note.innerHTML=`<strong>النموذج الموحد للعميل الحالي:</strong> بيانات العميل والعقد والموقع والمعدة ثابتة لجميع أنواع الطلبات. الجزء التالي سيتغير لاحقًا حسب نوع الطلب المختار.`;
-        }
 
         if(placeholder){
             const label=`${serviceLabels[service.value]||''} — ${subtypeLabels[subtype.value]||''}`;
@@ -131,6 +122,7 @@ HTML;
     const observer=new MutationObserver(()=>{
         if(isCurrent()&&routine.classList.contains('hidden'))routine.classList.remove('hidden');
         if(isCurrent()&&future&&future.style.display!=='none')future.style.display='none';
+        document.querySelectorAll('.uf-service-core-note').forEach(el=>el.remove());
     });
     observer.observe(routine,{attributes:true,attributeFilter:['class']});
     if(future)observer.observe(future,{attributes:true,attributeFilter:['style','class']});
