@@ -20,9 +20,6 @@ if ! git cat-file -e "${EXPECTED_SHA}^{commit}" 2>/dev/null; then
 fi
 REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
 
-# Qualification workflows intentionally write [skip ci] evidence under deploy/status/.
-# Those bookkeeping commits must not invalidate an already-qualified functional SHA.
-# We still refuse any stale release when main contains another functional change.
 if [[ "$EXPECTED_SHA" != "$REMOTE_MAIN_SHA" ]]; then
   if ! git merge-base --is-ancestor "$EXPECTED_SHA" "$REMOTE_MAIN_SHA"; then
     echo "ERROR: refusing stale release: qualified SHA $EXPECTED_SHA is not an ancestor of current main $REMOTE_MAIN_SHA" >&2
@@ -72,9 +69,6 @@ for file in \
   test -s "$file" || { echo "ERROR: required release file missing: $file"; exit 1; }
 done
 
-# The homepage release is verified against the running application after restart via
-# X-UNIFCO-Release. Avoid a duplicate source grep here because server worktrees can
-# carry presentation-layer rewrites while still producing the correct runtime release.
 grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal marker missing"; exit 1; }
 grep -q "name('transition')" routes/asset-master.php || { echo "ERROR: asset lifecycle transition route missing"; exit 1; }
 grep -q "name('locations.store')" routes/asset-master.php || { echo "ERROR: asset location hierarchy route missing"; exit 1; }
@@ -146,7 +140,23 @@ php artisan route:list --name=crm.acquisition.index >/dev/null
 php artisan list | grep -q 'unifco:check-approval-sla'
 
 php artisan optimize:clear
-supervisorctl restart "$APP_NAME"
+
+echo "==> Restarting application service"
+supervisorctl stop "$APP_NAME" >/dev/null 2>&1 || true
+sleep 1
+if command -v fuser >/dev/null 2>&1 && fuser 8081/tcp >/dev/null 2>&1; then
+  echo "==> Removing stale listener on port 8081"
+  fuser -k 8081/tcp || true
+  sleep 2
+fi
+supervisorctl reread >/dev/null 2>&1 || true
+supervisorctl update >/dev/null 2>&1 || true
+if ! supervisorctl start "$APP_NAME"; then
+  echo "ERROR: supervisor could not start $APP_NAME" >&2
+  supervisorctl status "$APP_NAME" || true
+  tail -n 80 storage/logs/laravel.log 2>/dev/null || true
+  exit 1
+fi
 
 echo "==> Waiting for application"
 app_ready=0
@@ -154,7 +164,7 @@ for attempt in $(seq 1 20); do
   if curl -fsSI http://127.0.0.1:8081/login >/dev/null; then app_ready=1; break; fi
   sleep 2
 done
-[ "$app_ready" -eq 1 ] || { echo "ERROR: application did not become ready"; exit 1; }
+[ "$app_ready" -eq 1 ] || { echo "ERROR: application did not become ready"; supervisorctl status "$APP_NAME" || true; tail -n 80 storage/logs/laravel.log 2>/dev/null || true; exit 1; }
 curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-company-profile-20260830-01' || { echo "ERROR: homepage release header missing"; exit 1; }
 
 echo "==> Deploy complete at $DEPLOY_SHA"
