@@ -16,7 +16,6 @@ class PublicRequestBottomTicketPresentation
             'public.quote',
             'public.request-service',
             'public.emergency',
-            'public.current-maintenance',
         ];
 
         $isRequestPage = $request->routeIs(...$requestRoutes)

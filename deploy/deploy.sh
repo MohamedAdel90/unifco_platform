@@ -51,7 +51,7 @@ echo "==> Server checkout: $DEPLOY_SHA"
 
 echo "==> Validating current release foundation"
 for file in \
-  resources/views/public/request.blade.php \
+  resources/views/public/service-request.blade.php \
   resources/views/workflow/workspace.blade.php \
   resources/views/workflow/customer-actions.blade.php \
   resources/views/customer/users-access.blade.php \

@@ -11,7 +11,7 @@ class PublicEmergencyContextBannerPresentation
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
-        if (! $request->routeIs('public.current-maintenance') || ! method_exists($response, 'getContent') || ! method_exists($response, 'setContent')) return $response;
+        if (! $request->routeIs('public.request-service') || ! method_exists($response, 'getContent') || ! method_exists($response, 'setContent')) return $response;
 
         $html = (string) $response->getContent();
         if (! str_contains($html, 'id="service-subtype"')) return $response;

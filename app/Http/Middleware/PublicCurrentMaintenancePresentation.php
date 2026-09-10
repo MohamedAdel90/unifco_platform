@@ -12,7 +12,7 @@ class PublicCurrentMaintenancePresentation
     {
         $response = $next($request);
 
-        if (! $request->routeIs('public.current-maintenance') || ! method_exists($response, 'getContent') || ! method_exists($response, 'setContent')) {
+        if (! $request->routeIs('public.request-service') || ! method_exists($response, 'getContent') || ! method_exists($response, 'setContent')) {
             return $response;
         }
 
@@ -85,7 +85,7 @@ HTML;
         ];
         $item = static fn (string $href, string $label, string $icon): string => '<a href="'.$href.'"><span class="nav-icon">'.$icon.'</span><span>'.$label.'</span></a>';
         $nav = $item(route('public.home'), 'الرئيسية', $icons['home']).$item(route('public.home').'#about', 'تعرف علينا', $icons['about']).$item(route('public.home').'#services', 'الخدمات', $icons['services']).$item(route('public.home').'#industries', 'القطاعات', $icons['industries']).$item(route('public.home').'#projects', 'المشاريع', $icons['projects']).$item(route('public.home').'#clients', 'العملاء', $icons['clients']).$item(route('public.home').'#careers', 'الوظائف', $icons['careers']).$item(route('public.home').'#contact', 'تواصل معنا', $icons['contact']);
-        $newHeader = '<header class="current-service-nav"><div class="nav-wrap"><a class="brand-link" href="'.route('public.home').'"><span class="site-logo-frame"><img class="site-logo" src="'.route('brand.logo').'" alt="UNIFCO"></span><span class="brand-copy"><strong>UNIFCO</strong><small>ONE FACILITY SHOP</small></span></a><div class="nav-actions"><a class="lang" href="'.route('public.home.en').'">EN</a><a class="request-btn" href="'.route('public.current-maintenance').'">طلب خدمة</a></div><nav class="primary-nav" aria-label="التنقل الرئيسي">'.$nav.'</nav><button class="menu-toggle" type="button" aria-label="القائمة">☰</button></div></header>';
+        $newHeader = '<header class="current-service-nav"><div class="nav-wrap"><a class="brand-link" href="'.route('public.home').'"><span class="site-logo-frame"><img class="site-logo" src="'.route('brand.logo').'" alt="UNIFCO"></span><span class="brand-copy"><strong>UNIFCO</strong><small>ONE FACILITY SHOP</small></span></a><div class="nav-actions"><a class="lang" href="'.route('public.home.en').'">EN</a><a class="request-btn" href="'.route('public.request-service').'">طلب خدمة</a></div><nav class="primary-nav" aria-label="التنقل الرئيسي">'.$nav.'</nav><button class="menu-toggle" type="button" aria-label="القائمة">☰</button></div></header>';
         if (str_contains($html, $oldHeader)) $html = str_replace($oldHeader, $newHeader, $html);
 
         $oldSelector = '<section class="panel"><div class="service-line"><div class="field"><label>نوع الخدمة المطلوبة</label><select id="service-type"><option value="maintenance" selected>صيانة</option><option value="quotation">عرض سعر</option><option value="consultation">استشارة فنية</option></select></div><div class="field"><label>نوع الطلب</label><select id="service-subtype"><option value="routine" selected>صيانة عادية</option><option value="urgent">صيانة طارئة</option></select></div><div class="hint">يتم عرض نموذج صيانة عادية حاليًا. بقية النماذج سيتم تجهيزها لاحقًا.</div></div><div class="future" id="future-box">هذا النوع تم اعتماده للتطوير اللاحق. لم يتم تغيير أي نموذج آخر بالموقع.</div></section>';

@@ -7,14 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
-class CurrentCustomerMaintenanceRequestController extends Controller
+class UnifiedServiceRequestController extends Controller
 {
     public function create(Request $request): View
     {
-        // The unified request experience lives in the current-maintenance view.
-        // Both the public entry point and the dedicated URL must render the same
-        // form so current/new customer behavior stays identical for every request type.
-        return view('public.current-customer-maintenance-request');
+        return view('public.service-request');
     }
 
     public function customer(Request $request): JsonResponse

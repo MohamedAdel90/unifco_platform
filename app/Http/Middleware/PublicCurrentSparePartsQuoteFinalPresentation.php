@@ -11,7 +11,7 @@ class PublicCurrentSparePartsQuoteFinalPresentation
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
-        if (! $request->routeIs('public.current-maintenance') || ! method_exists($response, 'getContent') || ! method_exists($response, 'setContent')) {
+        if (! $request->routeIs('public.request-service') || ! method_exists($response, 'getContent') || ! method_exists($response, 'setContent')) {
             return $response;
         }
 
@@ -42,7 +42,7 @@ HTML;
 <script id="unifco-spare-parts-quote-final-script-v1">
 (()=>{
  const $=id=>document.getElementById(id);
- const api='/request-service/current-maintenance/asset-parts';
+ const api='/request-service/asset-parts';
  const assets=new Map(),parts=new Map(),chosen=new Map(),loading=new Set();
  let oldPart='نعم',supply='توريد',notes='',renderLock=false,lastAsset='';
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

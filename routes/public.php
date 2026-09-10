@@ -2,7 +2,8 @@
 
 use App\Http\Controllers\CRM\CustomerPortalAdminController;
 use App\Http\Controllers\CRM\CustomerPortalServiceAdminController;
-use App\Http\Controllers\CurrentCustomerMaintenanceRequestController;
+use App\Http\Controllers\CurrentCustomerAssetPartsController;
+use App\Http\Controllers\UnifiedServiceRequestController;
 use App\Http\Controllers\CustomerAssetReadController;
 use App\Http\Controllers\CustomerInboxController;
 use App\Http\Controllers\CustomerPortalAccessAdminController;
@@ -23,14 +24,21 @@ use App\Http\Middleware\PublicCurrentMaintenanceFormEnhancements;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicSiteController::class, 'home'])->name('public.home');
+Route::get('/en', fn () => redirect()->route('public.home', ['lang' => 'en']))->name('public.home.en');
 Route::get('/about', PublicAboutController::class)->name('public.about');
 Route::get('/industries', fn () => redirect()->route('public.home'))->name('public.industries');
 Route::get('/services', fn () => redirect()->route('public.home'))->name('public.services');
-Route::get('/request-quote', [PublicSiteController::class, 'quote'])->name('public.quote');
-Route::get('/request-service', [CurrentCustomerMaintenanceRequestController::class, 'create'])
+Route::get('/request-service', [UnifiedServiceRequestController::class, 'create'])
     ->middleware(PublicCurrentMaintenanceFormEnhancements::class)
     ->name('public.request-service');
-Route::get('/emergency-maintenance', [PublicSiteController::class, 'emergency'])->name('public.emergency');
+Route::get('/request-service/customer', [UnifiedServiceRequestController::class, 'customer'])->middleware('throttle:30,1')->name('public.request-service.customer');
+Route::get('/request-service/assets', [UnifiedServiceRequestController::class, 'assets'])->middleware('throttle:60,1')->name('public.request-service.assets');
+Route::get('/request-service/asset-parts', CurrentCustomerAssetPartsController::class)->middleware('throttle:60,1')->name('public.request-service.asset-parts');
+
+// Preserve old bookmarks without preserving any legacy form or component.
+Route::get('/request-service/current-maintenance', fn () => redirect()->route('public.request-service', request()->query(), 301));
+Route::get('/request-quote', fn () => redirect()->route('public.request-service', ['quotation' => 1], 301))->name('public.quote');
+Route::get('/emergency-maintenance', fn () => redirect()->route('public.request-service', ['emergency' => 1], 301))->name('public.emergency');
 Route::post('/service-requests', [PublicSiteController::class, 'store'])->middleware('throttle:10,1')->name('public.request.store');
 Route::get('/request-received/{reference}', [PublicSiteController::class, 'received'])->name('public.request.received');
 

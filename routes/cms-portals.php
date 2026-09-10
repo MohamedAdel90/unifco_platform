@@ -51,7 +51,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
             'section' => $section,
             'cmsType' => 'maintenance',
             'cmsTitle' => 'Maintenance CMS',
-            'publicUrl' => route('public.current-maintenance'),
+            'publicUrl' => route('public.request-service'),
         ]);
     })->name('maintenance-cms');
 

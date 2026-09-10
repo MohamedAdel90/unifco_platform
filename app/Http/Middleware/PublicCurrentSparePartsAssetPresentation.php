@@ -11,7 +11,7 @@ class PublicCurrentSparePartsAssetPresentation
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
-        if (! $request->routeIs('public.current-maintenance') || ! method_exists($response, 'getContent') || ! method_exists($response, 'setContent')) {
+        if (! $request->routeIs('public.request-service') || ! method_exists($response, 'getContent') || ! method_exists($response, 'setContent')) {
             return $response;
         }
 
@@ -32,7 +32,7 @@ HTML;
  const $=id=>document.getElementById(id);
  const service=$('service-type'),subtype=$('service-subtype'),assetList=$('asset-list'),assetId=$('asset_id'),customerNo=$('customer_number'),contract=$('contract_no');
  if(!service||!subtype||!assetList||!assetId)return;
- const api='/request-service/current-maintenance/asset-parts';
+ const api='/request-service/asset-parts';
  const selectedAssets=new Map(),partsByAsset=new Map(),selectedParts=new Map(),loadingAssets=new Set();
  let oldPart='نعم',supplyType='توريد',notes='',rendering=false;
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
