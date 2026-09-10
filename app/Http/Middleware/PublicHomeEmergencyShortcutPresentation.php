@@ -21,6 +21,7 @@ class PublicHomeEmergencyShortcutPresentation
         if ($request->routeIs('public.home')) {
             $lockedEmergencyUrl = route('public.current-maintenance', ['emergency' => 1]);
             $lockedQuotationUrl = route('public.current-maintenance', ['quotation' => 1]);
+            $maintenanceUrl = route('public.current-maintenance');
 
             $html = str_replace(
                 'href="/request-service">طلب صيانة طارئة</a>',
@@ -49,9 +50,29 @@ class PublicHomeEmergencyShortcutPresentation
                 $html
             ) ?? $html;
 
+            if (str_contains($html, 'dir="rtl"')) {
+                $maintenanceCard = '<article class="operation-card maintenance-card unifco-maintenance-visual-card">'
+                    .'<img class="unifco-maintenance-visual" src="/images/home/unifco-maintenance-planned-20260910.jpg?v=20260910-1" alt="من الصيانة التفاعلية إلى التشغيل المخطط">'
+                    .'<a class="unifco-maintenance-visual-cta" href="'.e($maintenanceUrl).'" aria-label="تعرف على خدمات الصيانة" title="تعرف على خدمات الصيانة"></a>'
+                    .'</article>';
+                $html = preg_replace(
+                    '~<article\s+class="operation-card\s+maintenance-card"[^>]*>.*?</article>~s',
+                    $maintenanceCard,
+                    $html,
+                    1
+                ) ?? $html;
+            }
+
             $emergencyUrlJson = json_encode($lockedEmergencyUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             $quotationUrlJson = json_encode($lockedQuotationUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             $homeFix = <<<HTML
+<style id="unifco-home-maintenance-visual-card-style">
+.unifco-maintenance-visual-card{position:relative!important;display:block!important;padding:0!important;min-height:0!important;aspect-ratio:1546/1017!important;background:#fff!important;border:1px solid #e2e8f0!important;overflow:hidden!important}
+.unifco-maintenance-visual-card .unifco-maintenance-visual{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important}
+.unifco-maintenance-visual-cta{position:absolute!important;z-index:8!important;left:53.5%!important;top:78.2%!important;width:22.5%!important;height:7.0%!important;border-radius:8px!important;cursor:pointer!important;display:block!important}
+.unifco-maintenance-visual-cta:focus-visible{outline:4px solid #fff!important;box-shadow:0 0 0 7px #ce122d!important}
+@media(max-width:1080px){.unifco-maintenance-visual-card{width:100%!important;max-width:900px!important;margin-inline:auto!important}}
+</style>
 <script id="unifco-home-request-shortcuts-runtime-fix">
 (()=>{
  const emergencyUrl={$emergencyUrlJson};
