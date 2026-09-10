@@ -9,8 +9,15 @@ use Illuminate\View\View;
 
 class CurrentCustomerMaintenanceRequestController extends Controller
 {
-    public function create(): View
+    public function create(Request $request): View
     {
+        // /request-service is the public unified service-request entry point.
+        // Keep the dedicated current-customer maintenance screen only on its
+        // explicit /request-service/current-maintenance route.
+        if ($request->routeIs('public.request-service')) {
+            return view('public.request', ['type' => 'MAINTENANCE']);
+        }
+
         return view('public.current-customer-maintenance-request');
     }
 
