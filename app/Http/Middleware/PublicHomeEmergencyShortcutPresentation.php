@@ -50,27 +50,30 @@ class PublicHomeEmergencyShortcutPresentation
             ) ?? $html;
 
             $emergencyUrlJson = json_encode($lockedEmergencyUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $quotationUrlJson = json_encode($lockedQuotationUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             $homeFix = <<<HTML
-<script id="unifco-home-emergency-shortcut-runtime-fix">
+<script id="unifco-home-request-shortcuts-runtime-fix">
 (()=>{
  const emergencyUrl={$emergencyUrlJson};
- const isEmergencyAnchor=a=>{
-   if(!a) return false;
-   const text=(a.textContent||'').replace(/\s+/g,' ').trim();
-   return text.includes('طلب صيانة طارئة');
- };
+ const quotationUrl={$quotationUrlJson};
+ const normalizedText=a=>(a?.textContent||'').replace(/\s+/g,' ').trim();
+ const isEmergencyAnchor=a=>normalizedText(a).includes('طلب صيانة طارئة');
+ const isQuotationAnchor=a=>normalizedText(a).includes('اطلب عرض سعر');
+ const targetUrl=a=>isEmergencyAnchor(a)?emergencyUrl:(isQuotationAnchor(a)?quotationUrl:null);
  const apply=()=>{
    document.querySelectorAll('a').forEach(a=>{
-     if(isEmergencyAnchor(a)) a.setAttribute('href', emergencyUrl);
+     const url=targetUrl(a);
+     if(url) a.setAttribute('href',url);
    });
  };
  const forceNavigate=event=>{
    const a=event.target?.closest?.('a');
-   if(!isEmergencyAnchor(a)) return;
+   const url=targetUrl(a);
+   if(!url) return;
    event.preventDefault();
    event.stopPropagation();
    if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
-   window.location.assign(emergencyUrl);
+   window.location.assign(url);
  };
  const start=()=>{
    apply();
