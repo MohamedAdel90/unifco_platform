@@ -1,0 +1,48 @@
+name: Deploy Recovery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/deploy-recovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy-recovery
+  cancel-in-progress: false
+
+jobs:
+  deploy-recovery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate deploy script
+        shell: bash
+        run: bash -n deploy/deploy.sh
+
+      - name: Deploy current main via SSH
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          TARGET_SHA="$(git rev-parse HEAD)"
+          for secret_name in DEPLOY_HOST DEPLOY_USER DEPLOY_SSH_KEY DEPLOY_PORT; do
+            if [ -z "${!secret_name}" ]; then
+              echo "Missing required GitHub secret: ${secret_name}" >&2
+              exit 1
+            fi
+          done
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_deploy_key"
+          chmod 600 "$HOME/.ssh/unifco_deploy_key"
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 \
+            -i "$HOME/.ssh/unifco_deploy_key" -p "$DEPLOY_PORT" \
+            "$DEPLOY_USER@$DEPLOY_HOST" "bash -s -- '$TARGET_SHA'" < deploy/deploy.sh
