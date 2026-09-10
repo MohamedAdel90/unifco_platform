@@ -11,13 +11,9 @@ class CurrentCustomerMaintenanceRequestController extends Controller
 {
     public function create(Request $request): View
     {
-        // /request-service is the public unified service-request entry point.
-        // Keep the dedicated current-customer maintenance screen only on its
-        // explicit /request-service/current-maintenance route.
-        if ($request->routeIs('public.request-service')) {
-            return view('public.request', ['type' => 'MAINTENANCE']);
-        }
-
+        // The unified request experience lives in the current-maintenance view.
+        // Both the public entry point and the dedicated URL must render the same
+        // form so current/new customer behavior stays identical for every request type.
         return view('public.current-customer-maintenance-request');
     }
 
