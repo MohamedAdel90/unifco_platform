@@ -91,7 +91,7 @@ class PublicRequestWizardTest extends TestCase
     {
         $this->get('/request-service')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v9', false)
+            ->assertSee('unifco-customer-context-layout-v10', false)
             ->assertSee('uf-customer-lookup-intro', false)
             ->assertSee('align-self:start!important', false)
             ->assertSee('height:auto!important', false)
@@ -101,7 +101,7 @@ class PublicRequestWizardTest extends TestCase
 
         $this->get('/request-service?lang=en')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v9', false)
+            ->assertSee('unifco-customer-context-layout-v10', false)
             ->assertSee('html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer', false);
     }
 
@@ -116,15 +116,16 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee("legacySummary?.classList.add('uf-legacy-customer-summary')", false);
     }
 
-    public function test_verified_customer_strip_has_a_dark_green_end_check(): void
+    public function test_verified_customer_status_appears_once_below_lookup_with_dark_green_check(): void
     {
         $this->get('/request-service')
             ->assertOk()
-            ->assertSee('uf-customer-verified-end', false)
-            ->assertSee('uf-customer-verified-check', false)
-            ->assertSee("verifiedText.textContent=document.documentElement.lang==='en'?'Customer verified':'تم التحقق من العميل'", false)
+            ->assertSee('#customer-status.uf-verified-status{display:flex!important', false)
+            ->assertSee('#customer-status.uf-verified-status:after', false)
+            ->assertSee("status?.classList.toggle('uf-verified-status'", false)
             ->assertSee('background:#08752c!important', false)
-            ->assertSee("verifiedCheck.textContent='✓'", false);
+            ->assertSee("'تم التحقق من العميل':'Customer verified'", false)
+            ->assertDontSee('uf-customer-verified-end', false);
     }
 
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
