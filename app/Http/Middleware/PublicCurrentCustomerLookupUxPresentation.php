@@ -62,6 +62,8 @@ class PublicCurrentCustomerLookupUxPresentation
 .lookup-refresh{font-size:14px;line-height:1}
 .lookup-auto-hint{margin-top:5px;color:#8190a4;font-size:9px;line-height:1.6}
 .lookup-auto-hint.loading{color:#315f98;font-weight:700}
+#customer-status.bad{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;background:#fff5f5!important;color:#c91f2d!important;border:1px solid #ef9aa3!important;border-radius:12px!important;font-weight:800!important;white-space:nowrap!important}
+#customer-status.bad::before{content:'×';display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#d71920;color:#fff;font-size:24px;font-weight:700;line-height:1}
 #customer_number.lookup-loading{background-image:linear-gradient(90deg,transparent,rgba(26,79,139,.06),transparent);background-size:200% 100%;animation:unifcoLookupPulse 1.15s linear infinite}
 @keyframes unifcoLookupPulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
 @media(max-width:560px){.lookup-row{grid-template-columns:minmax(0,1fr) auto!important}.customer-lookup-fallback{min-width:58px!important;padding:0 8px!important}.section-icon{width:23px;height:23px;flex-basis:23px}}
@@ -83,6 +85,16 @@ HTML;
     const minimumLength=4;
     const delay=650;
 
+    const normalizeVerificationStatus=()=>{
+        if(!status)return;
+        if(status.classList.contains('bad')){
+            if(status.textContent.trim()!=='لم يتم التحقق')status.textContent='لم يتم التحقق';
+            status.setAttribute('aria-label','لم يتم التحقق');
+        }else if(status.classList.contains('ok')){
+            status.removeAttribute('aria-label');
+        }
+    };
+
     const resetDependentUi=()=>{
         ['company_name','responsible_person','mobile','email','customer_city','customer_address','contract_title','contract_status','site_city','site_name','visible_site_address','site_contact','site_mobile','site_address','latitude','longitude','asset_id','equipment_brand','equipment_model'].forEach(id=>{
             const el=document.getElementById(id);
@@ -100,6 +112,12 @@ HTML;
         if(map)map.src='about:blank';
     };
 
+    if(status){
+        const verificationObserver=new MutationObserver(normalizeVerificationStatus);
+        verificationObserver.observe(status,{attributes:true,childList:true,subtree:true});
+        normalizeVerificationStatus();
+    }
+
     const triggerLookup=()=>{
         const value=input.value.trim();
         if(value.length<minimumLength)return;
@@ -108,9 +126,10 @@ HTML;
         if(hint){hint.textContent='جاري جلب بيانات العميل تلقائيًا…';hint.classList.add('loading')}
         button.click();
         const observer=new MutationObserver(()=>{
+            normalizeVerificationStatus();
             if(status&&(status.classList.contains('ok')||status.classList.contains('bad'))){
                 input.classList.remove('lookup-loading');
-                if(hint){hint.textContent=status.classList.contains('ok')?'تم تحديث بيانات العميل. يمكنك المتابعة باختيار العقد والموقع.':'يمكنك مراجعة الرقم أو استخدام زر «جلب» كخيار احتياطي.';hint.classList.remove('loading')}
+                if(hint){hint.textContent=status.classList.contains('ok')?'تم تحديث بيانات العميل. يمكنك المتابعة باختيار العقد والموقع.':'يمكنك مراجعة رقم العميل والمحاولة مرة أخرى.';hint.classList.remove('loading')}
                 observer.disconnect();
             }
         });
@@ -123,7 +142,7 @@ HTML;
         const value=input.value.trim();
         resetDependentUi();
         lastAutoValue='';
-        if(status){status.className='status';status.textContent=''}
+        if(status){status.className='status';status.textContent='';status.removeAttribute('aria-label')}
         input.classList.remove('lookup-loading');
         if(value.length<minimumLength){
             if(hint){hint.textContent=value.length?'أكمل رقم العميل ليتم الجلب تلقائيًا.':'يتم جلب بيانات العميل تلقائيًا بعد إدخال رقم العميل.';hint.classList.remove('loading')}
