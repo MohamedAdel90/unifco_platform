@@ -91,7 +91,7 @@ class PublicRequestWizardTest extends TestCase
     {
         $this->get('/request-service')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v15', false)
+            ->assertSee('unifco-customer-context-layout-v16', false)
             ->assertSee('uf-customer-lookup-intro', false)
             ->assertSee('align-self:start!important', false)
             ->assertSee('height:auto!important', false)
@@ -101,7 +101,7 @@ class PublicRequestWizardTest extends TestCase
 
         $this->get('/request-service?lang=en')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v15', false)
+            ->assertSee('unifco-customer-context-layout-v16', false)
             ->assertSee('html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer', false);
     }
 
@@ -160,6 +160,14 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee("content:'×'!important", false)
             ->assertSee('font-size:clamp(8.5px,.78vw,11px)!important', false)
             ->assertSee('white-space:nowrap!important', false);
+    }
+
+    public function test_customer_layout_recovers_when_compatibility_code_lifts_the_panel_outside_the_form(): void
+    {
+        $this->get('/request-service')
+            ->assertOk()
+            ->assertSee("document.getElementById('customer_number')?.closest('section.panel')", false)
+            ->assertSee('lookup-row>#customer-status.uf-lookup-state{grid-column:2!important}', false);
     }
 
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
