@@ -22,7 +22,7 @@ class PublicCurrentCustomerContextLayoutPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-context-layout-v9">
+<style id="unifco-customer-context-layout-v10">
 .uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:stretch!important;margin-bottom:14px!important;direction:ltr!important}
 .uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:start!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;padding:17px 18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
@@ -52,14 +52,13 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-context-customer>#customer-status{width:100%!important;max-width:none!important;margin:8px 0 0!important;min-height:0!important}
 .uf-context-customer>#customer-status:empty{display:none!important}
 .uf-context-customer>#customer-status.ok{display:none!important}
+.uf-context-customer>#customer-status.uf-verified-status{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;min-height:42px!important;padding:7px 11px!important;background:#eefbf3!important;border:1px solid #b8dfc5!important;border-radius:8px!important;color:#08752c!important;font-size:11px!important;font-weight:900!important;line-height:1.5!important}
+.uf-context-customer>#customer-status.uf-verified-status:after{content:'✓'!important;width:27px!important;height:27px!important;display:inline-grid!important;place-items:center!important;flex:0 0 27px!important;border-radius:50%!important;background:#08752c!important;border:1px solid #056522!important;color:#fff!important;font-size:15px!important;font-weight:900!important;line-height:1!important;box-shadow:0 2px 6px rgba(8,117,44,.22)!important}
 .uf-context-customer>#customer-summary.uf-legacy-customer-summary{display:block!important;width:100%!important;margin:10px 0 0!important;padding:9px 11px!important;background:#f8fffc!important;border-color:#c9e7dd!important;border-radius:10px!important}
 .uf-legacy-customer-summary:not(.is-ok) .customer-summary-head,.uf-legacy-customer-summary:not(.is-ok) .customer-change{display:none!important}
 .uf-legacy-customer-summary .customer-state{display:none!important}
 .uf-legacy-customer-summary .customer-skeleton{display:none!important}
 .uf-legacy-customer-summary .customer-summary-head{padding:0 0 8px!important;margin-bottom:2px!important}
-.uf-customer-verified-end{display:none!important;align-items:center!important;gap:7px!important;margin-inline-start:auto!important;color:#08752c!important;font-size:9.5px!important;font-weight:900!important;white-space:nowrap!important}
-.uf-legacy-customer-summary.is-ok .uf-customer-verified-end{display:inline-flex!important}
-.uf-customer-verified-end .uf-customer-verified-check{width:26px!important;height:26px!important;display:inline-grid!important;place-items:center!important;flex:0 0 26px!important;border-radius:50%!important;background:#08752c!important;border:1px solid #056522!important;color:#fff!important;font-size:14px!important;font-weight:900!important;line-height:1!important;box-shadow:0 2px 6px rgba(8,117,44,.22)!important}
 .uf-legacy-customer-summary .customer-icon{width:32px!important;height:32px!important;font-size:15px!important}
 .uf-legacy-customer-summary .customer-details{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:0!important}
 .uf-legacy-customer-summary .customer-detail{min-height:43px!important;padding:5px 8px!important}
@@ -88,7 +87,7 @@ html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer,html[dir="ltr"]
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-context-layout-script-v9">
+<script id="unifco-customer-context-layout-script-v10">
 (()=>{
     const routine=document.getElementById('routine-form');
     const contract=document.getElementById('contract-section');
@@ -147,20 +146,13 @@ HTML;
     if(originalHint && originalHint!==autoHint)originalHint.remove();
     if(originalField && originalField!==lookup)originalField.remove();
     legacySummary?.classList.add('uf-legacy-customer-summary');
-    const legacySummaryHead=legacySummary?.querySelector('.customer-summary-head');
-    if(legacySummaryHead && !legacySummaryHead.querySelector('.uf-customer-verified-end')){
-        const verified=document.createElement('div');
-        verified.className='uf-customer-verified-end';
-        const verifiedText=document.createElement('span');
-        verifiedText.textContent=document.documentElement.lang==='en'?'Customer verified':'تم التحقق من العميل';
-        const verifiedCheck=document.createElement('span');
-        verifiedCheck.className='uf-customer-verified-check';
-        verifiedCheck.setAttribute('aria-hidden','true');
-        verifiedCheck.textContent='✓';
-        verified.append(verifiedText,verifiedCheck);
-        legacySummaryHead.appendChild(verified);
-    }
     if(['بانتظار إدخال رقم العميل','Waiting for customer number'].includes(status?.textContent.trim()))status.textContent='';
+
+    const syncVerificationStatus=()=>{
+        status?.classList.toggle('uf-verified-status',!!legacySummary?.classList.contains('is-ok'));
+    };
+    if(legacySummary)new MutationObserver(syncVerificationStatus).observe(legacySummary,{attributes:true,attributeFilter:['class']});
+    syncVerificationStatus();
 
     customer.parentNode.insertBefore(layout,customer);
     layout.appendChild(details);
