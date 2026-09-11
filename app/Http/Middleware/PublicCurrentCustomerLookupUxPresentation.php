@@ -80,7 +80,7 @@ HTML;
 
     let timer=null;
     let lastAutoValue='';
-    const minimumLength=1;
+    const minimumLength=4;
     const delay=650;
 
     const resetDependentUi=()=>{
@@ -106,7 +106,6 @@ HTML;
         lastAutoValue=value;
         input.classList.add('lookup-loading');
         if(hint){hint.textContent='جاري جلب بيانات العميل تلقائيًا…';hint.classList.add('loading')}
-        button.disabled=false;
         button.click();
         const observer=new MutationObserver(()=>{
             if(status&&(status.classList.contains('ok')||status.classList.contains('bad'))){
@@ -127,7 +126,7 @@ HTML;
         if(status){status.className='status';status.textContent=''}
         input.classList.remove('lookup-loading');
         if(value.length<minimumLength){
-            if(hint){hint.textContent='يتم جلب بيانات العميل تلقائيًا بعد إدخال رقم العميل.';hint.classList.remove('loading')}
+            if(hint){hint.textContent=value.length?'أكمل رقم العميل ليتم الجلب تلقائيًا.':'يتم جلب بيانات العميل تلقائيًا بعد إدخال رقم العميل.';hint.classList.remove('loading')}
             return;
         }
         if(hint){hint.textContent='سيتم جلب البيانات تلقائيًا…';hint.classList.remove('loading')}
