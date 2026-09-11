@@ -60,7 +60,7 @@ class PublicContactPresentation
             .'.unifco-contact-fab{position:fixed;right:18px;bottom:18px;z-index:9998;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}'
             .'.unifco-contact-fab a{display:inline-flex;align-items:center;gap:7px;padding:10px 13px;border-radius:999px;text-decoration:none;font:700 12px Inter,Arial,sans-serif;box-shadow:0 8px 24px rgba(3,31,76,.18)}'
             .'.unifco-contact-fab .wa{background:#147a48;color:#fff}.unifco-contact-fab .mail{background:#06275c;color:#fff}'
-            .'@media(max-width:600px){.unifco-contact-fab{left:12px;right:12px;bottom:12px}.unifco-contact-fab a{flex:1;justify-content:center;min-width:0;font-size:11px}}'
+            .'@media(max-width:600px){.unifco-contact-fab{position:static;left:auto;right:auto;bottom:auto;z-index:auto;margin:14px 12px calc(14px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr;gap:8px}.unifco-contact-fab a{width:100%;justify-content:center;min-width:0;padding:11px 8px;font-size:11px;box-shadow:none;white-space:nowrap}}'
             .'</style>'
             .'<div class="unifco-contact-fab" data-unifco-public-contact>'
             .'<a class="wa" href="'.e(UnifcoContact::whatsappUrl('Hello UNIFCO, I would like to inquire about your services.')).'" target="_blank" rel="noopener">WhatsApp '.e(UnifcoContact::WHATSAPP_DISPLAY).'</a>'
