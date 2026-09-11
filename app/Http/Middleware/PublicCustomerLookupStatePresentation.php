@@ -59,7 +59,7 @@ HTML;
 
     const isEnglish=()=>String(document.documentElement.lang||'').toLowerCase().startsWith('en') || document.documentElement.dir==='ltr';
     const text=(ar,en)=>isEnglish()?en:ar;
-    const minimumLength=4;
+    const minimumLength=1;
     let lastState='';
 
     button.classList.add('customer-lookup-state');
