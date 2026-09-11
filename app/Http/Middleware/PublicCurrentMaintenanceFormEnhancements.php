@@ -26,13 +26,14 @@ class PublicCurrentMaintenanceFormEnhancements
 #routine-form #customer-lookup:hover,.uf-customer-card #customer-lookup:hover{background:#105aa9!important;border-color:#105aa9!important}
 
 /* Current customer card inside the unified request form */
-.uf-customer-card{background:#eefbf3!important;border:1px solid #a8deb9!important;overflow:hidden!important;min-height:300px!important}
+.uf-customer-card{background:#eefbf3!important;border:1px solid #a8deb9!important;overflow:hidden!important;min-height:0!important}
 .uf-customer-card .section-title{color:#08752c!important}
 .uf-customer-card>.grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important;align-items:end!important}
 .uf-customer-card>.grid>.field{display:grid!important;visibility:visible!important;opacity:1!important}
 .uf-customer-card input[readonly]{background:#fff!important;color:#20324e!important;border-color:#c9dfd1!important}
 .uf-customer-card #customer-status{display:block!important;min-height:38px!important;margin-top:9px!important;background:#e6f7eb!important;border:1px solid #bee2c9!important;color:#26713d!important}
-.uf-customer-card #customer-status:empty:before{content:'بانتظار إدخال رقم العميل';font-size:10px;font-weight:800}
+.uf-customer-card #customer-status:empty{display:none!important}
+.uf-customer-card #customer-status:empty:before{content:none!important;display:none!important}
 
 /* The retrieved customer information fills the previously empty area. */
 .uf-customer-summary{display:none!important}
