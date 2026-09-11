@@ -109,12 +109,11 @@ class PublicRequestWizardTest extends TestCase
     {
         $this->get('/request-service')
             ->assertOk()
-            ->assertSee('unifco-current-customer-card-style-v4', false)
-            ->assertSee('unifco-current-customer-card-script-v4', false)
-            ->assertSee('uf-customer-profile-card is-empty', false)
-            ->assertSee('const showEmpty=()=>', false)
-            ->assertSee("input.addEventListener('input',showEmpty)", false)
-            ->assertSee("card.classList.remove('is-empty')", false);
+            ->assertSee('#customer-summary.uf-legacy-customer-summary{display:block!important', false)
+            ->assertSee('.uf-legacy-customer-summary:not(.is-ok) .customer-summary-head', false)
+            ->assertSee('.uf-legacy-customer-summary .customer-skeleton{display:none!important}', false)
+            ->assertSee('.uf-legacy-customer-summary .customer-details{display:grid!important', false)
+            ->assertSee("legacySummary?.classList.add('uf-legacy-customer-summary')", false);
     }
 
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
