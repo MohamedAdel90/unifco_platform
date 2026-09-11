@@ -69,12 +69,18 @@ HTML;
         $html = str_replace('<div class="status" id="customer-status"></div>', '<div class="status" id="customer-status"></div>'.$card, $html);
 
         $style = <<<'HTML'
-<style id="unifco-current-customer-card-style-v4">
+<style id="unifco-current-customer-card-style-v5">
 #customer-status.ok{display:none!important}
 .uf-legacy-customer-field-hidden{display:none!important}
 .uf-customer-profile-card{margin-top:10px;border:1px solid #c9e7dd;border-radius:10px;background:linear-gradient(90deg,#f8fffc 0%,#f4fcf9 100%);direction:rtl;overflow:hidden;font-family:inherit;color:#0b2f63;box-shadow:0 2px 7px rgba(16,99,76,.025)}
 .uf-customer-profile-card[hidden]{display:none!important}
-.uf-customer-profile-card.is-empty .uf-customer-profile-head,.uf-customer-profile-card.is-empty .uf-customer-profile-foot{display:none!important}
+.uf-customer-profile-card.is-empty .uf-customer-profile-head{display:flex!important;min-height:58px!important;padding:8px 14px!important}
+.uf-customer-profile-card.is-empty .uf-customer-verified{display:none!important}
+.uf-customer-profile-card.is-empty .uf-customer-company{width:100%!important;justify-content:flex-start!important}
+.uf-customer-profile-card.is-empty .uf-company-copy{flex:1 1 auto!important;min-height:22px!important}
+.uf-customer-profile-card.is-empty .uf-company-name{min-height:18px!important}
+.uf-customer-profile-card.is-empty .uf-company-code{visibility:hidden!important;min-width:54px!important}
+.uf-customer-profile-card.is-empty .uf-customer-profile-foot{display:none!important}
 .uf-customer-profile-card.is-empty .uf-customer-profile-body{padding:8px 10px!important}
 .uf-customer-profile-card.is-empty .uf-customer-info-item{min-height:43px!important;padding-top:4px!important;padding-bottom:4px!important}
 .uf-customer-profile-card.is-empty .uf-customer-info-item b{min-height:15px!important}
@@ -95,13 +101,13 @@ HTML;
 .uf-address-item{grid-column:span 2}
 .uf-customer-profile-foot{padding:0 14px 11px;display:flex;justify-content:flex-start}.uf-change-customer{height:32px;padding:0 13px;border-radius:7px;border:1px solid #1769c2;background:#fff;color:#1769c2;font:800 9px inherit;cursor:pointer;display:inline-flex;align-items:center;gap:6px}.uf-change-customer:hover{background:#f5f9ff}.uf-change-customer span{font-size:13px}
 @media(max-width:900px){.uf-customer-profile-body{grid-template-columns:repeat(2,minmax(0,1fr))}.uf-customer-info-item,.uf-customer-info-item:nth-child(3){border-left:0;border-top:1px solid #e3ecef}.uf-customer-info-item:nth-child(odd){border-left:1px solid #d9e5ee}.uf-customer-info-item:nth-child(-n+2){border-top:0}.uf-address-item{grid-column:span 1}}
-@media(max-width:620px){.uf-customer-profile-head{align-items:flex-start;flex-direction:column;padding:10px 12px}.uf-customer-profile-body{grid-template-columns:1fr;padding:8px 12px}.uf-customer-info-item,.uf-customer-info-item:nth-child(odd){border-left:0;border-top:1px solid #e3ecef;padding:8px 4px}.uf-customer-info-item:first-child{border-top:0}.uf-company-name{font-size:11px}.uf-customer-verified b{font-size:10px}.uf-customer-profile-foot{padding:0 12px 10px}}
+@media(max-width:620px){.uf-customer-profile-head{align-items:flex-start;flex-direction:column;padding:10px 12px}.uf-customer-profile-card.is-empty .uf-customer-profile-head{min-height:52px!important}.uf-customer-profile-body{grid-template-columns:1fr;padding:8px 12px}.uf-customer-info-item,.uf-customer-info-item:nth-child(odd){border-left:0;border-top:1px solid #e3ecef;padding:8px 4px}.uf-customer-info-item:first-child{border-top:0}.uf-company-name{font-size:11px}.uf-customer-verified b{font-size:10px}.uf-customer-profile-foot{padding:0 12px 10px}}
 </style>
 HTML;
         $html = str_replace('</head>', $style.'</head>', $html);
 
         $script = <<<'HTML'
-<script id="unifco-current-customer-card-script-v4">
+<script id="unifco-current-customer-card-script-v5">
 (()=>{
     const status=document.getElementById('customer-status');
     const input=document.getElementById('customer_number');
