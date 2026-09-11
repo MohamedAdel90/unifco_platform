@@ -91,7 +91,7 @@ class PublicRequestWizardTest extends TestCase
     {
         $this->get('/request-service')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v14', false)
+            ->assertSee('unifco-customer-context-layout-v15', false)
             ->assertSee('uf-customer-lookup-intro', false)
             ->assertSee('align-self:start!important', false)
             ->assertSee('height:auto!important', false)
@@ -101,7 +101,7 @@ class PublicRequestWizardTest extends TestCase
 
         $this->get('/request-service?lang=en')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v14', false)
+            ->assertSee('unifco-customer-context-layout-v15', false)
             ->assertSee('html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer', false);
     }
 
@@ -120,10 +120,9 @@ class PublicRequestWizardTest extends TestCase
     {
         $this->get('/request-service')
             ->assertOk()
-            ->assertSee('#customer-status.uf-verified-status{display:flex!important', false)
+            ->assertSee('#customer-status.uf-lookup-state{display:flex!important', false)
             ->assertSee('#customer-status.uf-verified-status:after', false)
-            ->assertSee("status?.classList.toggle('uf-verified-status'", false)
-            ->assertSee("status.textContent=document.documentElement.lang==='en'?'Verified':'تم التحقق'", false)
+            ->assertSee("setLookupState('uf-verified-status',english?'Verified':'تم التحقق')", false)
             ->assertSee('grid-template-columns:minmax(130px,30%) repeat(2,minmax(125px,1fr))!important', false)
             ->assertSee('.lookup-row>#customer-lookup{width:100%!important;min-width:0!important;height:42px!important', false)
             ->assertSee('justify-content:center!important', false)
@@ -146,6 +145,21 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('#summary-email{display:block!important;width:100%!important;max-width:100%!important', false)
             ->assertSee('overflow-wrap:anywhere!important', false)
             ->assertSee('text-align:right!important', false);
+    }
+
+    public function test_customer_lookup_state_box_covers_prompt_verified_and_missing_states(): void
+    {
+        $this->get('/request-service')
+            ->assertOk()
+            ->assertSee('uf-prompt-status', false)
+            ->assertSee('uf-pending-status', false)
+            ->assertSee('uf-verified-status', false)
+            ->assertSee('uf-missing-status', false)
+            ->assertSee("english?'Please enter the number':'يرجى إدخال الرقم'", false)
+            ->assertSee("english?'Customer not found':'العميل غير موجود'", false)
+            ->assertSee("content:'×'!important", false)
+            ->assertSee('font-size:clamp(8.5px,.78vw,11px)!important', false)
+            ->assertSee('white-space:nowrap!important', false);
     }
 
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
