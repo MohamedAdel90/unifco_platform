@@ -19,7 +19,7 @@ class PublicCustomerVerificationStatePresentation
         $html = (string) $response->getContent();
 
         $style = <<<'HTML'
-<style id="unifco-customer-verification-state-v1">
+<style id="unifco-customer-verification-state-v2">
 #customer-status.bad,
 #customer-status.unifco-not-verified{
     display:flex!important;
@@ -44,7 +44,7 @@ HTML;
         $html = str_replace('</head>', $style.'</head>', $html);
 
         $script = <<<'HTML'
-<script id="unifco-customer-verification-state-script-v1">
+<script id="unifco-customer-verification-state-script-v2">
 (()=>{
   const status=document.getElementById('customer-status');
   if(!status)return;
@@ -62,7 +62,9 @@ HTML;
     if(isFailureText(text)){
       status.classList.remove('ok');
       status.classList.add('bad','unifco-not-verified');
-      status.innerHTML='<span class="unifco-status-x" aria-hidden="true">×</span><span>لم يتم التحقق</span>';
+      if(!status.querySelector('.unifco-status-x')){
+        status.innerHTML='<span class="unifco-status-x" aria-hidden="true">×</span><span>لم يتم التحقق</span>';
+      }
       return;
     }
     if(status.classList.contains('ok')){
@@ -71,7 +73,7 @@ HTML;
   };
 
   normalize();
-  new MutationObserver(normalize).observe(status,{childList:true,subtree:true,characterData:true,attributes:true});
+  new MutationObserver(normalize).observe(status,{childList:true,subtree:true,characterData:true});
 })();
 </script>
 HTML;
