@@ -22,7 +22,7 @@ class PublicCurrentCustomerContextLayoutPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-context-layout-v16">
+<style id="unifco-customer-context-layout-v17">
 .uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:stretch!important;margin-bottom:14px!important;direction:ltr!important}
 .uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:start!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;padding:17px 18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
@@ -103,7 +103,7 @@ html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer,html[dir="ltr"]
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-context-layout-script-v16">
+<script id="unifco-customer-context-layout-script-v17">
 (()=>{
     const routine=document.getElementById('routine-form');
     const contract=document.getElementById('contract-section');
@@ -186,7 +186,11 @@ HTML;
         setLookupState('uf-pending-status',english?'Checking…':'جاري التحقق…');
     };
     if(legacySummary)new MutationObserver(syncLookupStatus).observe(legacySummary,{attributes:true,attributeFilter:['class']});
-    if(status)new MutationObserver(syncLookupStatus).observe(status,{attributes:true,childList:true,subtree:true});
+    // Observe text updates from the legacy lookup only. Watching the status
+    // class itself creates a self-triggering MutationObserver loop because
+    // syncLookupStatus also owns those classes, which can freeze mobile Safari
+    // before the page gets its first paint.
+    if(status)new MutationObserver(syncLookupStatus).observe(status,{childList:true,subtree:true});
     input?.addEventListener('input',()=>{
         legacySummary?.classList.remove('is-ok','is-bad');
         queueMicrotask(syncLookupStatus);
