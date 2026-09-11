@@ -22,14 +22,12 @@ class PublicCustomerLookupStatePresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-lookup-state-v5">
-/* Customer data card only: keep the original lookup status as a data source,
-   but never render its legacy text/button in the UI. */
+<style id="unifco-customer-lookup-state-v6">
 #customer-status{display:none!important;visibility:hidden!important;width:0!important;height:0!important;overflow:hidden!important}
 
 .lookup-row{
  display:grid!important;
- grid-template-columns:minmax(0,1.55fr) minmax(118px,.82fr) minmax(132px,1fr)!important;
+ grid-template-columns:minmax(0,1.9fr) minmax(0,1fr) minmax(0,1.15fr)!important;
  align-items:center!important;
  gap:8px!important;
  width:100%!important;
@@ -62,7 +60,7 @@ class PublicCustomerLookupStatePresentation
  justify-content:center!important;
  gap:5px!important;
  font-family:Cairo,Arial,sans-serif!important;
- font-size:clamp(8px,.9vw,10px)!important;
+ font-size:clamp(8px,.95vw,11px)!important;
  font-weight:900!important;
  line-height:1!important;
  white-space:nowrap!important;
@@ -87,12 +85,12 @@ class PublicCustomerLookupStatePresentation
  pointer-events:none!important;
 }
 #customer-lookup-state-indicator .uf-lookup-state-icon{
- width:14px!important;
- height:14px!important;
- flex:0 0 14px!important;
+ width:15px!important;
+ height:15px!important;
+ flex:0 0 15px!important;
  display:inline-grid!important;
  place-items:center!important;
- font-size:13px!important;
+ font-size:14px!important;
  line-height:1!important;
 }
 #customer-lookup-state-indicator .uf-lookup-state-label{
@@ -109,22 +107,22 @@ class PublicCustomerLookupStatePresentation
 #customer-lookup-state-indicator.is-invalid{background:#fff0f1!important;border:1px solid #e0525d!important;color:#b4232d!important}
 
 @media(max-width:700px){
- .lookup-row{grid-template-columns:minmax(0,1.42fr) minmax(96px,.78fr) minmax(112px,1fr)!important;gap:5px!important}
+ .lookup-row{grid-template-columns:minmax(0,1.55fr) minmax(0,.92fr) minmax(0,1.08fr)!important;gap:5px!important}
  #customer_number,#customer-lookup,#customer-lookup-state-indicator{height:40px!important;min-height:40px!important}
- #customer-lookup,#customer-lookup-state-indicator{padding:0 6px!important;gap:3px!important;font-size:clamp(7px,1.65vw,8.8px)!important}
+ #customer-lookup,#customer-lookup-state-indicator{padding:0 5px!important;gap:3px!important;font-size:clamp(7px,1.7vw,9px)!important}
  #customer-lookup .lookup-refresh{font-size:11px!important}
  #customer-lookup-state-indicator .uf-lookup-state-icon{width:12px!important;height:12px!important;flex-basis:12px!important;font-size:11px!important}
 }
 @media(max-width:430px){
- .lookup-row{grid-template-columns:minmax(0,1.3fr) minmax(82px,.74fr) minmax(96px,1.02fr)!important;gap:4px!important}
- #customer-lookup,#customer-lookup-state-indicator{padding:0 4px!important;font-size:clamp(6.4px,2vw,7.8px)!important}
+ .lookup-row{grid-template-columns:minmax(0,1.45fr) minmax(0,.9fr) minmax(0,1.05fr)!important;gap:4px!important}
+ #customer-lookup,#customer-lookup-state-indicator{padding:0 3px!important;font-size:clamp(6.2px,2vw,7.8px)!important}
  #customer-lookup-state-indicator .uf-lookup-state-icon{width:10px!important;height:10px!important;flex-basis:10px!important;font-size:10px!important}
 }
 </style>
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-lookup-state-script-v5">
+<script id="unifco-customer-lookup-state-script-v6">
 (()=>{
   const ready=fn=>document.readyState==='loading'?document.addEventListener('DOMContentLoaded',fn):fn();
   ready(()=>{
@@ -159,6 +157,17 @@ HTML;
       actions.appendChild(indicator);
     }
 
+    const row=input.closest('.lookup-row');
+    const findCustomerCard=()=>{
+      let el=row||input.parentElement;
+      for(let i=0;el&&i<7;i++,el=el.parentElement){
+        const t=(el.innerText||'').replace(/\s+/g,' ').trim();
+        if(t.includes('بيانات العميل') || /customer\s+(data|details)/i.test(t)) return el;
+      }
+      return row?.parentElement?.parentElement || document.body;
+    };
+    const customerCard=findCustomerCard();
+
     const setState=(state)=>{
       indicator.dataset.ufLookupState=state;
       indicator.classList.remove('is-empty','is-valid','is-invalid');
@@ -177,17 +186,39 @@ HTML;
       requestAnimationFrame(fitText);
     };
 
+    const normalize=s=>String(s||'').replace(/\s+/g,' ').trim();
+    const escapeRegExp=s=>String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+
     const inferState=()=>{
-      const value=input.value.trim();
+      const value=normalize(input.value);
       if(!value){setState('empty');return;}
-      if(status?.classList.contains('ok')){setState('valid');return;}
-      if(status?.classList.contains('bad')){setState('invalid');return;}
-      /* Until lookup resolves, keep the agreed neutral prompt instead of
-         exposing any legacy intermediate message. */
+
+      const legacyText=normalize(status?.textContent);
+      if(
+        status?.classList.contains('bad') ||
+        /لم يتم العثور|غير موجود|لا يوجد عميل|customer\s+not\s+found|not\s+found/i.test(legacyText)
+      ){
+        setState('invalid');return;
+      }
+
+      if(status?.classList.contains('ok')){
+        setState('valid');return;
+      }
+
+      const cardText=normalize(customerCard?.innerText);
+      const exactId=new RegExp('ID\\s*:\\s*'+escapeRegExp(value)+'(?:\\s|$)','i');
+      const hasExactId=exactId.test(cardText);
+      const hasPopulatedDetails=/ID\s*:\s*[^—\-\s][^\n]*/i.test(cardText) &&
+        !/مسؤول التواصل\s*[—-]\s*رقم الجوال\s*[—-]/.test(cardText);
+
+      if(hasExactId || hasPopulatedDetails){
+        setState('valid');return;
+      }
+
       setState('empty');
     };
 
-    const fitOne=(el,min=6.4,max=10)=>{
+    const fitOne=(el,min=6.2,max=11)=>{
       if(!el)return;
       let size=max;
       el.style.fontSize=size+'px';
@@ -197,27 +228,32 @@ HTML;
       }
     };
     function fitText(){
-      fitOne(button,6.4,10);
-      fitOne(indicator,6.4,10);
+      fitOne(button,6.2,11);
+      fitOne(indicator,6.2,11);
     }
 
+    const refreshSoon=()=>{
+      [0,120,350,700,1200,2200].forEach(ms=>setTimeout(()=>{inferState();fitText()},ms));
+    };
+
     input.addEventListener('input',()=>{
-      if(status){status.className='status';status.textContent=''}
-      requestAnimationFrame(()=>{inferState();fitText()});
+      setState('empty');
+      requestAnimationFrame(fitText);
     });
-    input.addEventListener('blur',()=>setTimeout(()=>{inferState();fitText()},0));
-    button.addEventListener('click',()=>setTimeout(()=>{inferState();fitText()},0));
+    input.addEventListener('blur',refreshSoon);
+    button.addEventListener('click',refreshSoon);
 
     if(status){
       new MutationObserver(()=>requestAnimationFrame(()=>{inferState();fitText()})).observe(status,{attributes:true,childList:true,subtree:true,characterData:true});
     }
-    const row=input.closest('.lookup-row');
+    if(customerCard && customerCard!==document.body){
+      new MutationObserver(()=>requestAnimationFrame(()=>{inferState();fitText()})).observe(customerCard,{childList:true,subtree:true,characterData:true,attributes:true});
+    }
     if(row && window.ResizeObserver){new ResizeObserver(fitText).observe(row)}
 
     inferState();
     fitText();
-    setTimeout(()=>{inferState();fitText()},300);
-    setTimeout(()=>{inferState();fitText()},900);
+    refreshSoon();
   });
 })();
 </script>
