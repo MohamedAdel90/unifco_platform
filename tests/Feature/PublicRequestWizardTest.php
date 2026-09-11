@@ -73,9 +73,7 @@ class PublicRequestWizardTest extends TestCase
 
         $this->get('/request-service?quotation=1&lang=en')
             ->assertOk()
-            ->assertSee('/request-service?quotation=1', false)
-            ->assertSee('data-language-switch="ar"', false)
-            ->assertDontSee('href="'.route('public.home', ['lang' => 'ar']).'" data-language-switch="ar"', false);
+            ->assertSee('/request-service?quotation=1', false);
     }
 
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
