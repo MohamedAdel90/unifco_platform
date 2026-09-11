@@ -4,7 +4,7 @@
     $headerBase = route($headerLocale === 'ar' ? 'public.home' : 'public.home.en');
     $languageTarget = $headerLocale === 'ar' ? 'en' : 'ar';
     // Keep visitors on the same request workflow (and preserve the selected
-    // request type) when switching languages. Other public pages retain the
+    // request type and service selection) when switching languages. Other public pages retain the
     // existing homepage language switch behaviour.
     if (request()->routeIs('public.request-service')) {
         $languageQuery = request()->query();
