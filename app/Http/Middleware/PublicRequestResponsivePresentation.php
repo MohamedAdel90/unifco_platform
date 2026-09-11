@@ -99,6 +99,40 @@ HTML;
         }
 
         $html = str_replace('</head>', $styles.'</head>', $html);
+
+        if ($request->query('lang') === 'en') {
+            $html = preg_replace('/<html\s+lang="ar"\s+dir="rtl">/i', '<html lang="en" dir="ltr">', $html, 1) ?? $html;
+            $localization = <<<'HTML'
+<style id="unifco-public-request-english-layout">
+html[dir="ltr"] body{direction:ltr!important;text-align:left!important}
+html[dir="ltr"] .site-header .nav-links,html[dir="ltr"] .site-header .mobile-menu{direction:ltr!important}
+html[dir="ltr"] .section-title,html[dir="ltr"] label,html[dir="ltr"] input,html[dir="ltr"] select,html[dir="ltr"] textarea{text-align:left!important}
+html[dir="ltr"] select{background-position:right 12px center!important}
+</style>
+<script id="unifco-public-request-english-localization">
+(()=>{
+const dictionary={
+'طلب خدمة | UNIFCO':'Request Service | UNIFCO','طلب خدمة':'Request Service','تسجيل الدخول':'Login','الرئيسية':'Home','تعرف علينا':'About Us','الخدمات':'Services','القطاعات':'Industries','المشاريع':'Projects','العملاء':'Clients','الوظائف':'Careers','تواصل معنا':'Contact Us','التنقل الرئيسي':'Primary navigation',
+'نموذج UNIFCO الموحد للعملاء الحاليين والجدد وجميع أنواع طلبات الخدمة.':'UNIFCO unified form for existing and new customers and all service request types.','نوع العميل':'Customer Type','✓ عميل حالي':'✓ Existing Customer','＋ عميل جديد':'+ New Customer','نوع الخدمة المطلوبة':'Required Service','صيانة':'Maintenance','عرض سعر':'Quotation','استشارة فنية':'Technical Consultation','نوع الطلب':'Request Type','صيانة عادية':'Routine Maintenance','صيانة طارئة':'Emergency Maintenance','عادية':'Routine','مرتفعة':'High','الأولوية':'Priority',
+'اختر نوع العميل أولًا، ثم الخدمة ونوع الطلب. يتم عرض النموذج المناسب أسفل هذا السطر.':'Choose the customer type, service, and request type. The appropriate form will appear below.','هذا النوع تم اعتماده للتطوير اللاحق. لم يتم تغيير أي نموذج آخر بالموقع.':'This request type is scheduled for a later development phase.','بيانات العميل':'Customer Information','بيانات العميل الحالي':'Existing Customer Information','رقم العميل':'Customer Number','مثال: CUS-00125':'Example: CUS-00125','جلب البيانات':'Retrieve Details','يتم جلب بيانات العميل تلقائيًا بعد إدخال رقم العميل.':'Customer details are retrieved automatically after entering the customer number.','بانتظار إدخال رقم العميل':'Waiting for customer number','أدخل رقم العميل ثم اضغط «جلب البيانات» لعرض معلوماته هنا.':'Enter the customer number, then select Retrieve Details to view the customer information.','مسؤول التواصل':'Contact Person','رقم الجوال':'Mobile Number','البريد الإلكتروني':'Email Address','المدينة':'City','العنوان المختصر':'Short Address','↻ تغيير العميل':'↻ Change Customer',
+'بيانات العقد':'Contract Information','رقم العقد':'Contract Number','اختر عقد العميل':'Select Customer Contract','نوع / عنوان العقد':'Contract Type / Title','حالة العقد':'Contract Status','الموقع والتواصل':'Site & Contact','الموقع المسجل':'Registered Site','اختر الموقع':'Select Site','اسم الموقع':'Site Name','العنوان':'Address','مسؤول الموقع':'Site Contact','رقم التواصل':'Contact Number','خريطة الموقع':'Site Map',
+'المعدة وبياناتها':'Equipment Information','اختيار من معدات العقد':'Select Contract Equipment','مسح / إدخال QR':'Scan / Enter QR','رقم الأصل':'Asset Number','السيريال نمبر':'Serial Number','معدة غير تعاقدية':'Non-contract Equipment','المعدات المسجلة على العقد':'Equipment Registered Under Contract','اختر المعدة':'Select Equipment','أدخل القيمة أو امسح QR':'Enter a value or scan QR','بحث عن المعدة':'Find Equipment','اسم المعدة':'Equipment Name','نوع المعدة':'Equipment Type','الشركة المصنعة':'Manufacturer','الموديل':'Model','الحالة التشغيلية':'Operating Status','النوع':'Type',
+'وصف سريع للعطل':'Brief Issue Description','اكتب وصفًا مختصرًا وواضحًا للعطل أو الخدمة المطلوبة...':'Write a brief, clear description of the issue or requested service...','مرفقات الطلب':'Request Attachments','صور المشكلة':'Issue Photos','صور المعدة':'Equipment Photos','تقرير سابق (إن وجد)':'Previous Report (if available)','موعد الزيارة':'Visit Schedule','تاريخ الزيارة المطلوب':'Preferred Visit Date','الوقت المطلوب':'Preferred Time','إرسال طلب الخدمة':'Submit Service Request','إرسال الطلب':'Submit Request','إلغاء':'Cancel','إلغاء الطلب والعودة للرئيسية':'Cancel and Return Home','رقم تذكرة فريد':'Unique Ticket Number',
+'✓ بعد تسجيل الطلب بنجاح، يصدر النظام':'✓ After the request is submitted successfully, the system issues','للطلب وفق آلية الترقيم المعتمدة، ويُعرض للعميل في صفحة تأكيد الاستلام.':'for the request using the approved numbering sequence, and displays it on the receipt confirmation page.','بإرسال الطلب، سيتم استخدام بيانات العميل والأصل المسجلة لدى UNIFCO لمعالجة الطلب وربطه بالسجل التشغيلي الصحيح.':'By submitting, the customer and asset data registered with UNIFCO will be used to process the request and link it to the correct operational record.',
+'بيانات العميل الجديد':'New Customer Information','اسم الشركة / المنشأة':'Company / Organization Name','اسم المسؤول':'Contact Name','المنطقة':'Region','اختر المنطقة':'Select Region','اختر المدينة':'Select City','الحي':'District','العنوان التفصيلي':'Detailed Address','استخدم موقعي الحالي':'Use My Current Location','يمكن تحديد الموقع لتسريع تسجيل موقع الخدمة.':'Location can be shared to speed up service-site registration.','موقع المنشأة':'Facility Location',
+'متى بدأت المشكلة':'When Did the Issue Start?','الآن':'Now','منذ ساعات':'Hours Ago','منذ يوم':'One Day Ago','منذ عدة أيام':'Several Days Ago','حالة المعدة الآن':'Current Equipment Status','تعمل':'Running','تعمل جزئياً':'Partially Running','متوقفة':'Stopped','تأثير العطل على التشغيل':'Operational Impact','محدود':'Limited','توقف جزئي':'Partial Outage','توقف كامل':'Full Outage','هل توجد خطورة؟':'Is There a Safety Risk?','لا توجد':'None','خطورة محتملة':'Potential Risk','خطورة عالية':'High Risk','حالة الموقع':'Site Status','مفتوح ويعمل':'Open and Operating','تشغيل محدود':'Limited Operation','مغلق':'Closed'
+};
+const translateText=node=>{const raw=node.nodeValue||'',trim=raw.trim();if(!trim||!dictionary[trim])return;node.nodeValue=raw.replace(trim,dictionary[trim])};
+const translateElement=el=>{if(el.nodeType!==1)return;['placeholder','title','aria-label'].forEach(a=>{const value=el.getAttribute(a);if(value&&dictionary[value.trim()])el.setAttribute(a,dictionary[value.trim()])});if(el.tagName==='INPUT'&&el.name==='lang')el.value='en'};
+const translate=root=>{translateElement(root);const walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);let node;while(node=walker.nextNode()){if(node.nodeType===3)translateText(node);else translateElement(node)}};
+document.documentElement.lang='en';document.documentElement.dir='ltr';document.body.dir='ltr';translate(document.body);document.title=dictionary[document.title]||'Request Service | UNIFCO';
+new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(node=>{if(node.nodeType===3)translateText(node);else if(node.nodeType===1)translate(node)}))).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+HTML;
+            $html = str_replace('</body>', $localization.'</body>', $html);
+        }
+
         $response->setContent($html);
 
         return $response;
