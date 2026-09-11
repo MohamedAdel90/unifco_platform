@@ -61,6 +61,7 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-legacy-customer-summary .customer-state{display:none!important}
 .uf-legacy-customer-summary .customer-skeleton{display:none!important}
 .uf-legacy-customer-summary .customer-summary-head{padding:0 0 8px!important;margin-bottom:2px!important}
+.uf-legacy-customer-summary:not(.is-ok) .customer-summary-head{display:flex!important}
 .uf-legacy-customer-summary .customer-icon{width:32px!important;height:32px!important;font-size:15px!important}
 .uf-legacy-customer-summary .customer-identity{display:flex!important;align-items:center!important;flex:1 1 auto!important;width:100%!important;min-width:0!important}
 .uf-legacy-customer-summary .customer-identity>div:last-child{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex:1 1 auto!important;width:100%!important;min-width:0!important}
