@@ -7,9 +7,7 @@
     // request type and service selection) when switching languages. Other public pages retain the
     // existing homepage language switch behaviour.
     if (request()->routeIs('public.request-service')) {
-        $languageQuery = request()->query();
-        $languageQuery['lang'] = $languageTarget;
-        $languageUrl = route('public.request-service', $languageQuery);
+        $languageUrl = request()->fullUrlWithQuery(['lang' => $languageTarget]);
     } else {
         $languageUrl = route('public.home', ['lang' => $languageTarget]);
     }

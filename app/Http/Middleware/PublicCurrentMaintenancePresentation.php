@@ -85,9 +85,9 @@ HTML;
         ];
         $item = static fn (string $href, string $label, string $icon): string => '<a href="'.$href.'"><span class="nav-icon">'.$icon.'</span><span>'.$label.'</span></a>';
         $nav = $item(route('public.home'), 'الرئيسية', $icons['home']).$item(route('public.home').'#about', 'تعرف علينا', $icons['about']).$item(route('public.home').'#services', 'الخدمات', $icons['services']).$item(route('public.home').'#industries', 'القطاعات', $icons['industries']).$item(route('public.home').'#projects', 'المشاريع', $icons['projects']).$item(route('public.home').'#clients', 'العملاء', $icons['clients']).$item(route('public.home').'#careers', 'الوظائف', $icons['careers']).$item(route('public.home').'#contact', 'تواصل معنا', $icons['contact']);
-        $languageQuery = $request->query();
-        $languageQuery['lang'] = $request->query('lang') === 'en' ? 'ar' : 'en';
-        $languageUrl = route('public.request-service', $languageQuery);
+        $languageUrl = $request->fullUrlWithQuery([
+            'lang' => $request->query('lang') === 'en' ? 'ar' : 'en',
+        ]);
         $newHeader = '<header class="current-service-nav"><div class="nav-wrap"><a class="brand-link" href="'.route('public.home').'"><span class="site-logo-frame"><img class="site-logo" src="'.route('brand.logo').'" alt="UNIFCO"></span><span class="brand-copy"><strong>UNIFCO</strong><small>ONE FACILITY SHOP</small></span></a><div class="nav-actions"><a class="lang" href="'.$languageUrl.'">'.($request->query('lang') === 'en' ? 'AR' : 'EN').'</a><a class="request-btn" href="'.route('public.request-service').'">طلب خدمة</a></div><nav class="primary-nav" aria-label="التنقل الرئيسي">'.$nav.'</nav><button class="menu-toggle" type="button" aria-label="القائمة">☰</button></div></header>';
         if (str_contains($html, $oldHeader)) $html = str_replace($oldHeader, $newHeader, $html);
 
