@@ -69,6 +69,9 @@ HTML;
   function enhance(config){
     const input=document.querySelector(`input[name="${config.name}"]`);
     if(!input || input.dataset.cameraEnhanced==='1') return;
+    // The unified service-request workspace owns its attachment controls.
+    // Do not add the legacy title/action strip there, otherwise every row is duplicated.
+    if(input.closest('#uf-upload-rows')) return;
     input.dataset.cameraEnhanced='1';
     input.classList.add('attachment-native-input');
     const host=input.closest('.upload')||input.parentElement;
