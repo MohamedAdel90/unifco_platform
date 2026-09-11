@@ -52,19 +52,20 @@ class PublicCurrentCustomerLookupUxPresentation
         $html = str_replace($statusMarker, $statusReplacement, $html);
 
         $style = <<<'HTML'
-<style id="unifco-current-customer-auto-lookup-v1">
+<style id="unifco-current-customer-auto-lookup-v2">
 .section-title-label{display:inline-flex;align-items:center;gap:7px;min-width:0}
 .section-icon{width:25px;height:25px;display:inline-grid;place-items:center;flex:0 0 25px;border:1px solid #d8e2ee;border-radius:7px;background:#f7faff;color:#173a69}
 .section-icon svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.lookup-row{grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:7px!important}
-.customer-lookup-fallback{width:auto!important;min-width:68px!important;height:34px!important;padding:0 10px!important;border-radius:7px!important;background:#fff!important;color:#526b8c!important;border:1px solid #d5dfeb!important;font-size:9.5px!important;font-weight:800!important;box-shadow:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;white-space:nowrap!important}
+.lookup-row{grid-template-columns:minmax(0,1fr) 105px!important;align-items:center!important;gap:7px!important}
+#customer-lookup,.customer-lookup-fallback{width:105px!important;min-width:105px!important;max-width:105px!important;height:34px!important;padding:0 8px!important;border-radius:7px!important;font-size:9px!important;font-weight:800!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;white-space:nowrap!important;box-sizing:border-box!important}
+.customer-lookup-fallback{background:#fff!important;color:#526b8c!important;border:1px solid #d5dfeb!important;box-shadow:none!important}
 .customer-lookup-fallback:hover{border-color:#93a8c2!important;color:#0b2c59!important;background:#f8fbff!important}
-.lookup-refresh{font-size:14px;line-height:1}
+.lookup-refresh{font-size:13px;line-height:1}
 .lookup-auto-hint{margin-top:5px;color:#8190a4;font-size:9px;line-height:1.6}
 .lookup-auto-hint.loading{color:#315f98;font-weight:700}
 #customer_number.lookup-loading{background-image:linear-gradient(90deg,transparent,rgba(26,79,139,.06),transparent);background-size:200% 100%;animation:unifcoLookupPulse 1.15s linear infinite}
 @keyframes unifcoLookupPulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
-@media(max-width:560px){.lookup-row{grid-template-columns:minmax(0,1fr) auto!important}.customer-lookup-fallback{min-width:58px!important;padding:0 8px!important}.section-icon{width:23px;height:23px;flex-basis:23px}}
+@media(max-width:560px){.lookup-row{grid-template-columns:minmax(0,1fr) 88px!important}.customer-lookup-fallback,#customer-lookup{width:88px!important;min-width:88px!important;max-width:88px!important;padding:0 6px!important;font-size:8.5px!important}.section-icon{width:23px;height:23px;flex-basis:23px}}
 </style>
 HTML;
         $html = str_replace('</head>', $style.'</head>', $html);
