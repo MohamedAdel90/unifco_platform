@@ -22,10 +22,14 @@ class PublicCustomerLookupStatePresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-lookup-state-v4">
+<style id="unifco-customer-lookup-state-v5">
+/* Customer data card only: keep the original lookup status as a data source,
+   but never render its legacy text/button in the UI. */
+#customer-status{display:none!important;visibility:hidden!important;width:0!important;height:0!important;overflow:hidden!important}
+
 .lookup-row{
  display:grid!important;
- grid-template-columns:minmax(0,1.55fr) minmax(0,.78fr) minmax(0,1fr)!important;
+ grid-template-columns:minmax(0,1.55fr) minmax(118px,.82fr) minmax(132px,1fr)!important;
  align-items:center!important;
  gap:8px!important;
  width:100%!important;
@@ -51,14 +55,14 @@ class PublicCustomerLookupStatePresentation
  max-width:100%!important;
  height:42px!important;
  min-height:42px!important;
- padding:0 8px!important;
+ padding:0 10px!important;
  border-radius:8px!important;
  display:flex!important;
  align-items:center!important;
  justify-content:center!important;
  gap:5px!important;
  font-family:Cairo,Arial,sans-serif!important;
- font-size:clamp(7.5px,.9vw,10px)!important;
+ font-size:clamp(8px,.9vw,10px)!important;
  font-weight:900!important;
  line-height:1!important;
  white-space:nowrap!important;
@@ -102,24 +106,25 @@ class PublicCustomerLookupStatePresentation
 }
 #customer-lookup-state-indicator.is-empty{background:#fff7df!important;border:1px solid #e7bd58!important;color:#9a6700!important}
 #customer-lookup-state-indicator.is-valid{background:#eaf8ef!important;border:1px solid #73c88f!important;color:#16753c!important}
-#customer-lookup-state-indicator.is-invalid{background:#fff0f1!important;border:1px solid #e1848d!important;color:#bd2632!important}
+#customer-lookup-state-indicator.is-invalid{background:#fff0f1!important;border:1px solid #e0525d!important;color:#b4232d!important}
+
 @media(max-width:700px){
- .lookup-row{grid-template-columns:minmax(0,1.45fr) minmax(0,.75fr) minmax(0,1fr)!important;gap:5px!important}
+ .lookup-row{grid-template-columns:minmax(0,1.42fr) minmax(96px,.78fr) minmax(112px,1fr)!important;gap:5px!important}
  #customer_number,#customer-lookup,#customer-lookup-state-indicator{height:40px!important;min-height:40px!important}
- #customer-lookup,#customer-lookup-state-indicator{padding:0 5px!important;gap:3px!important;font-size:clamp(6.8px,1.65vw,8.8px)!important}
+ #customer-lookup,#customer-lookup-state-indicator{padding:0 6px!important;gap:3px!important;font-size:clamp(7px,1.65vw,8.8px)!important}
  #customer-lookup .lookup-refresh{font-size:11px!important}
  #customer-lookup-state-indicator .uf-lookup-state-icon{width:12px!important;height:12px!important;flex-basis:12px!important;font-size:11px!important}
 }
 @media(max-width:430px){
- .lookup-row{grid-template-columns:minmax(0,1.35fr) minmax(0,.72fr) minmax(0,1.05fr)!important;gap:4px!important}
- #customer-lookup,#customer-lookup-state-indicator{padding:0 4px!important;font-size:clamp(6.2px,2vw,7.8px)!important}
+ .lookup-row{grid-template-columns:minmax(0,1.3fr) minmax(82px,.74fr) minmax(96px,1.02fr)!important;gap:4px!important}
+ #customer-lookup,#customer-lookup-state-indicator{padding:0 4px!important;font-size:clamp(6.4px,2vw,7.8px)!important}
  #customer-lookup-state-indicator .uf-lookup-state-icon{width:10px!important;height:10px!important;flex-basis:10px!important;font-size:10px!important}
 }
 </style>
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-lookup-state-script-v4">
+<script id="unifco-customer-lookup-state-script-v5">
 (()=>{
   const ready=fn=>document.readyState==='loading'?document.addEventListener('DOMContentLoaded',fn):fn();
   ready(()=>{
@@ -173,12 +178,16 @@ HTML;
     };
 
     const inferState=()=>{
+      const value=input.value.trim();
+      if(!value){setState('empty');return;}
       if(status?.classList.contains('ok')){setState('valid');return;}
       if(status?.classList.contains('bad')){setState('invalid');return;}
+      /* Until lookup resolves, keep the agreed neutral prompt instead of
+         exposing any legacy intermediate message. */
       setState('empty');
     };
 
-    const fitOne=(el,min=6.2,max=10)=>{
+    const fitOne=(el,min=6.4,max=10)=>{
       if(!el)return;
       let size=max;
       el.style.fontSize=size+'px';
@@ -188,8 +197,8 @@ HTML;
       }
     };
     function fitText(){
-      fitOne(button,6.2,10);
-      fitOne(indicator,6.2,10);
+      fitOne(button,6.4,10);
+      fitOne(indicator,6.4,10);
     }
 
     input.addEventListener('input',()=>{
