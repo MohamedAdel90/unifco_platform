@@ -196,7 +196,7 @@ HTML;
     }
 
     const syncLoadedState=()=>{
-        const loaded=!!(status?.classList.contains('ok') || (card && !card.hidden));
+        const loaded=!!(status?.classList.contains('ok') || (card && !card.hidden && !card.classList.contains('is-empty')));
         customer.classList.toggle('uf-customer-loaded',loaded);
     };
     if(status) new MutationObserver(syncLoadedState).observe(status,{attributes:true,childList:true,subtree:true});

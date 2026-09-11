@@ -105,6 +105,18 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer', false);
     }
 
+    public function test_customer_details_remain_visible_and_empty_until_lookup_succeeds(): void
+    {
+        $this->get('/request-service')
+            ->assertOk()
+            ->assertSee('unifco-current-customer-card-style-v4', false)
+            ->assertSee('unifco-current-customer-card-script-v4', false)
+            ->assertSee('uf-customer-profile-card is-empty', false)
+            ->assertSee('const showEmpty=()=>', false)
+            ->assertSee("input.addEventListener('input',showEmpty)", false)
+            ->assertSee("card.classList.remove('is-empty')", false);
+    }
+
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
     {
         $assetId = $this->registeredAsset();

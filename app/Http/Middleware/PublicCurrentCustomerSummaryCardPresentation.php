@@ -22,13 +22,13 @@ class PublicCurrentCustomerSummaryCardPresentation
         }
 
         $card = <<<'HTML'
-<div class="uf-customer-profile-card" id="uf-current-customer-card" aria-live="polite" hidden>
+<div class="uf-customer-profile-card is-empty" id="uf-current-customer-card" aria-live="polite">
     <div class="uf-customer-profile-head">
         <div class="uf-customer-company">
             <span class="uf-company-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21h16M6 21V7l6-4 6 4v14M9 10h2M13 10h2M9 14h2M13 14h2M10 21v-4h4v4"/></svg></span>
             <div class="uf-company-copy">
-                <div class="uf-company-name" id="uf-current-customer-name">—</div>
-                <span class="uf-company-code" id="uf-current-customer-code">—</span>
+                <div class="uf-company-name" id="uf-current-customer-name"></div>
+                <span class="uf-company-code" id="uf-current-customer-code"></span>
             </div>
         </div>
         <div class="uf-customer-verified">
@@ -40,23 +40,23 @@ class PublicCurrentCustomerSummaryCardPresentation
     <div class="uf-customer-profile-body">
         <div class="uf-customer-info-item" id="uf-current-customer-contact-wrap">
             <span class="uf-info-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 20v-1.5A6.5 6.5 0 0 1 12 12a6.5 6.5 0 0 1 7 6.5V20"/></svg></span>
-            <div><small>مسؤول التواصل</small><b id="uf-current-customer-contact">—</b></div>
+            <div><small>مسؤول التواصل</small><b id="uf-current-customer-contact"></b></div>
         </div>
         <div class="uf-customer-info-item" id="uf-current-customer-mobile-wrap">
             <span class="uf-info-icon"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.69 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.28-1.28a2 2 0 0 1 2.11-.45c.9.33 1.84.56 2.8.69A2 2 0 0 1 22 16.9Z"/></svg></span>
-            <div><small>رقم الجوال</small><b id="uf-current-customer-mobile">—</b></div>
+            <div><small>رقم الجوال</small><b id="uf-current-customer-mobile"></b></div>
         </div>
         <div class="uf-customer-info-item" id="uf-current-customer-email-wrap">
             <span class="uf-info-icon email"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 7l8 6 8-6"/></svg></span>
-            <div><small>البريد الإلكتروني</small><b id="uf-current-customer-email">—</b></div>
+            <div><small>البريد الإلكتروني</small><b id="uf-current-customer-email"></b></div>
         </div>
         <div class="uf-customer-info-item" id="uf-current-customer-city-wrap">
             <span class="uf-info-icon location"><svg viewBox="0 0 24 24"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg></span>
-            <div><small>المدينة</small><b id="uf-current-customer-city">—</b></div>
+            <div><small>المدينة</small><b id="uf-current-customer-city"></b></div>
         </div>
         <div class="uf-customer-info-item uf-address-item" id="uf-current-customer-address-wrap">
             <span class="uf-info-icon address"><svg viewBox="0 0 24 24"><path d="M5 21V6l7-3 7 3v15M9 9h2M13 9h2M9 13h2M13 13h2"/></svg></span>
-            <div><small>العنوان المختصر</small><b id="uf-current-customer-address">—</b></div>
+            <div><small>العنوان المختصر</small><b id="uf-current-customer-address"></b></div>
         </div>
     </div>
 
@@ -69,11 +69,15 @@ HTML;
         $html = str_replace('<div class="status" id="customer-status"></div>', '<div class="status" id="customer-status"></div>'.$card, $html);
 
         $style = <<<'HTML'
-<style id="unifco-current-customer-card-style-v3">
+<style id="unifco-current-customer-card-style-v4">
 #customer-status.ok{display:none!important}
 .uf-legacy-customer-field-hidden{display:none!important}
 .uf-customer-profile-card{margin-top:10px;border:1px solid #c9e7dd;border-radius:10px;background:linear-gradient(90deg,#f8fffc 0%,#f4fcf9 100%);direction:rtl;overflow:hidden;font-family:inherit;color:#0b2f63;box-shadow:0 2px 7px rgba(16,99,76,.025)}
 .uf-customer-profile-card[hidden]{display:none!important}
+.uf-customer-profile-card.is-empty .uf-customer-profile-head,.uf-customer-profile-card.is-empty .uf-customer-profile-foot{display:none!important}
+.uf-customer-profile-card.is-empty .uf-customer-profile-body{padding:8px 10px!important}
+.uf-customer-profile-card.is-empty .uf-customer-info-item{min-height:43px!important;padding-top:4px!important;padding-bottom:4px!important}
+.uf-customer-profile-card.is-empty .uf-customer-info-item b{min-height:15px!important}
 .uf-customer-profile-head{min-height:70px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid #deece8}
 .uf-customer-company{display:flex;align-items:center;gap:10px;min-width:0}
 .uf-company-icon{width:40px;height:40px;border-radius:8px;background:#e2efff;color:#0b4387;display:grid;place-items:center;flex:0 0 40px}
@@ -97,7 +101,7 @@ HTML;
         $html = str_replace('</head>', $style.'</head>', $html);
 
         $script = <<<'HTML'
-<script id="unifco-current-customer-card-script-v3">
+<script id="unifco-current-customer-card-script-v4">
 (()=>{
     const status=document.getElementById('customer-status');
     const input=document.getElementById('customer_number');
@@ -106,8 +110,16 @@ HTML;
     if(!status||!input||!card)return;
 
     const field=(id)=>((document.getElementById(id)?.value)||'').trim();
-    const setText=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value||'—'};
-    const toggle=(id,value)=>{const el=document.getElementById(id);if(el)el.hidden=!value};
+    const setText=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value||''};
+    const customerValueIds=['uf-current-customer-name','uf-current-customer-code','uf-current-customer-contact','uf-current-customer-mobile','uf-current-customer-email','uf-current-customer-city','uf-current-customer-address'];
+    const customerWrapIds=['uf-current-customer-contact-wrap','uf-current-customer-mobile-wrap','uf-current-customer-email-wrap','uf-current-customer-city-wrap','uf-current-customer-address-wrap'];
+
+    const showEmpty=()=>{
+        customerValueIds.forEach(id=>setText(id,''));
+        customerWrapIds.forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=false});
+        card.classList.add('is-empty');
+        card.hidden=false;
+    };
 
     const hideLegacyCustomerFields=()=>{
         ['company_name','responsible_person','mobile','email','customer_city','customer_address'].forEach(id=>{
@@ -128,9 +140,9 @@ HTML;
     hideLegacyCustomerFields();
 
     const render=()=>{
-        if(!status.classList.contains('ok')){card.hidden=true;return;}
+        if(!status.classList.contains('ok')){showEmpty();return;}
         window.setTimeout(()=>{
-            if(!status.classList.contains('ok')){card.hidden=true;return;}
+            if(!status.classList.contains('ok')){showEmpty();return;}
             const company=field('company_name')||'عميل UNIFCO';
             const code=field('customer_number')||input.value.trim();
             const contact=field('responsible_person');
@@ -147,20 +159,17 @@ HTML;
             setText('uf-current-customer-city',city);
             setText('uf-current-customer-address',address);
 
-            toggle('uf-current-customer-contact-wrap',contact);
-            toggle('uf-current-customer-mobile-wrap',mobile);
-            toggle('uf-current-customer-email-wrap',email);
-            toggle('uf-current-customer-city-wrap',city);
-            toggle('uf-current-customer-address-wrap',address);
+            customerWrapIds.forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=false});
             hideLegacyCustomerFields();
+            card.classList.remove('is-empty');
             card.hidden=false;
         },100);
     };
 
     new MutationObserver(render).observe(status,{attributes:true,childList:true,subtree:true});
-    input.addEventListener('input',()=>{card.hidden=true});
+    input.addEventListener('input',showEmpty);
     changeButton?.addEventListener('click',()=>{
-        card.hidden=true;
+        showEmpty();
         input.focus();
         input.select?.();
         input.scrollIntoView({behavior:'smooth',block:'center'});
