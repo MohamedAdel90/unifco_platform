@@ -22,7 +22,7 @@ class PublicCurrentCustomerContextLayoutPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-context-layout-v11">
+<style id="unifco-customer-context-layout-v12">
 .uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:stretch!important;margin-bottom:14px!important;direction:ltr!important}
 .uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:start!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;padding:17px 18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
@@ -46,14 +46,14 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-customer-lookup-intro{display:flex!important;align-items:baseline!important;justify-content:space-between!important;gap:12px!important;width:100%!important;margin:-2px 0 7px!important}
 .uf-customer-lookup-intro>label{display:block!important;margin:0!important;font-size:11px!important;font-weight:900!important;color:#071f4d!important;white-space:nowrap!important}
 .uf-customer-lookup-intro>.lookup-auto-hint{display:block!important;flex:1 1 auto!important;margin:0!important;text-align:start!important;color:#8190a4!important;font-size:9px!important;line-height:1.55!important}
-.uf-context-customer>.lookup-row{display:grid!important;grid-template-columns:minmax(150px,.6fr) 155px auto!important;gap:10px!important;align-items:center!important;width:100%!important;max-width:none!important;margin:0!important}
+.uf-context-customer>.lookup-row{display:grid!important;grid-template-columns:minmax(130px,.42fr) 155px minmax(110px,.58fr)!important;gap:10px!important;align-items:center!important;width:100%!important;max-width:none!important;margin:0!important}
 .uf-context-customer>.lookup-row>*{min-width:0!important;max-width:none!important;width:100%!important}
 .uf-context-customer #customer_number{width:100%!important;max-width:none!important}
 .uf-context-customer #customer-status{width:100%!important;max-width:none!important;margin:0!important;min-height:0!important}
 .uf-context-customer #customer-status:empty{display:none!important}
 .uf-context-customer #customer-status.ok{display:none!important}
 .uf-context-customer .lookup-row>#customer-status:not(.uf-verified-status):not(:empty){grid-column:1/-1!important;margin-top:2px!important}
-.uf-context-customer #customer-status.uf-verified-status{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;width:auto!important;min-width:max-content!important;min-height:42px!important;padding:6px 9px!important;background:#eefbf3!important;border:1px solid #b8dfc5!important;border-radius:8px!important;color:#08752c!important;font-family:inherit!important;font-size:11px!important;font-weight:900!important;line-height:1.5!important;white-space:nowrap!important}
+.uf-context-customer #customer-status.uf-verified-status{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;width:100%!important;min-width:0!important;min-height:42px!important;padding:6px 9px!important;background:#eefbf3!important;border:1px solid #b8dfc5!important;border-radius:8px!important;color:#08752c!important;font-family:inherit!important;font-size:11px!important;font-weight:900!important;line-height:1.5!important;white-space:nowrap!important}
 .uf-context-customer #customer-status.uf-verified-status:after{content:'✓'!important;width:25px!important;height:25px!important;display:inline-grid!important;place-items:center!important;flex:0 0 25px!important;border-radius:50%!important;background:#08752c!important;border:1px solid #056522!important;color:#fff!important;font-size:14px!important;font-weight:900!important;line-height:1!important;box-shadow:0 2px 6px rgba(8,117,44,.22)!important}
 .uf-context-customer>#customer-summary.uf-legacy-customer-summary{display:block!important;width:100%!important;margin:10px 0 0!important;padding:9px 11px!important;background:#f8fffc!important;border-color:#c9e7dd!important;border-radius:10px!important}
 .uf-legacy-customer-summary:not(.is-ok) .customer-summary-head,.uf-legacy-customer-summary:not(.is-ok) .customer-change{display:none!important}
@@ -88,7 +88,7 @@ html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer,html[dir="ltr"]
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-context-layout-script-v11">
+<script id="unifco-customer-context-layout-script-v12">
 (()=>{
     const routine=document.getElementById('routine-form');
     const contract=document.getElementById('contract-section');
