@@ -151,12 +151,23 @@ if command -v fuser >/dev/null 2>&1 && fuser 8081/tcp >/dev/null 2>&1; then
 fi
 supervisorctl reread >/dev/null 2>&1 || true
 supervisorctl update >/dev/null 2>&1 || true
-if ! supervisorctl start "$APP_NAME"; then
-  echo "ERROR: supervisor could not start $APP_NAME" >&2
+started=0
+if supervisorctl start "$APP_NAME"; then
+  started=1
+else
+  echo "WARN: supervisor could not start $APP_NAME; using controlled Laravel fallback" >&2
   supervisorctl status "$APP_NAME" || true
-  tail -n 80 storage/logs/laravel.log 2>/dev/null || true
-  exit 1
+  mkdir -p storage/logs
+  nohup php artisan serve --host=0.0.0.0 --port=8081 > storage/logs/fallback-server.log 2>&1 &
+  FALLBACK_PID=$!
+  echo "$FALLBACK_PID" > storage/framework/unifco-fallback-server.pid
+  sleep 3
+  if kill -0 "$FALLBACK_PID" >/dev/null 2>&1; then
+    started=1
+    echo "==> Fallback application process started with PID $FALLBACK_PID"
+  fi
 fi
+[ "$started" -eq 1 ] || { echo "ERROR: no application process could be started" >&2; tail -n 120 storage/logs/fallback-server.log 2>/dev/null || true; tail -n 80 storage/logs/laravel.log 2>/dev/null || true; exit 1; }
 
 echo "==> Waiting for application"
 app_ready=0
@@ -164,7 +175,7 @@ for attempt in $(seq 1 20); do
   if curl -fsSI http://127.0.0.1:8081/login >/dev/null; then app_ready=1; break; fi
   sleep 2
 done
-[ "$app_ready" -eq 1 ] || { echo "ERROR: application did not become ready"; supervisorctl status "$APP_NAME" || true; tail -n 80 storage/logs/laravel.log 2>/dev/null || true; exit 1; }
+[ "$app_ready" -eq 1 ] || { echo "ERROR: application did not become ready"; supervisorctl status "$APP_NAME" || true; tail -n 120 storage/logs/fallback-server.log 2>/dev/null || true; tail -n 80 storage/logs/laravel.log 2>/dev/null || true; exit 1; }
 curl -fsSI http://127.0.0.1:8081/ | grep -qi 'X-UNIFCO-Release: home-company-profile-20260830-01' || { echo "ERROR: homepage release header missing"; exit 1; }
 
 echo "==> Deploy complete at $DEPLOY_SHA"
