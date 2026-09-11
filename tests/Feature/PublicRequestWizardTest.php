@@ -91,7 +91,7 @@ class PublicRequestWizardTest extends TestCase
     {
         $this->get('/request-service')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v16', false)
+            ->assertSee('unifco-customer-context-layout-v17', false)
             ->assertSee('uf-customer-lookup-intro', false)
             ->assertSee('align-self:start!important', false)
             ->assertSee('height:auto!important', false)
@@ -101,7 +101,7 @@ class PublicRequestWizardTest extends TestCase
 
         $this->get('/request-service?lang=en')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v16', false)
+            ->assertSee('unifco-customer-context-layout-v17', false)
             ->assertSee('html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer', false);
     }
 
@@ -168,6 +168,14 @@ class PublicRequestWizardTest extends TestCase
             ->assertOk()
             ->assertSee("document.getElementById('customer_number')?.closest('section.panel')", false)
             ->assertSee('lookup-row>#customer-status.uf-lookup-state{grid-column:2!important}', false);
+    }
+
+    public function test_lookup_status_observer_does_not_watch_the_classes_it_mutates(): void
+    {
+        $this->get('/request-service')
+            ->assertOk()
+            ->assertSee("observe(status,{childList:true,subtree:true})", false)
+            ->assertDontSee("observe(status,{attributes:true,childList:true,subtree:true})", false);
     }
 
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
