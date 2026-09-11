@@ -19,7 +19,7 @@ class PublicCustomerVerificationStatePresentation
         $html = (string) $response->getContent();
 
         $style = <<<'HTML'
-<style id="unifco-customer-verification-state-v2">
+<style id="unifco-customer-verification-state-v3">
 #customer-status.bad,
 #customer-status.unifco-not-verified{
     display:flex!important;
@@ -44,9 +44,11 @@ HTML;
         $html = str_replace('</head>', $style.'</head>', $html);
 
         $script = <<<'HTML'
-<script id="unifco-customer-verification-state-script-v2">
+<script id="unifco-customer-verification-state-script-v3">
 (()=>{
   const status=document.getElementById('customer-status');
+  const button=document.getElementById('customer-lookup');
+  const input=document.getElementById('customer_number');
   if(!status)return;
 
   const isFailureText=(text)=>{
@@ -60,9 +62,9 @@ HTML;
   const normalize=()=>{
     const text=status.textContent||'';
     if(isFailureText(text)){
-      status.classList.remove('ok');
-      status.classList.add('bad','unifco-not-verified');
-      if(!status.querySelector('.unifco-status-x')){
+      if(!status.classList.contains('unifco-not-verified') || !status.querySelector('.unifco-status-x')){
+        status.classList.remove('ok');
+        status.classList.add('bad','unifco-not-verified');
         status.innerHTML='<span class="unifco-status-x" aria-hidden="true">×</span><span>لم يتم التحقق</span>';
       }
       return;
@@ -72,8 +74,14 @@ HTML;
     }
   };
 
-  normalize();
-  new MutationObserver(normalize).observe(status,{childList:true,subtree:true,characterData:true});
+  const scheduleChecks=()=>{
+    [0,120,300,650,1200,2200].forEach(delay=>setTimeout(normalize,delay));
+  };
+
+  button?.addEventListener('click',scheduleChecks,{passive:true});
+  input?.addEventListener('change',scheduleChecks,{passive:true});
+  input?.addEventListener('blur',scheduleChecks,{passive:true});
+  scheduleChecks();
 })();
 </script>
 HTML;
