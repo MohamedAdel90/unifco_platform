@@ -91,7 +91,7 @@ class PublicRequestWizardTest extends TestCase
     {
         $this->get('/request-service')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v12', false)
+            ->assertSee('unifco-customer-context-layout-v13', false)
             ->assertSee('uf-customer-lookup-intro', false)
             ->assertSee('align-self:start!important', false)
             ->assertSee('height:auto!important', false)
@@ -101,7 +101,7 @@ class PublicRequestWizardTest extends TestCase
 
         $this->get('/request-service?lang=en')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v12', false)
+            ->assertSee('unifco-customer-context-layout-v13', false)
             ->assertSee('html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer', false);
     }
 
@@ -124,7 +124,10 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('#customer-status.uf-verified-status:after', false)
             ->assertSee("status?.classList.toggle('uf-verified-status'", false)
             ->assertSee("status.textContent=document.documentElement.lang==='en'?'Verified':'تم التحقق'", false)
-            ->assertSee('grid-template-columns:minmax(130px,.42fr) 155px minmax(110px,.58fr)!important', false)
+            ->assertSee('grid-template-columns:minmax(130px,30%) repeat(2,minmax(125px,1fr))!important', false)
+            ->assertSee('.lookup-row>#customer-lookup{width:100%!important;min-width:0!important;height:42px!important', false)
+            ->assertSee('justify-content:center!important', false)
+            ->assertSee('overflow:hidden!important', false)
             ->assertSee('#customer-summary.uf-legacy-customer-summary{display:block!important;width:100%!important', false)
             ->assertSee('background:#08752c!important', false)
             ->assertDontSee('uf-customer-verified-end', false);
