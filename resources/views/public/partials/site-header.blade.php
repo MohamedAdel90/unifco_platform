@@ -3,7 +3,16 @@
     $headerLocale = $headerHome['lang'] ?? ($locale ?? 'ar');
     $headerBase = route($headerLocale === 'ar' ? 'public.home' : 'public.home.en');
     $languageTarget = $headerLocale === 'ar' ? 'en' : 'ar';
-    $languageUrl = route('public.home', ['lang' => $languageTarget]);
+    // Keep visitors on the same request workflow (and preserve the selected
+    // request type) when switching languages. Other public pages retain the
+    // existing homepage language switch behaviour.
+    if (request()->routeIs('public.request-service')) {
+        $languageQuery = request()->query();
+        $languageQuery['lang'] = $languageTarget;
+        $languageUrl = route('public.request-service', $languageQuery);
+    } else {
+        $languageUrl = route('public.home', ['lang' => $languageTarget]);
+    }
     $headerLabels = $headerLocale === 'ar' ? [
         'home' => 'الرئيسية',
         'about' => 'تعرف علينا',
