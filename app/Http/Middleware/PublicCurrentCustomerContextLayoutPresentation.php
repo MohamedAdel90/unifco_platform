@@ -22,9 +22,9 @@ class PublicCurrentCustomerContextLayoutPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-context-layout-v7">
+<style id="unifco-customer-context-layout-v8">
 .uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:stretch!important;margin-bottom:14px!important;direction:ltr!important}
-.uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:stretch!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;padding:18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
+.uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:start!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;padding:17px 18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
 .uf-customer-context-layout>.uf-context-details{grid-area:details!important;display:grid!important;grid-template-rows:auto 1fr!important;gap:14px!important;align-self:stretch!important;min-width:0!important;width:100%!important;height:100%!important;direction:rtl!important}
 .uf-customer-context-layout>.uf-context-details:only-child{grid-area:auto!important;grid-column:1/-1!important}
@@ -43,12 +43,17 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-context-details .uf-db-address{background:#f3f7fb!important;color:#173a69!important;cursor:not-allowed!important}
 .uf-context-details .uf-manual-address{background:#fff!important;cursor:text!important}
 
+.uf-customer-lookup-intro{display:flex!important;align-items:baseline!important;justify-content:space-between!important;gap:12px!important;width:100%!important;margin:-2px 0 7px!important}
+.uf-customer-lookup-intro>label{display:block!important;margin:0!important;font-size:11px!important;font-weight:900!important;color:#071f4d!important;white-space:nowrap!important}
+.uf-customer-lookup-intro>.lookup-auto-hint{display:block!important;flex:1 1 auto!important;margin:0!important;text-align:start!important;color:#8190a4!important;font-size:9px!important;line-height:1.55!important}
 .uf-context-customer>.lookup-row{display:grid!important;grid-template-columns:minmax(0,1fr) 155px!important;gap:10px!important;width:100%!important;max-width:none!important;margin:0!important}
 .uf-context-customer>.lookup-row>*{min-width:0!important;max-width:none!important;width:100%!important}
 .uf-context-customer #customer_number{width:100%!important;max-width:none!important}
-.uf-context-customer>#customer-status{width:100%!important;max-width:none!important;margin:10px 0 0!important}
+.uf-context-customer>#customer-status{width:100%!important;max-width:none!important;margin:8px 0 0!important;min-height:0!important}
+.uf-context-customer>#customer-status:empty{display:none!important}
 .uf-context-customer>#customer-status.ok{display:none!important}
-.uf-context-customer>#uf-current-customer-card{display:flex!important;flex-direction:column!important;flex:1 1 auto!important;width:100%!important;max-width:none!important;margin:12px 0 0!important;justify-self:stretch!important;align-self:stretch!important}
+.uf-context-customer>#customer-summary.uf-legacy-customer-summary{display:none!important}
+.uf-context-customer>#uf-current-customer-card{display:flex!important;flex-direction:column!important;flex:0 0 auto!important;width:100%!important;max-width:none!important;margin:12px 0 0!important;justify-self:stretch!important;align-self:stretch!important}
 .uf-context-customer>#uf-current-customer-card[hidden]{display:none!important}
 .uf-context-customer>#uf-current-customer-card .uf-customer-profile-head{display:flex!important;width:100%!important;min-height:68px!important;padding:10px 13px!important;box-sizing:border-box!important}
 .uf-context-customer>#uf-current-customer-card .uf-customer-verified{display:flex!important;visibility:visible!important;opacity:1!important}
@@ -61,15 +66,16 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-context-customer.uf-customer-loaded .uf-hide-after-load{display:none!important}
 .uf-customer-context-layout .disabled-section{opacity:.48}
 .uf-customer-context-layout .disabled-section:not(.uf-context-customer){pointer-events:none}
+html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer,html[dir="ltr"] .uf-customer-context-layout>.uf-context-details{direction:ltr!important}
 @media(max-width:1180px){.uf-customer-context-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer .uf-address-item{grid-column:span 1!important}}
 @media(max-width:1050px){.uf-customer-context-layout{grid-template-columns:1fr!important;grid-template-areas:"customer" "details"!important;direction:rtl!important}.uf-customer-context-layout>.uf-context-customer{height:auto!important}.uf-customer-context-layout>.uf-context-details{height:auto!important;grid-template-rows:auto auto!important}.uf-context-details #site-section{height:auto!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:repeat(2,1fr)!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:760px){.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer .uf-address-item{grid-column:span 1!important}}
-@media(max-width:620px){.uf-customer-context-layout{gap:10px!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:1fr!important}.uf-context-customer>.lookup-row{grid-template-columns:1fr!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:1fr!important}}
+@media(max-width:620px){.uf-customer-context-layout{gap:10px!important}.uf-customer-lookup-intro{display:block!important}.uf-customer-lookup-intro>.lookup-auto-hint{margin-top:3px!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:1fr!important}.uf-context-customer>.lookup-row{grid-template-columns:1fr!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:1fr!important}}
 </style>
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-context-layout-script-v7">
+<script id="unifco-customer-context-layout-script-v8">
 (()=>{
     const routine=document.getElementById('routine-form');
     const contract=document.getElementById('contract-section');
@@ -110,15 +116,25 @@ HTML;
     const card=document.getElementById('uf-current-customer-card');
     const autoHint=document.getElementById('customer-auto-hint');
     const originalField=input?.closest('.field');
+    const originalLabel=originalField?.querySelector(':scope > label');
+    const originalHint=originalField?.querySelector(':scope > .hint');
+    const legacySummary=document.getElementById('customer-summary');
 
-    if(lookup && lookup.parentElement!==customer) title?.after(lookup);
+    const intro=document.createElement('div');
+    intro.className='uf-customer-lookup-intro';
+    if(originalLabel)intro.appendChild(originalLabel);
+    if(autoHint)intro.appendChild(autoHint);
+    else if(originalHint)intro.appendChild(originalHint);
+    title?.after(intro);
+
+    if(lookup && lookup.parentElement!==customer) intro.after(lookup);
     if(status && status.parentElement!==customer) (lookup||title)?.after(status);
     if(card && card.parentElement!==customer) (status||lookup||title)?.after(card);
 
-    if(originalField && originalField!==lookup){
-        originalField.classList.add('uf-hide-after-load');
-    }
-    autoHint?.classList.add('uf-hide-after-load');
+    if(originalHint && originalHint!==autoHint)originalHint.remove();
+    if(originalField && originalField!==lookup)originalField.remove();
+    legacySummary?.classList.add('uf-legacy-customer-summary');
+    if(['بانتظار إدخال رقم العميل','Waiting for customer number'].includes(status?.textContent.trim()))status.textContent='';
 
     customer.parentNode.insertBefore(layout,customer);
     layout.appendChild(details);

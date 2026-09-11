@@ -87,6 +87,24 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee("el.name==='lang')el.value='en'", false);
     }
 
+    public function test_customer_lookup_card_is_compact_and_has_no_waiting_placeholder(): void
+    {
+        $this->get('/request-service')
+            ->assertOk()
+            ->assertSee('unifco-customer-context-layout-v8', false)
+            ->assertSee('uf-customer-lookup-intro', false)
+            ->assertSee('align-self:start!important', false)
+            ->assertSee('height:auto!important', false)
+            ->assertSee("legacySummary?.classList.add('uf-legacy-customer-summary')", false)
+            ->assertSee("if(['بانتظار إدخال رقم العميل','Waiting for customer number'].includes", false)
+            ->assertDontSee("#customer-status:empty:before{content:'بانتظار إدخال رقم العميل'", false);
+
+        $this->get('/request-service?lang=en')
+            ->assertOk()
+            ->assertSee('unifco-customer-context-layout-v8', false)
+            ->assertSee('html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer', false);
+    }
+
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
     {
         $assetId = $this->registeredAsset();
