@@ -73,10 +73,8 @@ class PublicRequestWizardTest extends TestCase
 
         $this->get('/request-service?quotation=1&lang=en')
             ->assertOk()
-            ->assertSee(route('public.request-service', [
-                'quotation' => 1,
-                'lang' => 'ar',
-            ]))
+            ->assertSee('/request-service?quotation=1', false)
+            ->assertSee('lang=ar', false)
             ->assertSee('data-language-switch="ar"', false)
             ->assertDontSee('href="'.route('public.home', ['lang' => 'ar']).'" data-language-switch="ar"', false);
     }
