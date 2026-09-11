@@ -26,7 +26,9 @@ class PublicRequestHeaderMatch
             return $response;
         }
 
-        $locale = str_contains($html, '<html lang="en"') ? 'en' : 'ar';
+        $locale = $request->query('lang') === 'en'
+            ? 'en'
+            : (str_contains($html, '<html lang="en"') ? 'en' : 'ar');
         $home = app(\App\Services\HomepageContentService::class)->getContent($locale);
         $header = view('public.partials.site-header', compact('home', 'locale'))->render();
 
