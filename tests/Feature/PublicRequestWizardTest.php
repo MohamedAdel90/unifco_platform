@@ -91,7 +91,7 @@ class PublicRequestWizardTest extends TestCase
     {
         $this->get('/request-service')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v13', false)
+            ->assertSee('unifco-customer-context-layout-v14', false)
             ->assertSee('uf-customer-lookup-intro', false)
             ->assertSee('align-self:start!important', false)
             ->assertSee('height:auto!important', false)
@@ -101,7 +101,7 @@ class PublicRequestWizardTest extends TestCase
 
         $this->get('/request-service?lang=en')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v13', false)
+            ->assertSee('unifco-customer-context-layout-v14', false)
             ->assertSee('html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer', false);
     }
 
@@ -135,6 +135,17 @@ class PublicRequestWizardTest extends TestCase
         $this->get('/request-service?lang=en')
             ->assertOk()
             ->assertSee("'تم التحقق':'Verified'", false);
+    }
+
+    public function test_customer_id_shares_company_row_and_email_stays_inside_its_cell(): void
+    {
+        $this->get('/request-service')
+            ->assertOk()
+            ->assertSee('.customer-identity>div:last-child{display:flex!important', false)
+            ->assertSee(".customer-code:before{content:'ID : '!important", false)
+            ->assertSee('#summary-email{display:block!important;width:100%!important;max-width:100%!important', false)
+            ->assertSee('overflow-wrap:anywhere!important', false)
+            ->assertSee('text-align:right!important', false);
     }
 
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
