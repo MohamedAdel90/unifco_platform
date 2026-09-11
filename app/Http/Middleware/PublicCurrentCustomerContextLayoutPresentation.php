@@ -22,7 +22,7 @@ class PublicCurrentCustomerContextLayoutPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-context-layout-v14">
+<style id="unifco-customer-context-layout-v15">
 .uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:stretch!important;margin-bottom:14px!important;direction:ltr!important}
 .uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:start!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;padding:17px 18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
@@ -53,9 +53,16 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-context-customer #customer-status{width:100%!important;max-width:none!important;margin:0!important;min-height:0!important}
 .uf-context-customer #customer-status:empty{display:none!important}
 .uf-context-customer #customer-status.ok{display:none!important}
-.uf-context-customer .lookup-row>#customer-status:not(.uf-verified-status):not(:empty){grid-column:1/-1!important;margin-top:2px!important}
-.uf-context-customer #customer-status.uf-verified-status{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;width:100%!important;min-width:0!important;height:42px!important;min-height:42px!important;padding:5px 8px!important;overflow:hidden!important;box-sizing:border-box!important;background:#eefbf3!important;border:1px solid #b8dfc5!important;border-radius:8px!important;color:#08752c!important;font-family:inherit!important;font-size:11px!important;font-weight:900!important;line-height:1.4!important;white-space:nowrap!important}
-.uf-context-customer #customer-status.uf-verified-status:after{content:'✓'!important;width:24px!important;height:24px!important;display:inline-grid!important;place-items:center!important;flex:0 0 24px!important;margin:0!important;box-sizing:border-box!important;border-radius:50%!important;background:#08752c!important;border:1px solid #056522!important;color:#fff!important;font-size:13px!important;font-weight:900!important;line-height:1!important;box-shadow:0 2px 6px rgba(8,117,44,.22)!important}
+.uf-context-customer .lookup-row>#customer-status:not(.uf-lookup-state):not(:empty){grid-column:1/-1!important;margin-top:2px!important}
+.uf-context-customer #customer-status.uf-lookup-state{display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:100%!important;min-width:0!important;height:42px!important;min-height:42px!important;padding:5px 7px!important;overflow:hidden!important;box-sizing:border-box!important;border-radius:8px!important;font-family:inherit!important;font-size:clamp(8.5px,.78vw,11px)!important;font-weight:900!important;line-height:1.35!important;white-space:nowrap!important;text-overflow:clip!important}
+.uf-context-customer #customer-status.uf-lookup-state:after{width:24px!important;height:24px!important;display:inline-grid!important;place-items:center!important;flex:0 0 24px!important;margin:0!important;box-sizing:border-box!important;border-radius:50%!important;color:#fff!important;font-size:13px!important;font-weight:900!important;line-height:1!important}
+.uf-context-customer #customer-status.uf-prompt-status,.uf-context-customer #customer-status.uf-pending-status{background:#fff8e6!important;border:1px solid #efd28a!important;color:#8a6508!important}
+.uf-context-customer #customer-status.uf-prompt-status:after{content:'!'!important;background:#c9900b!important;border:1px solid #ae7905!important;box-shadow:0 2px 6px rgba(201,144,11,.2)!important}
+.uf-context-customer #customer-status.uf-pending-status:after{content:'…'!important;background:#c9900b!important;border:1px solid #ae7905!important;box-shadow:0 2px 6px rgba(201,144,11,.2)!important}
+.uf-context-customer #customer-status.uf-verified-status{background:#eefbf3!important;border:1px solid #b8dfc5!important;color:#08752c!important}
+.uf-context-customer #customer-status.uf-verified-status:after{content:'✓'!important;background:#08752c!important;border:1px solid #056522!important;box-shadow:0 2px 6px rgba(8,117,44,.22)!important}
+.uf-context-customer #customer-status.uf-missing-status{background:#fff1f2!important;border:1px solid #efb8bf!important;color:#b21f34!important}
+.uf-context-customer #customer-status.uf-missing-status:after{content:'×'!important;background:#c6283e!important;border:1px solid #a91f32!important;box-shadow:0 2px 6px rgba(198,40,62,.2)!important}
 .uf-context-customer>#customer-summary.uf-legacy-customer-summary{display:block!important;width:100%!important;margin:10px 0 0!important;padding:9px 11px!important;background:#f8fffc!important;border-color:#c9e7dd!important;border-radius:10px!important}
 .uf-legacy-customer-summary:not(.is-ok) .customer-summary-head,.uf-legacy-customer-summary:not(.is-ok) .customer-change{display:none!important}
 .uf-legacy-customer-summary .customer-state{display:none!important}
@@ -96,7 +103,7 @@ html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer,html[dir="ltr"]
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-context-layout-script-v14">
+<script id="unifco-customer-context-layout-script-v15">
 (()=>{
     const routine=document.getElementById('routine-form');
     const contract=document.getElementById('contract-section');
@@ -157,13 +164,30 @@ HTML;
     legacySummary?.classList.add('uf-legacy-customer-summary');
     if(['بانتظار إدخال رقم العميل','Waiting for customer number'].includes(status?.textContent.trim()))status.textContent='';
 
-    const syncVerificationStatus=()=>{
-        const verified=!!legacySummary?.classList.contains('is-ok');
-        status?.classList.toggle('uf-verified-status',verified);
-        if(verified && status)status.textContent=document.documentElement.lang==='en'?'Verified':'تم التحقق';
+    const lookupStateClasses=['uf-prompt-status','uf-pending-status','uf-verified-status','uf-missing-status'];
+    const setLookupState=(state,text)=>{
+        if(!status)return;
+        status.classList.add('uf-lookup-state');
+        lookupStateClasses.forEach(name=>status.classList.toggle(name,name===state));
+        if(status.textContent!==text)status.textContent=text;
     };
-    if(legacySummary)new MutationObserver(syncVerificationStatus).observe(legacySummary,{attributes:true,attributeFilter:['class']});
-    syncVerificationStatus();
+    const syncLookupStatus=()=>{
+        if(!status)return;
+        const english=document.documentElement.lang==='en';
+        const value=(input?.value||'').trim();
+        const raw=status.textContent.trim();
+        if(!value){setLookupState('uf-prompt-status',english?'Please enter the number':'يرجى إدخال الرقم');return;}
+        if(legacySummary?.classList.contains('is-ok')){setLookupState('uf-verified-status',english?'Verified':'تم التحقق');return;}
+        if(legacySummary?.classList.contains('is-bad') || /لم يتم العثور|غير موجود|not found/i.test(raw)){setLookupState('uf-missing-status',english?'Customer not found':'العميل غير موجود');return;}
+        setLookupState('uf-pending-status',english?'Checking…':'جاري التحقق…');
+    };
+    if(legacySummary)new MutationObserver(syncLookupStatus).observe(legacySummary,{attributes:true,attributeFilter:['class']});
+    if(status)new MutationObserver(syncLookupStatus).observe(status,{attributes:true,childList:true,subtree:true});
+    input?.addEventListener('input',()=>{
+        legacySummary?.classList.remove('is-ok','is-bad');
+        queueMicrotask(syncLookupStatus);
+    });
+    syncLookupStatus();
 
     customer.parentNode.insertBefore(layout,customer);
     layout.appendChild(details);
