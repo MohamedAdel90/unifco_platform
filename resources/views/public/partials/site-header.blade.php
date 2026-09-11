@@ -1,6 +1,11 @@
 @php
-    $headerHome = $home ?? app(\App\Services\HomepageContentService::class)->getContent($locale ?? 'ar');
-    $headerLocale = $headerHome['lang'] ?? ($locale ?? 'ar');
+    $requestLocale = request()->routeIs('public.request-service')
+        ? (request()->query('lang') === 'en' ? 'en' : 'ar')
+        : null;
+    $headerHome = $requestLocale
+        ? app(\App\Services\HomepageContentService::class)->getContent($requestLocale)
+        : ($home ?? app(\App\Services\HomepageContentService::class)->getContent($locale ?? 'ar'));
+    $headerLocale = $requestLocale ?? ($headerHome['lang'] ?? ($locale ?? 'ar'));
     $headerBase = route($headerLocale === 'ar' ? 'public.home' : 'public.home.en');
     $languageTarget = $headerLocale === 'ar' ? 'en' : 'ar';
     // Keep visitors on the same request workflow (and preserve the selected
