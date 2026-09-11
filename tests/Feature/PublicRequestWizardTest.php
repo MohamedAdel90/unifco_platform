@@ -77,6 +77,16 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('data-language-switch="ar"', false);
     }
 
+    public function test_english_request_page_localizes_the_form_and_direction(): void
+    {
+        $this->get('/request-service?lang=en')
+            ->assertOk()
+            ->assertSee('<html lang="en" dir="ltr">', false)
+            ->assertSee('id="unifco-public-request-english-localization"', false)
+            ->assertSee("'بيانات العميل':'Customer Information'", false)
+            ->assertSee("el.name==='lang')el.value='en'", false);
+    }
+
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
     {
         $assetId = $this->registeredAsset();
