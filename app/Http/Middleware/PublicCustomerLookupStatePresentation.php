@@ -22,38 +22,40 @@ class PublicCustomerLookupStatePresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-lookup-state-v2">
-.lookup-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;width:100%!important;min-width:0!important}
-#customer_number{min-width:0!important;width:100%!important}
-.uf-lookup-actions{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;direction:rtl!important;min-width:0!important;max-width:100%!important}
-#customer-lookup{width:auto!important;min-width:126px!important;height:42px!important;min-height:42px!important;padding:0 16px!important;border-radius:8px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;font-family:Cairo,Arial,sans-serif!important;font-size:10.5px!important;font-weight:900!important;line-height:1!important;white-space:nowrap!important;box-sizing:border-box!important;background:#1769c2!important;border:1px solid #1769c2!important;color:#fff!important;box-shadow:0 4px 12px rgba(23,105,194,.16)!important}
+<style id="unifco-customer-lookup-state-v3">
+.lookup-row{display:flex!important;align-items:center!important;gap:8px!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important;box-sizing:border-box!important}
+#customer_number{flex:1 1 auto!important;min-width:90px!important;width:auto!important;max-width:100%!important;height:42px!important;box-sizing:border-box!important}
+.uf-lookup-actions{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;direction:rtl!important;flex:0 1 auto!important;min-width:0!important;max-width:58%!important;overflow:hidden!important;box-sizing:border-box!important}
+#customer-lookup,#customer-lookup-state-indicator{height:42px!important;min-height:42px!important;border-radius:8px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;font-family:Cairo,Arial,sans-serif!important;font-weight:900!important;line-height:1!important;white-space:nowrap!important;word-break:keep-all!important;box-sizing:border-box!important;overflow:hidden!important;text-overflow:clip!important}
+#customer-lookup{flex:0 1 auto!important;width:max-content!important;min-width:96px!important;max-width:140px!important;padding:0 12px!important;background:#1769c2!important;border:1px solid #1769c2!important;color:#fff!important;box-shadow:0 4px 12px rgba(23,105,194,.16)!important;font-size:10px!important}
 #customer-lookup:hover{background:#105aa9!important;border-color:#105aa9!important}
-#customer-lookup .lookup-refresh{font-size:14px!important;line-height:1!important}
-#customer-lookup-state-indicator{width:auto!important;max-width:190px!important;min-width:118px!important;height:42px!important;min-height:42px!important;padding:0 14px!important;border-radius:8px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;font-family:Cairo,Arial,sans-serif!important;font-size:clamp(9px,1vw,11px)!important;font-weight:900!important;line-height:1!important;white-space:nowrap!important;word-break:keep-all!important;overflow:hidden!important;text-overflow:clip!important;box-sizing:border-box!important;box-shadow:none!important;transition:background .18s ease,border-color .18s ease,color .18s ease!important;pointer-events:none!important}
-#customer-lookup-state-indicator .uf-lookup-state-icon{width:16px!important;height:16px!important;flex:0 0 16px!important;display:inline-grid!important;place-items:center!important;font-size:15px!important;line-height:1!important}
+#customer-lookup .lookup-refresh{font-size:14px!important;line-height:1!important;flex:0 0 auto!important}
+#customer-lookup-state-indicator{flex:0 1 auto!important;width:max-content!important;min-width:106px!important;max-width:172px!important;padding:0 12px!important;font-size:10px!important;box-shadow:none!important;transition:background .18s ease,border-color .18s ease,color .18s ease!important;pointer-events:none!important}
+#customer-lookup-state-indicator .uf-lookup-state-icon{width:15px!important;height:15px!important;flex:0 0 15px!important;display:inline-grid!important;place-items:center!important;font-size:14px!important;line-height:1!important}
 #customer-lookup-state-indicator .uf-lookup-state-label{display:block!important;min-width:0!important;white-space:nowrap!important;line-height:1!important}
 #customer-lookup-state-indicator.is-empty{background:#fff7df!important;border:1px solid #e7bd58!important;color:#9a6700!important}
-#customer-lookup-state-indicator.is-ready{background:#eef6ff!important;border:1px solid #8ebced!important;color:#155fae!important}
-#customer-lookup-state-indicator.is-loading{background:#edf4ff!important;border:1px solid #7daee5!important;color:#174f8c!important}
 #customer-lookup-state-indicator.is-valid{background:#eaf8ef!important;border:1px solid #73c88f!important;color:#16753c!important}
 #customer-lookup-state-indicator.is-invalid{background:#fff0f1!important;border:1px solid #e1848d!important;color:#bd2632!important}
 @media(max-width:700px){
- .lookup-row{grid-template-columns:minmax(0,1fr) auto!important;gap:6px!important}
- .uf-lookup-actions{gap:6px!important}
- #customer-lookup{min-width:104px!important;height:40px!important;min-height:40px!important;padding:0 10px!important;font-size:9.5px!important}
- #customer-lookup-state-indicator{min-width:104px!important;max-width:150px!important;height:40px!important;min-height:40px!important;padding:0 10px!important;font-size:clamp(8px,2.5vw,10px)!important;gap:5px!important}
- #customer-lookup-state-indicator .uf-lookup-state-icon{width:14px!important;height:14px!important;flex-basis:14px!important;font-size:13px!important}
+ .lookup-row{gap:5px!important}
+ #customer_number{min-width:72px!important;height:40px!important}
+ .uf-lookup-actions{gap:5px!important;max-width:62%!important}
+ #customer-lookup,#customer-lookup-state-indicator{height:40px!important;min-height:40px!important;gap:4px!important}
+ #customer-lookup{min-width:82px!important;max-width:118px!important;padding:0 8px!important;font-size:9px!important}
+ #customer-lookup-state-indicator{min-width:92px!important;max-width:145px!important;padding:0 8px!important;font-size:9px!important}
+ #customer-lookup-state-indicator .uf-lookup-state-icon{width:13px!important;height:13px!important;flex-basis:13px!important;font-size:12px!important}
 }
-@media(max-width:520px){
- .lookup-row{grid-template-columns:1fr!important}
- .uf-lookup-actions{width:100%!important;justify-content:stretch!important}
- #customer-lookup,#customer-lookup-state-indicator{flex:1 1 0!important;min-width:0!important;max-width:none!important}
+@media(max-width:430px){
+ #customer_number{min-width:64px!important}
+ .uf-lookup-actions{max-width:64%!important}
+ #customer-lookup{min-width:74px!important;max-width:104px!important;padding:0 6px!important;font-size:8px!important}
+ #customer-lookup-state-indicator{min-width:84px!important;max-width:130px!important;padding:0 6px!important;font-size:8px!important}
 }
 </style>
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-lookup-state-script-v2">
+<script id="unifco-customer-lookup-state-script-v3">
 (()=>{
   const ready=fn=>document.readyState==='loading'?document.addEventListener('DOMContentLoaded',fn):fn();
   ready(()=>{
@@ -64,9 +66,8 @@ HTML;
 
     const isEnglish=()=>String(document.documentElement.lang||'').toLowerCase().startsWith('en') || document.documentElement.dir==='ltr';
     const text=(ar,en)=>isEnglish()?en:ar;
-    const minimumLength=1;
 
-    // Restore the original manual fetch action and keep it clickable.
+    // Original manual action stays visible in its original place.
     button.disabled=false;
     button.classList.remove('customer-lookup-state','is-empty','is-ready','is-loading','is-valid','is-invalid');
     button.innerHTML='<span class="lookup-refresh" aria-hidden="true">↻</span><span>'+text('جلب البيانات','Fetch data')+'</span>';
@@ -90,25 +91,16 @@ HTML;
       actions.appendChild(indicator);
     }
 
-    let lastState='';
     const setState=(state)=>{
-      if(lastState===state && indicator.dataset.ufLookupState===state)return;
-      lastState=state;
       indicator.dataset.ufLookupState=state;
-      indicator.classList.remove('is-empty','is-ready','is-loading','is-valid','is-invalid');
+      indicator.classList.remove('is-empty','is-valid','is-invalid');
       indicator.classList.add('is-'+state);
 
-      let icon='';
-      let label='';
-      if(state==='empty'){
-        icon='!'; label=text('يرجى إدخال الرقم','Enter customer number');
-      }else if(state==='ready'){
-        icon='✓'; label=text('جاهز للتحقق','Ready to verify');
-      }else if(state==='loading'){
-        icon='…'; label=text('جاري التحقق','Checking');
-      }else if(state==='valid'){
+      let icon='!';
+      let label=text('يرجى إدخال الرقم','Enter customer number');
+      if(state==='valid'){
         icon='✓'; label=text('تم التحقق','Verified');
-      }else{
+      }else if(state==='invalid'){
         icon='×'; label=text('العميل غير موجود','Customer not found');
       }
       indicator.innerHTML='<span class="uf-lookup-state-icon" aria-hidden="true">'+icon+'</span><span class="uf-lookup-state-label">'+label+'</span>';
@@ -117,28 +109,40 @@ HTML;
     };
 
     const inferState=()=>{
-      const value=input.value.trim();
-      if(value.length<minimumLength){setState('empty');return;}
       if(status?.classList.contains('ok')){setState('valid');return;}
       if(status?.classList.contains('bad')){setState('invalid');return;}
-      if(input.classList.contains('lookup-loading')){setState('loading');return;}
-      setState('ready');
+      setState('empty');
     };
 
-    input.addEventListener('input',()=>requestAnimationFrame(inferState));
-    input.addEventListener('blur',()=>setTimeout(inferState,0));
-    button.addEventListener('click',()=>{
-      if(input.value.trim().length>=minimumLength)setTimeout(()=>setState('loading'),0);
+    const fitRow=()=>{
+      const row=input.closest('.lookup-row');
+      if(!row)return;
+      const total=row.clientWidth;
+      if(!total)return;
+      const compact=total<520;
+      const tiny=total<400;
+      button.style.fontSize=tiny?'7.5px':compact?'8.5px':'10px';
+      indicator.style.fontSize=tiny?'7.5px':compact?'8.5px':'10px';
+      button.style.paddingInline=tiny?'5px':compact?'7px':'12px';
+      indicator.style.paddingInline=tiny?'5px':compact?'7px':'12px';
+    };
+
+    input.addEventListener('input',()=>{
+      if(status){status.className='status';status.textContent=''}
+      requestAnimationFrame(()=>{inferState();fitRow()});
     });
+    input.addEventListener('blur',()=>setTimeout(()=>{inferState();fitRow()},0));
+    button.addEventListener('click',()=>setTimeout(()=>{inferState();fitRow()},0));
 
     if(status){
-      new MutationObserver(()=>requestAnimationFrame(inferState)).observe(status,{attributes:true,childList:true,subtree:true,characterData:true});
+      new MutationObserver(()=>requestAnimationFrame(()=>{inferState();fitRow()})).observe(status,{attributes:true,childList:true,subtree:true,characterData:true});
     }
-    new MutationObserver(()=>requestAnimationFrame(inferState)).observe(input,{attributes:true,attributeFilter:['class']});
+    new ResizeObserver(fitRow).observe(input.closest('.lookup-row')||input);
 
     inferState();
-    setTimeout(inferState,300);
-    setTimeout(inferState,900);
+    fitRow();
+    setTimeout(()=>{inferState();fitRow()},300);
+    setTimeout(()=>{inferState();fitRow()},900);
   });
 })();
 </script>
