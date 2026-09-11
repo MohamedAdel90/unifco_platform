@@ -22,7 +22,7 @@ class PublicCurrentCustomerContextLayoutPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-context-layout-v15">
+<style id="unifco-customer-context-layout-v16">
 .uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:stretch!important;margin-bottom:14px!important;direction:ltr!important}
 .uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:start!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;padding:17px 18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
@@ -98,12 +98,12 @@ html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer,html[dir="ltr"]
 @media(max-width:1180px){.uf-customer-context-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer .uf-address-item{grid-column:span 1!important}}
 @media(max-width:1050px){.uf-customer-context-layout{grid-template-columns:1fr!important;grid-template-areas:"customer" "details"!important;direction:rtl!important}.uf-customer-context-layout>.uf-context-customer{height:auto!important}.uf-customer-context-layout>.uf-context-details{height:auto!important;grid-template-rows:auto auto!important}.uf-context-details #site-section{height:auto!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:repeat(2,1fr)!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:760px){.uf-legacy-customer-summary .customer-details{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer .uf-address-item{grid-column:span 1!important}}
-@media(max-width:620px){.uf-customer-context-layout{gap:10px!important}.uf-customer-lookup-intro{display:block!important}.uf-customer-lookup-intro>.lookup-auto-hint{margin-top:3px!important}.uf-legacy-customer-summary .customer-details{grid-template-columns:1fr!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:1fr!important}.uf-context-customer>.lookup-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer>.lookup-row>#customer_number{grid-column:1/-1!important}.uf-context-customer>.lookup-row>#customer-lookup{grid-column:1!important}.uf-context-customer>.lookup-row>#customer-status.uf-verified-status{grid-column:2!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:1fr!important}}
+@media(max-width:620px){.uf-customer-context-layout{gap:10px!important}.uf-customer-lookup-intro{display:block!important}.uf-customer-lookup-intro>.lookup-auto-hint{margin-top:3px!important}.uf-legacy-customer-summary .customer-details{grid-template-columns:1fr!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:1fr!important}.uf-context-customer>.lookup-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer>.lookup-row>#customer_number{grid-column:1/-1!important}.uf-context-customer>.lookup-row>#customer-lookup{grid-column:1!important}.uf-context-customer>.lookup-row>#customer-status.uf-lookup-state{grid-column:2!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:1fr!important}}
 </style>
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-context-layout-script-v15">
+<script id="unifco-customer-context-layout-script-v16">
 (()=>{
     const routine=document.getElementById('routine-form');
     const contract=document.getElementById('contract-section');
@@ -111,7 +111,11 @@ HTML;
     if(!routine||!contract||!site||routine.querySelector('.uf-customer-context-layout'))return;
 
     const panels=[...routine.children].filter(el=>el.matches?.('section.panel'));
-    const customer=panels.find(el=>el.querySelector('#customer_number'));
+    // A preceding compatibility layer may lift the customer panel one level
+    // above #routine-form. Resolve it from the input as a fallback so the
+    // unified layout is always built on desktop and mobile.
+    const customer=panels.find(el=>el.querySelector('#customer_number'))
+        || document.getElementById('customer_number')?.closest('section.panel');
     if(!customer)return;
 
     const setTitle=(section,title)=>{
