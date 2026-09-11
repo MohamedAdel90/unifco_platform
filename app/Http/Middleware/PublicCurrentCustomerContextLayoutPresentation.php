@@ -22,7 +22,7 @@ class PublicCurrentCustomerContextLayoutPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-context-layout-v13">
+<style id="unifco-customer-context-layout-v14">
 .uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:stretch!important;margin-bottom:14px!important;direction:ltr!important}
 .uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:start!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;padding:17px 18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
@@ -62,10 +62,17 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-legacy-customer-summary .customer-skeleton{display:none!important}
 .uf-legacy-customer-summary .customer-summary-head{padding:0 0 8px!important;margin-bottom:2px!important}
 .uf-legacy-customer-summary .customer-icon{width:32px!important;height:32px!important;font-size:15px!important}
+.uf-legacy-customer-summary .customer-identity{display:flex!important;align-items:center!important;flex:1 1 auto!important;width:100%!important;min-width:0!important}
+.uf-legacy-customer-summary .customer-identity>div:last-child{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex:1 1 auto!important;width:100%!important;min-width:0!important}
+.uf-legacy-customer-summary .customer-name{min-width:0!important;max-width:none!important;flex:1 1 auto!important}
+.uf-legacy-customer-summary .customer-code{display:inline-flex!important;align-items:center!important;flex:0 0 auto!important;margin:0!important;direction:ltr!important;white-space:nowrap!important}
+.uf-legacy-customer-summary .customer-code:before{content:'ID : '!important;margin-right:3px!important;font:inherit!important}
 .uf-legacy-customer-summary .customer-details{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:0!important}
 .uf-legacy-customer-summary .customer-detail{min-height:43px!important;padding:5px 8px!important}
 .uf-legacy-customer-summary .detail-icon{width:25px!important;height:25px!important;font-size:12px!important}
 .uf-legacy-customer-summary .detail-value{min-height:15px!important}
+.uf-legacy-customer-summary #summary-email{display:block!important;width:100%!important;max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word!important;overflow:hidden!important;direction:ltr!important;text-align:right!important;line-height:1.45!important}
+.uf-legacy-customer-summary #summary-email:dir(ltr){text-align:right!important}
 .uf-legacy-customer-summary .customer-change{padding-top:7px!important}
 .uf-context-customer>#uf-current-customer-card{display:flex!important;flex-direction:column!important;flex:0 0 auto!important;width:100%!important;max-width:none!important;margin:12px 0 0!important;justify-self:stretch!important;align-self:stretch!important}
 .uf-context-customer>#uf-current-customer-card[hidden]{display:none!important}
@@ -89,7 +96,7 @@ html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer,html[dir="ltr"]
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-context-layout-script-v13">
+<script id="unifco-customer-context-layout-script-v14">
 (()=>{
     const routine=document.getElementById('routine-form');
     const contract=document.getElementById('contract-section');
