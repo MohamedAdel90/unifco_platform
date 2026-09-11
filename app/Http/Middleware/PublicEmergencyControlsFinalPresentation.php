@@ -156,6 +156,36 @@ class PublicEmergencyControlsFinalPresentation
     gap:13px!important;
   }
 }
+/* Phones need each question to own the full card width. The previous
+   container-only breakpoint was bypassed when the pane inherited a wide
+   layout container, leaving three controls squeezed into half a phone. */
+@media (max-width:640px){
+  .uf-details-pane.uf-emergency-details{
+    padding:14px 12px!important;
+  }
+  .uf-details-pane.uf-emergency-details .uf-emergency-grid2{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:14px!important;
+  }
+  .uf-details-pane.uf-emergency-details .uf-emergency-block>label{
+    min-height:0!important;
+  }
+  .uf-details-pane.uf-emergency-details .uf-emergency-chip{
+    padding-inline:5px!important;
+    font-size:8.5px!important;
+    gap:4px!important;
+    overflow:visible!important;
+  }
+  .uf-details-pane.uf-emergency-details .uf-emergency-priority{
+    width:100%!important;
+  }
+}
+@media (max-width:360px){
+  .uf-details-pane.uf-emergency-details .uf-emergency-block:has([data-em-group="state"]) .uf-emergency-chips,
+  .uf-details-pane.uf-emergency-details .uf-emergency-block:has([data-em-group="started"]) .uf-emergency-chips{
+    grid-template-columns:1fr!important;
+  }
+}
 </style>
 HTML;
 
