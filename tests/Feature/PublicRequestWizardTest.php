@@ -124,8 +124,11 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('#customer-status.uf-verified-status:after', false)
             ->assertSee("status?.classList.toggle('uf-verified-status'", false)
             ->assertSee('background:#08752c!important', false)
-            ->assertSee("'تم التحقق من العميل':'Customer verified'", false)
             ->assertDontSee('uf-customer-verified-end', false);
+
+        $this->get('/request-service?lang=en')
+            ->assertOk()
+            ->assertSee("'تم التحقق من العميل':'Customer verified'", false);
     }
 
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
