@@ -50,6 +50,7 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-context-customer>.lookup-row>*{min-width:0!important;max-width:none!important;width:100%!important}
 .uf-context-customer #customer_number{width:100%!important;max-width:none!important}
 .uf-context-customer>.lookup-row>#customer-lookup{width:100%!important;min-width:0!important;height:42px!important;margin:0!important;box-sizing:border-box!important}
+.uf-context-customer>.lookup-row>#customer-lookup{width:60%!important;justify-self:center!important}
 .uf-context-customer #customer-status{width:100%!important;max-width:none!important;margin:0!important;min-height:0!important}
 .uf-context-customer #customer-status:empty{display:none!important}
 .uf-context-customer #customer-status.ok{display:none!important}
