@@ -22,7 +22,7 @@ class PublicCurrentCustomerContextLayoutPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-context-layout-v10">
+<style id="unifco-customer-context-layout-v11">
 .uf-customer-context-layout{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;grid-template-areas:"details customer"!important;gap:16px!important;align-items:stretch!important;margin-bottom:14px!important;direction:ltr!important}
 .uf-customer-context-layout>.uf-context-customer{grid-area:customer!important;display:flex!important;flex-direction:column!important;align-self:start!important;margin:0!important;direction:rtl!important;min-width:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;padding:17px 18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
 .uf-customer-context-layout>.uf-context-customer>*{box-sizing:border-box!important}
@@ -46,14 +46,15 @@ class PublicCurrentCustomerContextLayoutPresentation
 .uf-customer-lookup-intro{display:flex!important;align-items:baseline!important;justify-content:space-between!important;gap:12px!important;width:100%!important;margin:-2px 0 7px!important}
 .uf-customer-lookup-intro>label{display:block!important;margin:0!important;font-size:11px!important;font-weight:900!important;color:#071f4d!important;white-space:nowrap!important}
 .uf-customer-lookup-intro>.lookup-auto-hint{display:block!important;flex:1 1 auto!important;margin:0!important;text-align:start!important;color:#8190a4!important;font-size:9px!important;line-height:1.55!important}
-.uf-context-customer>.lookup-row{display:grid!important;grid-template-columns:minmax(0,1fr) 155px!important;gap:10px!important;width:100%!important;max-width:none!important;margin:0!important}
+.uf-context-customer>.lookup-row{display:grid!important;grid-template-columns:minmax(150px,.6fr) 155px auto!important;gap:10px!important;align-items:center!important;width:100%!important;max-width:none!important;margin:0!important}
 .uf-context-customer>.lookup-row>*{min-width:0!important;max-width:none!important;width:100%!important}
 .uf-context-customer #customer_number{width:100%!important;max-width:none!important}
-.uf-context-customer>#customer-status{width:100%!important;max-width:none!important;margin:8px 0 0!important;min-height:0!important}
-.uf-context-customer>#customer-status:empty{display:none!important}
-.uf-context-customer>#customer-status.ok{display:none!important}
-.uf-context-customer>#customer-status.uf-verified-status{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;min-height:42px!important;padding:7px 11px!important;background:#eefbf3!important;border:1px solid #b8dfc5!important;border-radius:8px!important;color:#08752c!important;font-size:11px!important;font-weight:900!important;line-height:1.5!important}
-.uf-context-customer>#customer-status.uf-verified-status:after{content:'✓'!important;width:27px!important;height:27px!important;display:inline-grid!important;place-items:center!important;flex:0 0 27px!important;border-radius:50%!important;background:#08752c!important;border:1px solid #056522!important;color:#fff!important;font-size:15px!important;font-weight:900!important;line-height:1!important;box-shadow:0 2px 6px rgba(8,117,44,.22)!important}
+.uf-context-customer #customer-status{width:100%!important;max-width:none!important;margin:0!important;min-height:0!important}
+.uf-context-customer #customer-status:empty{display:none!important}
+.uf-context-customer #customer-status.ok{display:none!important}
+.uf-context-customer .lookup-row>#customer-status:not(.uf-verified-status):not(:empty){grid-column:1/-1!important;margin-top:2px!important}
+.uf-context-customer #customer-status.uf-verified-status{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;width:auto!important;min-width:max-content!important;min-height:42px!important;padding:6px 9px!important;background:#eefbf3!important;border:1px solid #b8dfc5!important;border-radius:8px!important;color:#08752c!important;font-family:inherit!important;font-size:11px!important;font-weight:900!important;line-height:1.5!important;white-space:nowrap!important}
+.uf-context-customer #customer-status.uf-verified-status:after{content:'✓'!important;width:25px!important;height:25px!important;display:inline-grid!important;place-items:center!important;flex:0 0 25px!important;border-radius:50%!important;background:#08752c!important;border:1px solid #056522!important;color:#fff!important;font-size:14px!important;font-weight:900!important;line-height:1!important;box-shadow:0 2px 6px rgba(8,117,44,.22)!important}
 .uf-context-customer>#customer-summary.uf-legacy-customer-summary{display:block!important;width:100%!important;margin:10px 0 0!important;padding:9px 11px!important;background:#f8fffc!important;border-color:#c9e7dd!important;border-radius:10px!important}
 .uf-legacy-customer-summary:not(.is-ok) .customer-summary-head,.uf-legacy-customer-summary:not(.is-ok) .customer-change{display:none!important}
 .uf-legacy-customer-summary .customer-state{display:none!important}
@@ -82,12 +83,12 @@ html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer,html[dir="ltr"]
 @media(max-width:1180px){.uf-customer-context-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer .uf-address-item{grid-column:span 1!important}}
 @media(max-width:1050px){.uf-customer-context-layout{grid-template-columns:1fr!important;grid-template-areas:"customer" "details"!important;direction:rtl!important}.uf-customer-context-layout>.uf-context-customer{height:auto!important}.uf-customer-context-layout>.uf-context-details{height:auto!important;grid-template-rows:auto auto!important}.uf-context-details #site-section{height:auto!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:repeat(2,1fr)!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:760px){.uf-legacy-customer-summary .customer-details{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:repeat(2,minmax(0,1fr))!important}.uf-context-customer .uf-address-item{grid-column:span 1!important}}
-@media(max-width:620px){.uf-customer-context-layout{gap:10px!important}.uf-customer-lookup-intro{display:block!important}.uf-customer-lookup-intro>.lookup-auto-hint{margin-top:3px!important}.uf-legacy-customer-summary .customer-details{grid-template-columns:1fr!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:1fr!important}.uf-context-customer>.lookup-row{grid-template-columns:1fr!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:1fr!important}}
+@media(max-width:620px){.uf-customer-context-layout{gap:10px!important}.uf-customer-lookup-intro{display:block!important}.uf-customer-lookup-intro>.lookup-auto-hint{margin-top:3px!important}.uf-legacy-customer-summary .customer-details{grid-template-columns:1fr!important}.uf-context-details #contract-section .grid,.uf-context-details #site-section .grid{grid-template-columns:1fr!important}.uf-context-customer>.lookup-row{grid-template-columns:minmax(0,1fr) auto!important}.uf-context-customer>.lookup-row>#customer_number{grid-column:1/-1!important}.uf-context-customer>.lookup-row>#customer-lookup{grid-column:1!important}.uf-context-customer>.lookup-row>#customer-status.uf-verified-status{grid-column:2!important}.uf-context-customer>#uf-current-customer-card .uf-customer-profile-body{grid-template-columns:1fr!important}}
 </style>
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-customer-context-layout-script-v10">
+<script id="unifco-customer-context-layout-script-v11">
 (()=>{
     const routine=document.getElementById('routine-form');
     const contract=document.getElementById('contract-section');
@@ -140,8 +141,8 @@ HTML;
     title?.after(intro);
 
     if(lookup && lookup.parentElement!==customer) intro.after(lookup);
-    if(status && status.parentElement!==customer) (lookup||title)?.after(status);
-    if(card && card.parentElement!==customer) (status||lookup||title)?.after(card);
+    if(status && lookup && status.parentElement!==lookup)lookup.appendChild(status);
+    if(card && card.parentElement!==customer) (lookup||title)?.after(card);
 
     if(originalHint && originalHint!==autoHint)originalHint.remove();
     if(originalField && originalField!==lookup)originalField.remove();
@@ -149,7 +150,9 @@ HTML;
     if(['بانتظار إدخال رقم العميل','Waiting for customer number'].includes(status?.textContent.trim()))status.textContent='';
 
     const syncVerificationStatus=()=>{
-        status?.classList.toggle('uf-verified-status',!!legacySummary?.classList.contains('is-ok'));
+        const verified=!!legacySummary?.classList.contains('is-ok');
+        status?.classList.toggle('uf-verified-status',verified);
+        if(verified && status)status.textContent=document.documentElement.lang==='en'?'Verified':'تم التحقق';
     };
     if(legacySummary)new MutationObserver(syncVerificationStatus).observe(legacySummary,{attributes:true,attributeFilter:['class']});
     syncVerificationStatus();

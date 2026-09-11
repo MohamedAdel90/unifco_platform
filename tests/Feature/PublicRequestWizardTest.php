@@ -91,7 +91,7 @@ class PublicRequestWizardTest extends TestCase
     {
         $this->get('/request-service')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v10', false)
+            ->assertSee('unifco-customer-context-layout-v11', false)
             ->assertSee('uf-customer-lookup-intro', false)
             ->assertSee('align-self:start!important', false)
             ->assertSee('height:auto!important', false)
@@ -101,7 +101,7 @@ class PublicRequestWizardTest extends TestCase
 
         $this->get('/request-service?lang=en')
             ->assertOk()
-            ->assertSee('unifco-customer-context-layout-v10', false)
+            ->assertSee('unifco-customer-context-layout-v11', false)
             ->assertSee('html[dir="ltr"] .uf-customer-context-layout>.uf-context-customer', false);
     }
 
@@ -123,12 +123,14 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('#customer-status.uf-verified-status{display:flex!important', false)
             ->assertSee('#customer-status.uf-verified-status:after', false)
             ->assertSee("status?.classList.toggle('uf-verified-status'", false)
+            ->assertSee("status.textContent=document.documentElement.lang==='en'?'Verified':'تم التحقق'", false)
+            ->assertSee('grid-template-columns:minmax(150px,.6fr) 155px auto!important', false)
             ->assertSee('background:#08752c!important', false)
             ->assertDontSee('uf-customer-verified-end', false);
 
         $this->get('/request-service?lang=en')
             ->assertOk()
-            ->assertSee("'تم التحقق من العميل':'Customer verified'", false);
+            ->assertSee("'تم التحقق':'Verified'", false);
     }
 
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
