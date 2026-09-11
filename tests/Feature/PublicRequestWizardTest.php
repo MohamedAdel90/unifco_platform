@@ -60,6 +60,25 @@ class PublicRequestWizardTest extends TestCase
             ->assertDontSee('id="requestForm"', false);
     }
 
+    public function test_language_switch_stays_in_same_request_workflow_and_preserves_type(): void
+    {
+        $this->get('/request-service?emergency=1&service=hvac')
+            ->assertOk()
+            ->assertSee('href="'.route('public.request-service', [
+                'emergency' => 1,
+                'service' => 'hvac',
+                'lang' => 'en',
+            ]).'" data-language-switch="en"', false);
+
+        $this->get('/request-service?quotation=1&lang=en')
+            ->assertOk()
+            ->assertSee('href="'.route('public.request-service', [
+                'quotation' => 1,
+                'lang' => 'ar',
+            ]).'" data-language-switch="ar"', false)
+            ->assertDontSee('href="'.route('public.home', ['lang' => 'ar']).'" data-language-switch="ar"', false);
+    }
+
     public function test_asset_qr_lookup_returns_registry_data_and_request_links_authoritative_asset(): void
     {
         $assetId = $this->registeredAsset();
