@@ -99,7 +99,12 @@ class CustomerController extends Controller
     public function create(): View
     {
         return view('crm.customers.form',[
-            'customer'=>new Customer(['customer_code'=>$this->nextCustomerCode()]),
+            'customer'=>new Customer([
+                'customer_code'=>$this->nextCustomerCode(),
+                'status'=>'ACTIVE',
+                'customer_type'=>'COMPANY',
+                'country'=>'Saudi Arabia',
+            ]),
         ]);
     }
 
@@ -116,7 +121,7 @@ class CustomerController extends Controller
                 ...$validated,
                 'customer_code'=>$customerCode,
                 'organization_id'=>Auth::user()->organization_id,
-                'status'=>'ACTIVE',
+                'status'=>$validated['status']??'ACTIVE',
                 'onboarding_status'=>'ONBOARDING',
             ]);
         });
@@ -142,11 +147,26 @@ class CustomerController extends Controller
 
     private function validated(Request $request, ?Customer $customer=null): array
     {
+        $required=$customer?'nullable':'required';
+
         return $request->validate([
-            'name'=>['required','string','max:180'],'commercial_registration'=>['nullable','string','max:60'],'vat_number'=>['nullable','string','max:60'],
-            'industry'=>['nullable','string','max:120'],'email'=>['nullable','email','max:255'],'contact_name'=>['nullable','string','max:180'],
-            'contract_manager_name'=>['nullable','string','max:180'],'contract_manager_title'=>['nullable','string','max:180'],'project_name'=>['nullable','string','max:255'],
-            'phone'=>['nullable','string','max:40'],'city'=>['nullable','string','max:120'],'country'=>['nullable','string','max:120'],'address'=>['nullable','string','max:500'],
+            'name'=>['required','string','max:180'],
+            'name_ar'=>[$required,'string','max:180'],
+            'customer_type'=>[$required,Rule::in(['COMPANY','GOVERNMENT','INDIVIDUAL'])],
+            'status'=>[$required,Rule::in(['ACTIVE','PROSPECT','INACTIVE','BLOCKED'])],
+            'commercial_registration'=>[$required,'string','max:60'],
+            'vat_number'=>['nullable','string','max:60'],
+            'industry'=>[$required,'string','max:120'],
+            'email'=>[$required,'email','max:255'],
+            'website'=>['nullable','url','max:255'],
+            'contact_name'=>[$required,'string','max:180'],
+            'contact_title'=>['nullable','string','max:180'],
+            'phone'=>[$required,'string','max:40'],
+            'alternate_phone'=>['nullable','string','max:40'],
+            'city'=>[$required,'string','max:120'],
+            'country'=>[$required,'string','max:120'],
+            'address'=>[$required,'string','max:500'],
+            'notes'=>['nullable','string','max:2000'],
         ]);
     }
 
