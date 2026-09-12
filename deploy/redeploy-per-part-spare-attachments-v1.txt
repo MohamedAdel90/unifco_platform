@@ -1,0 +1,1 @@
+Deploy per-part spare-parts attachments after successful Laravel CI and MySQL staging qualification. Each requested part has its own part photo and equipment nameplate controls; shared report and video remain below.
