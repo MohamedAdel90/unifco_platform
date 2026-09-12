@@ -1,0 +1,1 @@
+Deploy the approved new-customer spare-parts request card after full Laravel CI and MySQL staging qualification passed. Preserve the current-customer request experience and all other service request cards.
