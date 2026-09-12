@@ -96,7 +96,10 @@ HTML;
         $newSelector = '<section class="panel request-selector-panel"><div class="request-selector-row"><div class="request-selector-customer"><label>نوع العميل</label><div class="customer-kind-inline"><button type="button" class="customer-kind-card active" data-customer-kind="current">✓ عميل حالي</button><button type="button" class="customer-kind-card" data-customer-kind="new">＋ عميل جديد</button></div></div><div class="field"><label>نوع الخدمة المطلوبة</label><select id="service-type"><option value="maintenance" selected>صيانة</option><option value="quotation">عرض سعر</option><option value="consultation">استشارة فنية</option></select></div><div class="field"><label>نوع الطلب</label><select id="service-subtype"><option value="routine" selected>صيانة عادية</option><option value="urgent">صيانة طارئة</option></select></div></div><div class="hint request-selector-note">اختر نوع العميل أولًا، ثم الخدمة ونوع الطلب. يتم عرض النموذج المناسب أسفل هذا السطر.</div><div class="future" id="future-box">هذا النوع تم اعتماده للتطوير اللاحق. لم يتم تغيير أي نموذج آخر بالموقع.</div></section>';
         if (str_contains($html, $oldSelector)) $html = str_replace($oldSelector, $newSelector, $html);
 
-        $currentCustomerMarker = '<section class="panel"><h2 class="section-title"><span class="num">1</span> بيانات العميل الحالي</h2>';
+        $currentCustomerMarkers = [
+            '<section class="panel"><h2 class="section-title"><span class="num">1</span> بيانات العميل الحالي</h2>',
+            '<section class="panel"><h2 class="section-title"><span class="num">1</span> بيانات العميل</h2>',
+        ];
         $newCustomerPanel = <<<'HTML'
 <section class="panel new-customer-panel" id="new-customer-panel">
 <h2 class="section-title"><span class="num">1</span> بيانات العميل الجديد</h2>
@@ -115,8 +118,12 @@ HTML;
 <div class="hint" style="margin-top:10px">سيتم فحص الجوال والبريد تلقائيًا عبر مسار CRM الحالي لتجنب إنشاء سجل مكرر، ثم ربط الطلب بالـLead/Opportunity المناسب.</div>
 </section>
 HTML;
-        if (str_contains($html, $currentCustomerMarker)) {
+        foreach ($currentCustomerMarkers as $currentCustomerMarker) {
+            if (! str_contains($html, $currentCustomerMarker)) {
+                continue;
+            }
             $html = str_replace($currentCustomerMarker, $newCustomerPanel.'<section class="panel" id="current-customer-panel"><h2 class="section-title"><span class="num">1</span> بيانات العميل الحالي</h2>', $html);
+            break;
         }
 
         $submit = '<button class="submit" type="submit">إرسال طلب الخدمة</button>';
