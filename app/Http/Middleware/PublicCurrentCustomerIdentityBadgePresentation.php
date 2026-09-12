@@ -22,9 +22,8 @@ class PublicCurrentCustomerIdentityBadgePresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-current-customer-identity-badge-v1">
-/* Current-customer summary only: preserve layout and refine the two identity indicators. */
-#customer-summary.uf-legacy-customer-summary .customer-code{
+<style id="unifco-current-customer-identity-badge-v2">
+#customer-summary .customer-code{
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
@@ -40,7 +39,7 @@ class PublicCurrentCustomerIdentityBadgePresentation
     direction:ltr!important;
     white-space:nowrap!important;
 }
-#customer-summary.uf-legacy-customer-summary .customer-code:before{
+#customer-summary .customer-code:before{
     content:'#'!important;
     display:inline-block!important;
     margin:0!important;
@@ -50,7 +49,7 @@ class PublicCurrentCustomerIdentityBadgePresentation
     font-weight:900!important;
     line-height:1!important;
 }
-#customer-summary.uf-legacy-customer-summary .customer-icon{
+#customer-summary .customer-icon{
     width:32px!important;
     height:32px!important;
     border-radius:8px!important;
@@ -58,8 +57,10 @@ class PublicCurrentCustomerIdentityBadgePresentation
     color:#1769c2!important;
     display:grid!important;
     place-items:center!important;
+    font-size:0!important;
+    line-height:0!important;
 }
-#customer-summary.uf-legacy-customer-summary .customer-icon svg{
+#customer-summary .customer-icon svg{
     display:block!important;
     width:18px!important;
     height:18px!important;
@@ -69,33 +70,30 @@ class PublicCurrentCustomerIdentityBadgePresentation
     stroke-linecap:round!important;
     stroke-linejoin:round!important;
 }
-html[dir="ltr"] #customer-summary.uf-legacy-customer-summary .customer-code,
-html[dir="rtl"] #customer-summary.uf-legacy-customer-summary .customer-code{
+html[dir="ltr"] #customer-summary .customer-code,
+html[dir="rtl"] #customer-summary .customer-code{
     direction:ltr!important;
 }
 </style>
 HTML;
 
         $script = <<<'HTML'
-<script id="unifco-current-customer-identity-badge-script-v1">
+<script id="unifco-current-customer-identity-badge-script-v2">
 (()=>{
     const idCardSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5.5 16c.7-1.5 1.6-2.2 2.5-2.2s1.8.7 2.5 2.2M13 10h5M13 14h4"/></svg>';
-
     const enhance=()=>{
         const summary=document.getElementById('customer-summary');
         if(!summary)return;
         const icon=summary.querySelector('.customer-icon');
-        if(icon && icon.dataset.ufIdentityIcon!=='1'){
-            icon.dataset.ufIdentityIcon='1';
+        if(icon){
             icon.innerHTML=idCardSvg;
             icon.setAttribute('aria-hidden','true');
+            icon.dataset.ufIdentityIcon='2';
         }
     };
-
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhance,{once:true});
-    else enhance();
-
-    new MutationObserver(enhance).observe(document.documentElement,{childList:true,subtree:true});
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhance,{once:true});else enhance();
+    new MutationObserver(enhance).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+    window.addEventListener('pageshow',enhance,{passive:true});
 })();
 </script>
 HTML;
