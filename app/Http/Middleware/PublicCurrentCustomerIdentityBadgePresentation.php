@@ -17,12 +17,13 @@ class PublicCurrentCustomerIdentityBadgePresentation
         }
 
         $html = (string) $response->getContent();
-        if (! str_contains($html, 'id="customer-summary"') || ! str_contains($html, '</body>')) {
+        if (! str_contains($html, 'id="customer-summary"') || ! str_contains($html, '</head>')) {
             return $response;
         }
 
         $style = <<<'HTML'
-<style id="unifco-current-customer-identity-badge-v2">
+<style id="unifco-current-customer-identity-badge-v3">
+/* CSS-only presentation: no observers or runtime DOM rewriting. */
 #customer-summary .customer-code{
     display:inline-flex!important;
     align-items:center!important;
@@ -39,7 +40,7 @@ class PublicCurrentCustomerIdentityBadgePresentation
     direction:ltr!important;
     white-space:nowrap!important;
 }
-#customer-summary .customer-code:before{
+#customer-summary .customer-code::before{
     content:'#'!important;
     display:inline-block!important;
     margin:0!important;
@@ -53,22 +54,18 @@ class PublicCurrentCustomerIdentityBadgePresentation
     width:32px!important;
     height:32px!important;
     border-radius:8px!important;
-    background:#e8f1fd!important;
-    color:#1769c2!important;
-    display:grid!important;
-    place-items:center!important;
+    background-color:#e8f1fd!important;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231769c2' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Ccircle cx='8' cy='11' r='2'/%3E%3Cpath d='M5.5 16c.7-1.5 1.6-2.2 2.5-2.2s1.8.7 2.5 2.2M13 10h5M13 14h4'/%3E%3C/svg%3E")!important;
+    background-repeat:no-repeat!important;
+    background-position:center!important;
+    background-size:18px 18px!important;
+    color:transparent!important;
     font-size:0!important;
     line-height:0!important;
+    overflow:hidden!important;
 }
-#customer-summary .customer-icon svg{
-    display:block!important;
-    width:18px!important;
-    height:18px!important;
-    fill:none!important;
-    stroke:currentColor!important;
-    stroke-width:1.8!important;
-    stroke-linecap:round!important;
-    stroke-linejoin:round!important;
+#customer-summary .customer-icon > *{
+    display:none!important;
 }
 html[dir="ltr"] #customer-summary .customer-code,
 html[dir="rtl"] #customer-summary .customer-code{
@@ -77,29 +74,7 @@ html[dir="rtl"] #customer-summary .customer-code{
 </style>
 HTML;
 
-        $script = <<<'HTML'
-<script id="unifco-current-customer-identity-badge-script-v2">
-(()=>{
-    const idCardSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5.5 16c.7-1.5 1.6-2.2 2.5-2.2s1.8.7 2.5 2.2M13 10h5M13 14h4"/></svg>';
-    const enhance=()=>{
-        const summary=document.getElementById('customer-summary');
-        if(!summary)return;
-        const icon=summary.querySelector('.customer-icon');
-        if(icon){
-            icon.innerHTML=idCardSvg;
-            icon.setAttribute('aria-hidden','true');
-            icon.dataset.ufIdentityIcon='2';
-        }
-    };
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhance,{once:true});else enhance();
-    new MutationObserver(enhance).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
-    window.addEventListener('pageshow',enhance,{passive:true});
-})();
-</script>
-HTML;
-
         $html = str_replace('</head>', $style.'</head>', $html);
-        $html = str_replace('</body>', $script.'</body>', $html);
         $response->setContent($html);
 
         return $response;
