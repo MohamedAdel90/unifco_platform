@@ -95,19 +95,40 @@ class CustomerController extends Controller
 
         return redirect()->route('crm.customers.index')->with('status',"{$imported} customers imported successfully.");
     }
-    public function create(): View { return view('crm.customers.form',['customer'=>new Customer()]); }
+
+    public function create(): View
+    {
+        return view('crm.customers.form',[
+            'customer'=>new Customer(['customer_code'=>$this->nextCustomerCode()]),
+        ]);
+    }
+
     public function edit(Customer $customer): View { return view('crm.customers.form',compact('customer')); }
 
     public function store(Request $request, AuditService $audit): RedirectResponse
     {
-        $customer=Customer::create([...$this->validated($request),'organization_id'=>Auth::user()->organization_id,'status'=>'ACTIVE','onboarding_status'=>'ONBOARDING']);
+        $validated=$this->validated($request);
+
+        $customer=DB::transaction(function () use ($validated) {
+            $customerCode=$this->nextCustomerCode(true);
+
+            return Customer::create([
+                ...$validated,
+                'customer_code'=>$customerCode,
+                'organization_id'=>Auth::user()->organization_id,
+                'status'=>'ACTIVE',
+                'onboarding_status'=>'ONBOARDING',
+            ]);
+        });
+
         $audit->record('crm.customer.created',$customer,[],$customer->toArray());
         return redirect()->route('crm.customers.portal',$customer)->with('status','Customer created. Continue the onboarding checklist.');
     }
 
     public function update(Request $request, Customer $customer, AuditService $audit): RedirectResponse
     {
-        $before=$customer->toArray(); $customer->update($this->validated($request,$customer));
+        $before=$customer->toArray();
+        $customer->update($this->validated($request,$customer));
         $audit->record('crm.customer.updated',$customer,$before,$customer->fresh()->toArray());
         return redirect()->route('crm.customers.portal',$customer)->with('status','Customer master data updated.');
     }
@@ -122,12 +143,39 @@ class CustomerController extends Controller
     private function validated(Request $request, ?Customer $customer=null): array
     {
         return $request->validate([
-            'customer_code'=>['required','string','max:50',Rule::unique('customers')->where(fn($q)=>$q->where('tenant_id',Auth::user()->tenant_id))->ignore($customer?->id)],
             'name'=>['required','string','max:180'],'commercial_registration'=>['nullable','string','max:60'],'vat_number'=>['nullable','string','max:60'],
             'industry'=>['nullable','string','max:120'],'email'=>['nullable','email','max:255'],'contact_name'=>['nullable','string','max:180'],
             'contract_manager_name'=>['nullable','string','max:180'],'contract_manager_title'=>['nullable','string','max:180'],'project_name'=>['nullable','string','max:255'],
             'phone'=>['nullable','string','max:40'],'city'=>['nullable','string','max:120'],'country'=>['nullable','string','max:120'],'address'=>['nullable','string','max:500'],
         ]);
+    }
+
+    private function nextCustomerCode(bool $lock=false): string
+    {
+        $query=Customer::query()
+            ->where('tenant_id',Auth::user()->tenant_id)
+            ->where('customer_code','like','UN-%');
+
+        if($lock){
+            $query->lockForUpdate();
+        }
+
+        $highest=100;
+        foreach($query->pluck('customer_code') as $code){
+            if(preg_match('/^UN-(\d+)$/',(string)$code,$matches)){
+                $highest=max($highest,(int)$matches[1]);
+            }
+        }
+
+        do {
+            $highest++;
+            $candidate='UN-'.$highest;
+        } while(Customer::query()
+            ->where('tenant_id',Auth::user()->tenant_id)
+            ->where('customer_code',$candidate)
+            ->exists());
+
+        return $candidate;
     }
 
     private function filteredCustomers(Request $request)
