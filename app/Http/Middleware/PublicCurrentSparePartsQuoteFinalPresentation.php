@@ -13,7 +13,7 @@ class PublicCurrentSparePartsQuoteFinalPresentation
         $response = $next($request);
         if (! $request->routeIs('public.request-service') || ! method_exists($response, 'getContent') || ! method_exists($response, 'setContent')) return $response;
         $html = (string) $response->getContent();
-        if (! str_contains($html, 'id="uf-request-workspace"') || str_contains($html, 'id="unifco-new-spare-parts-script-v1"')) return $response;
+        if (! str_contains($html, "workspace.id='uf-request-workspace'") || str_contains($html, 'id="unifco-new-spare-parts-script-v1"')) return $response;
 
         $style = <<<'HTML'
 <style id="unifco-new-spare-parts-style-v1">
