@@ -90,7 +90,7 @@ const equipmentLines=()=>{
   (english?'Equipment status: ':'حالة المعدة: ')+(selected('new_equipment_status')||'—')
  ];
 };
-const appendEquipmentDetails=()=>{const details=form.querySelector('textarea[name="details"]');if(!details)return;const clean=(details.value||'').split(/\n\n\[(?:بيانات معدة العميل الجديد|New customer equipment)\]\n/)[0].trim();details.value=(clean?clean+'\n\n':'')+equipmentLines().join('\n')};
+const appendEquipmentDetails=()=>{const details=form.querySelector('textarea[name="details"]:not(:disabled)');if(!details)return;const clean=(details.value||'').split(/\n\n\[(?:بيانات معدة العميل الجديد|New customer equipment)\]\n/)[0].trim();details.value=(clean?clean+'\n\n':'')+equipmentLines().join('\n')};
 const syncWorkspace=()=>{const isNew=panel.classList.contains('show'),workspace=$('uf-request-workspace'),detailsNum=document.querySelector('.uf-details-pane .uf-pane-head .num');document.body.classList.toggle('uf-new-customer-mode',isNew);workspace?.classList.toggle('new-customer-mode',isNew);if(detailsNum)detailsNum.textContent=isNew?'3':'5'};
 const syncKind=()=>{const isNew=panel.classList.contains('show');equipmentPanel.classList.toggle('show',isNew);ids.forEach(id=>{const el=$(id);if(el)el.required=isNew});form.querySelectorAll('[data-new-equipment]').forEach(el=>el.disabled=!isNew);if(isNew){routine?.classList.remove('hidden','uf-core-only');sync()}syncWorkspace()};
 document.querySelectorAll('[data-customer-kind]').forEach(btn=>btn.addEventListener('click',()=>setTimeout(syncKind,0)));

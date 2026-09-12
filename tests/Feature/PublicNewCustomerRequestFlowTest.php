@@ -32,4 +32,17 @@ class PublicNewCustomerRequestFlowTest extends TestCase
             ->assertSee("'اسم مسؤول التواصل':'Contact Name'", false)
             ->assertSee("'رقم الأصل إن وجد':'Asset Number (if available)'", false);
     }
+
+    public function test_new_customer_spare_parts_quote_has_repeatable_parts_card_without_replacing_current_customer_ui(): void
+    {
+        $this->get('/request-service')
+            ->assertOk()
+            ->assertSee('id="unifco-new-spare-parts-script-v1"', false)
+            ->assertSee('uf-new-spare-part', false)
+            ->assertSee('data-part-description', false)
+            ->assertSee('id="uf-new-spare-add"', false)
+            ->assertSee('صور القطعة أو الجزء المطلوب', false)
+            ->assertSee("newPanel.classList.contains('show')&&service.value==='quotation'&&subtype.value==='parts'", false)
+            ->assertSee("textarea[name=\"details\"]:not(:disabled)", false);
+    }
 }
