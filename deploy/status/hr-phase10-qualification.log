@@ -1,700 +1,430 @@
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrDocumentsPhase9Test.php[39;22m:[39;1m85[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrSelfServicePhase8Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrSelfServicePhase8Test.php[39;22m:[39;1m32[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrSelfServicePhase8Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrSelfServicePhase8Test.php[39;22m:[39;1m40[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrSelfServicePhase8Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrSelfServicePhase8Test.php[39;22m:[39;1m50[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrSelfServicePhase8Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrSelfServicePhase8Test.php[39;22m:[39;1m64[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrSelfServicePhase8Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrSelfServicePhase8Test.php[39;22m:[39;1m74[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrSelfServicePhase8Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrSelfServicePhase8Test.php[39;22m:[39;1m84[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrPerformancePhase7Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrPerformancePhase7Test.php[39;22m:[39;1m27[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrPerformancePhase7Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrPerformancePhase7Test.php[39;22m:[39;1m44[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrPerformancePhase7Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrPerformancePhase7Test.php[39;22m:[39;1m56[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrPerformancePhase7Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrPerformancePhase7Test.php[39;22m:[39;1m70[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrRecruitmentPhase6Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrRecruitmentPhase6Test.php[39;22m:[39;1m26[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrRecruitmentPhase6Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrRecruitmentPhase6Test.php[39;22m:[39;1m42[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrRecruitmentPhase6Test[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrRecruitmentPhase6Test.php[39;22m:[39;1m67[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrEndOfServicePhase5Tes[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrEndOfServicePhase5Test.php[39;22m:[39;1m26[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrEndOfServicePhase5Tes[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrEndOfServicePhase5Test.php[39;22m:[39;1m44[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrEndOfServicePhase5Tes[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrEndOfServicePhase5Test.php[39;22m:[39;1m59[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrEndOfServicePhase5Tes[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrEndOfServicePhase5Test.php[39;22m:[39;1m75[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrBusinessTripsPhase4Te[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrBusinessTripsPhase4Test.php[39;22m:[39;1m27[39;22m
-  [33m11  [39m[39;1mtests/Feature/HrBusinessTripsPhase4Test.php[39;22m:[39;1m39[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrBusinessTripsPhase4Te[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrBusinessTripsPhase4Test.php[39;22m:[39;1m27[39;22m
-  [33m11  [39m[39;1mtests/Feature/HrBusinessTripsPhase4Test.php[39;22m:[39;1m46[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrBusinessTripsPhase4Te[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrBusinessTripsPhase4Test.php[39;22m:[39;1m27[39;22m
-  [33m11  [39m[39;1mtests/Feature/HrBusinessTripsPhase4Test.php[39;22m:[39;1m52[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrBusinessTripsPhase4Te[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrBusinessTripsPhase4Test.php[39;22m:[39;1m27[39;22m
-  [33m11  [39m[39;1mtests/Feature/HrBusinessTripsPhase4Test.php[39;22m:[39;1m64[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrPayrollPhase3Test[22m [90m>[39m p… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrPayrollPhase3Test.php[39;22m:[39;1m26[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrPayrollPhase3Test[22m [90m>[39m p… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrPayrollPhase3Test.php[39;22m:[39;1m45[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrAttendanceLeavePhase2[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrAttendanceLeavePhase2Test.php[39;22m:[39;1m29[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrAttendanceLeavePhase2[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrAttendanceLeavePhase2Test.php[39;22m:[39;1m47[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrAttendanceLeavePhase2[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrAttendanceLeavePhase2Test.php[39;22m:[39;1m57[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrEmployeeCorePhase1Tes[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrEmployeeCorePhase1Test.php[39;22m:[39;1m28[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrEmployeeCorePhase1Tes[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrEmployeeCorePhase1Test.php[39;22m:[39;1m48[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrEmployeeCorePhase1Tes[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrEmployeeCorePhase1Test.php[39;22m:[39;1m55[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrEmployeeCorePhase1Tes[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrEmployeeCorePhase1Test.php[39;22m:[39;1m73[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\HrEmployeeCorePhase1Tes[22m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/HrEmployeeCorePhase1Test.php[39;22m:[39;1m100[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\Wave10HrOperationsTest[22m…  [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/Wave10HrOperationsTest.php[39;22m:[39;1m17[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\Wave10HrOperationsTest[22m…  [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/Wave10HrOperationsTest.php[39;22m:[39;1m38[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\SidebarNavigationTest[22m [90m>[39m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/SidebarNavigationTest.php[39;22m:[39;1m13[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\SidebarNavigationTest[22m [90m>[39m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/SidebarNavigationTest.php[39;22m:[39;1m14[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\SidebarNavigationTest[22m [90m>[39m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/SidebarNavigationTest.php[39;22m:[39;1m15[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\SidebarNavigationTest[22m [90m>[39m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/SidebarNavigationTest.php[39;22m:[39;1m16[39;22m
-
-  [31m────────────────────────────────────────────────────────────────────────────[39m  
-  [41;1m FAILED [49;22m [1mTests\Feature\SidebarNavigationTest[22m [90m>[39m… [41;1m BindingResolutionException [49;22m  
-[39;1m  Target class [PublicHomeRenderCompatibilityPresentation] does not exist.[39;22m
-
-  at [32mvendor/laravel/framework/src/Illuminate/Container/Container.php[39m:[32m1149[39m
-    1145▕ 
-    1146▕         try {
-    1147▕             $reflector = new ReflectionClass($concrete);
-    1148▕         } catch (ReflectionException $e) {
-  ➜ 1149▕             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
-    1150▕         }
-    1151▕ 
-    1152▕         // If the type is not instantiable, the developer is attempting to resolve
-    1153▕         // an abstract type such as an Interface or Abstract Class and there is
-
-      [2m+9 vendor frames [22m
-  [33m10  [39m[39;1mtests/Feature/SidebarNavigationTest.php[39;22m:[39;1m18[39;22m
-
-
-  [90mTests:[39m    [31;1m47 failed[39;22m[90m,[39m[39m [39m[32;1m10 passed[39;22m[90m (53 assertions)[39m
-  [90mDuration:[39m [39m71.03s[39m
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Package operations: 110 installs, 0 updates, 0 removals
+  - Downloading doctrine/inflector (2.1.0)
+  - Downloading doctrine/lexer (3.0.1)
+  - Downloading dragonmantank/cron-expression (v3.6.0)
+  - Downloading symfony/deprecation-contracts (v3.7.1)
+  - Downloading psr/container (2.0.2)
+  - Downloading fakerphp/faker (v1.24.1)
+  - Downloading symfony/polyfill-mbstring (v1.38.2)
+  - Downloading symfony/http-foundation (v7.4.17)
+  - Downloading fruitcake/php-cors (v1.4.0)
+  - Downloading symfony/polyfill-php82 (v1.38.1)
+  - Downloading symfony/polyfill-php80 (v1.37.0)
+  - Downloading psr/http-message (2.0)
+  - Downloading psr/http-factory (1.1.0)
+  - Downloading psr/http-client (1.0.3)
+  - Downloading guzzlehttp/psr7 (3.1.0)
+  - Downloading guzzlehttp/promises (3.0.2)
+  - Downloading guzzlehttp/guzzle (8.1.0)
+  - Downloading guzzlehttp/uri-template (v2.0.1)
+  - Downloading symfony/polyfill-intl-normalizer (v1.42.0)
+  - Downloading symfony/polyfill-intl-grapheme (v1.41.0)
+  - Downloading symfony/polyfill-ctype (v1.37.0)
+  - Downloading symfony/string (v7.4.15)
+  - Downloading symfony/service-contracts (v3.7.1)
+  - Downloading symfony/console (v7.4.17)
+  - Downloading nunomaduro/termwind (v2.4.0)
+  - Downloading voku/portable-ascii (2.1.1)
+  - Downloading phpoption/phpoption (1.10.0)
+  - Downloading graham-campbell/result-type (v1.2.0)
+  - Downloading vlucas/phpdotenv (v5.7.0)
+  - Downloading symfony/css-selector (v7.4.17)
+  - Downloading tijsverkoyen/css-to-inline-styles (v2.4.0)
+  - Downloading symfony/var-dumper (v7.4.17)
+  - Downloading symfony/polyfill-uuid (v1.37.0)
+  - Downloading symfony/uid (v7.4.17)
+  - Downloading symfony/routing (v7.4.17)
+  - Downloading symfony/process (v7.4.17)
+  - Downloading symfony/polyfill-php86 (v1.41.0)
+  - Downloading symfony/polyfill-php85 (v1.41.0)
+  - Downloading symfony/polyfill-php84 (v1.38.1)
+  - Downloading symfony/polyfill-intl-idn (v1.42.0)
+  - Downloading symfony/mime (v7.4.17)
+  - Downloading psr/event-dispatcher (1.0.0)
+  - Downloading symfony/event-dispatcher-contracts (v3.7.1)
+  - Downloading symfony/event-dispatcher (v7.4.17)
+  - Downloading psr/log (3.0.2)
+  - Downloading egulias/email-validator (4.0.4)
+  - Downloading symfony/mailer (v7.4.17)
+  - Downloading symfony/error-handler (v7.4.17)
+  - Downloading symfony/http-kernel (v7.4.17)
+  - Downloading symfony/finder (v7.4.17)
+  - Downloading ramsey/collection (2.1.1)
+  - Downloading brick/math (0.18.0)
+  - Downloading ramsey/uuid (4.9.3)
+  - Downloading psr/simple-cache (3.0.0)
+  - Downloading symfony/translation-contracts (v3.7.1)
+  - Downloading symfony/translation (v7.4.17)
+  - Downloading symfony/polyfill-php83 (v1.41.0)
+  - Downloading psr/clock (1.0.0)
+  - Downloading symfony/clock (v7.4.8)
+  - Downloading carbonphp/carbon-doctrine-types (3.2.0)
+  - Downloading nesbot/carbon (3.13.2)
+  - Downloading monolog/monolog (3.10.0)
+  - Downloading league/uri-interfaces (7.8.1)
+  - Downloading league/uri (7.8.1)
+  - Downloading league/mime-type-detection (1.17.0)
+  - Downloading league/flysystem-local (3.35.3)
+  - Downloading league/flysystem (3.35.3)
+  - Downloading nette/utils (v4.1.5)
+  - Downloading nette/schema (v1.3.6)
+  - Downloading dflydev/dot-access-data (v3.0.3)
+  - Downloading league/config (v1.2.0)
+  - Downloading league/commonmark (2.10.0)
+  - Downloading laravel/serializable-closure (v2.0.16)
+  - Downloading laravel/prompts (v0.3.24)
+  - Downloading laravel/framework (v13.29.0)
+  - Downloading laravel/pail (v1.2.7)
+  - Downloading laravel/agent-detector (v2.0.2)
+  - Downloading laravel/pao (v1.1.4)
+  - Downloading laravel/pint (v1.30.5)
+  - Downloading nikic/php-parser (v5.8.0)
+  - Downloading psy/psysh (v0.12.24)
+  - Downloading laravel/tinker (v3.0.2)
+  - Downloading hamcrest/hamcrest-php (v3.0.0)
+  - Downloading mockery/mockery (1.6.15)
+  - Downloading filp/whoops (2.18.4)
+  - Downloading nunomaduro/collision (v8.9.5)
+  - Downloading staabm/side-effects-detector (1.0.5)
+  - Downloading sebastian/version (6.0.0)
+  - Downloading sebastian/type (6.0.4)
+  - Downloading sebastian/recursion-context (7.0.1)
+  - Downloading sebastian/object-reflector (5.0.0)
+  - Downloading sebastian/object-enumerator (7.0.0)
+  - Downloading sebastian/global-state (8.0.3)
+  - Downloading sebastian/exporter (7.0.3)
+  - Downloading sebastian/environment (8.1.2)
+  - Downloading sebastian/diff (7.0.1)
+  - Downloading sebastian/comparator (7.1.8)
+  - Downloading sebastian/cli-parser (4.2.1)
+  - Downloading phpunit/php-timer (8.0.0)
+  - Downloading phpunit/php-text-template (5.0.0)
+  - Downloading phpunit/php-invoker (6.0.0)
+  - Downloading phpunit/php-file-iterator (6.0.2)
+  - Downloading theseer/tokenizer (2.0.1)
+  - Downloading sebastian/lines-of-code (4.0.1)
+  - Downloading sebastian/complexity (5.0.0)
+  - Downloading phpunit/php-code-coverage (12.5.7)
+  - Downloading phar-io/version (3.2.1)
+  - Downloading phar-io/manifest (2.0.4)
+  - Downloading myclabs/deep-copy (1.14.0)
+  - Downloading phpunit/phpunit (12.5.34)
+  - Installing doctrine/inflector (2.1.0): Extracting archive
+  - Installing doctrine/lexer (3.0.1): Extracting archive
+  - Installing dragonmantank/cron-expression (v3.6.0): Extracting archive
+  - Installing symfony/deprecation-contracts (v3.7.1): Extracting archive
+  - Installing psr/container (2.0.2): Extracting archive
+  - Installing fakerphp/faker (v1.24.1): Extracting archive
+  - Installing symfony/polyfill-mbstring (v1.38.2): Extracting archive
+  - Installing symfony/http-foundation (v7.4.17): Extracting archive
+  - Installing fruitcake/php-cors (v1.4.0): Extracting archive
+  - Installing symfony/polyfill-php82 (v1.38.1): Extracting archive
+  - Installing symfony/polyfill-php80 (v1.37.0): Extracting archive
+  - Installing psr/http-message (2.0): Extracting archive
+  - Installing psr/http-factory (1.1.0): Extracting archive
+  - Installing psr/http-client (1.0.3): Extracting archive
+  - Installing guzzlehttp/psr7 (3.1.0): Extracting archive
+  - Installing guzzlehttp/promises (3.0.2): Extracting archive
+  - Installing guzzlehttp/guzzle (8.1.0): Extracting archive
+  - Installing guzzlehttp/uri-template (v2.0.1): Extracting archive
+  - Installing symfony/polyfill-intl-normalizer (v1.42.0): Extracting archive
+  - Installing symfony/polyfill-intl-grapheme (v1.41.0): Extracting archive
+  - Installing symfony/polyfill-ctype (v1.37.0): Extracting archive
+  - Installing symfony/string (v7.4.15): Extracting archive
+  - Installing symfony/service-contracts (v3.7.1): Extracting archive
+  - Installing symfony/console (v7.4.17): Extracting archive
+  - Installing nunomaduro/termwind (v2.4.0): Extracting archive
+  - Installing voku/portable-ascii (2.1.1): Extracting archive
+  - Installing phpoption/phpoption (1.10.0): Extracting archive
+  - Installing graham-campbell/result-type (v1.2.0): Extracting archive
+  - Installing vlucas/phpdotenv (v5.7.0): Extracting archive
+  - Installing symfony/css-selector (v7.4.17): Extracting archive
+  - Installing tijsverkoyen/css-to-inline-styles (v2.4.0): Extracting archive
+  - Installing symfony/var-dumper (v7.4.17): Extracting archive
+  - Installing symfony/polyfill-uuid (v1.37.0): Extracting archive
+  - Installing symfony/uid (v7.4.17): Extracting archive
+  - Installing symfony/routing (v7.4.17): Extracting archive
+  - Installing symfony/process (v7.4.17): Extracting archive
+  - Installing symfony/polyfill-php86 (v1.41.0): Extracting archive
+  - Installing symfony/polyfill-php85 (v1.41.0): Extracting archive
+  - Installing symfony/polyfill-php84 (v1.38.1): Extracting archive
+  - Installing symfony/polyfill-intl-idn (v1.42.0): Extracting archive
+  - Installing symfony/mime (v7.4.17): Extracting archive
+  - Installing psr/event-dispatcher (1.0.0): Extracting archive
+  - Installing symfony/event-dispatcher-contracts (v3.7.1): Extracting archive
+  - Installing symfony/event-dispatcher (v7.4.17): Extracting archive
+  - Installing psr/log (3.0.2): Extracting archive
+  - Installing egulias/email-validator (4.0.4): Extracting archive
+  - Installing symfony/mailer (v7.4.17): Extracting archive
+  - Installing symfony/error-handler (v7.4.17): Extracting archive
+  - Installing symfony/http-kernel (v7.4.17): Extracting archive
+  - Installing symfony/finder (v7.4.17): Extracting archive
+  - Installing ramsey/collection (2.1.1): Extracting archive
+  - Installing brick/math (0.18.0): Extracting archive
+  - Installing ramsey/uuid (4.9.3): Extracting archive
+  - Installing psr/simple-cache (3.0.0): Extracting archive
+  - Installing symfony/translation-contracts (v3.7.1): Extracting archive
+  - Installing symfony/translation (v7.4.17): Extracting archive
+  - Installing symfony/polyfill-php83 (v1.41.0): Extracting archive
+  - Installing psr/clock (1.0.0): Extracting archive
+  - Installing symfony/clock (v7.4.8): Extracting archive
+  - Installing carbonphp/carbon-doctrine-types (3.2.0): Extracting archive
+  - Installing nesbot/carbon (3.13.2): Extracting archive
+  - Installing monolog/monolog (3.10.0): Extracting archive
+  - Installing league/uri-interfaces (7.8.1): Extracting archive
+  - Installing league/uri (7.8.1): Extracting archive
+  - Installing league/mime-type-detection (1.17.0): Extracting archive
+  - Installing league/flysystem-local (3.35.3): Extracting archive
+  - Installing league/flysystem (3.35.3): Extracting archive
+  - Installing nette/utils (v4.1.5): Extracting archive
+  - Installing nette/schema (v1.3.6): Extracting archive
+  - Installing dflydev/dot-access-data (v3.0.3): Extracting archive
+  - Installing league/config (v1.2.0): Extracting archive
+  - Installing league/commonmark (2.10.0): Extracting archive
+  - Installing laravel/serializable-closure (v2.0.16): Extracting archive
+  - Installing laravel/prompts (v0.3.24): Extracting archive
+  - Installing laravel/framework (v13.29.0): Extracting archive
+  - Installing laravel/pail (v1.2.7): Extracting archive
+  - Installing laravel/agent-detector (v2.0.2): Extracting archive
+  - Installing laravel/pao (v1.1.4): Extracting archive
+  - Installing laravel/pint (v1.30.5): Extracting archive
+  - Installing nikic/php-parser (v5.8.0): Extracting archive
+  - Installing psy/psysh (v0.12.24): Extracting archive
+  - Installing laravel/tinker (v3.0.2): Extracting archive
+  - Installing hamcrest/hamcrest-php (v3.0.0): Extracting archive
+  - Installing mockery/mockery (1.6.15): Extracting archive
+  - Installing filp/whoops (2.18.4): Extracting archive
+  - Installing nunomaduro/collision (v8.9.5): Extracting archive
+  - Installing staabm/side-effects-detector (1.0.5): Extracting archive
+  - Installing sebastian/version (6.0.0): Extracting archive
+  - Installing sebastian/type (6.0.4): Extracting archive
+  - Installing sebastian/recursion-context (7.0.1): Extracting archive
+  - Installing sebastian/object-reflector (5.0.0): Extracting archive
+  - Installing sebastian/object-enumerator (7.0.0): Extracting archive
+  - Installing sebastian/global-state (8.0.3): Extracting archive
+  - Installing sebastian/exporter (7.0.3): Extracting archive
+  - Installing sebastian/environment (8.1.2): Extracting archive
+  - Installing sebastian/diff (7.0.1): Extracting archive
+  - Installing sebastian/comparator (7.1.8): Extracting archive
+  - Installing sebastian/cli-parser (4.2.1): Extracting archive
+  - Installing phpunit/php-timer (8.0.0): Extracting archive
+  - Installing phpunit/php-text-template (5.0.0): Extracting archive
+  - Installing phpunit/php-invoker (6.0.0): Extracting archive
+  - Installing phpunit/php-file-iterator (6.0.2): Extracting archive
+  - Installing theseer/tokenizer (2.0.1): Extracting archive
+  - Installing sebastian/lines-of-code (4.0.1): Extracting archive
+  - Installing sebastian/complexity (5.0.0): Extracting archive
+  - Installing phpunit/php-code-coverage (12.5.7): Extracting archive
+  - Installing phar-io/version (3.2.1): Extracting archive
+  - Installing phar-io/manifest (2.0.4): Extracting archive
+  - Installing myclabs/deep-copy (1.14.0): Extracting archive
+  - Installing phpunit/phpunit (12.5.34): Extracting archive
+Generating optimized autoload files
+> Illuminate\Foundation\ComposerScripts::postAutoloadDump
+> @php artisan package:discover --ansi
+
+  [37;44m INFO [39;49m Discovering packages.  
+
+  laravel/pail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+  laravel/pao [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+  laravel/tinker [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+  nesbot/carbon [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+  nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+  nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+
+80 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
+
+   INFO  Application key set successfully.  
+
+No syntax errors detected in app/Http/Controllers/HR/HrComplianceController.php
+No syntax errors detected in app/Models/HrComplianceProfile.php
+No syntax errors detected in app/Models/HrComplianceCase.php
+No syntax errors detected in app/Models/HrComplianceScanRun.php
+No syntax errors detected in app/Models/Employee.php
+No syntax errors detected in app/Models/EmploymentContract.php
+No syntax errors detected in routes/wave17.php
+No syntax errors detected in database/migrations/2026_08_23_000045_build_hr_compliance_phase10.php
+
+   INFO  Preparing database.  
+
+  Creating migration table ...................................... 17.39ms DONE
+
+   INFO  Running migrations.  
+
+  2026_08_14_000001_create_unifco_core_tables .................. 709.48ms DONE
+  2026_08_14_000002_add_controls_and_transactions .............. 463.40ms DONE
+  2026_08_14_000003_add_operational_integration ................ 299.27ms DONE
+  2026_08_14_000005_create_platform_services_tables ............ 148.56ms DONE
+  2026_08_14_000006_create_runtime_security_queue_tables ....... 148.22ms DONE
+  2026_08_15_000008_add_finance_core ........................... 421.25ms DONE
+  2026_08_15_000009_add_procurement_inventory_operations ....... 670.10ms DONE
+  2026_08_15_000010_add_hr_operations .......................... 447.94ms DONE
+  2026_08_15_000011_add_crm_projects_operations ................ 238.96ms DONE
+  2026_08_15_000012_add_manufacturing_expansion ................ 254.88ms DONE
+  2026_08_15_000013_add_maintenance_eam_expansion .............. 547.83ms DONE
+  2026_08_18_000014_add_public_site_requests .................... 22.96ms DONE
+  2026_08_18_000015_link_public_requests_to_business_pipelines . 464.47ms DONE
+  2026_08_18_000016_add_customer_portal_contract_360 ........... 503.59ms DONE
+  2026_08_18_000017_expand_customer_portal_operations .......... 635.74ms DONE
+  2026_08_19_000018_close_field_service_baseline_gaps .......... 633.24ms DONE
+  2026_08_19_000019_add_customer_acceptance_and_report_distribution  153.18ms DONE
+  2026_08_21_000020_add_emergency_request_details .............. 196.31ms DONE
+  2026_08_21_000021_add_customer_onboarding .................... 281.41ms DONE
+  2026_08_21_000022_expand_customer_success_partner_profile .... 152.49ms DONE
+  2026_08_21_000023_create_customer_messaging ................... 75.32ms DONE
+  2026_08_21_000024_provision_witco_portal_admin ................. 2.00ms DONE
+  2026_08_21_000025_build_asset_master_phase_one ............... 886.53ms DONE
+  2026_08_21_000026_asset_templates_and_pm_foundation .......... 438.35ms DONE
+  2026_08_21_000027_add_asset_spare_parts_compatibility ......... 58.70ms DONE
+  2026_08_21_000028_add_work_order_execution_and_reliability ... 572.61ms DONE
+  2026_08_21_000029_add_asset_health_and_replacement_intelligence  293.62ms DONE
+  2026_08_21_000030_add_asset_spare_part_reorder_tracking ....... 42.93ms DONE
+  2026_08_22_000031_build_warehouse_field_inventory_foundation . 760.65ms DONE
+  2026_08_22_000032_add_work_order_part_requests ............... 515.28ms DONE
+  2026_08_22_000033_add_asset_part_consumption_and_returns ..... 480.11ms DONE
+  2026_08_22_000034_add_user_permission_overrides ............... 98.73ms DONE
+  2026_08_22_000035_add_user_security_metadata ................. 393.24ms DONE
+  2026_08_22_000036_add_user_session_version .................... 82.95ms DONE
+  2026_08_23_000037_expand_hr_employee_core .......................... 1s DONE
+  2026_08_23_000038_build_hr_attendance_leave_phase2 ........... 594.08ms DONE
+  2026_08_23_000039_build_hr_payroll_phase3 .................... 508.51ms DONE
+  2026_08_23_000040_build_hr_business_trips_phase4 ............. 435.46ms DONE
+  2026_08_23_000041_build_hr_end_of_service_phase5 ............. 378.47ms DONE
+  2026_08_23_000042_build_hr_recruitment_phase6 ................ 674.58ms DONE
+  2026_08_23_000043_build_hr_performance_phase7 ................ 819.25ms DONE
+  2026_08_23_000044_build_hr_documents_phase9 .................. 424.03ms DONE
+  2026_08_23_000045_build_hr_compliance_phase10 ................ 529.25ms DONE
+  2026_08_23_000046_build_hr_analytics_phase11 ................. 126.91ms DONE
+  2026_08_23_000047_create_branding_settings .................... 30.56ms DONE
+  2026_08_24_000048_upgrade_public_request_experience .......... 195.57ms DONE
+  2026_08_25_000049_rebuild_public_request_single_page ......... 300.41ms DONE
+  2026_08_26_000050_link_public_requests_to_asset_registry ...... 67.03ms DONE
+  2026_08_26_000051_build_service_request_workflow_foundation .. 566.35ms DONE
+  2026_08_27_000052_add_customer_portal_rbac_scopes ............. 41.17ms DONE
+  2026_08_27_000053_add_customer_portal_action_requests ......... 30.38ms DONE
+  2026_08_27_000054_add_customer_action_attachments ............. 48.01ms DONE
+  2026_08_27_000055_add_assignment_sla_to_customer_actions ...... 70.32ms DONE
+  2026_08_27_000056_add_customer_acquisition_lifecycle ......... 675.74ms DONE
+  2026_08_27_000057_add_acquisition_governance_fields .......... 589.87ms DONE
+  2026_08_27_000058_build_professional_asset_master .................. 1s DONE
+  2026_08_27_000059_normalize_user_status_semantics ............ 187.55ms DONE
+  2026_08_27_000060_build_asset_lifecycle_commissioning ........ 672.94ms DONE
+  2026_08_27_000061_normalize_asset_documents_for_professional_master  145.94ms DONE
+  2026_08_28_000020_add_asset_warranty_insurance_phase_d ....... 346.76ms DONE
+  2026_08_28_000070_build_asset_custody_transfers .............. 324.21ms DONE
+  2026_08_28_000080_complete_agreed_asset_phases_b_d ........... 657.37ms DONE
+  2026_08_28_000090_close_agreed_asset_a_d_gaps ...................... 1s DONE
+  2026_08_28_000100_close_asset_acceptance_contract .................. 1s DONE
+  2026_08_28_000110_allow_staged_customer_pm_strategy ........... 23.38ms DONE
+  2026_08_28_000120_normalize_asset_warranty_expiry_date ........ 99.18ms DONE
+  2026_08_29_000060_professionalize_employee_identity_and_contact  486.44ms DONE
+  2026_08_29_000062_add_contract_start_date_to_employees ........ 72.66ms DONE
+  2026_08_30_075500_add_employee_contact_and_assignment_fields . 373.09ms DONE
+  2026_09_02_000001_create_homepage_sections_table .............. 33.52ms DONE
+  2026_09_02_000002_create_homepage_projects_table .............. 24.51ms DONE
+  2026_09_02_000003_create_homepage_clients_table ............... 25.28ms DONE
+  2026_09_03_120000_seed_default_asset_category_templates ........ 2.87ms DONE
+  2026_09_04_120100_set_current_hero_to_full_banner_mode ......... 1.58ms DONE
+  2026_09_04_153000_restore_homepage_service_images .............. 1.57ms DONE
+  2026_09_04_190000_set_generators_service_image ................. 0.60ms DONE
+  2026_09_09_120000_seed_current_customer_asset_uat_dataset ...... 1.24ms DONE
+  2026_09_09_140900_update_uat_customer_code_to_100 .............. 1.24ms DONE
+  2026_09_09_144500_add_video_attachment_path_to_public_service_requests  28.83ms DONE
+  2026_09_10_142500_seed_test_asset_spare_parts .................. 3.30ms DONE
+  2026_09_11_093000_add_test_spare_part_images .................. 38.06ms DONE
+
+
+   INFO  Compiled views cleared successfully.  
+
+
+
+   INFO  Blade templates cached successfully.  
+
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrCompliancePhase10Test[39m
+  [32;1m✓[39;22m[90m [39m[90mcompliance dashboard is available to hr admin[39m[90m                      [39m [90m29.87s[39m  
+  [32;1m✓[39;22m[90m [39m[90mscan creates actionable readiness cases without inventing official[39m[90m… [39m [90m0.30s[39m  
+  [32;1m✓[39;22m[90m [39m[90mqiwa and gosi evidence can be recorded then scan clears source find[39m[90m…[39m [90m0.34s[39m  
+  [32;1m✓[39;22m[90m [39m[90mphase10 routes are registered[39m[90m                                       [39m [90m0.02s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrDocumentsPhase9Test[39m
+  [32;1m✓[39;22m[90m [39m[90memployee can submit own salary certificate request[39m[90m                  [39m [90m0.74s[39m  
+  [32;1m✓[39;22m[90m [39m[90mprofile update is applied only after independent approval[39m[90m           [39m [90m0.74s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own request[39m[90m                                [39m [90m0.73s[39m  
+  [32;1m✓[39;22m[90m [39m[90mapproved letter can be issued as immutable snapshot and opened by o[39m[90m…[39m [90m0.80s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr reader does not require an employee link to open requests[39m[90m        [39m [90m0.95s[39m  
+  [32;1m✓[39;22m[90m [39m[90munlinked user cannot open employee document self service[39m[90m            [39m [90m0.95s[39m  
+  [32;1m✓[39;22m[90m [39m[90mphase9 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrSelfServicePhase8Test[39m
+  [32;1m✓[39;22m[90m [39m[90memployee portal is scoped to linked employee and own payroll[39m[90m        [39m [90m0.75s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee can submit leave against own balance only[39m[90m                  [39m [90m0.75s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee can submit mission and update only own goal[39m[90m                [39m [90m0.74s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmanager portal exposes direct reports but not outside team or payro[39m[90m…[39m [90m0.74s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmanager can decide direct report leave but cannot touch outside tea[39m[90m…[39m [90m0.74s[39m  
+  [32;1m✓[39;22m[90m [39m[90munlinked user cannot open employee self service[39m[90m                     [39m [90m0.95s[39m  
+  [32;1m✓[39;22m[90m [39m[90mphase8 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrPerformancePhase7Test[39m
+  [32;1m✓[39;22m[90m [39m[90mgoals reviews and independent approval work[39m[90m                         [39m [90m0.53s[39m  
+  [32;1m✓[39;22m[90m [39m[90mprobation skill and development records are employee scoped[39m[90m         [39m [90m0.52s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcareer action requires independent approval and effective date befo[39m[90m…[39m [90m0.51s[39m  
+  [32;1m✓[39;22m[90m [39m[90mperformance records are tenant scoped[39m[90m                               [39m [90m0.96s[39m  
+  [32;1m✓[39;22m[90m [39m[90mphase7 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrRecruitmentPhase6Test[39m
+  [32;1m✓[39;22m[90m [39m[90mrequisition requires independent approval then opens vacancy[39m[90m        [39m [90m0.53s[39m  
+  [32;1m✓[39;22m[90m [39m[90mcandidate interview offer hire creates employee contract and onboar[39m[90m…[39m [90m0.56s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrecruitment is tenant scoped[39m[90m                                        [39m [90m0.95s[39m  
+  [32;1m✓[39;22m[90m [39m[90mphase6 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEndOfServicePhase5Test[39m
+  [32;1m✓[39;22m[90m [39m[90mstandard termination calculates full saudi eos and snapshot[39m[90m         [39m [90m0.52s[39m  
+  [32;1m✓[39;22m[90m [39m[90mresignation tiers and article 80 are enforced[39m[90m                       [39m [90m0.51s[39m  
+  [32;1m✓[39;22m[90m [39m[90mfinal settlement requires independent approval and can be marked pa[39m[90m…[39m [90m0.52s[39m  
+  [32;1m✓[39;22m[90m [39m[90mfinal settlements are tenant scoped[39m[90m                                 [39m [90m0.95s[39m  
+  [32;1m✓[39;22m[90m [39m[90mphase5 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrBusinessTripsPhase4Test[39m
+  [32;1m✓[39;22m[90m [39m[90mphase4 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmission request calculates per diem and links business context[39m[90m      [39m [90m0.49s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmission 360 renders business context[39m[90m                                [39m [90m0.51s[39m  
+  [32;1m✓[39;22m[90m [39m[90mrequester cannot approve own mission and full settlement is auditab[39m[90m…[39m [90m0.55s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmissions are tenant scoped[39m[90m                                          [39m [90m0.96s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrPayrollPhase3Test[39m
+  [32;1m✓[39;22m[90m [39m[90mpayroll policy and run calculate saudi gosi and overtime[39m[90m            [39m [90m0.29s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll workspace and routes render[39m[90m                                 [39m [90m0.26s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrAttendanceLeavePhase2Test[39m
+  [32;1m✓[39;22m[90m [39m[90mattendance workspace calculates late minutes and overtime[39m[90m           [39m [90m0.27s[39m  
+  [32;1m✓[39;22m[90m [39m[90mramadan schedule uses reduced daily target[39m[90m                          [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90mleave policy balance accrual request and approval[39m[90m                   [39m [90m0.30s[39m  
+  [32;1m✓[39;22m[90m [39m[90mphase2 routes are registered[39m[90m                                        [39m [90m0.02s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\HrEmployeeCorePhase1Test[39m
+  [32;1m✓[39;22m[90m [39m[90mhr dashboard and employee directory render hr control center[39m[90m        [39m [90m0.29s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee directory can search private identifiers without exposing[39m[90m… [39m [90m0.28s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnew employee route renders structured registration form[39m[90m             [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee master generates sequence and stores structured profile an[39m[90m…[39m [90m0.31s[39m  
+  [32;1m✓[39;22m[90m [39m[90memployee 360 accepts contract and document snapshots[39m[90m                [39m [90m0.28s[39m  
+  [32;1m✓[39;22m[90m [39m[90mhr phase1 routes are registered[39m[90m                                     [39m [90m0.02s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\Wave10HrOperationsTest[39m
+  [32;1m✓[39;22m[90m [39m[90mhr position attendance and leave workflow[39m[90m                           [39m [90m0.53s[39m  
+  [32;1m✓[39;22m[90m [39m[90mpayroll posts balanced journal with segregation of duties[39m[90m           [39m [90m0.54s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\SidebarNavigationTest[39m
+  [32;1m✓[39;22m[90m [39m[90madmin sidebar renders grouped platform navigation[39m[90m                   [39m [90m0.30s[39m  
+  [32;1m✓[39;22m[90m [39m[90msidebar enhancer is available outside dashboard[39m[90m                     [39m [90m0.26s[39m  
+  [32;1m✓[39;22m[90m [39m[90musers workspace is real administration screen[39m[90m                       [39m [90m0.49s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnon admin cannot open users workspace[39m[90m                               [39m [90m0.48s[39m  
+  [32;1m✓[39;22m[90m [39m[90moperational wave routes are registered[39m[90m                              [39m [90m0.02s[39m  
+  [32;1m✓[39;22m[90m [39m[90msidebar keeps mobile menu and active navigation hooks[39m[90m               [39m [90m0.29s[39m  
+
+  [90mTests:[39m    [32;1m57 passed[39;22m[90m (397 assertions)[39m
+  [90mDuration:[39m [39m55.64s[39m
 
