@@ -70,10 +70,10 @@
             <div class="customer-card-body">
                 <div class="customer-grid">
                     <div class="field"><label>Full Name <span class="req">*</span></label><div class="control-wrap"><span class="control-icon">♙</span><input name="contact_name" value="{{ old('contact_name',$customer->contact_name) }}" placeholder="Enter contact person full name" {{ !$customer->exists?'required':'' }}></div></div>
-                    <div class="field"><label>Mobile / Phone <span class="req">*</span></label><div class="control-wrap"><span class="control-icon">☎</span><input name="phone" value="{{ old('phone',$customer->phone) }}" placeholder="Enter mobile number" inputmode="tel" {{ !$customer->exists?'required':'' }}></div></div>
+                    <div class="field"><label>Mobile / Phone <span class="req">*</span></label><div class="control-wrap"><span class="control-icon">☎</span><input name="contact_phone" value="{{ old('contact_phone',$customer->contact_phone) }}" placeholder="Enter mobile number" inputmode="tel" {{ !$customer->exists?'required':'' }}></div></div>
                     <div class="field"><label>Job Title</label><div class="control-wrap"><span class="control-icon">▣</span><input name="contact_title" value="{{ old('contact_title',$customer->contact_title) }}" placeholder="Enter job title (optional)"></div></div>
                     <div class="field"><label>Alternate Phone</label><div class="control-wrap"><span class="control-icon">☎</span><input name="alternate_phone" value="{{ old('alternate_phone',$customer->alternate_phone) }}" placeholder="Enter alternate phone number (optional)" inputmode="tel"></div></div>
-                    <div class="field full"><label>Email <span class="req">*</span></label><div class="control-wrap"><span class="control-icon">✉</span><input type="email" name="email" value="{{ old('email',$customer->email) }}" placeholder="Enter contact email" {{ !$customer->exists?'required':'' }}></div></div>
+                    <div class="field full"><label>Email <span class="req">*</span></label><div class="control-wrap"><span class="control-icon">✉</span><input type="email" name="contact_email" value="{{ old('contact_email',$customer->contact_email) }}" placeholder="Enter contact email" {{ !$customer->exists?'required':'' }}></div></div>
                 </div>
             </div>
         </div>
