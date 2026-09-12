@@ -160,6 +160,8 @@ class CustomerController extends Controller
             'email'=>[$required,'email','max:255'],
             'website'=>['nullable','url','max:255'],
             'contact_name'=>[$required,'string','max:180'],
+            'contact_email'=>[$required,'email','max:255'],
+            'contact_phone'=>[$required,'string','max:40'],
             'contact_title'=>['nullable','string','max:180'],
             'phone'=>[$required,'string','max:40'],
             'alternate_phone'=>['nullable','string','max:40'],
