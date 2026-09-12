@@ -11,7 +11,7 @@ class Customer extends Model
 
     protected $fillable = [
         'tenant_id','organization_id','customer_code','name','name_ar','commercial_registration','vat_number','industry','customer_type',
-        'email','website','contact_name','contact_title','contract_manager_name','contract_manager_title','project_name','logo_path',
+        'email','website','contact_name','contact_email','contact_phone','contact_title','contract_manager_name','contract_manager_title','project_name','logo_path',
         'phone','alternate_phone','city','country','address','notes','status','onboarding_status','onboarding_review_status','onboarding_reviewed_by','onboarding_reviewed_at','onboarding_review_notes',
         'acquisition_source','origin_lead_id','first_touch_at','converted_by','converted_at'
     ];
