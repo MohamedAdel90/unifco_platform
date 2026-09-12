@@ -11,7 +11,9 @@ return new class extends Migration {
             $table->string('name_ar', 180)->nullable()->after('name');
             $table->string('customer_type', 40)->nullable()->after('industry');
             $table->string('website')->nullable()->after('email');
-            $table->string('contact_title', 180)->nullable()->after('contact_name');
+            $table->string('contact_email')->nullable()->after('contact_name');
+            $table->string('contact_phone', 40)->nullable()->after('contact_email');
+            $table->string('contact_title', 180)->nullable()->after('contact_phone');
             $table->string('alternate_phone', 40)->nullable()->after('phone');
             $table->text('notes')->nullable()->after('address');
         });
@@ -24,6 +26,8 @@ return new class extends Migration {
                 'name_ar',
                 'customer_type',
                 'website',
+                'contact_email',
+                'contact_phone',
                 'contact_title',
                 'alternate_phone',
                 'notes',
