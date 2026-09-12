@@ -40,6 +40,8 @@ class PublicNewCustomerRequestFlowTest extends TestCase
             ->assertSee('id="unifco-new-spare-parts-script-v1"', false)
             ->assertSee('uf-new-spare-part', false)
             ->assertSee('data-part-description', false)
+            ->assertSee('data-part-file-row', false)
+            ->assertSee('uf-part-file-previews', false)
             ->assertSee('id="uf-new-spare-add"', false)
             ->assertSee('صور القطعة أو الجزء المطلوب', false)
             ->assertSee("newPanel.classList.contains('show')&&service.value==='quotation'&&subtype.value==='parts'", false)

@@ -13,6 +13,7 @@ class PublicFinalUnifiedAttachmentsPresentation
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->routeIs('public.request.store')) {
+            $fieldLimits = ['equipment_photos' => 6, 'problem_photos' => 6, 'previous_reports' => 5];
             foreach ($request->allFiles() as $field => $files) {
                 if ($field === 'request_video') {
                     continue;
@@ -21,8 +22,9 @@ class PublicFinalUnifiedAttachmentsPresentation
                 array_walk_recursive($files, static function ($file) use (&$flat): void {
                     if ($file) $flat[] = $file;
                 });
-                if (count($flat) > 2) {
-                    return back()->withInput()->withErrors([$field => 'الحد الأقصى مرفقان فقط لكل بند.']);
+                $limit = $fieldLimits[$field] ?? 2;
+                if (count($flat) > $limit) {
+                    return back()->withInput()->withErrors([$field => 'تم تجاوز الحد الأقصى للمرفقات المسموح بها.']);
                 }
             }
 
