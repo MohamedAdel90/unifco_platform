@@ -40,6 +40,21 @@ UNIFCO uses `RBAC + scope-based access + separation of duties + append-only audi
 - `security_events`: login and technical-security events.
 - `approval_authorities`: approval type, role, level, scope, future amount limit and conditions.
 - `audit_logs`: IP, session, reason, metadata and chained integrity hashes.
+- `master_data_entries`: bilingual, typed administrative catalog entries with lifecycle status.
+- `email_templates`: bilingual notification-template foundation without business send authority.
+
+## Administrative workspaces
+
+- `/system-admin`: system-only health and access overview; legacy `/dashboard` links redirect here for system-only administrators.
+- `/workspace/users` and User 360: dynamic multiple-role assignment, explicit Primary Role, scopes, effective permissions, login history and audited security actions.
+- `/admin/system/sessions`: session review and per-session force logout.
+- `/admin/system/security-events`: filtered security-event monitoring.
+- `/admin/system/invitations`: Pending, Accepted, Expired and Revoked invitation lifecycle.
+- `/admin/system/scheduled-jobs`: scheduler definition, queued work, batches, failures and audited retry.
+- `/admin/system/organization`: administrative organization, department and job-title structure, separate from security scope.
+- `/admin/system/master-data`: Service Type, Request Type, Priority, Status and Category catalogs.
+- `/admin/system/email-templates`: bilingual email-template foundation.
+- `/admin/audit`: immutable history with actor/module/object filters, integrity hash and Before → After inspection.
 
 ## System Administrator baseline
 
@@ -54,7 +69,7 @@ The `SYSTEM_ADMIN` master role includes user, role, scope, session, invitation, 
 - Rollback removes only the new structures and added columns.
 - The legacy authorization fallback applies only when no structured assignment exists. Remove it after all external identity writers have moved to `user_roles`.
 
-## Remaining rollout gates
+## Platform-wide rollout gates
 
 - Connect the production email provider before enabling actual invitation delivery.
 - Add MFA enrollment/provider integration; the schema/UI placeholder does not claim MFA is active.
@@ -62,3 +77,5 @@ The `SYSTEM_ADMIN` master role includes user, role, scope, session, invitation, 
 - Replace remaining direct `role === ...` checks module by module with permissions/policies.
 - Add database-level append-only protection if the production database account has trigger privileges; application routes already expose no audit mutation.
 - Add approval workflow enforcement before activating `requires_approval` for sensitive role changes.
+
+These gates are platform-wide follow-on controls, not missing System Administrator navigation or CRUD work. MFA and controlled transactional impersonation remain explicitly future capabilities; the current impersonation mode is read-only by design.

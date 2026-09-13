@@ -18,6 +18,11 @@ class DashboardController extends Controller
     {
         $user=auth()->user();
         if($user->role==='CUSTOMER') return redirect()->route('customer.portal');
+        // System authority has its own dashboard. Do not expose business data and
+        // do not leave administrators at an unhelpful 403 when using an old link.
+        if($authorization->allows($user,'system.dashboard.view') && !$authorization->allows($user,'dashboard.view')) {
+            return redirect()->route('system-admin.dashboard');
+        }
         $authorization->authorize($user,'dashboard.view');
 
         $days=max(7,min(90,(int)$request->query('days',30)));

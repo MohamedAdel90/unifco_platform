@@ -1,0 +1,13 @@
+@extends('layouts.app')
+@section('title','Scheduled Jobs | UNIFCO Platform')
+@section('heading','Scheduled Jobs')
+@section('content')
+@include('admin.system.operations-styles')
+@php($queuedCount=method_exists($queued,'total')?$queued->total():$queued->count()) @php($failedCount=method_exists($failed,'total')?$failed->total():$failed->count())
+<section class="ops-hero"><h1>Scheduled Jobs</h1><p>Monitor queued work, batches and failures. Retrying a failed job is an audited administrative action.</p></section>
+@if(session('status'))<div class="notice">{{ session('status') }}</div>@endif
+<div class="ops-summary"><div class="ops-metric"><small>Scheduled Tasks</small><b>{{ $scheduled->count() }}</b></div><div class="ops-metric"><small>Queued Jobs</small><b>{{ $queuedCount }}</b></div><div class="ops-metric"><small>Failed Jobs</small><b>{{ $failedCount }}</b></div></div>
+<section class="ops-card"><h3>Scheduler Definition</h3><table class="ops-table"><thead><tr><th>Task</th><th>Schedule</th><th>Timezone</th></tr></thead><tbody>@forelse($scheduled as $task)<tr><td>{{ $task->description }}</td><td>{{ $task->expression }}</td><td>{{ $task->timezone ?: config('app.timezone') }}</td></tr>@empty<tr><td colspan="3" class="ops-empty">No scheduled tasks registered.</td></tr>@endforelse</tbody></table></section>
+<section class="ops-card"><h3>Failed Jobs</h3><table class="ops-table"><thead><tr><th>ID</th><th>Queue</th><th>Failed At</th><th>Exception</th><th>Action</th></tr></thead><tbody>@forelse($failed as $job)<tr><td>#{{ $job->id }}</td><td>{{ $job->queue }}</td><td>{{ $job->failed_at }}</td><td>{{ str($job->exception)->before("\n")->limit(160) }}</td><td><form method="POST" action="{{ route('admin.system.scheduled-jobs.retry',$job->id) }}" onsubmit="return confirm('Retry this failed job?')">@csrf<button class="btn">Retry</button></form></td></tr>@empty<tr><td colspan="5" class="ops-empty">No failed jobs.</td></tr>@endforelse</tbody></table>@if(method_exists($failed,'links')){{ $failed->links() }}@endif</section>
+<section class="ops-card"><h3>Queued Jobs</h3><table class="ops-table"><thead><tr><th>ID</th><th>Queue</th><th>Attempts</th><th>Reserved</th><th>Available</th></tr></thead><tbody>@forelse($queued as $job)<tr><td>#{{ $job->id }}</td><td>{{ $job->queue }}</td><td>{{ $job->attempts }}</td><td>{{ $job->reserved_at ? date('d M Y H:i',$job->reserved_at) : 'Waiting' }}</td><td>{{ date('d M Y H:i',$job->available_at) }}</td></tr>@empty<tr><td colspan="5" class="ops-empty">No queued jobs.</td></tr>@endforelse</tbody></table>@if(method_exists($queued,'links')){{ $queued->links() }}@endif</section>
+@endsection
