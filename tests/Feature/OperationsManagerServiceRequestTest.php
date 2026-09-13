@@ -100,8 +100,9 @@ class OperationsManagerServiceRequestTest extends TestCase
             'email'=>'no-scope-tech@example.test','password'=>'password','role'=>'TECHNICIAN','status'=>'ACTIVE',
         ]);
 
+        // Out-of-scope resources are intentionally hidden to avoid disclosing their existence.
         $this->actingAs($manager)->post(route('operations-manager.service-requests.assign',$serviceRequest),[
             'assigned_engineer_id'=>$technician->id,
-        ])->assertForbidden();
+        ])->assertNotFound();
     }
 }
