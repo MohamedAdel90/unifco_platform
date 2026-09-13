@@ -27,7 +27,10 @@ class OperationsManagerReportsTest extends TestCase
 
     public function test_manager_can_open_operational_reports(): void
     {
-        $this->actingAs($this->manager())->get('/operations-manager/reports')->assertOk()->assertSee('Operational Reports & Performance');
+        $this->actingAs($this->manager())
+            ->get('/operations-manager/reports')
+            ->assertOk()
+            ->assertSee('Operational Reports & Performance', false);
     }
 
     public function test_manager_without_scope_gets_zero_operational_report(): void
