@@ -22,30 +22,32 @@ class PublicCustomerNumberMobileAlignmentPresentation
         }
 
         $style = <<<'HTML'
-<style id="unifco-customer-number-mobile-alignment-v2">
-/* Desktop/tablet: the customer card and the contract + site stack share one grid row.
-   Both columns therefore expand and contract together with exactly the same outer height. */
+<style id="unifco-customer-number-mobile-alignment-v3">
+/* This block is intentionally emitted at the end of BODY so it wins over the
+   earlier context-layout middleware on the response path. */
 @media (min-width:1051px){
     .uf-customer-context-layout{
         align-items:stretch!important;
     }
     .uf-customer-context-layout>.uf-context-customer{
         align-self:stretch!important;
-        height:100%!important;
-        min-height:100%!important;
+        height:auto!important;
+        min-height:0!important;
         margin:0!important;
     }
     .uf-customer-context-layout>.uf-context-details{
         align-self:stretch!important;
-        height:100%!important;
-        min-height:100%!important;
+        height:auto!important;
+        min-height:0!important;
         grid-template-rows:auto minmax(0,1fr)!important;
     }
     .uf-customer-context-layout>.uf-context-details>#contract-section{
+        align-self:start!important;
         height:auto!important;
         margin:0!important;
     }
     .uf-customer-context-layout>.uf-context-details>#site-section{
+        align-self:stretch!important;
         height:100%!important;
         min-height:0!important;
         margin:0!important;
@@ -71,7 +73,11 @@ class PublicCustomerNumberMobileAlignmentPresentation
 </style>
 HTML;
 
-        $html = str_replace('</head>', $style.'</head>', $html);
+        if (str_contains($html, '</body>')) {
+            $html = str_replace('</body>', $style.'</body>', $html);
+        } else {
+            $html .= $style;
+        }
         $response->setContent($html);
 
         return $response;
