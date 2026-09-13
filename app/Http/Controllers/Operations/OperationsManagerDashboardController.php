@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Operations;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, Customer, Project, WorkOrder};
+use App\Models\{Asset, Customer, Project, ServiceRequest, WorkOrder};
 use App\Services\ScopeService;
 use Illuminate\Http\Request;
 
@@ -17,9 +17,11 @@ class OperationsManagerDashboardController extends Controller
         $assets = $scopes->apply(Asset::query()->where('tenant_id', $user->tenant_id), $user);
         $projects = $scopes->apply(Project::query()->where('tenant_id', $user->tenant_id), $user);
         $customers = $scopes->apply(Customer::query()->where('tenant_id', $user->tenant_id), $user);
+        $serviceRequests = $scopes->apply(ServiceRequest::query()->where('tenant_id', $user->tenant_id), $user);
 
         $openStatuses = ['OPEN','PLANNED','ASSIGNED','IN_PROGRESS','WAITING_PARTS','ON_HOLD'];
         $closedStatuses = ['COMPLETED','CLOSED','CANCELLED'];
+        $openRequestStages = ['NEW','TRIAGE','ASSIGNED','IN_PROGRESS','WAITING_PARTS','ON_HOLD','ESCALATED'];
 
         $metrics = [
             'open_work_orders' => (clone $workOrders)->whereIn('status', $openStatuses)->count(),
@@ -28,6 +30,8 @@ class OperationsManagerDashboardController extends Controller
             'active_projects' => (clone $projects)->whereNotIn('status', ['COMPLETED','CLOSED','CANCELLED'])->count(),
             'active_assets' => (clone $assets)->whereNotIn('status', ['RETIRED','DISPOSED','INACTIVE'])->count(),
             'customers_in_scope' => (clone $customers)->where('status', 'ACTIVE')->count(),
+            'open_service_requests' => (clone $serviceRequests)->whereIn('workflow_stage', $openRequestStages)->count(),
+            'sla_breaches' => (clone $serviceRequests)->whereIn('workflow_stage', $openRequestStages)->whereNotNull('current_stage_due_at')->where('current_stage_due_at','<',now())->count(),
         ];
 
         $priorityWorkOrders = (clone $workOrders)
