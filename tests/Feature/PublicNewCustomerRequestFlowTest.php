@@ -15,7 +15,7 @@ class PublicNewCustomerRequestFlowTest extends TestCase
             ->assertSee('أدخل بيانات المعدة مباشرة.', false)
             ->assertSee('id="new_equipment_name"', false)
             ->assertSee('id="new_equipment_type"', false)
-            ->assertSee('body.uf-new-customer-mode .uf-new-customer-shell{display:grid!important;grid-template-columns:minmax(340px,.9fr) minmax(0,1.55fr)!important', false)
+            ->assertSee('body.uf-new-customer-mode .uf-new-customer-shell{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important', false)
             ->assertSee('body.uf-new-customer-mode .uf-workspace{direction:rtl!important', false)
             ->assertSee('body.uf-new-customer-mode .uf-asset-pane.uf-new-equipment-active', false)
             ->assertSee('function ensureCustomerShell()', false)
