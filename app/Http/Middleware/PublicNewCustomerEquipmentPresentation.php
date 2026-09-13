@@ -44,15 +44,21 @@ HTML;
         );
 
         $styles = <<<'HTML'
-<style id="unifco-new-customer-equipment-style-v4">
+<style id="unifco-new-customer-equipment-style-v5">
 .new-customer-equipment-panel{display:none!important}
 .new-customer-equipment-panel .new-equipment-direct-hint{margin:-5px 0 13px!important}
 .new-customer-equipment-panel select{height:42px}
+.uf-new-customer-shell{display:none}
 body.uf-new-customer-mode #current-customer-panel,body.uf-new-customer-mode #contract-section,body.uf-new-customer-mode #site-section,body.uf-new-customer-mode #asset-section{display:none!important}
 body.uf-new-customer-mode #future-box{display:none!important}
-body.uf-new-customer-mode #new-customer-panel{display:block!important}
-body.uf-new-customer-mode #new-customer-panel .new-customer-grid{width:100%!important;max-width:none!important}
-/* Do not redefine the unified card layout for new customers. It must inherit the exact same card geometry, widths, gaps, radius, shadows, padding and responsive behavior used by the existing-customer request. Only the field data changes. */
+body.uf-new-customer-mode .uf-new-customer-shell{display:grid!important;grid-template-columns:minmax(340px,.9fr) minmax(0,1.55fr)!important;gap:16px!important;align-items:stretch!important;direction:rtl!important;margin:0 0 16px!important}
+body.uf-new-customer-mode #new-customer-panel{display:block!important;margin:0!important;width:auto!important;max-width:none!important;height:100%!important}
+body.uf-new-customer-mode .uf-new-customer-location{display:block!important;margin:0!important;height:100%!important}
+body.uf-new-customer-mode #new-customer-panel .new-customer-grid,body.uf-new-customer-mode .uf-new-customer-location .new-customer-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;width:100%!important;max-width:none!important}
+body.uf-new-customer-mode .uf-new-customer-location .section-title{margin-bottom:14px!important}
+body.uf-new-customer-mode .uf-new-customer-location .hint{margin-top:10px!important}
+body.uf-new-customer-mode .uf-new-customer-location .field,body.uf-new-customer-mode #new-customer-panel .field{min-width:0!important}
+body.uf-new-customer-mode .uf-new-customer-location input,body.uf-new-customer-mode .uf-new-customer-location select,body.uf-new-customer-mode #new-customer-panel input,body.uf-new-customer-mode #new-customer-panel select{width:100%!important;max-width:none!important}
 body.uf-new-customer-mode .uf-workspace{direction:rtl!important}
 body.uf-new-customer-mode .uf-workspace .uf-asset-pane,body.uf-new-customer-mode .uf-workspace .uf-details-pane{min-width:0!important}
 body.uf-new-customer-mode .uf-asset-pane.uf-new-equipment-active>:not(.uf-pane-head):not(.new-equipment-direct-hint):not(.new-customer-grid){display:none!important}
@@ -60,62 +66,51 @@ body.uf-new-customer-mode .uf-asset-pane .new-equipment-direct-hint{display:bloc
 body.uf-new-customer-mode .uf-asset-pane .new-customer-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;max-width:none!important}
 body.uf-new-customer-mode .uf-asset-pane .new-customer-grid .field{min-width:0!important}
 body.uf-new-customer-mode .uf-asset-pane .new-customer-grid input,body.uf-new-customer-mode .uf-asset-pane .new-customer-grid select{width:100%!important;max-width:none!important}
-@media(max-width:650px){body.uf-new-customer-mode .uf-asset-pane .new-customer-grid{grid-template-columns:1fr!important}}
+@media(max-width:1100px){body.uf-new-customer-mode .uf-new-customer-shell{grid-template-columns:1fr!important}}
+@media(max-width:650px){body.uf-new-customer-mode #new-customer-panel .new-customer-grid,body.uf-new-customer-mode .uf-new-customer-location .new-customer-grid,body.uf-new-customer-mode .uf-asset-pane .new-customer-grid{grid-template-columns:1fr!important}}
 </style>
 HTML;
         $html = str_replace('</head>', $styles.'</head>', $html);
 
         $script = <<<'HTML'
-<script id="unifco-new-customer-equipment-script-v4">
+<script id="unifco-new-customer-equipment-script-v5">
 (()=>{
 const $=id=>document.getElementById(id),form=$('maintenance-form'),panel=$('new-customer-panel'),equipmentPanel=$('new-customer-equipment-panel'),routine=$('routine-form'),service=$('service-type'),subtype=$('service-subtype');
 if(!form||!panel||!equipmentPanel)return;
 const ids=['new_equipment_name','new_equipment_type'];
 const equipmentHint=equipmentPanel.querySelector('.new-equipment-direct-hint'),equipmentGrid=equipmentPanel.querySelector('.new-customer-grid');
+const originalGrid=panel.querySelector('.new-customer-grid');
+let shell=null,locationPanel=null,locationGrid=null,customerFields=[],locationFields=[];
+function ensureCustomerShell(){
+ if(shell||!originalGrid)return;
+ const allFields=[...originalGrid.children].filter(el=>el.classList?.contains('field'));
+ if(allFields.length<6)return;
+ customerFields=allFields.slice(0,4);locationFields=allFields.slice(4);
+ shell=document.createElement('div');shell.className='uf-new-customer-shell';
+ locationPanel=document.createElement('section');locationPanel.className='panel uf-new-customer-location';
+ const english=document.documentElement.lang==='en';
+ locationPanel.innerHTML='<h2 class="section-title">'+(english?'Site & Contact Information':'بيانات الموقع والتواصل')+'</h2><div class="new-customer-grid"></div>';
+ locationGrid=locationPanel.querySelector('.new-customer-grid');
+ const parent=panel.parentElement;parent?.insertBefore(shell,panel);shell.appendChild(panel);shell.appendChild(locationPanel);
+ locationFields.forEach(field=>locationGrid.appendChild(field));
+ [...panel.querySelectorAll('button')].filter(btn=>!btn.hasAttribute('data-customer-kind')).forEach(btn=>locationPanel.appendChild(btn));
+ [...panel.querySelectorAll('.hint')].forEach(hint=>{if(!hint.closest('.new-customer-grid'))locationPanel.appendChild(hint)});
+}
 function hidden(name,value){let el=form.querySelector('input[data-new-equipment="'+name+'"]');if(!el){el=document.createElement('input');el.type='hidden';el.name=name;el.dataset.newEquipment=name;form.appendChild(el)}el.value=value||'';el.disabled=!panel.classList.contains('show');return el}
 function sync(){if(!panel.classList.contains('show'))return;
- const type=$('new_equipment_type')?.value||'GENERAL';
- const brand=$('new_equipment_brand')?.value.trim()||'';
- const model=$('new_equipment_model')?.value.trim()||'';
- hidden('site_name',$('new_company_name')?.value||'موقع العميل الجديد');
- hidden('asset_type',type);hidden('equipment_brand',brand);hidden('equipment_model',model);
+ const type=$('new_equipment_type')?.value||'GENERAL',brand=$('new_equipment_brand')?.value.trim()||'',model=$('new_equipment_model')?.value.trim()||'';
+ hidden('site_name',$('new_company_name')?.value||'موقع العميل الجديد');hidden('asset_type',type);hidden('equipment_brand',brand);hidden('equipment_model',model);
  const baseAddress=[$('new_district')?.value,$('new_address')?.value].filter(Boolean).join(' - ');hidden('site_address',baseAddress);
 }
 ['new_equipment_name','new_equipment_type','new_equipment_brand','new_equipment_model','new_equipment_serial','new_equipment_asset_no','new_equipment_status'].forEach(id=>{const el=$(id);el?.addEventListener('input',sync);el?.addEventListener('change',sync)});
-const equipmentLines=()=>{
- const english=document.documentElement.lang==='en';
- const value=id=>$(id)?.value.trim()||'';
- const selected=id=>$(id)?.selectedOptions?.[0]?.textContent.trim()||value(id);
- return [
-  english?'[New customer equipment]':'[بيانات معدة العميل الجديد]',
-  (english?'Equipment name: ':'اسم المعدة: ')+value('new_equipment_name'),
-  (english?'Equipment type: ':'نوع المعدة: ')+selected('new_equipment_type'),
-  (english?'Manufacturer: ':'الشركة المصنعة: ')+(value('new_equipment_brand')||'—'),
-  (english?'Model: ':'الموديل: ')+(value('new_equipment_model')||'—'),
-  (english?'Serial number: ':'السيريال نمبر: ')+(value('new_equipment_serial')||'—'),
-  (english?'Asset number: ':'رقم الأصل: ')+(value('new_equipment_asset_no')||'—'),
-  (english?'Equipment status: ':'حالة المعدة: ')+(selected('new_equipment_status')||'—')
- ];
-};
+const equipmentLines=()=>{const english=document.documentElement.lang==='en',value=id=>$(id)?.value.trim()||'',selected=id=>$(id)?.selectedOptions?.[0]?.textContent.trim()||value(id);return [english?'[New customer equipment]':'[بيانات معدة العميل الجديد]',(english?'Equipment name: ':'اسم المعدة: ')+value('new_equipment_name'),(english?'Equipment type: ':'نوع المعدة: ')+selected('new_equipment_type'),(english?'Manufacturer: ':'الشركة المصنعة: ')+(value('new_equipment_brand')||'—'),(english?'Model: ':'الموديل: ')+(value('new_equipment_model')||'—'),(english?'Serial number: ':'السيريال نمبر: ')+(value('new_equipment_serial')||'—'),(english?'Asset number: ':'رقم الأصل: ')+(value('new_equipment_asset_no')||'—'),(english?'Equipment status: ':'حالة المعدة: ')+(selected('new_equipment_status')||'—')]};
 const appendEquipmentDetails=()=>{const details=form.querySelector('textarea[name="details"]:not(:disabled)');if(!details)return;const clean=(details.value||'').split(/\n\n\[(?:بيانات معدة العميل الجديد|New customer equipment)\]\n/)[0].trim();details.value=(clean?clean+'\n\n':'')+equipmentLines().join('\n')};
 const syncWorkspace=()=>{
+ ensureCustomerShell();
  const isNew=panel.classList.contains('show'),workspace=$('uf-request-workspace'),assetPane=workspace?.querySelector('.uf-asset-pane'),detailsNum=document.querySelector('.uf-details-pane .uf-pane-head .num'),assetNum=assetPane?.querySelector('.uf-pane-head .num');
  document.body.classList.toggle('uf-new-customer-mode',isNew);workspace?.classList.toggle('new-customer-mode',isNew);
  if(detailsNum)detailsNum.textContent=isNew?'3':'5';if(assetNum)assetNum.textContent=isNew?'2':'4';
- if(assetPane){
-   assetPane.classList.toggle('uf-new-equipment-active',isNew);
-   if(isNew){
-     const copy=assetPane.querySelector('.uf-pane-copy b');if(copy){if(!copy.dataset.ufExistingTitle)copy.dataset.ufExistingTitle=copy.textContent;copy.textContent=document.documentElement.lang==='en'?'Equipment Information':'المعدة وبياناتها'}
-     const help=assetPane.querySelector('.uf-pane-copy small');if(help){if(!help.dataset.ufExistingHelp)help.dataset.ufExistingHelp=help.textContent;help.textContent=document.documentElement.lang==='en'?'Enter the equipment information directly.':'أدخل بيانات المعدة مباشرة.'}
-     if(equipmentHint&&equipmentHint.parentElement!==assetPane)assetPane.querySelector('.uf-pane-head')?.after(equipmentHint);
-     if(equipmentGrid&&equipmentGrid.parentElement!==assetPane)(equipmentHint||assetPane.querySelector('.uf-pane-head'))?.after(equipmentGrid);
-   }else{
-     const copy=assetPane.querySelector('.uf-pane-copy b');if(copy?.dataset.ufExistingTitle)copy.textContent=copy.dataset.ufExistingTitle;
-     const help=assetPane.querySelector('.uf-pane-copy small');if(help?.dataset.ufExistingHelp)help.textContent=help.dataset.ufExistingHelp;
-     if(equipmentHint&&equipmentHint.parentElement!==equipmentPanel)equipmentPanel.appendChild(equipmentHint);
-     if(equipmentGrid&&equipmentGrid.parentElement!==equipmentPanel)equipmentPanel.appendChild(equipmentGrid);
-   }
- }
+ if(assetPane){assetPane.classList.toggle('uf-new-equipment-active',isNew);if(isNew){const copy=assetPane.querySelector('.uf-pane-copy b');if(copy){if(!copy.dataset.ufExistingTitle)copy.dataset.ufExistingTitle=copy.textContent;copy.textContent=document.documentElement.lang==='en'?'Equipment Information':'المعدة وبياناتها'}const help=assetPane.querySelector('.uf-pane-copy small');if(help){if(!help.dataset.ufExistingHelp)help.dataset.ufExistingHelp=help.textContent;help.textContent=document.documentElement.lang==='en'?'Enter the equipment information directly.':'أدخل بيانات المعدة مباشرة.'}if(equipmentHint&&equipmentHint.parentElement!==assetPane)assetPane.querySelector('.uf-pane-head')?.after(equipmentHint);if(equipmentGrid&&equipmentGrid.parentElement!==assetPane)(equipmentHint||assetPane.querySelector('.uf-pane-head'))?.after(equipmentGrid)}else{const copy=assetPane.querySelector('.uf-pane-copy b');if(copy?.dataset.ufExistingTitle)copy.textContent=copy.dataset.ufExistingTitle;const help=assetPane.querySelector('.uf-pane-copy small');if(help?.dataset.ufExistingHelp)help.textContent=help.dataset.ufExistingHelp;if(equipmentHint&&equipmentHint.parentElement!==equipmentPanel)equipmentPanel.appendChild(equipmentHint);if(equipmentGrid&&equipmentGrid.parentElement!==equipmentPanel)equipmentPanel.appendChild(equipmentGrid)}}
 };
 const syncKind=()=>{const isNew=panel.classList.contains('show'),workspace=$('uf-request-workspace');equipmentPanel.classList.toggle('show',isNew&&!workspace);ids.forEach(id=>{const el=$(id);if(el)el.required=isNew});form.querySelectorAll('[data-new-equipment]').forEach(el=>el.disabled=!isNew);if(isNew){routine?.classList.remove('hidden','uf-core-only');sync()}syncWorkspace()};
 document.querySelectorAll('[data-customer-kind]').forEach(btn=>btn.addEventListener('click',()=>setTimeout(syncKind,0)));
