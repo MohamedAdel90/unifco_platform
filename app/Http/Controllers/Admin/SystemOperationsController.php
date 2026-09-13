@@ -16,7 +16,8 @@ class SystemOperationsController extends Controller
 
     public function sessions(Request $request): View
     {
-        $this->authorization->authorize($request->user(),'sessions.view');
+        $permission=$request->routeIs('admin.system.login-activity')?'login_activity.view':'sessions.view';
+        $this->authorization->authorize($request->user(),$permission);
         $tenant=$request->user()->tenant_id;
         $query=UserSession::query()->where('tenant_id',$tenant)->with('user')->latest('last_activity_at');
         $query->when($request->filled('status'),fn($q)=>$q->where('status',$request->string('status')))
