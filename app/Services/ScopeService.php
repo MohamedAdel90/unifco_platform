@@ -3,15 +3,22 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\{Asset,Project};
+use App\Models\{Asset,Customer,CustomerSite,Project,ServiceContract};
+use App\Scopes\RuntimeDataScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class ScopeService
 {
+    private const PARENT_SCOPE_RELATIONS = [
+        'asset','project','customer','customerSite','site','contract','serviceContract','workOrder','employee',
+        'purchaseOrder','purchaseRequisition','warehouse','productionOrder',
+    ];
+
     public function forUser(User $user): Collection
     {
         if (! Schema::hasTable('user_scopes')) return collect();
@@ -27,11 +34,12 @@ class ScopeService
         if($this->isLegacyUnassigned($user)) return true;
         $scopes = $this->forUser($user);
         if ($scopes->isEmpty()) return false;
-        if ($scopes->contains(fn ($scope) => $scope->scope_type === 'GLOBAL')) return true;
+        if ($scopes->contains(fn ($scope) => strtoupper((string) $scope->scope_type) === 'GLOBAL')) return true;
         $context = $resource instanceof Model ? $this->contextFromModel($resource) : $resource;
         foreach ($scopes as $scope) {
             $type = strtoupper((string) $scope->scope_type);
             if ($type === 'OWN_RECORDS' && isset($context['owner_user_id']) && (int) $context['owner_user_id'] === (int) $user->id) return true;
+            if ($type === 'OWN_RECORDS' && isset($context['employee_id']) && $user->employee_id && (int) $context['employee_id'] === (int) $user->employee_id) return true;
             if ($type === 'ASSIGNED_RECORDS' && isset($context['assigned_user_id']) && (int) $context['assigned_user_id'] === (int) $user->id) return true;
             $key = strtolower($type).'_id';
             if (isset($context[$key]) && (int) $context[$key] === (int) $scope->scope_id) return true;
@@ -43,25 +51,103 @@ class ScopeService
     {
         if($this->isLegacyUnassigned($user)) return $query;
         $scopes = $this->forUser($user);
-        if ($scopes->contains(fn ($scope) => $scope->scope_type === 'GLOBAL')) return $query;
+        if ($scopes->contains(fn ($scope) => strtoupper((string) $scope->scope_type) === 'GLOBAL')) return $query;
         if ($scopes->isEmpty()) return $query->whereRaw('1 = 0');
-        $applicable=$scopes->map(function($scope) use($query,$user) {
+
+        $model = $query->getModel();
+        $predicates = collect();
+
+        foreach ($scopes as $scope) {
             $type = strtoupper((string) $scope->scope_type);
-            $column = match ($type) {
-                    'COMPANY' => 'organization_id', 'DEPARTMENT' => 'department_id', 'BRANCH' => 'branch_id',
-                    'PROJECT' => $query->getModel() instanceof Project ? 'id' : 'project_id', 'SITE' => 'customer_site_id', 'CUSTOMER' => 'customer_id',
-                    'ASSET' => $query->getModel() instanceof Asset ? 'id' : 'asset_id',
-                    'CONTRACT' => 'contract_id', 'OWN_RECORDS' => 'created_by', 'ASSIGNED_RECORDS' => 'assigned_to', default => null,
-            };
-            if(!$column || !Schema::hasColumn($query->getModel()->getTable(),$column)) return null;
-            return [$column,in_array($type,['OWN_RECORDS','ASSIGNED_RECORDS'],true)?$user->id:$scope->scope_id];
-        })->filter();
-        if($applicable->isEmpty()) return $query->whereRaw('1 = 0');
-        return $query->where(function (Builder $builder) use ($applicable): void {
-            foreach ($applicable as [$column,$value]) {
-                $builder->orWhere($column,$value);
+            foreach ($this->directColumns($model, $type, $scope->scope_id, $user) as [$column,$value]) {
+                if ($value !== null && Schema::hasColumn($model->getTable(), $column)) {
+                    $predicates->push(['column', $model->qualifyColumn($column), $value]);
+                }
+            }
+
+            $root = $this->rootIdentityPredicate($model, $type, $scope->scope_id);
+            if ($root) {
+                $predicates->push(['column', $model->qualifyColumn($model->getKeyName()), $root]);
+            }
+
+            if ($type === 'DEPARTMENT') {
+                $department = trim((string) ($scope->name ?? ''));
+                if ($department !== '') {
+                    if (method_exists($model, 'position')) $predicates->push(['department-relation','position',$department]);
+                    if (method_exists($model, 'employee')) $predicates->push(['employee-department','employee',$department]);
+                }
+            }
+        }
+
+        // Child/detail models inherit visibility from a scope-capable parent. This
+        // closes direct child endpoints without duplicating every parent's scope columns.
+        foreach (self::PARENT_SCOPE_RELATIONS as $relationName) {
+            if (! method_exists($model, $relationName)) continue;
+            try {
+                $relation = $model->{$relationName}();
+                $related = $relation->getRelated();
+                if ((new RuntimeDataScope())->isScopeCapable($related)) {
+                    $predicates->push(['parent-relation', $relationName, null]);
+                }
+            } catch (Throwable) {
+                // A non-Eloquent helper method with a matching name is ignored.
+            }
+        }
+
+        if($predicates->isEmpty()) return $query->whereRaw('1 = 0');
+
+        return $query->where(function (Builder $builder) use ($predicates): void {
+            foreach ($predicates->unique(fn($p)=>implode('|',array_map(fn($v)=>is_scalar($v)||$v===null?(string)$v:gettype($v),$p))) as $predicate) {
+                [$kind,$target,$value] = $predicate;
+                if ($kind === 'column') {
+                    $builder->orWhere($target,$value);
+                } elseif ($kind === 'department-relation') {
+                    $builder->orWhereHas($target,fn(Builder $q)=>$q->where('department',$value));
+                } elseif ($kind === 'employee-department') {
+                    $builder->orWhereHas($target,fn(Builder $q)=>$q->whereHas('position',fn(Builder $p)=>$p->where('department',$value)));
+                } elseif ($kind === 'parent-relation') {
+                    // The related model's RuntimeDataScope is applied automatically.
+                    $builder->orWhereHas($target);
+                }
             }
         });
+    }
+
+    private function directColumns(Model $model, string $type, mixed $scopeId, User $user): array
+    {
+        return match ($type) {
+            'COMPANY' => [['organization_id',$scopeId]],
+            'DEPARTMENT' => [['department_id',$scopeId]],
+            'BRANCH' => [['branch_id',$scopeId]],
+            'PROJECT' => $model instanceof Project ? [] : [['project_id',$scopeId]],
+            'SITE' => $model instanceof CustomerSite ? [] : [['customer_site_id',$scopeId],['site_id',$scopeId]],
+            'CUSTOMER' => $model instanceof Customer ? [] : [['customer_id',$scopeId]],
+            'ASSET' => $model instanceof Asset ? [] : [['asset_id',$scopeId]],
+            'CONTRACT' => $model instanceof ServiceContract ? [] : [['contract_id',$scopeId]],
+            'OWN_RECORDS' => [
+                ['created_by',$user->id],
+                ['user_id',$user->id],
+                ['employee_id',$user->employee_id],
+            ],
+            'ASSIGNED_RECORDS' => [
+                ['assigned_to',$user->id],
+                ['assigned_user_id',$user->id],
+            ],
+            default => [],
+        };
+    }
+
+    private function rootIdentityPredicate(Model $model, string $type, mixed $scopeId): ?int
+    {
+        if ($scopeId === null) return null;
+        return match (true) {
+            $type === 'PROJECT' && $model instanceof Project,
+            $type === 'ASSET' && $model instanceof Asset,
+            $type === 'CUSTOMER' && $model instanceof Customer,
+            $type === 'SITE' && $model instanceof CustomerSite,
+            $type === 'CONTRACT' && $model instanceof ServiceContract => (int) $scopeId,
+            default => null,
+        };
     }
 
     private function contextFromModel(Model $model): array
@@ -69,7 +155,10 @@ class ScopeService
         $context = [];
         if($model instanceof Project) $context['project_id']=$model->getKey();
         if($model instanceof Asset) $context['asset_id']=$model->getKey();
-        foreach (['organization_id' => 'company_id', 'department_id' => 'department_id', 'branch_id' => 'branch_id', 'project_id' => 'project_id', 'customer_site_id' => 'site_id', 'site_id' => 'site_id', 'customer_id' => 'customer_id', 'contract_id' => 'contract_id', 'created_by' => 'owner_user_id', 'user_id' => 'owner_user_id', 'assigned_to' => 'assigned_user_id', 'assigned_user_id' => 'assigned_user_id'] as $attribute => $key) {
+        if($model instanceof Customer) $context['customer_id']=$model->getKey();
+        if($model instanceof CustomerSite) $context['site_id']=$model->getKey();
+        if($model instanceof ServiceContract) $context['contract_id']=$model->getKey();
+        foreach (['organization_id' => 'company_id', 'department_id' => 'department_id', 'branch_id' => 'branch_id', 'project_id' => 'project_id', 'customer_site_id' => 'site_id', 'site_id' => 'site_id', 'customer_id' => 'customer_id', 'contract_id' => 'contract_id', 'employee_id' => 'employee_id', 'created_by' => 'owner_user_id', 'user_id' => 'owner_user_id', 'assigned_to' => 'assigned_user_id', 'assigned_user_id' => 'assigned_user_id'] as $attribute => $key) {
             if ($model->getAttribute($attribute) !== null) $context[$key] = $model->getAttribute($attribute);
         }
         if($model->getAttribute('asset_id') && method_exists($model,'asset')) {
