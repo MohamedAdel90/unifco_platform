@@ -84,7 +84,7 @@ class ScopeEnforcementClosureTest extends TestCase
         $second=$this->project($tenant,$org,'A-2');
         $foreign=$this->project($otherTenant,$otherOrg,'B-1');
 
-        $ids=$this->actingAs($user)->get('/')->baseResponse; // establish authenticated request context
+        $this->actingAs($user);
         $visible=Project::query()->pluck('id')->all();
 
         $this->assertEqualsCanonicalizing([$first->id,$second->id],$visible);
