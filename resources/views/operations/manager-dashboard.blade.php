@@ -32,8 +32,8 @@
     <a class="primary" href="{{ route('operations-manager.service-requests.index') }}">Service Requests & SLA</a>
     <a href="{{ route('maintenance.work-orders.index') }}">Work Orders</a>
     <a href="{{ route('field.operations') }}">Field Operations</a>
-    <a href="{{ route('projects.projects.index') }}">Projects</a>
-    <a href="{{ route('crm.customers.index') }}">Customers & Sites</a>
+    <a href="{{ route('operations-manager.project-sites') }}">Projects, Sites & Capacity</a>
+    <a href="{{ route('crm.customers.index') }}">Customers</a>
   </section>
 
   <section class="ops-grid">
