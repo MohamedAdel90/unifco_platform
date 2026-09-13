@@ -28,11 +28,30 @@ class Wave4BusinessWorkspacesTest extends TestCase
             'nationality'=>'Saudi Arabian',
             'status'=>'ACTIVE',
         ])->assertRedirect();
-        $this->post('/crm/customers',['customer_code'=>'C-1','name'=>'Customer One','email'=>'c1@test.local'])->assertRedirect();
-        $customer=Customer::first();
+
+        $this->post('/crm/customers',[
+            'name'=>'Customer One',
+            'name_ar'=>'العميل الأول',
+            'customer_type'=>'COMPANY',
+            'status'=>'ACTIVE',
+            'commercial_registration'=>'1010101010',
+            'industry'=>'Facilities Management',
+            'email'=>'c1@test.local',
+            'contact_name'=>'Contact One',
+            'contact_email'=>'contact1@test.local',
+            'contact_phone'=>'0500000001',
+            'phone'=>'0110000001',
+            'city'=>'Riyadh',
+            'country'=>'Saudi Arabia',
+            'address'=>'Riyadh',
+        ])->assertRedirect();
+
+        $customer=Customer::firstOrFail();
+        $this->assertSame('UN-101',$customer->customer_code);
+
         $this->post('/projects',['project_no'=>'P-1','name'=>'Project One','customer_id'=>$customer->id,'budget'=>1000])->assertRedirect();
         $this->assertDatabaseHas('employees',['tenant_id'=>$user->tenant_id,'employee_no'=>'UN-00001','name'=>'Employee One','email'=>'e1@test.local']);
-        $this->assertDatabaseHas('customers',['tenant_id'=>$user->tenant_id,'customer_code'=>'C-1']);
+        $this->assertDatabaseHas('customers',['tenant_id'=>$user->tenant_id,'customer_code'=>'UN-101','name'=>'Customer One']);
         $this->assertDatabaseHas('projects',['tenant_id'=>$user->tenant_id,'project_no'=>'P-1','status'=>'DRAFT']);
         $this->assertDatabaseHas('audit_logs',['tenant_id'=>$user->tenant_id,'action'=>'projects.project.created']);
     }
