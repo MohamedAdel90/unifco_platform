@@ -93,7 +93,10 @@ class OperationsManagerPhaseOneTest extends TestCase
     public function test_multi_role_user_with_operations_manager_membership_redirects_to_operations_command_center(): void
     {
         $manager = $this->manager();
-        $projectRole = Role::whereNull('tenant_id')->where('code','PROJECT_MANAGER')->firstOrFail();
+        $projectRole = Role::firstOrCreate(
+            ['tenant_id'=>null,'code'=>'PROJECT_MANAGER'],
+            ['name_en'=>'Project Manager','name_ar'=>'مدير المشروع','is_system_role'=>false,'grants_business_authority'=>true,'requires_approval'=>false,'is_active'=>true]
+        );
         DB::table('user_roles')->insert([
             'tenant_id'=>$manager->tenant_id,'user_id'=>$manager->id,'role_id'=>$projectRole->id,'is_primary'=>false,
             'granted_at'=>now(),'created_at'=>now(),'updated_at'=>now(),
