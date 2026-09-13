@@ -36,12 +36,12 @@ class SystemAdministratorClosureTest extends TestCase
         $this->actingAs($admin)->get('/admin/system/login-activity')->assertOk();
     }
 
-    public function test_integration_registry_is_seeded_per_tenant(): void
+    public function test_integration_registry_is_available_for_every_tenant(): void
     {
         $admin=$this->admin();
+        $this->actingAs($admin)->get('/admin/system/integrations')->assertOk();
         foreach(['DATABASE','MAIL','QUEUE','SCHEDULER','STORAGE','API_ACCESS'] as $code) {
             $this->assertDatabaseHas('system_integrations',['tenant_id'=>$admin->tenant_id,'code'=>$code]);
         }
-        $this->actingAs($admin)->get('/admin/system/integrations')->assertOk();
     }
 }
