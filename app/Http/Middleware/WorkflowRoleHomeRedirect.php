@@ -20,8 +20,14 @@ class WorkflowRoleHomeRedirect
         $user=$request->user();
         $isHome=$request->routeIs('dashboard') || $request->routeIs('public.home');
 
-        if($user && $isHome && $this->authorization->allows($user,'operations.dashboard.view')){
-            return redirect()->route('operations-manager.dashboard');
+        if($user && $isHome){
+            $roles=$this->authorization->roleCodes($user);
+            $isOperationsManager=$roles->contains('OPERATIONS_MANAGER')
+                || strtoupper((string)$user->role)==='OPERATIONS_MANAGER';
+
+            if($isOperationsManager){
+                return redirect()->route('operations-manager.dashboard');
+            }
         }
 
         if($user && in_array($user->role,self::ROLES,true) && $isHome){
