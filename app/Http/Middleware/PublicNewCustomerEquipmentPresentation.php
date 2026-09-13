@@ -44,31 +44,29 @@ HTML;
         );
 
         $styles = <<<'HTML'
-<style id="unifco-new-customer-equipment-style-v3">
+<style id="unifco-new-customer-equipment-style-v4">
 .new-customer-equipment-panel{display:none!important}
 .new-customer-equipment-panel .new-equipment-direct-hint{margin:-5px 0 13px!important}
 .new-customer-equipment-panel select{height:42px}
-body.uf-new-customer-mode .uf-customer-context-layout,body.uf-new-customer-mode #current-customer-panel,body.uf-new-customer-mode #contract-section,body.uf-new-customer-mode #site-section,body.uf-new-customer-mode #asset-section{display:none!important}
+body.uf-new-customer-mode #current-customer-panel,body.uf-new-customer-mode #contract-section,body.uf-new-customer-mode #site-section,body.uf-new-customer-mode #asset-section{display:none!important}
 body.uf-new-customer-mode #future-box{display:none!important}
-body.uf-new-customer-mode #new-customer-panel{display:block!important;width:100%!important;max-width:none!important;margin:0 0 14px!important;padding:17px 18px!important;box-sizing:border-box!important;box-shadow:0 7px 22px rgba(7,31,77,.045)!important}
-body.uf-new-customer-mode #new-customer-panel .section-title{font-size:16px!important;margin-bottom:14px!important}
+body.uf-new-customer-mode #new-customer-panel{display:block!important}
 body.uf-new-customer-mode #new-customer-panel .new-customer-grid{width:100%!important;max-width:none!important}
-body.uf-new-customer-mode .uf-workspace{display:grid!important;grid-template-columns:minmax(0,3fr) minmax(360px,2fr)!important;grid-template-areas:"asset details"!important;gap:16px!important;align-items:stretch!important;direction:rtl!important}
-body.uf-new-customer-mode .uf-workspace .uf-asset-pane{display:block!important;grid-area:asset!important;width:100%!important;min-width:0!important}
-body.uf-new-customer-mode .uf-workspace .uf-details-pane{display:block!important;grid-area:details!important;width:100%!important;min-width:0!important}
+/* Do not redefine the unified card layout for new customers. It must inherit the exact same card geometry, widths, gaps, radius, shadows, padding and responsive behavior used by the existing-customer request. Only the field data changes. */
+body.uf-new-customer-mode .uf-workspace{direction:rtl!important}
+body.uf-new-customer-mode .uf-workspace .uf-asset-pane,body.uf-new-customer-mode .uf-workspace .uf-details-pane{min-width:0!important}
 body.uf-new-customer-mode .uf-asset-pane.uf-new-equipment-active>:not(.uf-pane-head):not(.new-equipment-direct-hint):not(.new-customer-grid){display:none!important}
-body.uf-new-customer-mode .uf-asset-pane .new-equipment-direct-hint{display:block!important;margin:-5px 0 13px!important;color:#7b8ba2!important;font-size:10px!important}
-body.uf-new-customer-mode .uf-asset-pane .new-customer-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;width:100%!important;max-width:none!important}
+body.uf-new-customer-mode .uf-asset-pane .new-equipment-direct-hint{display:block!important;color:#7b8ba2!important}
+body.uf-new-customer-mode .uf-asset-pane .new-customer-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;max-width:none!important}
 body.uf-new-customer-mode .uf-asset-pane .new-customer-grid .field{min-width:0!important}
-body.uf-new-customer-mode .uf-asset-pane .new-customer-grid input,body.uf-new-customer-mode .uf-asset-pane .new-customer-grid select{width:100%!important;max-width:none!important;height:42px!important}
-@media(max-width:1100px){body.uf-new-customer-mode .uf-workspace{grid-template-columns:1fr!important;grid-template-areas:"asset" "details"!important}}
-@media(max-width:650px){body.uf-new-customer-mode #new-customer-panel{padding:13px!important}body.uf-new-customer-mode .uf-asset-pane .new-customer-grid{grid-template-columns:1fr!important}}
+body.uf-new-customer-mode .uf-asset-pane .new-customer-grid input,body.uf-new-customer-mode .uf-asset-pane .new-customer-grid select{width:100%!important;max-width:none!important}
+@media(max-width:650px){body.uf-new-customer-mode .uf-asset-pane .new-customer-grid{grid-template-columns:1fr!important}}
 </style>
 HTML;
         $html = str_replace('</head>', $styles.'</head>', $html);
 
         $script = <<<'HTML'
-<script id="unifco-new-customer-equipment-script-v3">
+<script id="unifco-new-customer-equipment-script-v4">
 (()=>{
 const $=id=>document.getElementById(id),form=$('maintenance-form'),panel=$('new-customer-panel'),equipmentPanel=$('new-customer-equipment-panel'),routine=$('routine-form'),service=$('service-type'),subtype=$('service-subtype');
 if(!form||!panel||!equipmentPanel)return;
@@ -76,13 +74,9 @@ const ids=['new_equipment_name','new_equipment_type'];
 const equipmentHint=equipmentPanel.querySelector('.new-equipment-direct-hint'),equipmentGrid=equipmentPanel.querySelector('.new-customer-grid');
 function hidden(name,value){let el=form.querySelector('input[data-new-equipment="'+name+'"]');if(!el){el=document.createElement('input');el.type='hidden';el.name=name;el.dataset.newEquipment=name;form.appendChild(el)}el.value=value||'';el.disabled=!panel.classList.contains('show');return el}
 function sync(){if(!panel.classList.contains('show'))return;
- const equipmentName=$('new_equipment_name')?.value.trim()||'';
  const type=$('new_equipment_type')?.value||'GENERAL';
  const brand=$('new_equipment_brand')?.value.trim()||'';
  const model=$('new_equipment_model')?.value.trim()||'';
- const serial=$('new_equipment_serial')?.value.trim()||'';
- const assetNo=$('new_equipment_asset_no')?.value.trim()||'';
- const status=$('new_equipment_status')?.value||'';
  hidden('site_name',$('new_company_name')?.value||'موقع العميل الجديد');
  hidden('asset_type',type);hidden('equipment_brand',brand);hidden('equipment_model',model);
  const baseAddress=[$('new_district')?.value,$('new_address')?.value].filter(Boolean).join(' - ');hidden('site_address',baseAddress);
