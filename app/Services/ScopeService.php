@@ -59,7 +59,7 @@ class ScopeService
 
         foreach ($scopes as $scope) {
             $type = strtoupper((string) $scope->scope_type);
-            foreach ($this->directColumns($model, $type, $user) as [$column,$value]) {
+            foreach ($this->directColumns($model, $type, $scope->scope_id, $user) as [$column,$value]) {
                 if ($value !== null && Schema::hasColumn($model->getTable(), $column)) {
                     $predicates->push(['column', $model->qualifyColumn($column), $value]);
                 }
@@ -113,17 +113,17 @@ class ScopeService
         });
     }
 
-    private function directColumns(Model $model, string $type, User $user): array
+    private function directColumns(Model $model, string $type, mixed $scopeId, User $user): array
     {
         return match ($type) {
-            'COMPANY' => [['organization_id', null]],
-            'DEPARTMENT' => [['department_id', null]],
-            'BRANCH' => [['branch_id', null]],
-            'PROJECT' => $model instanceof Project ? [] : [['project_id', null]],
-            'SITE' => $model instanceof CustomerSite ? [] : [['customer_site_id', null],['site_id', null]],
-            'CUSTOMER' => $model instanceof Customer ? [] : [['customer_id', null]],
-            'ASSET' => $model instanceof Asset ? [] : [['asset_id', null]],
-            'CONTRACT' => $model instanceof ServiceContract ? [] : [['contract_id', null]],
+            'COMPANY' => [['organization_id',$scopeId]],
+            'DEPARTMENT' => [['department_id',$scopeId]],
+            'BRANCH' => [['branch_id',$scopeId]],
+            'PROJECT' => $model instanceof Project ? [] : [['project_id',$scopeId]],
+            'SITE' => $model instanceof CustomerSite ? [] : [['customer_site_id',$scopeId],['site_id',$scopeId]],
+            'CUSTOMER' => $model instanceof Customer ? [] : [['customer_id',$scopeId]],
+            'ASSET' => $model instanceof Asset ? [] : [['asset_id',$scopeId]],
+            'CONTRACT' => $model instanceof ServiceContract ? [] : [['contract_id',$scopeId]],
             'OWN_RECORDS' => [
                 ['created_by',$user->id],
                 ['user_id',$user->id],
