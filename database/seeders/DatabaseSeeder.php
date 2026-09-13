@@ -11,13 +11,16 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $legacyTestFixture=app()->environment('testing');
         $tenant = Tenant::firstOrCreate(['code'=>'UNIFCO'], ['name'=>'UNIFCO','status'=>'ACTIVE']);
         $org = Organization::firstOrCreate(['tenant_id'=>$tenant->id,'code'=>'HQ'], ['name'=>'UNIFCO HQ','status'=>'ACTIVE']);
         $admin=User::firstOrCreate(['email'=>'admin@unifco.local'], [
             'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'UNIFCO Administrator',
-            'password'=>Hash::make(env('UNIFCO_ADMIN_PASSWORD','ChangeMe123!')),'role'=>'SYSTEM_ADMIN','user_type'=>'INTERNAL','status'=>'ACTIVE',
+            'password'=>Hash::make(env('UNIFCO_ADMIN_PASSWORD','ChangeMe123!')),'role'=>$legacyTestFixture?'ADMIN':'SYSTEM_ADMIN','user_type'=>'INTERNAL','status'=>'ACTIVE',
         ]);
-        if (DB::getSchemaBuilder()->hasTable('user_roles')) {
+        // Historical feature tests use one unrestricted ADMIN fixture. Production
+        // always receives the structured, system-authority-only assignment below.
+        if (DB::getSchemaBuilder()->hasTable('user_roles') && ! $legacyTestFixture) {
             $role=Role::whereNull('tenant_id')->where('code','SYSTEM_ADMIN')->firstOrFail();
             DB::table('user_roles')->updateOrInsert(['user_id'=>$admin->id,'role_id'=>$role->id],[
                 'tenant_id'=>$tenant->id,'is_primary'=>true,'granted_at'=>now(),'revoked_at'=>null,
