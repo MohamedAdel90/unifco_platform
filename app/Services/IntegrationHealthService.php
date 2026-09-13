@@ -11,6 +11,7 @@ class IntegrationHealthService
 {
     public function refresh(int $tenantId): array
     {
+        $this->ensureRegistry($tenantId);
         $rows = SystemIntegration::where('tenant_id',$tenantId)->orderBy('category')->orderBy('name')->get();
         foreach ($rows as $row) {
             $started = microtime(true);
@@ -31,6 +32,7 @@ class IntegrationHealthService
 
     public function summary(int $tenantId): array
     {
+        $this->ensureRegistry($tenantId);
         $rows = SystemIntegration::where('tenant_id',$tenantId)->orderBy('category')->orderBy('name')->get();
         $enabled = $rows->where('is_enabled',true);
         return [
@@ -40,6 +42,23 @@ class IntegrationHealthService
             'degraded'=>$enabled->whereIn('status',['DEGRADED','ERROR','PENDING'])->count(),
             'all_healthy'=>$enabled->count() > 0 && $enabled->every(fn($row)=>in_array($row->status,['OPERATIONAL','READY'],true)),
         ];
+    }
+
+    private function ensureRegistry(int $tenantId): void
+    {
+        foreach ([
+            ['DATABASE','Database','CORE'],
+            ['MAIL','Email Provider','COMMUNICATION'],
+            ['QUEUE','Queue Worker','AUTOMATION'],
+            ['SCHEDULER','Task Scheduler','AUTOMATION'],
+            ['STORAGE','File Storage','CORE'],
+            ['API_ACCESS','API Access','INTEGRATION'],
+        ] as [$code,$name,$category]) {
+            SystemIntegration::firstOrCreate(
+                ['tenant_id'=>$tenantId,'code'=>$code],
+                ['name'=>$name,'category'=>$category,'status'=>'UNKNOWN','is_enabled'=>true]
+            );
+        }
     }
 
     private function check(string $code,int $tenantId): array
