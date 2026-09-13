@@ -74,7 +74,25 @@ $canHr=$authz->allows($u,'hr.employee.read'); $canReporting=$authz->allows($u,'r
     @if($authz->allows($u,'documents.read')||$authz->allows($u,'workflow.approval.read'))<details class="nav-group {{ request()->routeIs('platform.*','workflow.*')?'active-group':'' }}" @if(request()->routeIs('platform.*','workflow.*')) open @endif><summary title="Platform"><span class="nav-icon">□</span><span>Platform</span></summary><div class="nav-children">@if($authz->allows($u,'documents.read'))<a class="nav-link {{ request()->routeIs('platform.documents.*')?'active':'' }}" href="{{ route('platform.documents.index') }}">Documents</a>@endif<a class="nav-link {{ request()->routeIs('platform.notifications.*')?'active':'' }}" href="{{ route('platform.notifications.index') }}">Notifications</a>@if($authz->allows($u,'workflow.approval.read'))<a class="nav-link {{ request()->routeIs('workflow.approvals.*')?'active':'' }}" href="{{ route('workflow.approvals.index') }}">Approvals</a>@endif</div></details>@endif
 
     @if($isAdmin)
-    <details class="nav-group {{ request()->routeIs('system-admin.*','admin.*')?'active-group':'' }}" open><summary title="System Administration"><span class="nav-icon">⚙</span><span>System Administration</span></summary><div class="nav-children"><a class="nav-link {{ request()->routeIs('system-admin.dashboard')?'active':'' }}" href="{{ route('system-admin.dashboard') }}">System Dashboard</a><a class="nav-link {{ request()->routeIs('admin.users.*')||request()->is('workspace/users')?'active':'' }}" href="{{ route('workspace.show','users') }}">Users</a><a class="nav-link {{ request()->routeIs('admin.access-control.*')?'active':'' }}" href="{{ route('admin.access-control.index') }}">Roles · Scopes · Authorities</a><a class="nav-link {{ request()->routeIs('admin.permissions.*')?'active':'' }}" href="{{ route('admin.permissions.index') }}">Permission Matrix</a><a class="nav-link {{ request()->routeIs('admin.audit.*')?'active':'' }}" href="{{ route('admin.audit.index') }}">Immutable Audit Trail</a><a class="nav-link {{ request()->routeIs('admin.api-tokens.*')?'active':'' }}" href="{{ route('admin.api-tokens.index') }}">Integrations / API Tokens</a><a class="nav-link {{ request()->routeIs('admin.temporary-files.*')?'active':'' }}" href="{{ route('admin.temporary-files.index') }}">Temporary Files</a></div></details>
+    <details class="nav-group {{ request()->routeIs('system-admin.*','admin.*')?'active-group':'' }}" open>
+      <summary title="System Administration"><span class="nav-icon">⚙</span><span>System Administration</span></summary>
+      <div class="nav-children">
+        <a class="nav-link {{ request()->routeIs('system-admin.dashboard')?'active':'' }}" href="{{ route('system-admin.dashboard') }}">System Dashboard</a>
+        <a class="nav-link {{ request()->routeIs('admin.users.*')||request()->is('workspace/users')?'active':'' }}" href="{{ route('workspace.show','users') }}">Users</a>
+        <a class="nav-link {{ request()->routeIs('admin.system.invitations')?'active':'' }}" href="{{ route('admin.system.invitations') }}">Invitations</a>
+        <a class="nav-link {{ request()->routeIs('admin.access-control.*')?'active':'' }}" href="{{ route('admin.access-control.index') }}">Roles · Scopes · Authorities</a>
+        <a class="nav-link {{ request()->routeIs('admin.permissions.*')?'active':'' }}" href="{{ route('admin.permissions.index') }}">Permission Matrix</a>
+        <a class="nav-link {{ request()->routeIs('admin.system.organization')?'active':'' }}" href="{{ route('admin.system.organization') }}">Organization</a>
+        <a class="nav-link {{ request()->routeIs('admin.system.master-data*')?'active':'' }}" href="{{ route('admin.system.master-data') }}">Master Data</a>
+        <a class="nav-link {{ request()->routeIs('admin.system.email-templates*')?'active':'' }}" href="{{ route('admin.system.email-templates') }}">Email Templates</a>
+        <a class="nav-link {{ request()->routeIs('admin.system.sessions*')?'active':'' }}" href="{{ route('admin.system.sessions') }}">Active Sessions</a>
+        <a class="nav-link {{ request()->routeIs('admin.system.security-events')?'active':'' }}" href="{{ route('admin.system.security-events') }}">Security Events</a>
+        <a class="nav-link {{ request()->routeIs('admin.system.scheduled-jobs*')?'active':'' }}" href="{{ route('admin.system.scheduled-jobs') }}">Scheduled Jobs</a>
+        <a class="nav-link {{ request()->routeIs('admin.audit.*')?'active':'' }}" href="{{ route('admin.audit.index') }}">Immutable Audit Trail</a>
+        <a class="nav-link {{ request()->routeIs('admin.api-tokens.*')?'active':'' }}" href="{{ route('admin.api-tokens.index') }}">Integrations / API Tokens</a>
+        <a class="nav-link {{ request()->routeIs('admin.temporary-files.*')?'active':'' }}" href="{{ route('admin.temporary-files.index') }}">Temporary Files</a>
+      </div>
+    </details>
     @endif
   @endif
   <div id="side-nav-empty" class="nav-empty">No menu items found.</div>

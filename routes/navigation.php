@@ -8,8 +8,9 @@ use App\Http\Controllers\Admin\HomepageClientController;
 use App\Http\Controllers\Admin\HomepageImageController;
 use App\Http\Controllers\Admin\TemporaryFileController;
 use App\Http\Controllers\Admin\UserAdministrationController;
-use App\Http\Controllers\Admin\{ImpersonationController,SystemAdminDashboardController};
+use App\Http\Controllers\Admin\{ImpersonationController,SystemAdminDashboardController,SystemOperationsController};
 use App\Http\Controllers\Admin\AccessControlController;
+use App\Http\Controllers\Admin\SystemCatalogController;
 use App\Http\Controllers\NavigationWorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,11 +22,30 @@ Route::middleware('auth')->group(function () {
     Route::get('/system-admin',SystemAdminDashboardController::class)->middleware('permission:system.dashboard.view')->name('system-admin.dashboard');
     Route::post('/admin/users/{user}/impersonate',[ImpersonationController::class,'start'])->middleware('permission:impersonation.read_only')->name('admin.impersonation.start');
     Route::delete('/admin/impersonation',[ImpersonationController::class,'stop'])->name('admin.impersonation.stop');
+    Route::prefix('admin/system')->name('admin.system.')->group(function(){
+        Route::get('/sessions',[SystemOperationsController::class,'sessions'])->name('sessions');
+        Route::post('/sessions/{session}/revoke',[SystemOperationsController::class,'revokeSession'])->name('sessions.revoke');
+        Route::get('/security-events',[SystemOperationsController::class,'securityEvents'])->name('security-events');
+        Route::get('/invitations',[SystemOperationsController::class,'invitations'])->name('invitations');
+        Route::get('/scheduled-jobs',[SystemOperationsController::class,'scheduledJobs'])->name('scheduled-jobs');
+        Route::post('/scheduled-jobs/{job}/retry',[SystemOperationsController::class,'retryJob'])->name('scheduled-jobs.retry');
+        Route::get('/organization',[SystemCatalogController::class,'organization'])->name('organization');
+        Route::post('/organizations',[SystemCatalogController::class,'storeOrganization'])->name('organizations.store');
+        Route::post('/job-positions',[SystemCatalogController::class,'storePosition'])->name('job-positions.store');
+        Route::get('/master-data',[SystemCatalogController::class,'masterData'])->name('master-data');
+        Route::post('/master-data',[SystemCatalogController::class,'storeMasterData'])->name('master-data.store');
+        Route::post('/master-data/{entry}/status',[SystemCatalogController::class,'masterDataStatus'])->name('master-data.status');
+        Route::get('/email-templates',[SystemCatalogController::class,'emailTemplates'])->name('email-templates');
+        Route::post('/email-templates',[SystemCatalogController::class,'storeEmailTemplate'])->name('email-templates.store');
+    });
     Route::prefix('admin/access-control')->name('admin.access-control.')->middleware('permission:roles.view')->group(function(){
         Route::get('/',[AccessControlController::class,'index'])->name('index');
         Route::post('/roles',[AccessControlController::class,'role'])->middleware('permission:roles.manage')->name('roles.store');
+        Route::post('/roles/{role}/status',[AccessControlController::class,'roleStatus'])->middleware('permission:roles.manage')->name('roles.status');
         Route::post('/scopes',[AccessControlController::class,'scope'])->middleware('permission:scopes.manage')->name('scopes.store');
+        Route::post('/scopes/{scope}/status',[AccessControlController::class,'scopeStatus'])->middleware('permission:scopes.manage')->name('scopes.status');
         Route::post('/approval-authorities',[AccessControlController::class,'authority'])->middleware('permission:approval_authorities.manage')->name('authorities.store');
+        Route::post('/approval-authorities/{authority}/status',[AccessControlController::class,'authorityStatus'])->middleware('permission:approval_authorities.manage')->name('authorities.status');
         Route::post('/invitations/{invitation}/revoke',[AccessControlController::class,'revokeInvitation'])->middleware('permission:invitations.manage')->name('invitations.revoke');
         Route::post('/invitations/{invitation}/resend',[AccessControlController::class,'resendInvitation'])->middleware('permission:invitations.manage')->name('invitations.resend');
     });

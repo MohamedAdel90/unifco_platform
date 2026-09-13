@@ -13,7 +13,7 @@ use Illuminate\View\View;
 
 class UserAdministrationController extends Controller
 {
-    private const ROLES=['SYSTEM_ADMIN','MANAGER','SUPERVISOR','TECHNICIAN','STOREKEEPER','CUSTOMER_ADMIN','CUSTOMER_SITE_MANAGER','CUSTOMER_FINANCE','CUSTOMER_VIEWER'];
+    private const LEGACY_FALLBACK_ROLES=['SYSTEM_ADMIN','MANAGER','SUPERVISOR','TECHNICIAN','STOREKEEPER','CUSTOMER_ADMIN','CUSTOMER_SITE_MANAGER','CUSTOMER_FINANCE','CUSTOMER_VIEWER'];
     private const STATUSES=['ACTIVE','INACTIVE','SUSPENDED'];
 
     private function admin(Request $request,string $permission='users.view'): void
@@ -32,7 +32,7 @@ class UserAdministrationController extends Controller
         return [
             'organizations'=>Organization::where('tenant_id',$tenant)->orderBy('name')->get(),
             'employees'=>Employee::where('tenant_id',$tenant)->orderBy('name')->get(),
-            'roles'=>Schema::hasTable('roles') ? Role::where('is_active',true)->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant))->get()->sortByDesc(fn($role)=>$role->tenant_id!==null)->unique('code')->sortBy('code')->pluck('code') : collect(self::ROLES),
+            'roles'=>Schema::hasTable('roles') ? Role::where('is_active',true)->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant))->get()->sortByDesc(fn($role)=>$role->tenant_id!==null)->unique('code')->sortBy('code')->values() : collect(self::LEGACY_FALLBACK_ROLES)->map(fn($code)=>(object)['code'=>$code,'name_en'=>str($code)->headline(),'name_ar'=>null,'grants_business_authority'=>$code!=='SYSTEM_ADMIN']),
             'scopes'=>Schema::hasTable('access_scopes') ? AccessScope::where('tenant_id',$tenant)->where('is_active',true)->orderBy('scope_type')->orderBy('name')->get() : collect(),
             'statuses'=>self::STATUSES,
         ];
@@ -41,7 +41,7 @@ class UserAdministrationController extends Controller
     public function create(Request $request): View
     {
         $this->admin($request,'users.create');
-        return view('navigation.users-form',array_merge($this->lookups($request),['managedUser'=>new User(),'mode'=>'create','selectedRoleCodes'=>[],'selectedScopeIds'=>[]]));
+        return view('navigation.users-form',array_merge($this->lookups($request),['managedUser'=>new User(),'mode'=>'create','selectedRoleCodes'=>[],'selectedPrimaryRole'=>null,'selectedScopeIds'=>[]]));
     }
 
     public function store(Request $request,AuditService $audit,InvitationService $invitations): RedirectResponse
@@ -57,6 +57,7 @@ class UserAdministrationController extends Controller
             'password'=>['nullable','string','min:8','confirmed'],
             'role'=>['nullable','string'],
             'roles'=>['nullable','array','min:1'], 'roles.*'=>['string','max:80'],
+            'primary_role'=>['nullable','string','max:80'],
             'scope_ids'=>['nullable','array'], 'scope_ids.*'=>['integer'],
             'send_invitation'=>['nullable','boolean'],
             'status'=>['required',Rule::in(self::STATUSES)],
@@ -68,6 +69,7 @@ class UserAdministrationController extends Controller
         if($organizationId) abort_unless(Organization::where('tenant_id',$tenant)->whereKey($organizationId)->exists(),422);
         if($employeeId) abort_unless(Employee::where('tenant_id',$tenant)->whereKey($employeeId)->exists(),422);
         $roleCodes=$this->validatedRoleCodes($tenant,$data);
+        $roleCodes=$this->primaryFirst($roleCodes,$data['primary_role']??null);
         $legacyRole=$this->legacyRole($roleCodes[0]);
         $displayName=trim((string)($data['name_en']??'')) ?: trim((string)($data['name_ar']??'')) ?: trim((string)($data['name']??''));
         $user=User::create([
@@ -98,8 +100,10 @@ class UserAdministrationController extends Controller
         $apiTokens=ApiToken::where('tenant_id',$managedUser->tenant_id)->where('user_id',$managedUser->id)->latest()->get();
         $assignedRoles=Schema::hasTable('user_roles') ? $managedUser->activeRoles()->get() : collect();
         $assignedScopes=Schema::hasTable('user_scopes') ? $managedUser->accessScopes()->get() : collect();
+        $grantorIds=$assignedRoles->pluck('pivot.granted_by')->merge($assignedScopes->pluck('pivot.granted_by'))->filter()->unique();
+        $grantors=User::where('tenant_id',$managedUser->tenant_id)->whereIn('id',$grantorIds)->pluck('name','id');
         $activeSessions=Schema::hasTable('user_sessions') ? DB::table('user_sessions')->where('user_id',$managedUser->id)->latest('last_activity_at')->get() : collect();
-        return view('navigation.users-show',array_merge($lookups,compact('managedUser','permissions','overrides','auditTimeline','apiTokens','assignedRoles','assignedScopes','activeSessions')));
+        return view('navigation.users-show',array_merge($lookups,compact('managedUser','permissions','overrides','auditTimeline','apiTokens','assignedRoles','assignedScopes','grantors','activeSessions')));
     }
 
     public function edit(Request $request,int $user): View
@@ -107,8 +111,9 @@ class UserAdministrationController extends Controller
         $this->admin($request,'users.edit');
         $managedUser=$this->scoped($request,$user);
         $selectedRoleCodes=Schema::hasTable('user_roles') ? $managedUser->activeRoles()->pluck('code')->all() : [$managedUser->role];
+        $selectedPrimaryRole=Schema::hasTable('user_roles') ? DB::table('user_roles')->join('roles','roles.id','=','user_roles.role_id')->where('user_roles.user_id',$managedUser->id)->whereNull('user_roles.revoked_at')->where('user_roles.is_primary',true)->value('roles.code') : $managedUser->role;
         $selectedScopeIds=Schema::hasTable('user_scopes') ? DB::table('user_scopes')->where('user_id',$managedUser->id)->pluck('access_scope_id')->all() : [];
-        return view('navigation.users-form',array_merge($this->lookups($request),compact('managedUser','selectedRoleCodes','selectedScopeIds'),['mode'=>'edit']));
+        return view('navigation.users-form',array_merge($this->lookups($request),compact('managedUser','selectedRoleCodes','selectedPrimaryRole','selectedScopeIds'),['mode'=>'edit']));
     }
 
     public function update(Request $request,int $user,AuditService $audit): RedirectResponse
@@ -125,12 +130,14 @@ class UserAdministrationController extends Controller
             'mobile'=>['nullable','string','max:40'],
             'role'=>['nullable','string'],
             'roles'=>['nullable','array','min:1'], 'roles.*'=>['string','max:80'],
+            'primary_role'=>['nullable','string','max:80'],
             'scope_ids'=>['nullable','array'], 'scope_ids.*'=>['integer'],
             'status'=>['required',Rule::in(self::STATUSES)],
             'organization_id'=>['nullable','integer'],
             'employee_id'=>['nullable','integer'],
         ]);
         $roleCodes=$this->validatedRoleCodes($tenant,$data);
+        $roleCodes=$this->primaryFirst($roleCodes,$data['primary_role']??null);
         if($managed->id===$request->user()->id && (!in_array('SYSTEM_ADMIN',$roleCodes,true)||$data['status']!=='ACTIVE')) {
             return back()->withErrors(['status'=>'You cannot remove your own administrator access or deactivate your current account.']);
         }
@@ -251,6 +258,9 @@ class UserAdministrationController extends Controller
         $tenant=$request->user()->tenant_id;
         $organizations=Organization::where('tenant_id',$tenant)->get()->keyBy(fn($x)=>strtolower($x->code));
         $employees=Employee::where('tenant_id',$tenant)->get()->keyBy(fn($x)=>strtolower($x->employee_no));
+        $validRoleCodes=Schema::hasTable('roles')
+            ? Role::where('is_active',true)->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant))->pluck('code')->map(fn($code)=>strtoupper($code))->unique()
+            : collect(self::LEGACY_FALLBACK_ROLES);
         $handle=fopen($request->file('file')->getRealPath(),'r');
         $header=fgetcsv($handle);
         if(!$header) return back()->withErrors(['file'=>'CSV file is empty.']);
@@ -262,7 +272,7 @@ class UserAdministrationController extends Controller
             if(count($values)!==count($header)){ $skipped++;$errors[]="Line {$line}: column count mismatch";continue; }
             $row=array_combine($header,$values);
             $name=trim((string)$row['name']);$email=strtolower(trim((string)$row['email']));$role=strtoupper(trim((string)$row['role']));$status=strtoupper(trim((string)$row['status']));
-            if(!$name||!filter_var($email,FILTER_VALIDATE_EMAIL)||!in_array($role,self::ROLES,true)||!in_array($status,self::STATUSES,true)){ $skipped++;$errors[]="Line {$line}: invalid identity, role, or status";continue; }
+            if(!$name||!filter_var($email,FILTER_VALIDATE_EMAIL)||!$validRoleCodes->contains($role)||!in_array($status,self::STATUSES,true)){ $skipped++;$errors[]="Line {$line}: invalid identity, role, or status";continue; }
             $existing=User::where('email',$email)->first();
             if($existing && $existing->tenant_id!==$tenant){ $skipped++;$errors[]="Line {$line}: email belongs to another tenant";continue; }
             $password=trim((string)($row['password']??''));
@@ -313,8 +323,15 @@ class UserAdministrationController extends Controller
         if(Schema::hasTable('roles')) {
             $valid=Role::where('is_active',true)->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant))->whereIn('code',$codes)->pluck('code')->unique()->all();
             abort_unless(count($valid)===count($codes),422,'One or more roles are invalid.');
-        } else abort_unless(collect($codes)->every(fn($code)=>in_array($code,self::ROLES,true)||$code==='ADMIN'),422,'One or more roles are invalid.');
+        } else abort_unless(collect($codes)->every(fn($code)=>in_array($code,self::LEGACY_FALLBACK_ROLES,true)||$code==='ADMIN'),422,'One or more roles are invalid.');
         return $codes;
+    }
+
+    private function primaryFirst(array $codes,?string $primary): array
+    {
+        $primary=strtoupper(trim((string)$primary));
+        if($primary==='' || !in_array($primary,$codes,true)) return $codes;
+        return array_values(array_unique([$primary,...$codes]));
     }
 
     private function legacyRole(string $code): string
@@ -326,7 +343,8 @@ class UserAdministrationController extends Controller
     private function syncRoles(Request $request,User $user,array $codes,AuditService $audit,string $reason): void
     {
         if(!Schema::hasTable('user_roles')) return;
-        $roles=Role::where('is_active',true)->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$user->tenant_id))->whereIn('code',$codes)->get()->sortByDesc(fn($role)=>$role->tenant_id!==null)->unique('code')->values();
+        $catalog=Role::where('is_active',true)->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$user->tenant_id))->whereIn('code',$codes)->get()->sortByDesc(fn($role)=>$role->tenant_id!==null)->unique('code')->keyBy('code');
+        $roles=collect($codes)->map(fn($code)=>$catalog->get($code))->filter()->values();
         $before=DB::table('user_roles')->join('roles','roles.id','=','user_roles.role_id')->where('user_roles.user_id',$user->id)->whereNull('user_roles.revoked_at')->pluck('roles.code')->all();
         DB::table('user_roles')->where('user_id',$user->id)->whereNull('revoked_at')->whereNotIn('role_id',$roles->pluck('id'))->update(['revoked_at'=>now(),'updated_at'=>now()]);
         foreach($roles as $index=>$role) DB::table('user_roles')->updateOrInsert(['user_id'=>$user->id,'role_id'=>$role->id],['tenant_id'=>$user->tenant_id,'is_primary'=>$index===0,'granted_by'=>$request->user()->id,'granted_at'=>now(),'revoked_at'=>null,'reason'=>$reason,'created_at'=>now(),'updated_at'=>now()]);

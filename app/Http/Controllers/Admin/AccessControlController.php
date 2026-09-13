@@ -19,17 +19,28 @@ class AccessControlController extends Controller
             'roles'=>Role::where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant))->withCount('users')->orderBy('code')->get(),
             'scopes'=>AccessScope::where('tenant_id',$tenant)->orderBy('scope_type')->orderBy('name')->get(),
             'authorities'=>ApprovalAuthority::where('tenant_id',$tenant)->latest()->get(),
-            'invitations'=>UserInvitation::where('tenant_id',$tenant)->latest()->limit(50)->get(),
-            'events'=>DB::table('security_events')->where('tenant_id',$tenant)->latest('occurred_at')->paginate(30),
         ]);
     }
 
     public function role(Request $request,AuditService $audit): RedirectResponse
     {
         $data=$request->validate(['code'=>['required','alpha_dash','max:80'],'name_en'=>['required','string','max:120'],'name_ar'=>['nullable','string','max:120'],'description'=>['nullable','string','max:1000'],'grants_business_authority'=>['nullable','boolean'],'requires_approval'=>['nullable','boolean']]);
-        $role=Role::create(['tenant_id'=>$request->user()->tenant_id,'code'=>strtoupper($data['code']),'name_en'=>$data['name_en'],'name_ar'=>$data['name_ar']??null,'description'=>$data['description']??null,'grants_business_authority'=>$request->boolean('grants_business_authority'),'requires_approval'=>$request->boolean('requires_approval'),'is_active'=>true]);
+        $code=strtoupper($data['code']); $tenant=$request->user()->tenant_id;
+        abort_if(Role::where('code',$code)->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant))->exists(),422,'A role with this code already exists.');
+        $role=Role::create(['tenant_id'=>$tenant,'code'=>$code,'name_en'=>$data['name_en'],'name_ar'=>$data['name_ar']??null,'description'=>$data['description']??null,'grants_business_authority'=>$request->boolean('grants_business_authority'),'requires_approval'=>$request->boolean('requires_approval'),'is_active'=>true]);
         $audit->record('security.role.created',$role,[],$role->toArray(),reason:$data['description']??'New master role');
         return back()->with('status','Master role created.');
+    }
+
+    public function roleStatus(Request $request,int $role,AuditService $audit): RedirectResponse
+    {
+        $tenant=$request->user()->tenant_id;
+        $row=Role::whereKey($role)->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant))->firstOrFail();
+        $data=$request->validate(['is_active'=>['required','boolean'],'reason'=>['required','string','max:500']]);
+        abort_if($row->is_system_role && !$data['is_active'],422,'System roles cannot be deactivated.');
+        $before=$row->toArray(); $row->update(['is_active'=>(bool)$data['is_active']]);
+        $audit->record('security.role.status_changed',$row,$before,$row->fresh()->toArray(),reason:$data['reason']);
+        return back()->with('status','Role status updated.');
     }
 
     public function scope(Request $request,AuditService $audit): RedirectResponse
@@ -41,6 +52,15 @@ class AccessControlController extends Controller
         return back()->with('status','Access scope created.');
     }
 
+    public function scopeStatus(Request $request,int $scope,AuditService $audit): RedirectResponse
+    {
+        $row=AccessScope::where('tenant_id',$request->user()->tenant_id)->findOrFail($scope);
+        $data=$request->validate(['is_active'=>['required','boolean'],'reason'=>['required','string','max:500']]);
+        $before=$row->toArray(); $row->update(['is_active'=>(bool)$data['is_active']]);
+        $audit->record('security.scope.status_changed',$row,$before,$row->fresh()->toArray(),reason:$data['reason']);
+        return back()->with('status','Scope status updated.');
+    }
+
     public function authority(Request $request,AuditService $audit): RedirectResponse
     {
         $tenant=$request->user()->tenant_id;
@@ -50,6 +70,15 @@ class AccessControlController extends Controller
         $authority=ApprovalAuthority::create(['tenant_id'=>$tenant,'approval_type'=>$data['approval_type'],'role_id'=>$role->id,'level'=>$data['level'],'access_scope_id'=>$data['access_scope_id']??null,'amount_limit'=>$data['amount_limit']??null,'is_active'=>true,'configured_by'=>$request->user()->id]);
         $audit->record('security.approval_authority.created',$authority,[],$authority->toArray(),reason:$data['reason']);
         return back()->with('status','Approval authority configured. The administrator does not inherit it.');
+    }
+
+    public function authorityStatus(Request $request,int $authority,AuditService $audit): RedirectResponse
+    {
+        $row=ApprovalAuthority::where('tenant_id',$request->user()->tenant_id)->findOrFail($authority);
+        $data=$request->validate(['is_active'=>['required','boolean'],'reason'=>['required','string','max:500']]);
+        $before=$row->toArray(); $row->update(['is_active'=>(bool)$data['is_active']]);
+        $audit->record('security.approval_authority.status_changed',$row,$before,$row->fresh()->toArray(),reason:$data['reason']);
+        return back()->with('status','Approval authority status updated.');
     }
 
     public function revokeInvitation(Request $request,int $invitation,AuditService $audit): RedirectResponse
