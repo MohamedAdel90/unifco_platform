@@ -15,7 +15,7 @@
     <h1>{{ $workspace['title'] }}</h1>
     <p>{{ $workspace['description'] }}</p>
   </div>
-  <a class="btn" href="{{ $workspace['primary_url'] }}">Open {{ $workspace['title'] }}</a>
+  <a class="btn" href="{{ $workspace['primary_url'] }}">Open Operations</a>
 </section>
 
 <div class="workspace-grid">
