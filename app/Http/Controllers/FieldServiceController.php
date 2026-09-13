@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{AiInteraction,Asset,Employee,Inspection,InspectionTemplate,PlatformNotification,WorkOrder,WorkOrderAssignment};
 use App\Services\{AuthorizationService,ScopeService};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -28,7 +29,7 @@ class FieldServiceController extends Controller
         ]);
     }
 
-    public function assign(Request $request, AuthorizationService $authorization): RedirectResponse
+    public function assign(Request $request): RedirectResponse
     {
         $user=$request->user();
         $data=$request->validate([
@@ -38,9 +39,9 @@ class FieldServiceController extends Controller
             'dispatcher_notes'=>['nullable','string','max:2000'],
         ]);
         $wo=WorkOrder::where('tenant_id',$user->tenant_id)->findOrFail($data['work_order_id']);
-        $authorization->authorize($user,'maintenance.work_order.assign',$wo);
+        $this->authorizePermission('maintenance.work_order.assign',$wo);
         $employee=Employee::where('tenant_id',$user->tenant_id)->whereKey($data['employee_id'])->where('status','ACTIVE')->firstOrFail();
-        $assignment=WorkOrderAssignment::updateOrCreate(
+        WorkOrderAssignment::updateOrCreate(
             ['work_order_id'=>$wo->id,'employee_id'=>$employee->id],
             $data+['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'dispatch_status'=>'DISPATCHED','dispatched_at'=>now()]
         );
@@ -120,14 +121,13 @@ class FieldServiceController extends Controller
         return back()->with('status','Assistant response generated.');
     }
 
-    private function authorizePermission(string $permission): void
+    private function authorizePermission(string $permission, ?Model $resource=null): void
     {
         $user=auth()->user();
-        if(!DB::getSchemaBuilder()->hasTable('permissions')){
-            $this->legacyManagerOnly();
-            return;
-        }
-        app(AuthorizationService::class)->authorize($user,$permission);
+        $hasStructured=DB::getSchemaBuilder()->hasTable('user_roles')
+            && DB::table('user_roles')->where('user_id',$user->id)->whereNull('revoked_at')->exists();
+        if(!$hasStructured && in_array($user->role,['ADMIN','MANAGER','SUPERVISOR'],true)) return;
+        app(AuthorizationService::class)->authorize($user,$permission,$resource);
     }
 
     private function legacyManagerOnly(): void
