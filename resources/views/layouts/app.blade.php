@@ -84,6 +84,8 @@ $canHr=$authz->allows($u,'hr.employee.read'); $canReporting=$authz->allows($u,'r
         <a class="nav-link {{ request()->routeIs('admin.permissions.*')?'active':'' }}" href="{{ route('admin.permissions.index') }}">Permission Matrix</a>
         <a class="nav-link {{ request()->routeIs('admin.system.organization')?'active':'' }}" href="{{ route('admin.system.organization') }}">Organization</a>
         <a class="nav-link {{ request()->routeIs('admin.system.master-data*')?'active':'' }}" href="{{ route('admin.system.master-data') }}">Master Data</a>
+        <a class="nav-link {{ request()->is('workspace/system-settings')?'active':'' }}" href="{{ route('workspace.show','system-settings') }}">System Configuration</a>
+        <a class="nav-link {{ request()->routeIs('platform.notifications.*')?'active':'' }}" href="{{ route('platform.notifications.index') }}">Notifications</a>
         <a class="nav-link {{ request()->routeIs('admin.system.email-templates*')?'active':'' }}" href="{{ route('admin.system.email-templates') }}">Email Templates</a>
         <a class="nav-link {{ request()->routeIs('admin.system.sessions*')?'active':'' }}" href="{{ route('admin.system.sessions') }}">Active Sessions</a>
         <a class="nav-link {{ request()->routeIs('admin.system.security-events')?'active':'' }}" href="{{ route('admin.system.security-events') }}">Security Events</a>
