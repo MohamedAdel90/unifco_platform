@@ -6,6 +6,7 @@ use App\Models\{AccessScope,Organization,Role,Tenant,User};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,9 +15,16 @@ class DatabaseSeeder extends Seeder
         $legacyTestFixture=app()->environment('testing');
         $tenant = Tenant::firstOrCreate(['code'=>'UNIFCO'], ['name'=>'UNIFCO','status'=>'ACTIVE']);
         $org = Organization::firstOrCreate(['tenant_id'=>$tenant->id,'code'=>'HQ'], ['name'=>'UNIFCO HQ','status'=>'ACTIVE']);
+
+        $bootstrapPassword=env('UNIFCO_ADMIN_PASSWORD');
+        if (! $bootstrapPassword && app()->environment('production')) {
+            throw new RuntimeException('UNIFCO_ADMIN_PASSWORD must be configured before running DatabaseSeeder in production.');
+        }
+        $bootstrapPassword=$bootstrapPassword ?: 'ChangeMe123!';
+
         $admin=User::firstOrCreate(['email'=>'admin@unifco.local'], [
             'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'UNIFCO Administrator',
-            'password'=>Hash::make(env('UNIFCO_ADMIN_PASSWORD','ChangeMe123!')),'role'=>$legacyTestFixture?'ADMIN':'SYSTEM_ADMIN','user_type'=>'INTERNAL','status'=>'ACTIVE',
+            'password'=>Hash::make($bootstrapPassword),'role'=>$legacyTestFixture?'ADMIN':'SYSTEM_ADMIN','user_type'=>'INTERNAL','status'=>'ACTIVE',
         ]);
         // Historical feature tests use one unrestricted ADMIN fixture. Production
         // always receives the structured, system-authority-only assignment below.
