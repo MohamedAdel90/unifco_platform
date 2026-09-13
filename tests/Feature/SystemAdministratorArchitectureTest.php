@@ -66,6 +66,23 @@ class SystemAdministratorArchitectureTest extends TestCase
         }
     }
 
+    public function test_system_administrator_sidebar_is_not_replaced_by_legacy_client_navigation(): void
+    {
+        [$tenant,$org]=$this->identity('SIDEBAR');
+        $admin=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'System Admin','email'=>'sidebar-admin@example.test','password'=>'password','role'=>'SYSTEM_ADMIN','status'=>'ACTIVE']);
+        $this->assign($admin,Role::whereNull('tenant_id')->where('code','SYSTEM_ADMIN')->firstOrFail());
+
+        $this->actingAs($admin)->get('/system-admin')
+            ->assertOk()
+            ->assertSee('/admin/system/invitations',false)
+            ->assertSee('/admin/system/sessions',false)
+            ->assertSee('/admin/system/security-events',false)
+            ->assertSee('/admin/system/scheduled-jobs',false)
+            ->assertSee('/admin/system/master-data',false)
+            ->assertSee('System Configuration')
+            ->assertDontSee("'Administration':[['Users'",false);
+    }
+
     public function test_tenant_role_catalog_is_dynamic_and_supports_primary_role(): void
     {
         [$tenant,$org]=$this->identity('DYNAMIC');
