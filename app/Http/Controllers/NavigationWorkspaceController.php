@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Organization,User};
+use App\Models\{JobPosition,Organization,Role,User};
+use App\Services\AuthorizationService;
 use Illuminate\Http\Request;
 
 class NavigationWorkspaceController extends Controller
 {
+    public function __construct(private AuthorizationService $authorization) {}
     private const WORKSPACES = [
         'customer-onboarding' => ['title'=>'Customer Onboarding','group'=>'Customers & Service','description'=>'Customer onboarding checklist, account readiness and handoff workspace.','primary'=>'crm.customers.index'],
         'contracts' => ['title'=>'Contracts','group'=>'Customers & Service','description'=>'Customer contract visibility, service scope and operational handoff workspace.','primary'=>'crm.customers.index'],
@@ -58,27 +60,34 @@ class NavigationWorkspaceController extends Controller
 
     private function users(Request $request)
     {
-        abort_unless($request->user()->role === 'ADMIN', 403);
+        $this->authorization->authorize($request->user(),'users.view');
         $tenantId=$request->user()->tenant_id;
         $base=User::query()->where('tenant_id',$tenantId);
         $q=trim((string)$request->query('q'));
         $role=trim((string)$request->query('role'));
         $status=trim((string)$request->query('status'));
         $organizationId=$request->query('organization_id');
+        $department=trim((string)$request->query('department'));
+        $userType=trim((string)$request->query('user_type'));
         $users=(clone $base)
+            ->with(['activeRoles','employee.position'])
             ->when($q,fn($x)=>$x->where(fn($y)=>$y->where('name','like',"%{$q}%")->orWhere('email','like',"%{$q}%")))
-            ->when($role,fn($x)=>$x->where('role',$role))
+            ->when($role,fn($x)=>$x->whereHas('activeRoles',fn($r)=>$r->where('roles.code',$role)))
             ->when($status,fn($x)=>$x->where('status',$status))
             ->when($organizationId,fn($x)=>$x->where('organization_id',$organizationId))
+            ->when($department,fn($x)=>$x->whereHas('employee.position',fn($p)=>$p->where('department',$department)))
+            ->when($userType==='INTERNAL',fn($x)=>$x->whereNull('customer_id'))
+            ->when($userType==='EXTERNAL',fn($x)=>$x->whereNotNull('customer_id'))
             ->orderBy('name')->paginate(25)->withQueryString();
         $organizationNames=Organization::where('tenant_id',$tenantId)->pluck('name','id');
+        $departments=JobPosition::where('tenant_id',$tenantId)->whereNotNull('department')->distinct()->orderBy('department')->pluck('department');
         $stats=[
             'total'=>(clone $base)->count(),
             'active'=>(clone $base)->where('status','ACTIVE')->count(),
             'inactive'=>(clone $base)->where('status','!=','ACTIVE')->count(),
-            'admins'=>(clone $base)->where('role','ADMIN')->count(),
+            'admins'=>(clone $base)->whereHas('activeRoles',fn($q)=>$q->where('roles.code','SYSTEM_ADMIN'))->count(),
         ];
-        $roles=(clone $base)->select('role')->distinct()->orderBy('role')->pluck('role');
-        return view('navigation.users',compact('users','stats','roles','organizationNames'));
+        $roles=Role::where('is_active',true)->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenantId))->get()->sortByDesc(fn($role)=>$role->tenant_id!==null)->unique('code')->sortBy('code')->pluck('code');
+        return view('navigation.users',compact('users','stats','roles','organizationNames','departments'));
     }
 }

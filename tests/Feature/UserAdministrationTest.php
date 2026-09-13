@@ -6,7 +6,6 @@ use App\Models\{Organization,Tenant,User};
 use App\Services\AuthorizationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class UserAdministrationTest extends TestCase
@@ -27,26 +26,28 @@ class UserAdministrationTest extends TestCase
         $this->actingAs($admin)->post('/admin/users',['name'=>'Technician One','email'=>'tech1@example.test','password'=>'Password123!','password_confirmation'=>'Password123!','role'=>'TECHNICIAN','status'=>'ACTIVE','organization_id'=>$org->id])->assertRedirect();
         $user=User::where('email','tech1@example.test')->firstOrFail();
         $this->assertTrue($user->force_password_change);
-        $this->actingAs($admin)->get('/admin/users/'.$user->id)->assertOk()->assertSee('User-specific Permission Overrides',false)->assertSee('Security Summary',false)->assertSee('API Tokens',false)->assertSee('Recent Audit Timeline',false);
+        $this->actingAs($admin)->get('/admin/users/'.$user->id)->assertOk()->assertSee('User-specific Permission Exceptions',false)->assertSee('Security Summary',false)->assertSee('API Tokens',false)->assertSee('Recent Audit Timeline',false);
         $this->actingAs($admin)->put('/admin/users/'.$user->id,['name'=>'Technician Updated','email'=>'tech1@example.test','role'=>'SUPERVISOR','status'=>'ACTIVE','organization_id'=>$org->id])->assertRedirect();
         $this->assertDatabaseHas('users',['id'=>$user->id,'tenant_id'=>$tenant->id,'name'=>'Technician Updated','role'=>'SUPERVISOR']);
         $before=User::find($user->id)->session_version;
         $this->actingAs($admin)->post('/admin/users/'.$user->id.'/status',['status'=>'SUSPENDED'])->assertRedirect();
         $this->assertDatabaseHas('users',['id'=>$user->id,'status'=>'SUSPENDED']);
         $this->assertGreaterThan($before,User::find($user->id)->session_version);
-        $this->actingAs($admin)->post('/admin/users/'.$user->id.'/reset-password',['password'=>'Changed123!','password_confirmation'=>'Changed123!'])->assertRedirect();
+        $oldPassword=$user->password;
+        $this->actingAs($admin)->post('/admin/users/'.$user->id.'/reset-password')->assertRedirect();
         $fresh=User::find($user->id);
-        $this->assertTrue(Hash::check('Changed123!',$fresh->password));
+        $this->assertNotSame($oldPassword,$fresh->password);
         $this->assertTrue($fresh->force_password_change);
+        $this->assertDatabaseHas('user_invitations',['user_id'=>$fresh->id,'status'=>'PENDING']);
     }
 
     public function test_permission_override_changes_effective_access(): void
     {
         [$tenant,$org,$admin]=$this->admin('UP');
         $user=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Tech','email'=>'up-tech@example.test','password'=>'password','role'=>'TECHNICIAN','status'=>'ACTIVE']);
-        $this->actingAs($admin)->post('/admin/users/'.$user->id.'/permission',['permission_code'=>'finance.journal.read','effect'=>'ALLOW'])->assertRedirect();
+        $this->actingAs($admin)->post('/admin/users/'.$user->id.'/permission',['permission_code'=>'finance.journal.read','effect'=>'ALLOW','reason'=>'Temporary finance visibility for test'])->assertRedirect();
         $this->assertTrue(app(AuthorizationService::class)->allows($user->fresh(),'finance.journal.read'));
-        $this->actingAs($admin)->post('/admin/users/'.$user->id.'/permission',['permission_code'=>'finance.journal.read','effect'=>'DENY'])->assertRedirect();
+        $this->actingAs($admin)->post('/admin/users/'.$user->id.'/permission',['permission_code'=>'finance.journal.read','effect'=>'DENY','reason'=>'Remove temporary finance visibility'])->assertRedirect();
         $this->assertFalse(app(AuthorizationService::class)->allows($user->fresh(),'finance.journal.read'));
     }
 

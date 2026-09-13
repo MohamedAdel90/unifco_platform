@@ -17,7 +17,7 @@ class HomepageCmsSectionsTest extends TestCase
     public function test_every_homepage_section_can_be_updated_in_arabic_and_english_without_cross_section_leakage(): void
     {
         $this->seedHomepage();
-        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+        $admin = User::query()->where('role', 'SYSTEM_ADMIN')->firstOrFail();
 
         foreach (array_keys(HomepageSectionSchema::all()) as $key) {
             $section = HomepageSection::query()->where('section_key', $key)->firstOrFail();
@@ -35,7 +35,7 @@ class HomepageCmsSectionsTest extends TestCase
     public function test_every_homepage_section_supports_unsaved_preview_in_both_languages_without_persisting(): void
     {
         $this->seedHomepage();
-        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+        $admin = User::query()->where('role', 'SYSTEM_ADMIN')->firstOrFail();
 
         foreach (array_keys(HomepageSectionSchema::all()) as $key) {
             $section = HomepageSection::query()->where('section_key', $key)->firstOrFail();
@@ -60,7 +60,7 @@ class HomepageCmsSectionsTest extends TestCase
     public function test_services_editor_binds_image_controls_to_real_repeater_field_names(): void
     {
         $this->seedHomepage();
-        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+        $admin = User::query()->where('role', 'SYSTEM_ADMIN')->firstOrFail();
         $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
 
         $html = $this->actingAs($admin)->get(route('admin.homepage.sections.edit', $section))->assertOk()->getContent();
@@ -71,7 +71,7 @@ class HomepageCmsSectionsTest extends TestCase
     public function test_services_save_preserves_existing_image_when_image_field_is_not_submitted(): void
     {
         $this->seedHomepage();
-        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+        $admin = User::query()->where('role', 'SYSTEM_ADMIN')->firstOrFail();
         $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
         $ar = $section->data_ar;
         $en = $section->data_en;
@@ -91,7 +91,7 @@ class HomepageCmsSectionsTest extends TestCase
     public function test_services_image_is_shared_and_can_be_replaced_through_the_cms_field(): void
     {
         $this->seedHomepage();
-        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+        $admin = User::query()->where('role', 'SYSTEM_ADMIN')->firstOrFail();
         $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
         $payload = $this->sectionPayload('services');
         $payload['item_ar_items_3_image'] = '/images/new-service.webp';
@@ -106,7 +106,7 @@ class HomepageCmsSectionsTest extends TestCase
     public function test_changing_service_image_in_one_language_propagates_to_the_other_language_when_still_shared(): void
     {
         $this->seedHomepage();
-        $admin = User::query()->where('role', 'ADMIN')->firstOrFail();
+        $admin = User::query()->where('role', 'SYSTEM_ADMIN')->firstOrFail();
         $section = HomepageSection::query()->where('section_key', 'services')->firstOrFail();
 
         $ar = $section->data_ar;

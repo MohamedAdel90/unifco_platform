@@ -12,6 +12,7 @@ use App\Http\Controllers\CustomerPortalOperationsController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\CustomerWorkAcceptanceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\EAM\AssetController;
 use App\Http\Controllers\EAM\AssetHealthDashboardController;
 use App\Http\Controllers\EAM\AssetMeterController;
@@ -41,6 +42,8 @@ Route::get('/request-quote', fn () => redirect()->route('public.request-service'
 Route::get('/emergency-maintenance', fn () => redirect()->route('public.request-service', ['emergency' => 1], 301))->name('public.emergency');
 Route::post('/service-requests', [PublicSiteController::class, 'store'])->middleware('throttle:10,1')->name('public.request.store');
 Route::get('/request-received/{reference}', [PublicSiteController::class, 'received'])->name('public.request.received');
+Route::get('/invitations/{token}',[InvitationController::class,'show'])->middleware('throttle:30,1')->name('invitations.accept');
+Route::post('/invitations/{token}',[InvitationController::class,'accept'])->middleware('throttle:10,1')->name('invitations.complete');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');

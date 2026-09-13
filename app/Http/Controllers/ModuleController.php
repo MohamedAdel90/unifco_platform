@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Asset,Customer,Employee,FinancialDocument,Item,Journal,Project,PurchaseOrder,ProductionOrder,WorkOrder};
+use App\Services\AuthorizationService;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\View\View;
 
@@ -20,9 +21,16 @@ class ModuleController extends Controller
         'eam' => [Asset::class,'Enterprise Assets','asset_code','acquisition_cost'],
     ];
 
-    public function index(Request $request, string $module): View|RedirectResponse
+    private const PERMISSIONS = [
+        'finance'=>'finance.journal.read', 'hr'=>'hr.employee.read', 'procurement'=>'procurement.po.read',
+        'inventory'=>'inventory.stock.read', 'crm'=>'crm.customer.read', 'projects'=>'projects.project.read',
+        'manufacturing'=>'manufacturing.production.read', 'maintenance'=>'maintenance.work_order.read', 'eam'=>'eam.asset.read',
+    ];
+
+    public function index(Request $request, string $module, AuthorizationService $authorization): View|RedirectResponse
     {
         abort_unless(isset(self::MODULES[$module]), 404);
+        $authorization->authorize($request->user(),self::PERMISSIONS[$module]);
 
         if ($module === 'eam') {
             return redirect()->route('eam.assets.index');

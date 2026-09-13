@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\HomepageClientController;
 use App\Http\Controllers\Admin\HomepageImageController;
 use App\Http\Controllers\Admin\TemporaryFileController;
 use App\Http\Controllers\Admin\UserAdministrationController;
+use App\Http\Controllers\Admin\{ImpersonationController,SystemAdminDashboardController};
+use App\Http\Controllers\Admin\AccessControlController;
 use App\Http\Controllers\NavigationWorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +18,17 @@ Route::get('/temporary-files/{token}', [TemporaryFileController::class, 'show'])
     ->name('temporary-files.show');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/system-admin',SystemAdminDashboardController::class)->middleware('permission:system.dashboard.view')->name('system-admin.dashboard');
+    Route::post('/admin/users/{user}/impersonate',[ImpersonationController::class,'start'])->middleware('permission:impersonation.read_only')->name('admin.impersonation.start');
+    Route::delete('/admin/impersonation',[ImpersonationController::class,'stop'])->name('admin.impersonation.stop');
+    Route::prefix('admin/access-control')->name('admin.access-control.')->middleware('permission:roles.view')->group(function(){
+        Route::get('/',[AccessControlController::class,'index'])->name('index');
+        Route::post('/roles',[AccessControlController::class,'role'])->middleware('permission:roles.manage')->name('roles.store');
+        Route::post('/scopes',[AccessControlController::class,'scope'])->middleware('permission:scopes.manage')->name('scopes.store');
+        Route::post('/approval-authorities',[AccessControlController::class,'authority'])->middleware('permission:approval_authorities.manage')->name('authorities.store');
+        Route::post('/invitations/{invitation}/revoke',[AccessControlController::class,'revokeInvitation'])->middleware('permission:invitations.manage')->name('invitations.revoke');
+        Route::post('/invitations/{invitation}/resend',[AccessControlController::class,'resendInvitation'])->middleware('permission:invitations.manage')->name('invitations.resend');
+    });
     Route::get('/admin', fn () => redirect()->route('admin.temporary-files.index'))->name('admin.index');
     Route::prefix('workspace')->name('workspace.')->group(function () {
         Route::get('/skills-certifications',fn()=>redirect()->route('hr.performance.index'))->name('skills-certifications');
@@ -70,5 +83,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/{user}/reset-password',[UserAdministrationController::class,'resetPassword'])->name('reset-password');
         Route::post('/{user}/permission',[UserAdministrationController::class,'permission'])->name('permission');
         Route::post('/{user}/api-tokens/{token}/revoke',[UserAdministrationController::class,'revokeToken'])->name('api-tokens.revoke');
+        Route::post('/{user}/sessions/{session}/revoke',[UserAdministrationController::class,'revokeSession'])->name('sessions.revoke');
     });
 });

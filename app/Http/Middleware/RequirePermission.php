@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Services\AuthorizationService;
 use Closure;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -26,7 +27,8 @@ class RequirePermission
             return redirect()->route('asset-master.index');
         }
 
-        $this->authorization->authorize($user, $permission);
+        $resource=collect($request->route()?->parameters()??[])->first(fn($parameter)=>$parameter instanceof Model);
+        $this->authorization->authorize($user, $permission, $resource ?: null);
         return $next($request);
     }
 }

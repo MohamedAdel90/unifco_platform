@@ -18,6 +18,7 @@ class DashboardController extends Controller
     {
         $user=auth()->user();
         if($user->role==='CUSTOMER') return redirect()->route('customer.portal');
+        $authorization->authorize($user,'dashboard.view');
 
         $days=max(7,min(90,(int)$request->query('days',30)));
         $from=now()->subDays($days);

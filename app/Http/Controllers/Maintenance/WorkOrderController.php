@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Asset,Item,WorkOrder};
-use App\Services\AuditService;
+use App\Services\{AuditService,ScopeService};
 use App\Services\Inventory\StockService;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\{Auth,DB,Storage};
@@ -15,10 +15,11 @@ use Illuminate\View\View;
 
 class WorkOrderController extends Controller
 {
-    public function index(): View
+    public function index(Request $request,ScopeService $scopes): View
     {
+        $orders=WorkOrder::with(['asset','plan','contract'])->whereHas('asset',fn($query)=>$scopes->apply($query,$request->user()));
         return view('maintenance.work-orders.index',[
-            'orders'=>WorkOrder::with(['asset','plan','contract'])->latest('id')->paginate(25),
+            'orders'=>$orders->latest('id')->paginate(25),
         ]);
     }
 

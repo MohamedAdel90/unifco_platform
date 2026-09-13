@@ -89,6 +89,6 @@ class HomepageProjectController extends Controller
 
     private function adminOnly(Request $request): void
     {
-        abort_unless($request->user()?->role === 'ADMIN', 403);
+        app(\App\Services\AuthorizationService::class)->authorize($request->user(), 'homepage.manage');
     }
 }
