@@ -16,8 +16,11 @@ class PublicNewCustomerRequestFlowTest extends TestCase
             ->assertSee('id="new_equipment_name"', false)
             ->assertSee('id="new_equipment_type"', false)
             ->assertSee('body.uf-new-customer-mode .uf-customer-context-layout', false)
-            ->assertSee('body.uf-new-customer-mode .uf-workspace .uf-asset-pane{display:none!important}', false)
-            ->assertSee("detailsNum.textContent=isNew?'3':'5'", false)
+            ->assertSee('body.uf-new-customer-mode .uf-workspace{display:grid!important;grid-template-columns:minmax(0,3fr) minmax(360px,2fr)!important;grid-template-areas:"asset details"!important', false)
+            ->assertSee('body.uf-new-customer-mode .uf-workspace .uf-asset-pane{display:block!important', false)
+            ->assertSee("if(detailsNum)detailsNum.textContent=isNew?'3':'5'", false)
+            ->assertSee("if(assetNum)assetNum.textContent=isNew?'2':'4'", false)
+            ->assertSee("assetPane.classList.toggle('uf-new-equipment-active',isNew)", false)
             ->assertSee('appendEquipmentDetails()', false)
             ->assertDontSee('id="new_project_name"', false)
             ->assertDontSee('id="new_equipment_location"', false);
