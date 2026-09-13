@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\{ImpersonationController,SystemAdminDashboardCont
 use App\Http\Controllers\Admin\AccessControlController;
 use App\Http\Controllers\Admin\SystemCatalogController;
 use App\Http\Controllers\NavigationWorkspaceController;
+use App\Http\Controllers\Operations\OperationsManagerDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/temporary-files/{token}', [TemporaryFileController::class, 'show'])
@@ -20,6 +21,7 @@ Route::get('/temporary-files/{token}', [TemporaryFileController::class, 'show'])
 
 Route::middleware('auth')->group(function () {
     Route::get('/system-admin',SystemAdminDashboardController::class)->middleware('permission:system.dashboard.view')->name('system-admin.dashboard');
+    Route::get('/operations-manager',OperationsManagerDashboardController::class)->middleware('permission:operations.dashboard.view')->name('operations-manager.dashboard');
     Route::post('/admin/users/{user}/impersonate',[ImpersonationController::class,'start'])->middleware('permission:impersonation.read_only')->name('admin.impersonation.start');
     Route::delete('/admin/impersonation',[ImpersonationController::class,'stop'])->name('admin.impersonation.stop');
     Route::prefix('admin/system')->name('admin.system.')->group(function(){
@@ -87,7 +89,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/clients/{client}/edit', [HomepageClientController::class, 'edit'])->name('clients.edit');
         Route::put('/clients/{client}', [HomepageClientController::class, 'update'])->name('clients.update');
         Route::delete('/clients/{client}', [HomepageClientController::class, 'destroy'])->name('clients.destroy');
-        Route::post('/clients/{client}/toggle', [HomepageClientController::class, 'toggle'])->name('clients.toggle');
+        Route::post('/clients/{client}/toggle', [HomepageClientController::class,'toggle'])->name('clients.toggle');
         Route::get('/images/list', [HomepageImageController::class, 'list'])->name('images.list');
         Route::post('/images/upload', [HomepageImageController::class, 'upload'])->name('images.upload');
         Route::post('/images/translate', [CmsImageTranslationController::class, 'translate'])->name('images.translate');
