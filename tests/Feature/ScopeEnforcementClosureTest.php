@@ -52,7 +52,6 @@ class ScopeEnforcementClosureTest extends TestCase
             'user_id'=>$user->id,
             'access_scope_id'=>$scope->id,
             'source'=>'DIRECT',
-            'granted_at'=>now(),
             'created_at'=>now(),
             'updated_at'=>now(),
         ]);
