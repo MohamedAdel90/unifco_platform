@@ -26,8 +26,6 @@ class DatabaseSeeder extends Seeder
             'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'UNIFCO Administrator',
             'password'=>Hash::make($bootstrapPassword),'role'=>$legacyTestFixture?'ADMIN':'SYSTEM_ADMIN','user_type'=>'INTERNAL','status'=>'ACTIVE',
         ]);
-        // Historical feature tests use one unrestricted ADMIN fixture. Production
-        // always receives the structured, system-authority-only assignment below.
         if (DB::getSchemaBuilder()->hasTable('user_roles') && ! $legacyTestFixture) {
             $role=Role::whereNull('tenant_id')->where('code','SYSTEM_ADMIN')->firstOrFail();
             DB::table('user_roles')->updateOrInsert(['user_id'=>$admin->id,'role_id'=>$role->id],[
@@ -53,6 +51,7 @@ class DatabaseSeeder extends Seeder
                 MaintenanceEamDemoSeeder::class,
                 PlatformDemoSeeder::class,
                 WorkflowTestUsersSeeder::class,
+                OperationsManagerUatAccessSeeder::class,
             ]);
         }
     }

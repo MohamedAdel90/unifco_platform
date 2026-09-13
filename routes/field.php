@@ -2,9 +2,16 @@
 
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\FieldServiceController;
+use App\Http\Controllers\Operations\{OperationsReportController,ProjectSiteOperationsController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
+    Route::get('/operations-manager/projects-sites',ProjectSiteOperationsController::class)
+        ->middleware('permission:projects.project.read')
+        ->name('operations-manager.project-sites');
+    Route::get('/operations-manager/reports',OperationsReportController::class)
+        ->middleware('permission:reporting.executive.read')
+        ->name('operations-manager.reports');
     Route::prefix('field')->name('field.')->group(function () {
         Route::get('/operations',[FieldServiceController::class,'operations'])->name('operations');
         Route::post('/assignments',[FieldServiceController::class,'assign'])->name('assign');

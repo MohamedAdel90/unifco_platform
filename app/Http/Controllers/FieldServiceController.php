@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\{AiInteraction,Asset,Employee,Inspection,InspectionTemplate,PlatformNotification,WorkOrder,WorkOrderAssignment};
+use App\Services\{AuthorizationService,ScopeService};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -10,34 +12,42 @@ use Illuminate\View\View;
 
 class FieldServiceController extends Controller
 {
-    public function operations(): View
+    public function operations(ScopeService $scopes): View
     {
-        $this->managerOnly();
+        $user=auth()->user();
+        $this->authorizePermission('field.operations.read');
+        $workOrders=$scopes->apply(WorkOrder::query(),$user)->latest()->limit(100)->get();
+        $visibleIds=$workOrders->pluck('id');
+        $assignments=WorkOrderAssignment::whereIn('work_order_id',$visibleIds)->latest('scheduled_start')->limit(100)->get();
+        $inspections=Inspection::whereIn('work_order_id',$visibleIds)->latest()->limit(100)->get();
         return view('field.operations', [
-            'workOrders'=>WorkOrder::latest()->limit(100)->get(),
-            'employees'=>Employee::where('status','ACTIVE')->orderBy('name')->get(),
-            'assignments'=>WorkOrderAssignment::latest('scheduled_start')->limit(100)->get(),
-            'templates'=>InspectionTemplate::where('status','ACTIVE')->orderBy('name')->get(),
-            'inspections'=>Inspection::latest()->limit(100)->get(),
+            'workOrders'=>$workOrders,
+            'employees'=>Employee::where('tenant_id',$user->tenant_id)->where('status','ACTIVE')->orderBy('name')->get(),
+            'assignments'=>$assignments,
+            'templates'=>InspectionTemplate::where('tenant_id',$user->tenant_id)->where('status','ACTIVE')->orderBy('name')->get(),
+            'inspections'=>$inspections,
         ]);
     }
 
     public function assign(Request $request): RedirectResponse
     {
-        $this->managerOnly();
+        $user=$request->user();
         $data=$request->validate([
             'work_order_id'=>['required','integer','exists:work_orders,id'],
             'employee_id'=>['required','integer','exists:employees,id'],
             'scheduled_start'=>['required','date'],'scheduled_end'=>['nullable','date','after:scheduled_start'],
             'dispatcher_notes'=>['nullable','string','max:2000'],
         ]);
-        $assignment=WorkOrderAssignment::updateOrCreate(
-            ['work_order_id'=>$data['work_order_id'],'employee_id'=>$data['employee_id']],
-            $data+['tenant_id'=>auth()->user()->tenant_id,'organization_id'=>auth()->user()->organization_id,'dispatch_status'=>'DISPATCHED','dispatched_at'=>now()]
+        $wo=WorkOrder::where('tenant_id',$user->tenant_id)->findOrFail($data['work_order_id']);
+        $this->authorizePermission('maintenance.work_order.assign',$wo);
+        $employee=Employee::where('tenant_id',$user->tenant_id)->whereKey($data['employee_id'])->where('status','ACTIVE')->firstOrFail();
+        WorkOrderAssignment::updateOrCreate(
+            ['work_order_id'=>$wo->id,'employee_id'=>$employee->id],
+            $data+['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'dispatch_status'=>'DISPATCHED','dispatched_at'=>now()]
         );
-        WorkOrder::whereKey($data['work_order_id'])->update(['planned_start'=>$data['scheduled_start']]);
-        $technician=DB::table('users')->where('employee_id',$data['employee_id'])->where('status','ACTIVE')->first();
-        if($technician){ PlatformNotification::create(['tenant_id'=>auth()->user()->tenant_id,'user_id'=>$technician->id,'type'=>'WORK_ORDER_DISPATCH','title'=>'New work order assignment','message'=>'A work order has been dispatched to you.','action_url'=>route('field.technician')]); }
+        $wo->update(['planned_start'=>$data['scheduled_start']]);
+        $technician=DB::table('users')->where('tenant_id',$user->tenant_id)->where('employee_id',$employee->id)->where('status','ACTIVE')->first();
+        if($technician){ PlatformNotification::create(['tenant_id'=>$user->tenant_id,'user_id'=>$technician->id,'type'=>'WORK_ORDER_DISPATCH','title'=>'New work order assignment','message'=>'A work order has been dispatched to you.','action_url'=>route('field.technician')]); }
         return back()->with('status','Work order dispatched to technician.');
     }
 
@@ -67,7 +77,7 @@ class FieldServiceController extends Controller
 
     public function storeTemplate(Request $request): RedirectResponse
     {
-        $this->managerOnly();
+        $this->legacyManagerOnly();
         $data=$request->validate(['template_no'=>['required','string','max:60'],'name'=>['required','string','max:255'],'checklist'=>['required','string','max:5000']]);
         $items=array_values(array_filter(array_map('trim',preg_split('/\r\n|\r|\n/',$data['checklist']))));
         InspectionTemplate::create(['tenant_id'=>auth()->user()->tenant_id,'organization_id'=>auth()->user()->organization_id,'template_no'=>$data['template_no'],'name'=>$data['name'],'checklist'=>$items,'status'=>'ACTIVE']);
@@ -111,7 +121,16 @@ class FieldServiceController extends Controller
         return back()->with('status','Assistant response generated.');
     }
 
-    private function managerOnly(): void
+    private function authorizePermission(string $permission, ?Model $resource=null): void
+    {
+        $user=auth()->user();
+        $hasStructured=DB::getSchemaBuilder()->hasTable('user_roles')
+            && DB::table('user_roles')->where('user_id',$user->id)->whereNull('revoked_at')->exists();
+        if(!$hasStructured && in_array($user->role,['ADMIN','MANAGER','SUPERVISOR'],true)) return;
+        app(AuthorizationService::class)->authorize($user,$permission,$resource);
+    }
+
+    private function legacyManagerOnly(): void
     {
         abort_unless(in_array(auth()->user()->role,['ADMIN','MANAGER','SUPERVISOR'],true),403);
     }
