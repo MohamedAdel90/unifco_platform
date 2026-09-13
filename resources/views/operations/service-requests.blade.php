@@ -36,13 +36,14 @@
             <thead><tr><th>Request</th><th>Customer / Site</th><th>Priority</th><th>Workflow</th><th>SLA</th><th>Assigned</th><th>Operational Action</th></tr></thead>
             <tbody>
             @forelse($requests as $item)
-                @php($overdue=$item->current_stage_due_at && $item->current_stage_due_at->isPast())
+                @php($due=$item->current_stage_due_at)
+                @php($overdue=$due && $due->isPast())
                 <tr>
                     <td><strong>{{ $item->request_no }}</strong><div class="muted">{{ $item->subject }}</div><div class="muted">{{ $item->request_type ?: $item->service_category }}</div></td>
                     <td>{{ $item->company_name }}<div class="muted">{{ $item->site_city ?: '—' }}</div></td>
                     <td><span class="pill {{ in_array($item->priority,['EMERGENCY','CRITICAL'])?'red':(in_array($item->priority,['URGENT','HIGH'])?'amber':'') }}">{{ $item->priority }}</span></td>
                     <td><span class="pill {{ $item->workflow_stage==='ESCALATED'?'red':'' }}">{{ $item->workflow_stage }}</span><div class="muted">{{ $item->status }}</div></td>
-                    <td><span class="pill {{ $overdue?'red':'' }}">{{ $overdue?'OVERDUE':'ON TRACK' }}</span><div class="muted">{{ $item->current_stage_due_at?->format('Y-m-d H:i') ?: 'No active stage due date' }}</div></td>
+                    <td><span class="pill {{ $overdue?'red':'' }}">{{ $overdue?'OVERDUE':'ON TRACK' }}</span><div class="muted">{{ $due ? $due->format('Y-m-d H:i') : 'No active stage due date' }}</div></td>
                     <td>{{ $assignees->firstWhere('id',$item->assigned_engineer_id)?->name ?: 'Unassigned' }}</td>
                     <td class="ops-actions">
                         <form method="post" action="{{ route('operations-manager.service-requests.assign',$item) }}">@csrf
