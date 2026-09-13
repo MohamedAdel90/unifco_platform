@@ -70,4 +70,32 @@ class OperationsManagerPhaseOneTest extends TestCase
         $response = $this->actingAs($manager)->get('/operations-manager');
         $response->assertOk()->assertSee('Operations Command Center')->assertSee('0');
     }
+
+    public function test_legacy_admin_home_is_not_hijacked_by_operations_manager_redirect(): void
+    {
+        $tenant = Tenant::create(['name'=>'Legacy','code'=>'LEGACY','status'=>'ACTIVE']);
+        $org = Organization::create(['tenant_id'=>$tenant->id,'name'=>'HQ','code'=>'LEGACY-HQ','status'=>'ACTIVE']);
+        $admin = User::create([
+            'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Legacy Admin',
+            'email'=>'legacy-admin@example.test','password'=>'password','role'=>'ADMIN','status'=>'ACTIVE',
+        ]);
+
+        $this->actingAs($admin)->get('/dashboard')->assertOk();
+    }
+
+    public function test_structured_operations_manager_home_redirects_to_operations_command_center(): void
+    {
+        $manager = $this->manager();
+        $this->actingAs($manager)->get('/dashboard')
+            ->assertRedirect(route('operations-manager.dashboard'));
+    }
+
+    public function test_multi_role_user_with_operations_manager_membership_redirects_to_operations_command_center(): void
+    {
+        $manager = $this->manager();
+        $manager->update(['role'=>'PROJECT_MANAGER']);
+
+        $this->actingAs($manager)->get('/dashboard')
+            ->assertRedirect(route('operations-manager.dashboard'));
+    }
 }
