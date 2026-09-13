@@ -12,7 +12,7 @@ use App\Http\Controllers\Admin\{ImpersonationController,SystemAdminDashboardCont
 use App\Http\Controllers\Admin\AccessControlController;
 use App\Http\Controllers\Admin\SystemCatalogController;
 use App\Http\Controllers\NavigationWorkspaceController;
-use App\Http\Controllers\Operations\OperationsManagerDashboardController;
+use App\Http\Controllers\Operations\{OperationsManagerDashboardController,ServiceRequestOperationsController};
 use Illuminate\Support\Facades\Route;
 
 Route::get('/temporary-files/{token}', [TemporaryFileController::class, 'show'])
@@ -22,6 +22,11 @@ Route::get('/temporary-files/{token}', [TemporaryFileController::class, 'show'])
 Route::middleware('auth')->group(function () {
     Route::get('/system-admin',SystemAdminDashboardController::class)->middleware('permission:system.dashboard.view')->name('system-admin.dashboard');
     Route::get('/operations-manager',OperationsManagerDashboardController::class)->middleware('permission:operations.dashboard.view')->name('operations-manager.dashboard');
+    Route::prefix('operations-manager')->name('operations-manager.')->group(function () {
+        Route::get('/service-requests',[ServiceRequestOperationsController::class,'index'])->middleware('permission:service_requests.read')->name('service-requests.index');
+        Route::post('/service-requests/{serviceRequest}/assign',[ServiceRequestOperationsController::class,'assign'])->middleware('permission:service_requests.assign')->name('service-requests.assign');
+        Route::post('/service-requests/{serviceRequest}/escalate',[ServiceRequestOperationsController::class,'escalate'])->middleware('permission:service_requests.escalate')->name('service-requests.escalate');
+    });
     Route::post('/admin/users/{user}/impersonate',[ImpersonationController::class,'start'])->middleware('permission:impersonation.read_only')->name('admin.impersonation.start');
     Route::delete('/admin/impersonation',[ImpersonationController::class,'stop'])->name('admin.impersonation.stop');
     Route::prefix('admin/system')->name('admin.system.')->group(function(){
