@@ -43,18 +43,20 @@ class ScopeService
     {
         if($this->isLegacyUnassigned($user)) return $query;
         $scopes = $this->forUser($user);
-        if ($scopes->contains(fn ($scope) => $scope->scope_type === 'GLOBAL')) return $query;
+        if ($scopes->contains(fn ($scope) => strtoupper((string) $scope->scope_type) === 'GLOBAL')) return $query;
         if ($scopes->isEmpty()) return $query->whereRaw('1 = 0');
-        $applicable=$scopes->map(function($scope) use($query,$user) {
+
+        $model = $query->getModel();
+        $applicable=$scopes->map(function($scope) use($model,$user) {
             $type = strtoupper((string) $scope->scope_type);
             $column = match ($type) {
                     'COMPANY' => 'organization_id', 'DEPARTMENT' => 'department_id', 'BRANCH' => 'branch_id',
-                    'PROJECT' => $query->getModel() instanceof Project ? 'id' : 'project_id', 'SITE' => 'customer_site_id', 'CUSTOMER' => 'customer_id',
-                    'ASSET' => $query->getModel() instanceof Asset ? 'id' : 'asset_id',
+                    'PROJECT' => $model instanceof Project ? 'id' : 'project_id', 'SITE' => 'customer_site_id', 'CUSTOMER' => 'customer_id',
+                    'ASSET' => $model instanceof Asset ? 'id' : 'asset_id',
                     'CONTRACT' => 'contract_id', 'OWN_RECORDS' => 'created_by', 'ASSIGNED_RECORDS' => 'assigned_to', default => null,
             };
-            if(!$column || !Schema::hasColumn($query->getModel()->getTable(),$column)) return null;
-            return [$column,in_array($type,['OWN_RECORDS','ASSIGNED_RECORDS'],true)?$user->id:$scope->scope_id];
+            if(!$column || !Schema::hasColumn($model->getTable(),$column)) return null;
+            return [$model->qualifyColumn($column),in_array($type,['OWN_RECORDS','ASSIGNED_RECORDS'],true)?$user->id:$scope->scope_id];
         })->filter();
         if($applicable->isEmpty()) return $query->whereRaw('1 = 0');
         return $query->where(function (Builder $builder) use ($applicable): void {
