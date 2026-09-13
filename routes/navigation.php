@@ -24,11 +24,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/admin/impersonation',[ImpersonationController::class,'stop'])->name('admin.impersonation.stop');
     Route::prefix('admin/system')->name('admin.system.')->group(function(){
         Route::get('/sessions',[SystemOperationsController::class,'sessions'])->name('sessions');
+        Route::get('/login-activity',[SystemOperationsController::class,'sessions'])->name('login-activity');
         Route::post('/sessions/{session}/revoke',[SystemOperationsController::class,'revokeSession'])->name('sessions.revoke');
         Route::get('/security-events',[SystemOperationsController::class,'securityEvents'])->name('security-events');
         Route::get('/invitations',[SystemOperationsController::class,'invitations'])->name('invitations');
         Route::get('/scheduled-jobs',[SystemOperationsController::class,'scheduledJobs'])->name('scheduled-jobs');
         Route::post('/scheduled-jobs/{job}/retry',[SystemOperationsController::class,'retryJob'])->name('scheduled-jobs.retry');
+        Route::view('/integrations','admin.system.integrations')->middleware('permission:integrations.view')->name('integrations');
         Route::get('/organization',[SystemCatalogController::class,'organization'])->name('organization');
         Route::post('/organizations',[SystemCatalogController::class,'storeOrganization'])->name('organizations.store');
         Route::post('/job-positions',[SystemCatalogController::class,'storePosition'])->name('job-positions.store');
