@@ -3,20 +3,10 @@
 @section('heading','Scope Enforcement Audit')
 @section('content')
 @include('admin.system.operations-styles')
-@php($modules=[
-['CRM / Customers','Customer · Site · Contract · Own records'],
-['Maintenance / Field Service','Customer · Site · Asset · Project · Assigned records'],
-['Assets / EAM','Customer · Site · Asset · Project'],
-['Inventory / Warehouses','Company · Branch · Project · Site'],
-['Procurement','Company · Branch · Project'],
-['Finance','Company · Customer · Project · Contract'],
-['Projects','Company · Project · Customer'],
-['Manufacturing','Company · Project'],
-['HR / People','Company · Department · Own records'],
-['Reporting / Analytics','Company · Department · Project · Customer · Site'],
-['Platform / Workflow','Company · Project · Customer · Site · Own records']
-])
-<section class="ops-hero"><h1>Scope Enforcement Audit</h1><p>Platform-wide closure matrix for data visibility. Each module must pass list, detail, export and analytics scope tests before being marked complete.</p></section>
-<section class="ops-card"><table class="ops-table"><thead><tr><th>Module</th><th>Required scope dimensions</th><th>Acceptance gate</th></tr></thead><tbody>@foreach($modules as [$module,$scope])<tr><td><b>{{ $module }}</b></td><td>{{ $scope }}</td><td>List · Detail · Export · Analytics</td></tr>@endforeach</tbody></table></section>
-<section class="ops-card" style="margin-top:12px"><h3 style="margin-top:0">Closure rule</h3><p class="muted">GLOBAL may see all tenant data. Restricted users may see only resources matching their assigned scope. Structured-role users without an applicable scope must receive no scoped operational rows. Customer Portal restrictions are additional and can never be widened by internal scope assignment.</p></section>
+@php($modules=[['CRM / Customers','Customer · Site · Contract · Own records'],['Maintenance / Field Service','Customer · Site · Asset · Project · Assigned records'],['Assets / EAM','Customer · Site · Asset · Project'],['Inventory / Warehouses','Company · Branch · Project · Site'],['Procurement','Company · Branch · Project'],['Finance','Company · Customer · Project · Contract'],['Projects','Company · Project · Customer'],['Manufacturing','Company · Project'],['HR / People','Company · Department · Own records'],['Reporting / Analytics','Company · Department · Project · Customer · Site'],['Platform / Workflow','Company · Project · Customer · Site · Own records']])
+<style>.scope-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:0 0 12px}.scope-stat{background:#fff;border:1px solid #e4e9f0;border-radius:11px;padding:12px}.scope-stat small{display:block;color:#7b899c;font-size:8px;text-transform:uppercase;font-weight:800}.scope-stat b{display:block;margin-top:4px;color:#132137;font-size:19px}.scope-gate{display:flex;gap:5px;flex-wrap:wrap}.scope-gate span{padding:4px 6px;border-radius:999px;background:#f0f3f7;color:#5d6b7e;font-size:8px;font-weight:800}.scope-pending{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:999px;background:#fff6e6;color:#a96600;font-size:8px;font-weight:850}.scope-pending:before{content:'';width:6px;height:6px;border-radius:50%;background:#d98b10}@media(max-width:800px){.scope-overview{grid-template-columns:1fr 1fr}}@media(max-width:500px){.scope-overview{grid-template-columns:1fr}}</style>
+<section class="ops-hero"><div><small>DATA ACCESS GOVERNANCE</small><h1>Scope Enforcement Audit</h1><p>Platform-wide closure matrix for server-side data visibility. A module is complete only after list, detail, export and analytics checks pass.</p></div><span class="ops-status warning">REMEDIATION IN PROGRESS</span></section>
+<div class="scope-overview"><div class="scope-stat"><small>Modules in Matrix</small><b>{{ count($modules) }}</b></div><div class="scope-stat"><small>Required Test Gates</small><b>4</b></div><div class="scope-stat"><small>Global Rule</small><b style="font-size:14px">Tenant-wide</b></div><div class="scope-stat"><small>No Applicable Scope</small><b style="font-size:14px">Zero rows</b></div></div>
+<section class="ops-card"><div class="ops-section-head"><div><h3>Module Closure Matrix</h3><p>Each row remains pending until automated GLOBAL, restricted and no-scope coverage is confirmed.</p></div><span class="ops-badge">{{ count($modules) }} modules</span></div><table class="ops-table"><thead><tr><th>Module</th><th>Required scope dimensions</th><th>Acceptance gate</th><th>Status</th></tr></thead><tbody>@foreach($modules as [$module,$scope])<tr><td><b>{{ $module }}</b></td><td>{{ $scope }}</td><td><div class="scope-gate"><span>List</span><span>Detail</span><span>Export</span><span>Analytics</span></div></td><td><span class="scope-pending">PENDING VERIFICATION</span></td></tr>@endforeach</tbody></table></section>
+<section class="ops-card"><div class="ops-section-head"><div><h3>Closure Rules</h3><p>These rules are mandatory server-side controls, not visual filtering.</p></div></div><div class="ops-callout"><b>GLOBAL:</b> may see all tenant-authorized data. <b>Restricted:</b> sees only resources matching assigned scope. <b>No applicable scope:</b> receives no scoped operational rows. <b>Customer Portal:</b> portal restrictions are additional and can never be widened by internal scope assignment.</div></section>
 @endsection
