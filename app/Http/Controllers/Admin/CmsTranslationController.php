@@ -11,7 +11,7 @@ class CmsTranslationController extends Controller
 {
     public function translate(Request $request): JsonResponse
     {
-        abort_unless($request->user()?->role === 'ADMIN', 403);
+        app(\App\Services\AuthorizationService::class)->authorize($request->user(), 'homepage.manage');
 
         $data = $request->validate([
             'text' => ['required', 'string', 'max:5000'],

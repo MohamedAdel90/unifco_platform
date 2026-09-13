@@ -11,7 +11,7 @@ class CmsImageTranslationController extends Controller
 {
     public function translate(Request $request, CmsImageTranslationService $service): JsonResponse
     {
-        abort_unless($request->user()?->role === 'ADMIN', 403);
+        app(\App\Services\AuthorizationService::class)->authorize($request->user(), 'homepage.manage');
 
         $data = $request->validate([
             'url' => ['required', 'string', 'max:2048'],

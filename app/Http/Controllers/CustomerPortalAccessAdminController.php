@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset,Customer,CustomerSite,ServiceContract,User};
-use App\Services\CustomerPortalAccessService;
+use App\Models\{AccessScope,Asset,Customer,CustomerSite,Role,ServiceContract,User};
+use App\Services\{AuditService,CustomerPortalAccessService,InvitationService};
 use Illuminate\Http\{RedirectResponse,Request};
-use Illuminate\Support\Facades\{DB,Hash};
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -32,7 +32,7 @@ class CustomerPortalAccessAdminController extends Controller
         return view('customer.users-access',compact('admin','customer','users','sites','contracts','assets','scopes'));
     }
 
-    public function store(Request $request, CustomerPortalAccessService $access): RedirectResponse
+    public function store(Request $request, CustomerPortalAccessService $access,AuditService $audit,InvitationService $invitations): RedirectResponse
     {
         $admin=$this->admin($request,$access);
         $data=$request->validate([
@@ -45,22 +45,23 @@ class CustomerPortalAccessAdminController extends Controller
             'asset_ids'=>['nullable','array'],'asset_ids.*'=>['integer'],
         ]);
 
-        $password=$data['password']?:'UnifcoCustomer!'.random_int(1000,9999);
+        $password=str()->random(64);
         $user=DB::transaction(function() use($admin,$data,$password){
             $user=User::create([
                 'tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,'customer_id'=>$admin->customer_id,
-                'name'=>$data['name'],'email'=>$data['email'],'password'=>Hash::make($password),'role'=>'CUSTOMER',
+                'name'=>$data['name'],'name_en'=>$data['name'],'email'=>$data['email'],'password'=>$password,'role'=>'CUSTOMER','user_type'=>'EXTERNAL',
                 'customer_portal_role'=>$data['customer_portal_role'],'status'=>'ACTIVE','force_password_change'=>true,
             ]);
             $this->replaceScopes($user,$data);
+            $this->syncStructuredAccess($user,$data,$admin);
             return $user;
         });
-
-        return back()->with('status','Customer portal user created successfully.')
-            ->with('temporary_password',$password)->with('created_user_email',$user->email);
+        $invitation=$invitations->issue($user,$admin);
+        $audit->record('security.customer_portal_user.created',$user,[],['customer_id'=>$user->customer_id,'portal_role'=>$user->customer_portal_role,'invitation_id'=>$invitation->id],reason:'Customer Admin invitation');
+        return back()->with('status','Customer portal user created and invitation sent.');
     }
 
-    public function update(Request $request, User $user, CustomerPortalAccessService $access): RedirectResponse
+    public function update(Request $request, User $user, CustomerPortalAccessService $access,AuditService $audit): RedirectResponse
     {
         $admin=$this->admin($request,$access);
         abort_unless($user->role==='CUSTOMER' && (int)$user->customer_id===(int)$admin->customer_id,404);
@@ -77,22 +78,26 @@ class CustomerPortalAccessAdminController extends Controller
             return back()->withErrors(['user'=>'You cannot remove your own Customer Admin access or deactivate your own account.']);
         }
 
-        DB::transaction(function() use($user,$data){
+        $before=['name'=>$user->name,'portal_role'=>$user->customer_portal_role,'status'=>$user->status];
+        DB::transaction(function() use($user,$data,$admin){
             $user->update(['name'=>$data['name'],'customer_portal_role'=>$data['customer_portal_role'],'status'=>$data['status']]);
             $this->replaceScopes($user,$data);
+            $this->syncStructuredAccess($user,$data,$admin);
         });
+        $audit->record('security.customer_portal_user.access_changed',$user,$before,['name'=>$user->name,'portal_role'=>$user->customer_portal_role,'status'=>$user->status],reason:'Customer Admin access update');
         return back()->with('status','User access updated.');
     }
 
-    public function resetPassword(Request $request, User $user, CustomerPortalAccessService $access): RedirectResponse
+    public function resetPassword(Request $request, User $user, CustomerPortalAccessService $access,AuditService $audit,InvitationService $invitations): RedirectResponse
     {
         $admin=$this->admin($request,$access);
         abort_unless($user->role==='CUSTOMER' && (int)$user->customer_id===(int)$admin->customer_id,404);
-        $data=$request->validate(['password'=>['nullable','string','min:10','max:100']]);
-        $password=$data['password']?:'UnifcoCustomer!'.random_int(1000,9999);
-        $user->update(['password'=>Hash::make($password),'force_password_change'=>true,'session_version'=>(int)$user->session_version+1]);
-        return back()->with('status','Temporary password generated and active sessions revoked.')
-            ->with('temporary_password',$password)->with('created_user_email',$user->email);
+        $request->validate(['password'=>['nullable','string','max:100']]); // legacy field accepted but never stored or displayed
+        $user->update(['password'=>str()->random(64),'force_password_change'=>true,'session_version'=>(int)$user->session_version+1]);
+        DB::table('user_sessions')->where('user_id',$user->id)->where('status','ACTIVE')->update(['status'=>'REVOKED','revoked_at'=>now(),'revoked_by'=>$admin->id,'revoke_reason'=>'Customer portal password reset','updated_at'=>now()]);
+        $invitation=$invitations->issue($user,$admin,2);
+        $audit->record('security.customer_portal_user.password_reset',$user,[],['sessions_revoked'=>true,'reset_invitation'=>$invitation->id],reason:'Customer Admin password reset');
+        return back()->with('status','Secure password reset invitation sent and active sessions revoked.');
     }
 
     private function replaceScopes(User $user,array $data): void
@@ -108,5 +113,20 @@ class CustomerPortalAccessAdminController extends Controller
         foreach($validContracts as $id)$rows->push(['user_id'=>$user->id,'scope_type'=>'CONTRACT','scope_id'=>$id,'created_at'=>now(),'updated_at'=>now()]);
         foreach($validAssets as $id)$rows->push(['user_id'=>$user->id,'scope_type'=>'ASSET','scope_id'=>$id,'created_at'=>now(),'updated_at'=>now()]);
         if($rows->isNotEmpty()) DB::table('customer_portal_user_scopes')->insert($rows->all());
+    }
+
+    private function syncStructuredAccess(User $user,array $data,User $actor): void
+    {
+        $code=match($data['customer_portal_role']){'SITE_MANAGER'=>'CUSTOMER_SITE_MANAGER','FINANCE'=>'CUSTOMER_FINANCE','VIEWER'=>'CUSTOMER_VIEWER',default=>'CUSTOMER_ADMIN'};
+        $role=Role::where('code',$code)->where(fn($q)=>$q->where('tenant_id',$user->tenant_id)->orWhereNull('tenant_id'))->orderByRaw('tenant_id is null')->firstOrFail();
+        DB::table('user_roles')->where('user_id',$user->id)->whereNull('revoked_at')->where('role_id','!=',$role->id)->update(['revoked_at'=>now(),'updated_at'=>now()]);
+        DB::table('user_roles')->updateOrInsert(['user_id'=>$user->id,'role_id'=>$role->id],['tenant_id'=>$user->tenant_id,'is_primary'=>true,'granted_by'=>$actor->id,'granted_at'=>now(),'revoked_at'=>null,'reason'=>'Customer portal access management','created_at'=>now(),'updated_at'=>now()]);
+
+        DB::table('user_scopes')->where('user_id',$user->id)->delete();
+        $scopeRows=$data['customer_portal_role']==='CUSTOMER_ADMIN' ? [['type'=>'CUSTOMER','id'=>$user->customer_id]] : collect(['SITE'=>$data['site_ids']??[],'CONTRACT'=>$data['contract_ids']??[],'ASSET'=>$data['asset_ids']??[]])->flatMap(fn($ids,$type)=>collect($ids)->map(fn($id)=>['type'=>$type,'id'=>(int)$id]))->all();
+        foreach($scopeRows as $item){
+            $scope=AccessScope::firstOrCreate(['tenant_id'=>$user->tenant_id,'scope_type'=>$item['type'],'scope_id'=>$item['id']],['name'=>$item['type'].' #'.$item['id'],'is_active'=>true]);
+            DB::table('user_scopes')->insert(['tenant_id'=>$user->tenant_id,'user_id'=>$user->id,'access_scope_id'=>$scope->id,'source'=>'USER','granted_by'=>$actor->id,'reason'=>'Customer portal access management','created_at'=>now(),'updated_at'=>now()]);
+        }
     }
 }

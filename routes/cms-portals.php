@@ -16,7 +16,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->name('homepage.images.destroy');
 
     Route::post('/maintenance-cms/toggle', function () {
-        abort_unless(request()->user()?->role === 'ADMIN', 403);
+        app(\App\Services\AuthorizationService::class)->authorize(request()->user(), 'homepage.manage');
         $section = HomepageSection::query()->where('section_key', 'operations')->firstOrFail();
         $ar = $section->data_ar ?? [];
         $en = $section->data_en ?? [];
@@ -30,7 +30,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     })->name('maintenance-cms.toggle');
 
     Route::post('/client-portal-cms/toggle', function () {
-        abort_unless(request()->user()?->role === 'ADMIN', 403);
+        app(\App\Services\AuthorizationService::class)->authorize(request()->user(), 'homepage.manage');
         $section = HomepageSection::query()->where('section_key', 'operations')->firstOrFail();
         $ar = $section->data_ar ?? [];
         $en = $section->data_en ?? [];

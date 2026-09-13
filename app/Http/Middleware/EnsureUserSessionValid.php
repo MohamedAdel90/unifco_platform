@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\UserSessionService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -9,6 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserSessionValid
 {
+    public function __construct(private UserSessionService $sessions) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
@@ -18,8 +21,9 @@ class EnsureUserSessionValid
                 $request->session()->put('account_session_version',(int)$user->session_version);
             }
             $sessionVersion=(int)$request->session()->get('account_session_version');
-            $invalid=$user->status!=='ACTIVE' || $user->locked_at || $sessionVersion!==(int)$user->session_version;
+            $invalid=$user->status!=='ACTIVE' || $user->locked_at || $sessionVersion!==(int)$user->session_version || ! $this->sessions->touch($request);
             if ($invalid) {
+                $this->sessions->end($request,'REVOKED');
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();

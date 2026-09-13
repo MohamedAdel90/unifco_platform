@@ -4,7 +4,7 @@ namespace App\Http\Controllers\EAM;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Asset,Customer,CustomerSite,MaintenancePlan,ServiceContract};
-use App\Services\AuditService;
+use App\Services\{AuditService,ScopeService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\{Auth,DB,Storage};
 use Illuminate\Support\Str;
@@ -15,14 +15,15 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AssetController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request,ScopeService $scopes): View
     {
+        $assetQuery=$scopes->apply(Asset::query(),$request->user());
         return view('eam.assets.index',[
-            'assets'=>Asset::with(['customer','site','parent'])
+            'assets'=>$assetQuery->with(['customer','site','parent'])
                 ->when($request->integer('customer_id'),fn($q,$id)=>$q->where('customer_id',$id))
                 ->when($request->filled('operational_status'),fn($q)=>$q->where('operational_status',(string)$request->string('operational_status')))
                 ->orderBy('asset_code')->paginate(25)->withQueryString(),
-            'customers'=>Customer::orderBy('name')->get(),
+            'customers'=>Customer::whereIn('id',(clone $assetQuery)->whereNotNull('customer_id')->select('customer_id'))->orderBy('name')->get(),
         ]);
     }
 

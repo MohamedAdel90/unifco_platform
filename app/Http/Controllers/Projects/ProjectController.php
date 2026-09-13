@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Projects;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Customer,Project};
-use App\Services\AuditService;
+use App\Services\{AuditService,ScopeService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -12,7 +12,7 @@ use Illuminate\View\View;
 
 class ProjectController extends Controller
 {
-    public function index(): View { return view('projects.projects.index',['projects'=>Project::orderBy('project_no')->paginate(25)]); }
+    public function index(Request $request,ScopeService $scopes): View { return view('projects.projects.index',['projects'=>$scopes->apply(Project::query(),$request->user())->orderBy('project_no')->paginate(25)]); }
     public function create(): View { return view('projects.projects.form',['project'=>new Project(),'customers'=>Customer::where('status','ACTIVE')->orderBy('name')->get()]); }
     public function edit(Project $project): View { return view('projects.projects.form',['project'=>$project,'customers'=>Customer::where('status','ACTIVE')->orderBy('name')->get()]); }
 

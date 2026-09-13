@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CustomerPortalAccessService
 {
@@ -63,6 +64,14 @@ class CustomerPortalAccessService
 
     public function scopedIds(User $user,string $type): Collection
     {
+        if (Schema::hasTable('user_scopes')) {
+            $ids=DB::table('user_scopes')->join('access_scopes','access_scopes.id','=','user_scopes.access_scope_id')
+                ->where('user_scopes.user_id',$user->id)->where('access_scopes.scope_type',strtoupper($type))
+                ->where('access_scopes.is_active',true)
+                ->where(fn($q)=>$q->whereNull('user_scopes.expires_at')->orWhere('user_scopes.expires_at','>',now()))
+                ->pluck('access_scopes.scope_id');
+            if($ids->isNotEmpty()) return $ids;
+        }
         return DB::table('customer_portal_user_scopes')->where('user_id',$user->id)->where('scope_type',strtoupper($type))->pluck('scope_id');
     }
 

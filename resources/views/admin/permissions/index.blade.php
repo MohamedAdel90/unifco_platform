@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('content')
-<h1>Role Permissions</h1>
+<h1>Roles & Permissions</h1><p class="muted">Master Role → Permission → Scope. Explicit Deny always wins. System authority does not grant business authority.</p>
 @if(session('status'))<p class="notice">{{ session('status') }}</p>@endif
-<form method="POST" action="{{ route('admin.permissions.store') }}">@csrf <input name="role_code" placeholder="ROLE" required><input name="permission_code" placeholder="module.resource.action" required><button>Grant</button></form>
-<table><thead><tr><th>Role</th><th>Permission</th><th></th></tr></thead><tbody>
-@foreach($rows as $row)<tr><td>{{ $row->role_code }}</td><td>{{ $row->permission_code }}</td><td><form method="POST" action="{{ route('admin.permissions.destroy',$row->id) }}">@csrf @method('DELETE')<button>Revoke</button></form></td></tr>@endforeach
+<form class="form-grid" method="POST" action="{{ route('admin.permissions.store') }}">@csrf <label>Master Role<select name="role_code" required>@foreach($roles as $role)<option value="{{ $role->code }}">{{ $role->code }}{{ $role->is_system_role?' · System':'' }}</option>@endforeach</select></label><label>Permission<select name="permission_code" required>@foreach($permissions as $permission)<option value="{{ $permission->code }}">{{ $permission->code }}{{ $permission->is_business_authority?' · HIGH RISK':'' }}</option>@endforeach</select></label><label>Effect<select name="effect"><option value="ALLOW">Allow</option><option value="DENY">Explicit Deny</option></select></label><label>Reason<input name="reason" required placeholder="Reason for access change"></label><button class="btn">Apply</button></form>
+<table><thead><tr><th>Role</th><th>Permission</th><th>Effect</th><th>Authority</th><th></th></tr></thead><tbody>
+@foreach($rows as $row)@php($permission=$permissions->firstWhere('code',$row->permission_code))<tr><td>{{ $row->role_code }}</td><td>{{ $row->permission_code }}</td><td><span class="pill">{{ $row->effect ?? 'ALLOW' }}</span></td><td>{{ $permission?->is_business_authority?'Business':'System / Standard' }}</td><td>@if($row->tenant_id)<form method="POST" action="{{ route('admin.permissions.destroy',$row->id) }}">@csrf @method('DELETE')<button class="btn secondary">Return to master</button></form>@else<span class="muted">Master baseline</span>@endif</td></tr>@endforeach
 </tbody></table>
 @endsection
