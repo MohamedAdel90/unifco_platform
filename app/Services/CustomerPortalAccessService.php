@@ -12,10 +12,10 @@ class CustomerPortalAccessService
     public const ROLES=['CUSTOMER_ADMIN','SITE_MANAGER','FINANCE','VIEWER'];
 
     private const SECTIONS=[
-        'CUSTOMER_ADMIN'=>['dashboard','requests','quotations','timeline','contracts','assets','work-orders','maintenance','invoices','reports','sla','documents','notifications'],
-        'SITE_MANAGER'=>['dashboard','requests','timeline','assets','work-orders','maintenance','reports','sla','documents','notifications'],
+        'CUSTOMER_ADMIN'=>['dashboard','requests','quotations','timeline','contracts','sites','assets','work-orders','visits','maintenance','spare-parts','invoices','reports','sla','documents','notifications'],
+        'SITE_MANAGER'=>['dashboard','requests','timeline','sites','assets','work-orders','visits','maintenance','spare-parts','reports','sla','documents','notifications'],
         'FINANCE'=>['dashboard','quotations','timeline','contracts','invoices','reports','documents','notifications'],
-        'VIEWER'=>['dashboard','requests','quotations','timeline','contracts','assets','work-orders','maintenance','invoices','reports','sla','documents','notifications'],
+        'VIEWER'=>['dashboard','requests','quotations','timeline','contracts','sites','assets','work-orders','visits','maintenance','spare-parts','invoices','reports','sla','documents','notifications'],
     ];
 
     public function role(User $user): string
