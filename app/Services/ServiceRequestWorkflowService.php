@@ -97,7 +97,7 @@ class ServiceRequestWorkflowService
         });
     }
 
-    public function advance(ServiceRequest $request, string $completedStage): ?ApprovalRequest
+    public function advance(ServiceRequest $request, string $completedStage, ?int $actorId = null, ?string $note = null): ?ApprovalRequest
     {
         $current = ApprovalRequest::query()
             ->where('tenant_id', $request->tenant_id)
@@ -107,7 +107,12 @@ class ServiceRequestWorkflowService
             ->first();
 
         if ($current && ! in_array($current->status, ['APPROVED','COMPLETED'], true)) {
-            $current->update(['status' => 'COMPLETED', 'decided_at' => now()]);
+            $current->update([
+                'status' => 'COMPLETED',
+                'decided_by' => $actorId,
+                'decision_note' => $note,
+                'decided_at' => now(),
+            ]);
         }
 
         $next = ApprovalRequest::query()
@@ -125,12 +130,19 @@ class ServiceRequestWorkflowService
                 'approval_state' => 'COMPLETED',
                 'next_action' => null,
                 'current_stage_due_at' => null,
+                'status' => 'COMPLETED',
             ]);
             return null;
         }
 
         $metadata = (array) ($next->metadata ?? []);
-        $next->update(['status' => 'PENDING', 'due_at' => now()->addMinutes((int) $next->sla_minutes)]);
+        $next->update([
+            'status' => 'PENDING',
+            'due_at' => now()->addMinutes((int) $next->sla_minutes),
+            'decided_by' => null,
+            'decision_note' => null,
+            'decided_at' => null,
+        ]);
         $request->update([
             'workflow_stage' => $next->action,
             'assigned_department' => $metadata['department'] ?? null,
@@ -140,6 +152,41 @@ class ServiceRequestWorkflowService
         ]);
 
         return $next->fresh();
+    }
+
+    public function returnTo(ServiceRequest $request, string $targetStage, ?int $actorId = null, ?string $note = null): ApprovalRequest
+    {
+        $steps = ApprovalRequest::query()
+            ->where('tenant_id', $request->tenant_id)
+            ->where('entity_type', ServiceRequest::class)
+            ->where('entity_id', $request->id)
+            ->orderBy('step_order')
+            ->get();
+        $target = $steps->firstWhere('action', $targetStage);
+        abort_unless($target, 422, 'The requested return stage is not part of this workflow.');
+
+        foreach ($steps as $step) {
+            if ((int) $step->step_order < (int) $target->step_order) continue;
+            $step->update([
+                'status' => $step->id === $target->id ? 'PENDING' : 'WAITING',
+                'due_at' => $step->id === $target->id ? now()->addMinutes((int) $step->sla_minutes) : null,
+                'decided_by' => $step->id === $target->id ? null : $step->decided_by,
+                'decision_note' => $step->id === $target->id ? $note : $step->decision_note,
+                'decided_at' => $step->id === $target->id ? null : $step->decided_at,
+            ]);
+        }
+
+        $metadata = (array) ($target->metadata ?? []);
+        $request->update([
+            'workflow_stage' => $target->action,
+            'assigned_department' => $metadata['department'] ?? null,
+            'approval_state' => 'REWORK',
+            'next_action' => $target->action,
+            'current_stage_due_at' => now()->addMinutes((int) $target->sla_minutes),
+            'status' => 'OPEN',
+        ]);
+
+        return $target->fresh();
     }
 
     private function slaFor(string $stage): int
