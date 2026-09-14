@@ -18,6 +18,12 @@ class MaintenanceRequestTransitionService
         $this->workflow->advance($request, $request->workflow_stage, $actor->id, $note);
     }
 
+    public function returnToStage(User $actor, ServiceRequest $request, array $fromStages, string $targetStage, ?string $note = null): void
+    {
+        $this->assertCanAct($actor, $request, $fromStages);
+        $this->workflow->returnTo($request, $targetStage, $actor->id, $note ?: 'Workflow returned for additional work.');
+    }
+
     public function assignTechnician(User $actor, ServiceRequest $request, int $technicianId, ?string $note = null): User
     {
         $this->assertCanAct($actor, $request, ['TECHNICIAN_ASSIGNMENT']);
@@ -52,8 +58,7 @@ class MaintenanceRequestTransitionService
 
     public function rework(User $actor, ServiceRequest $request, string $fromStage, ?string $note = null): void
     {
-        $this->assertCanAct($actor, $request, [$fromStage]);
-        $this->workflow->returnTo($request, 'EXECUTION', $actor->id, $note ?: 'Rework required.');
+        $this->returnToStage($actor, $request, [$fromStage], 'EXECUTION', $note ?: 'Rework required.');
     }
 
     private function assertCanAct(User $actor, ServiceRequest $request, array $stages): ApprovalRequest
