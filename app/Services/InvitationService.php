@@ -18,6 +18,9 @@ class InvitationService
             'token_hash'=>hash('sha256',$token),'status'=>'PENDING','invited_by'=>$inviter?->id,
             'expires_at'=>now()->addHours($hours),
         ]);
+
+        if(request()?->boolean('set_temporary_password')) return $invitation;
+
         try {
             Notification::route('mail',$user->email)->notify(new UserInvitationNotification($user,$token,$invitation->expires_at));
         } catch (\Throwable $exception) {
