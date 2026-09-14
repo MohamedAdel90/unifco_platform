@@ -59,6 +59,9 @@ class WorkflowTestUsersSeederTest extends TestCase
 
         $this->assertSame(1,User::where('email','engineer@unifco.local')->count());
         $this->assertSame(1,User::where('email','technician@unifco.local')->count());
+        $this->assertSame(1,User::where('email','quality@unifco.local')->count());
+        $this->assertSame(1,User::where('email','hse@unifco.local')->count());
+        $this->assertSame(1,User::where('email','customer.service@unifco.local')->count());
         $this->assertSame(1,User::where('email','workflow.customer@unifco.local')->count());
         $customer=Customer::where('customer_code','WF-TEST-001')->firstOrFail();
         $this->assertSame(1,CustomerContact::where('customer_id',$customer->id)->where('email','workflow.customer@unifco.local')->count());
