@@ -86,7 +86,7 @@
                 <a class="nav-link" href="{{ route('customer.inbox') }}">@include('customer.partials.icon',['name'=>'inbox'])<span>Inbox & Support</span>@if($unreadInbox)<span class="nav-badge urgent">{{ $unreadInbox }}</span>@endif</a>
             </div>
             <div class="nav-group"><div class="nav-label">Account</div>
-                @if($canManageUsers)<a class="nav-link" href="{{ route('customer.access.index') }}">@include('customer.partials.icon',['name'=>'users'])<span>Users & Access</span></a>@endif
+                @if($canManageUsers)<a class="nav-link" href="{{ route('customer.access.index') }}">@include('customer.partials.icon',['name'=>'users'])<span>Users &amp; Access</span></a>@endif
                 <a class="nav-link" href="{{ route('customer.profile.edit') }}">@include('customer.partials.icon',['name'=>'profile'])<span>Company Profile</span></a>
             </div>
         </div>
