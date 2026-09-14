@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\HomepageClientController;
 use App\Http\Controllers\Admin\HomepageImageController;
 use App\Http\Controllers\Admin\TemporaryFileController;
 use App\Http\Controllers\Admin\UserAdministrationController;
-use App\Http\Controllers\Admin\{ImpersonationController,SystemAdminDashboardController,SystemOperationsController};
+use App\Http\Controllers\Admin\{GovernedUserCreationController,ImpersonationController,SystemAdminDashboardController,SystemCustomerPortalUsersController,SystemOperationsController};
 use App\Http\Controllers\Admin\AccessControlController;
 use App\Http\Controllers\Admin\SystemCatalogController;
 use App\Http\Controllers\NavigationWorkspaceController;
@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     });
     Route::post('/admin/users/{user}/impersonate',[ImpersonationController::class,'start'])->middleware('permission:impersonation.read_only')->name('admin.impersonation.start');
     Route::delete('/admin/impersonation',[ImpersonationController::class,'stop'])->name('admin.impersonation.stop');
+    Route::get('/admin/customer-portal-users',[SystemCustomerPortalUsersController::class,'index'])->middleware('permission:users.view')->name('admin.customer-portal-users.index');
     Route::prefix('admin/system')->name('admin.system.')->group(function(){
         Route::get('/sessions',[SystemOperationsController::class,'sessions'])->name('sessions');
         Route::get('/login-activity',[SystemOperationsController::class,'sessions'])->name('login-activity');
@@ -111,8 +112,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/export/csv',[UserAdministrationController::class,'export'])->name('export');
         Route::post('/import',[UserAdministrationController::class,'import'])->name('import');
         Route::post('/bulk',[UserAdministrationController::class,'bulk'])->name('bulk');
-        Route::get('/create',[UserAdministrationController::class,'create'])->name('create');
-        Route::post('/',[UserAdministrationController::class,'store'])->name('store');
+        Route::get('/create',[GovernedUserCreationController::class,'create'])->name('create');
+        Route::post('/',[GovernedUserCreationController::class,'store'])->name('store');
         Route::get('/{user}',[UserAdministrationController::class,'show'])->name('show');
         Route::get('/{user}/edit',[UserAdministrationController::class,'edit'])->name('edit');
         Route::put('/{user}',[UserAdministrationController::class,'update'])->name('update');
