@@ -223,7 +223,7 @@ class CustomerPortalController extends Controller
             'canCreateRequest', 'canDecideQuotation', 'canManageUsers', 'readOnly', 'requestStageCounts', 'activeAssetCount',
             'maintenanceAssetCount', 'stoppedAssetCount', 'criticalAssetCount', 'warrantyExpiringCount',
             'quotationActionCount', 'workAcceptanceActionCount', 'invoiceActionCount', 'renewalActionCount', 'actionRequiredCount'
-        ))->header('X-UNIFCO-Customer-Portal-Release', 'customer-command-center-20260914')
+        ))->header('X-UNIFCO-Customer-Portal-Release', 'customer-portal-rbac-phase1-20260827; customer-command-center-20260914')
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }
