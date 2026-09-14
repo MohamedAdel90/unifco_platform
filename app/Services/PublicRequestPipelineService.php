@@ -23,8 +23,6 @@ class PublicRequestPipelineService
             $tenant=Tenant::firstOrCreate(['code'=>'UNIFCO'],['name'=>'UNIFCO','status'=>'ACTIVE']);
             $org=Organization::firstOrCreate(['tenant_id'=>$tenant->id,'code'=>'HQ'],['name'=>'UNIFCO HQ','status'=>'ACTIVE']);
 
-            // Capture prospect identity before customer materialization so all website leads use the
-            // same de-duplication and source-tracking engine as WhatsApp, phone, email and field leads.
             $acquisition=$this->acquisition->capture((int)$tenant->id,(int)$org->id,null,[
                 'name'=>$public->responsible_person ?: $public->company_name,
                 'company'=>$public->company_name,
@@ -46,6 +44,11 @@ class PublicRequestPipelineService
             if($lead) $links['crm_lead_id']=$lead->id;
 
             $requestType=match(strtoupper((string)$public->request_type)){'QUOTATION'=>'QUOTATION','CONSULTATION'=>'CONSULTATION',default=>'MAINTENANCE'};
+            $requestSubtype=strtoupper((string)($public->request_subtype ?: match($requestType){
+                'QUOTATION'=>'SPARE_PARTS_QUOTE',
+                'CONSULTATION'=>'TECHNICAL_CONSULTATION',
+                default=>(strtoupper((string)$public->urgency)==='EMERGENCY'?'URGENT_MAINTENANCE':'ROUTINE_MAINTENANCE'),
+            }));
             $priority=match($public->urgency){'EMERGENCY'=>'EMERGENCY','URGENT'=>'HIGH','PRIORITY'=>'MEDIUM',default=>'NORMAL'};
             $plannedStart=$public->requested_date?Carbon::parse($public->requested_date->format('Y-m-d').' '.($public->requested_time?:'00:00')):now();
 
@@ -63,20 +66,20 @@ class PublicRequestPipelineService
             $eligibility=$contract?'IN_CONTRACT':'CHARGEABLE';
 
             $meta=[
-                'نوع الطلب: '.($public->request_intent?:$public->request_type),'مجموعة الخدمة: '.($public->service_family?:'-'),'الأصل/المعدة: '.($public->asset_type?:'-'),
+                'نوع الطلب: '.($public->request_intent?:$public->request_type),'مسار الطلب: '.$requestSubtype,'مجموعة الخدمة: '.($public->service_family?:'-'),'الأصل/المعدة: '.($public->asset_type?:'-'),
                 'مسؤول الطلب: '.($public->responsible_person?:'-'),'الموقع: '.($public->site_address?:$public->site_city?:'-'),
                 'الإحداثيات: '.($public->latitude&&$public->longitude?$public->latitude.', '.$public->longitude:'-'),'الموعد المطلوب: '.$plannedStart->format('Y-m-d H:i'),
             ];
 
             $serviceRequest=ServiceRequest::create([
                 'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'service_contract_id'=>$contract?->id,'asset_id'=>$asset?->id,
-                'request_no'=>'SR-'.$public->reference_no,'request_type'=>$requestType,'company_name'=>$public->company_name,'commercial_registration'=>$public->commercial_registration,
+                'request_no'=>'SR-'.$public->reference_no,'request_type'=>$requestType,'request_subtype'=>$requestSubtype,'company_name'=>$public->company_name,'commercial_registration'=>$public->commercial_registration,
                 'email'=>$public->email,'mobile'=>$public->mobile,'service_category'=>$public->service_category,'subject'=>$public->subject,'details'=>$public->details."\n\n".implode("\n",$meta),
-                'site_city'=>$public->site_city,'priority'=>$priority,'status'=>'OPEN','workflow_stage'=>'NEW','eligibility'=>$eligibility,
+                'site_city'=>$public->site_city,'priority'=>$priority,'status'=>'OPEN','workflow_stage'=>'NEW','approval_state'=>'PENDING','eligibility'=>$eligibility,
                 'response_sla_minutes'=>$priority==='EMERGENCY'?10:120,'resolution_sla_minutes'=>$priority==='EMERGENCY'?240:1440,
             ]);
             $links['service_request_id']=$serviceRequest->id;
-            $this->customers->record($customer,'SERVICE_REQUEST_CREATED','Service request '.$serviceRequest->request_no.' created',$public->subject,$serviceRequest,['request_type'=>$requestType,'priority'=>$priority,'eligibility'=>$eligibility]);
+            $this->customers->record($customer,'SERVICE_REQUEST_CREATED','Service request '.$serviceRequest->request_no.' created',$public->subject,$serviceRequest,['request_type'=>$requestType,'request_subtype'=>$requestSubtype,'priority'=>$priority,'eligibility'=>$eligibility]);
 
             if(in_array($requestType,['QUOTATION','CONSULTATION'],true)||($requestType==='MAINTENANCE'&&!$contract&&$priority!=='EMERGENCY')) {
                 $opportunity=CrmOpportunity::create([
@@ -87,7 +90,7 @@ class PublicRequestPipelineService
                 $needsQuotation=$requestType==='QUOTATION'||($requestType==='MAINTENANCE'&&!$contract);
                 if($needsQuotation) {
                     $quotation=CrmQuotation::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'opportunity_id'=>$opportunity->id,'customer_id'=>$customer->id,'quotation_no'=>'QT-'.$public->reference_no,'revision_no'=>0,'quotation_date'=>now()->toDateString(),'currency'=>'SAR','amount'=>0,'cost_amount'=>0,'risk_level'=>'NORMAL','status'=>'DRAFT']);
-                    $serviceRequest->update(['quotation_id'=>$quotation->id,'workflow_stage'=>'TECHNICAL_REVIEW']);
+                    $serviceRequest->update(['quotation_id'=>$quotation->id]);
                     $links+=['crm_quotation_id'=>$quotation->id,'status'=>'CONVERTED_TO_QUOTATION'];
                     $this->customers->record($customer,'QUOTATION_DRAFT_CREATED','Quotation '.$quotation->quotation_no.' created','Commercial preparation started.',$quotation);
                 } else $links['status']='CONVERTED_TO_OPPORTUNITY';
@@ -95,12 +98,32 @@ class PublicRequestPipelineService
 
             if($requestType==='MAINTENANCE'&&($contract||$priority==='EMERGENCY')) {
                 $workOrder=WorkOrder::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'service_contract_id'=>$contract?->id,'work_order_no'=>'WO-'.$public->reference_no,'asset_id'=>$asset->id,'maintenance_type'=>'CORRECTIVE','priority'=>$priority,'status'=>'OPEN','planned_start'=>$plannedStart]);
-                $serviceRequest->update(['work_order_id'=>$workOrder->id,'workflow_stage'=>$priority==='EMERGENCY'?'IN_PROGRESS':'PLANNING']);
+                $serviceRequest->update(['work_order_id'=>$workOrder->id]);
                 $links+=['work_order_id'=>$workOrder->id,'status'=>'CONVERTED_TO_WORK_ORDER'];
                 $this->customers->record($customer,'WORK_ORDER_CREATED','Work order '.$workOrder->work_order_no.' created','Maintenance execution record created.',$workOrder);
             }
 
-            $this->workflow->start($serviceRequest->fresh(),['estimated_value'=>0,'margin_pct'=>null,'payment_terms_days'=>0,'risk_level'=>'NORMAL','procurement_required'=>false,'paid'=>$requestType==='QUOTATION']);
+            $workflowContext=[
+                'estimated_value'=>0,
+                'margin_pct'=>null,
+                'payment_terms_days'=>0,
+                'risk_level'=>'NORMAL',
+                'procurement_required'=>in_array($requestSubtype,['SPARE_PARTS_QUOTE','SPARE_PARTS'],true),
+                'quality_required'=>false,
+                'hse_required'=>false,
+                'has_cost'=>$eligibility==='CHARGEABLE',
+                'chargeable'=>$eligibility==='CHARGEABLE',
+                'administrative_approval_required'=>true,
+            ];
+            $steps=$this->workflow->start($serviceRequest->fresh(),$workflowContext);
+            $serviceRequest=$serviceRequest->fresh();
+            $this->customers->record($customer,'SERVICE_REQUEST_WORKFLOW_STARTED','Request workflow started',$serviceRequest->workflow_key,$serviceRequest,[
+                'workflow_key'=>$serviceRequest->workflow_key,
+                'current_stage'=>$serviceRequest->workflow_stage,
+                'assigned_department'=>$serviceRequest->assigned_department,
+                'steps'=>$steps->count(),
+            ]);
+
             $public->update($links+['converted_at'=>now()]);
             return $public->fresh();
         });
