@@ -13,13 +13,14 @@ class AuditService
     public function record(string $action, ?Model $entity = null, array $before = [], array $after = [], ?string $correlationId = null, ?string $reason = null, array $metadata = []): void
     {
         $user = Auth::user();
+        $tenantId = $user?->tenant_id ?? $entity?->getAttribute('tenant_id');
         $createdAt = now();
         $correlationId ??= (string) Str::uuid();
         $beforeState = $before ? json_encode($this->redact($before), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null;
         $afterState = $after ? json_encode($this->redact($after), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null;
         $request = app()->runningInConsole() ? null : request();
         $row = [
-            'tenant_id' => $user?->tenant_id,
+            'tenant_id' => $tenantId,
             'user_id' => $user?->id,
             'action' => $action,
             'entity_type' => $entity ? $entity::class : null,
@@ -30,7 +31,7 @@ class AuditService
             'created_at' => $createdAt, 'updated_at' => $createdAt,
         ];
         if (Schema::hasColumn('audit_logs', 'entry_hash')) {
-            $previousHash = DB::table('audit_logs')->where('tenant_id', $user?->tenant_id)->latest('id')->value('entry_hash');
+            $previousHash = DB::table('audit_logs')->where('tenant_id', $tenantId)->latest('id')->value('entry_hash');
             $sessionId = $request?->hasSession() ? $request->session()->getId() : null;
             $row += [
                 'ip_address' => $request?->ip(), 'session_id' => $sessionId, 'reason' => $reason,
@@ -38,7 +39,7 @@ class AuditService
                 'previous_hash' => $previousHash,
             ];
             $row['entry_hash'] = hash('sha256', implode('|', [
-                $previousHash, $user?->tenant_id, $user?->id, $action, $row['entity_type'], $row['entity_id'],
+                $previousHash, $tenantId, $user?->id, $action, $row['entity_type'], $row['entity_id'],
                 $correlationId, $beforeState, $afterState, $reason, $createdAt->toISOString(),
             ]));
         }
