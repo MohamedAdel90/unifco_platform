@@ -19,10 +19,15 @@ class WorkflowTestUsersSeederTest extends TestCase
         $expected=[
             'engineer@unifco.local'=>'MAINTENANCE_ENGINEER',
             'maintenance.manager@unifco.local'=>'MAINTENANCE_MANAGER',
+            'operations.manager@unifco.local'=>'OPERATIONS_MANAGER',
+            'projects.manager@unifco.local'=>'PROJECT_MANAGER',
+            'technician@unifco.local'=>'TECHNICIAN',
+            'quality@unifco.local'=>'QUALITY',
+            'hse@unifco.local'=>'HSE',
+            'customer.service@unifco.local'=>'CUSTOMER_SERVICE',
             'procurement@unifco.local'=>'PROCUREMENT',
             'tenders@unifco.local'=>'TENDERS_CONTRACTS',
             'finance@unifco.local'=>'FINANCE',
-            'projects.manager@unifco.local'=>'PROJECT_MANAGER',
             'ceo@unifco.local'=>'CEO',
             'workflow.customer@unifco.local'=>'CUSTOMER',
         ];
@@ -41,8 +46,10 @@ class WorkflowTestUsersSeederTest extends TestCase
         $this->assertSame($customer->id,$portalUser->customer_id);
         $this->assertSame('CUSTOMER_ADMIN',$portalUser->customer_portal_role);
 
-        foreach(['MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','PROJECT_MANAGER','CEO'] as $role){
+        foreach(['MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','OPERATIONS_MANAGER','PROJECT_MANAGER','QUALITY','HSE','CUSTOMER_SERVICE','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','CEO'] as $role){
             $this->assertTrue(DB::table('role_permissions')->where('role_code',$role)->where('permission_code','workflow.approval.read')->exists());
+        }
+        foreach(['MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROJECT_MANAGER','QUALITY','HSE','CUSTOMER_SERVICE','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','CEO'] as $role){
             $this->assertTrue(DB::table('role_permissions')->where('role_code',$role)->where('permission_code','workflow.approval.decide')->exists());
         }
     }
@@ -53,6 +60,7 @@ class WorkflowTestUsersSeederTest extends TestCase
         $this->seed(WorkflowTestUsersSeeder::class);
 
         $this->assertSame(1,User::where('email','engineer@unifco.local')->count());
+        $this->assertSame(1,User::where('email','technician@unifco.local')->count());
         $this->assertSame(1,User::where('email','workflow.customer@unifco.local')->count());
         $customer=Customer::where('customer_code','WF-TEST-001')->firstOrFail();
         $this->assertSame(1,CustomerContact::where('customer_id',$customer->id)->where('email','workflow.customer@unifco.local')->count());
