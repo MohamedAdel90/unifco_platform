@@ -46,10 +46,12 @@ class CustomerPortalDashboardPresentation
                     ->where('customer_conversations.customer_id',$customerId)->where('customer_messages.sender_side','UNIFCO')->whereNull('customer_messages.read_at')->count();
             }
 
-            $panel='<a href="'.e(route('customer.actions')).'" class="card" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px;margin-bottom:12px;border-left:4px solid #e20b24"><div><div class="title" style="font-size:13px">Action Required From You</div><div class="sub">Approvals, work acceptance, invoices, renewals and customer follow-up.</div></div><span class="pill red">'.$count.' OPEN</span></a>';
-            $needle='<section class="stats">';
-            $position=strpos($html,$needle);
-            if($position!==false) $html=substr($html,0,$position).$panel.substr($html,$position);
+            if(!str_contains($html,'data-action-center-panel')){
+                $panel='<a href="'.e(route('customer.actions')).'" class="card" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px;margin-bottom:12px;border-left:4px solid #e20b24"><div><div class="title" style="font-size:13px">Action Required From You</div><div class="sub">Approvals, work acceptance, invoices, renewals and customer follow-up.</div></div><span class="pill red">'.$count.' OPEN</span></a>';
+                $needle='<section class="stats">';
+                $position=strpos($html,$needle);
+                if($position!==false) $html=substr($html,0,$position).$panel.substr($html,$position);
+            }
         }
 
         $response->setContent($html);

@@ -100,7 +100,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/customer/users-access/{user}/reset-password', [CustomerPortalAccessAdminController::class, 'resetPassword'])->name('customer.access.reset-password');
 
     Route::get('/customer/{section}', CustomerPortalController::class)
-        ->whereIn('section', ['dashboard', 'requests', 'quotations', 'timeline', 'contracts', 'assets', 'work-orders', 'maintenance', 'invoices', 'reports', 'sla', 'documents', 'notifications'])
+        ->whereIn('section', ['dashboard', 'requests', 'quotations', 'timeline', 'contracts', 'sites', 'assets', 'work-orders', 'visits', 'maintenance', 'spare-parts', 'invoices', 'reports', 'sla', 'documents', 'notifications'])
         ->name('customer.section');
     Route::post('/customer/service-requests', [CustomerPortalOperationsController::class, 'requestService'])->name('customer.requests.store');
     Route::post('/customer/quotations/{quotation}/decision', [CustomerPortalOperationsController::class, 'decideQuotation'])->name('customer.quotations.decision');

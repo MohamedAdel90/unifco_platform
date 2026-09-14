@@ -26,6 +26,52 @@ class CustomerPortalRbacPhase1Test extends TestCase
         $this->actingAs($viewer)->get('/customer')->assertOk()->assertSee('READ ONLY')->assertDontSee('Users &amp; Access',false);
     }
 
+    public function test_customer_command_center_exposes_role_aware_grouped_navigation(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
+        $siteManager=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
+        $finance=User::where('email','workflow.finance@unifco.local')->firstOrFail();
+
+        $this->actingAs($admin)->get('/customer')
+            ->assertOk()
+            ->assertSee('UNIFCO Customer Command Center')
+            ->assertSee('Action Required From You')
+            ->assertSee('My Work')
+            ->assertSee('Sites &amp; Assets', false)
+            ->assertSee('Visits &amp; Schedule', false)
+            ->assertSee('Spare Parts')
+            ->assertSee('Users &amp; Access', false);
+
+        $this->actingAs($siteManager)->get('/customer')
+            ->assertOk()
+            ->assertSee('Sites &amp; Assets', false)
+            ->assertSee('Visits &amp; Schedule', false)
+            ->assertSee('Spare Parts')
+            ->assertDontSee('Invoices &amp; Payments', false);
+
+        $this->actingAs($finance)->get('/customer')
+            ->assertOk()
+            ->assertSee('Commercial &amp; Contracts', false)
+            ->assertSee('Invoices')
+            ->assertDontSee('Spare Parts')
+            ->assertDontSee('Assets &amp; Equipment', false);
+    }
+
+    public function test_new_customer_portal_sections_follow_role_permissions(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
+        $siteManager=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
+        $finance=User::where('email','workflow.finance@unifco.local')->firstOrFail();
+
+        $this->actingAs($admin)->get('/customer/sites')->assertOk()->assertSee('Authorized locations');
+        $this->actingAs($admin)->get('/customer/visits')->assertOk()->assertSee('Visits &amp; Schedule', false);
+        $this->actingAs($siteManager)->get('/customer/spare-parts')->assertOk()->assertSee('Spare Parts');
+        $this->actingAs($finance)->get('/customer/sites')->assertForbidden();
+        $this->actingAs($finance)->get('/customer/spare-parts')->assertForbidden();
+    }
+
     public function test_site_manager_cannot_open_finance_or_users_access(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
