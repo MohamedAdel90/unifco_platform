@@ -55,6 +55,18 @@ class GovernedUserCreationController extends Controller
     {
         $this->authorize($request,'users.create');
         $tenant=$request->user()->tenant_id;
+
+        // Preserve compatibility with existing callers that still submit the
+        // historical singular `role` field while the governed wizard submits
+        // the new multi-role `roles[]` contract.
+        if(!$request->has('roles') && filled($request->input('role'))){
+            $legacyRole=strtoupper(trim((string)$request->input('role')));
+            $request->merge([
+                'roles'=>[$legacyRole],
+                'primary_role'=>$request->input('primary_role') ?: $legacyRole,
+            ]);
+        }
+
         $data=$request->validate([
             'name'=>['nullable','string','max:120','required_without_all:name_ar,name_en'],
             'name_ar'=>['nullable','string','max:160'],
