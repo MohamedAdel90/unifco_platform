@@ -18,7 +18,7 @@ class ServiceRequestWorkflowTest extends TestCase
         $org=Organization::create(['tenant_id'=>$tenant->id,'name'=>'HQ','code'=>'HQ','status'=>'ACTIVE']);
         $customer=Customer::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_code'=>'C-WF','name'=>'Workflow Customer','email'=>'wf@example.test','status'=>'ACTIVE']);
         $requester=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'System Admin','email'=>'wf-admin@example.test','password'=>'StrongPassword123','role'=>'ADMIN','status'=>'ACTIVE']);
-        $approver=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Maintenance Engineer','email'=>'wf-engineer@example.test','password'=>'StrongPassword123','role'=>'MAINTENANCE_ENGINEER','status'=>'ACTIVE']);
+        $approver=User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Sales Reviewer','email'=>'wf-sales@example.test','password'=>'StrongPassword123','role'=>'SALES','status'=>'ACTIVE']);
         return compact('tenant','org','customer','requester','approver');
     }
 
@@ -37,13 +37,17 @@ class ServiceRequestWorkflowTest extends TestCase
 
         $steps=ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$request->id)->orderBy('step_order')->get();
         $this->assertSame([
-            'MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','PROJECT_MANAGER','CEO',
+            'SALES','MAINTENANCE_ENGINEER','PROCUREMENT','TENDERS_CONTRACTS','OPERATIONS_MANAGER','CUSTOMER','TENDERS_CONTRACTS','SALES',
         ],$steps->pluck('approval_role')->all());
+        $this->assertSame([
+            'SALES_REVIEW','TECHNICAL_REVIEW','PRICING_PROCUREMENT','CONTRACT_REVIEW','INTERNAL_APPROVAL','CUSTOMER_DECISION','PO_OR_CONTRACT','COMPLETED',
+        ],$steps->pluck('action')->all());
         $this->assertSame('PENDING',$steps->first()->status);
         $this->assertTrue($steps->skip(1)->every(fn($step)=>$step->status==='WAITING'));
         $this->assertSame(120,(int)$steps->first()->sla_minutes);
         $this->assertNotNull($steps->first()->due_at);
         $this->assertNull($steps->get(1)->due_at);
+        $this->assertSame('SALES_REVIEW',$request->fresh()->workflow_stage);
     }
 
     public function test_approval_moves_only_next_waiting_step_to_pending(): void
@@ -57,12 +61,16 @@ class ServiceRequestWorkflowTest extends TestCase
         app(ServiceRequestWorkflowService::class)->start($request,['estimated_value'=>50000,'margin_pct'=>20,'payment_terms_days'=>30,'risk_level'=>'NORMAL']);
         $first=ApprovalRequest::where('entity_id',$request->id)->where('status','PENDING')->firstOrFail();
 
+        $this->assertSame('SALES_REVIEW',$first->action);
+        $this->assertSame('SALES',$first->approval_role);
         $this->actingAs($c['approver']);
-        app(ApprovalService::class)->decide($first,'APPROVED','Technical review complete');
+        app(ApprovalService::class)->decide($first,'APPROVED','Sales review complete');
 
         $steps=ApprovalRequest::where('entity_id',$request->id)->orderBy('step_order')->get();
         $this->assertSame('APPROVED',$steps->get(0)->status);
         $this->assertSame('PENDING',$steps->get(1)->status);
+        $this->assertSame('TECHNICAL_REVIEW',$steps->get(1)->action);
+        $this->assertSame('MAINTENANCE_ENGINEER',$steps->get(1)->approval_role);
         $this->assertTrue($steps->skip(2)->every(fn($step)=>$step->status==='WAITING'));
         $this->assertSame($steps->get(1)->action,$request->fresh()->workflow_stage);
     }
@@ -84,7 +92,7 @@ class ServiceRequestWorkflowTest extends TestCase
         app(ApprovalService::class)->decide($first,'APPROVED','Should not be allowed');
     }
 
-    public function test_in_contract_routine_maintenance_keeps_approval_path_short(): void
+    public function test_in_contract_routine_maintenance_builds_full_operational_route(): void
     {
         $c=$this->context();
         $request=ServiceRequest::create([
@@ -94,11 +102,20 @@ class ServiceRequestWorkflowTest extends TestCase
         ]);
         app(ServiceRequestWorkflowService::class)->start($request);
 
-        $this->assertDatabaseCount('approval_requests',1);
-        $this->assertDatabaseHas('approval_requests',['entity_id'=>$request->id,'approval_role'=>'MAINTENANCE_ENGINEER','status'=>'PENDING','sla_minutes'=>120]);
+        $steps=ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$request->id)->orderBy('step_order')->get();
+        $this->assertSame([
+            'TRIAGE','PROJECT_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT','EXECUTION','CUSTOMER_ACCEPTANCE','CLOSURE','CSAT',
+        ],$steps->pluck('action')->all());
+        $this->assertSame([
+            'OPERATIONS_MANAGER','PROJECT_MANAGER','PROJECT_MANAGER','TECHNICIAN','CUSTOMER','OPERATIONS_MANAGER','CUSTOMER',
+        ],$steps->pluck('approval_role')->all());
+        $this->assertSame('PENDING',$steps->first()->status);
+        $this->assertSame(60,(int)$steps->first()->sla_minutes);
+        $this->assertTrue($steps->skip(1)->every(fn($step)=>$step->status==='WAITING'));
+        $this->assertSame('TRIAGE',$request->fresh()->workflow_stage);
     }
 
-    public function test_emergency_maintenance_has_ten_minute_response_sla_and_short_route(): void
+    public function test_emergency_maintenance_has_ten_minute_response_sla_and_full_route(): void
     {
         $c=$this->context();
         $request=ServiceRequest::create([
@@ -108,8 +125,18 @@ class ServiceRequestWorkflowTest extends TestCase
         ]);
         app(ServiceRequestWorkflowService::class)->start($request);
 
+        $steps=ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$request->id)->orderBy('step_order')->get();
         $this->assertSame(10,(int)$request->response_sla_minutes);
-        $this->assertDatabaseCount('approval_requests',1);
-        $this->assertDatabaseHas('approval_requests',['entity_id'=>$request->id,'approval_role'=>'MAINTENANCE_ENGINEER','status'=>'PENDING']);
+        $this->assertSame([
+            'EMERGENCY_DISPATCH','PROJECT_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT','EXECUTION','CUSTOMER_ACCEPTANCE','FINANCE_REVIEW','CLOSURE','CSAT',
+        ],$steps->pluck('action')->all());
+        $this->assertSame([
+            'OPERATIONS_MANAGER','PROJECT_MANAGER','PROJECT_MANAGER','TECHNICIAN','CUSTOMER','FINANCE','OPERATIONS_MANAGER','CUSTOMER',
+        ],$steps->pluck('approval_role')->all());
+        $this->assertSame('PENDING',$steps->first()->status);
+        $this->assertSame(10,(int)$steps->first()->sla_minutes);
+        $this->assertNotNull($steps->first()->due_at);
+        $this->assertTrue($steps->skip(1)->every(fn($step)=>$step->status==='WAITING'));
+        $this->assertSame('EMERGENCY_DISPATCH',$request->fresh()->workflow_stage);
     }
 }
