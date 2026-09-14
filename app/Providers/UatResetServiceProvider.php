@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Http\Controllers\Admin\UatResetLinkController;
 use App\Http\Controllers\Auth\UatResetController;
+use App\Http\Middleware\UatResetLinkPresentation;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -11,6 +12,8 @@ class UatResetServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        app('router')->pushMiddlewareToGroup('web',UatResetLinkPresentation::class);
+
         Route::middleware('web')->group(function () {
             Route::post('/admin/users/{user}/uat-reset-link',UatResetLinkController::class)
                 ->middleware(['auth','permission:users.reset_password'])
