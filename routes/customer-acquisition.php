@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CRM\CustomerAcquisitionController;
+use App\Http\Controllers\CRM\ProspectVerificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('crm/acquisition')->name('crm.acquisition.')->group(function(){
@@ -13,4 +14,5 @@ Route::middleware('auth')->prefix('crm/acquisition')->name('crm.acquisition.')->
     Route::post('/leads/{lead}/review-conversion',[CustomerAcquisitionController::class,'reviewConversion'])->name('review-conversion');
     Route::post('/leads/{lead}/convert',[CustomerAcquisitionController::class,'convert'])->name('convert');
     Route::post('/customers/{customer}/review-onboarding',[CustomerAcquisitionController::class,'reviewOnboarding'])->name('review-onboarding');
+    Route::post('/customers/{customer}/verify-prospect',ProspectVerificationController::class)->name('verify-prospect');
 });
