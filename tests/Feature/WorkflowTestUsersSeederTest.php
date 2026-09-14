@@ -46,10 +46,8 @@ class WorkflowTestUsersSeederTest extends TestCase
         $this->assertSame($customer->id,$portalUser->customer_id);
         $this->assertSame('CUSTOMER_ADMIN',$portalUser->customer_portal_role);
 
-        foreach(['MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','OPERATIONS_MANAGER','PROJECT_MANAGER','QUALITY','HSE','CUSTOMER_SERVICE','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','CEO'] as $role){
-            $this->assertTrue(DB::table('role_permissions')->where('role_code',$role)->where('permission_code','workflow.approval.read')->exists());
-        }
         foreach(['MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROJECT_MANAGER','QUALITY','HSE','CUSTOMER_SERVICE','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','CEO'] as $role){
+            $this->assertTrue(DB::table('role_permissions')->where('role_code',$role)->where('permission_code','workflow.approval.read')->exists());
             $this->assertTrue(DB::table('role_permissions')->where('role_code',$role)->where('permission_code','workflow.approval.decide')->exists());
         }
     }
