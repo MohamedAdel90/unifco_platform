@@ -69,7 +69,10 @@ for file in \
   test -s "$file" || { echo "ERROR: required release file missing: $file"; exit 1; }
 done
 
-grep -q 'customer-portal-rbac-phase1-20260827' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal marker missing"; exit 1; }
+# Validate the current Customer Portal architecture rather than a retired historical marker.
+grep -q 'CustomerPortalAccessService' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal access service integration missing"; exit 1; }
+grep -q 'canManageUsers' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal governed user access integration missing"; exit 1; }
+grep -q 'accessibleSiteIds' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal site scope integration missing"; exit 1; }
 grep -q "name('transition')" routes/asset-master.php || { echo "ERROR: asset lifecycle transition route missing"; exit 1; }
 grep -q "name('locations.store')" routes/asset-master.php || { echo "ERROR: asset location hierarchy route missing"; exit 1; }
 grep -q "name('assign-location')" routes/asset-master.php || { echo "ERROR: asset location assignment route missing"; exit 1; }
