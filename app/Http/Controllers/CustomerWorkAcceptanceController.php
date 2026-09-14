@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset,ServiceRequest,WorkOrder};
+use App\Models\{Asset,CustomerActivityEvent,ServiceRequest,WorkOrder};
 use App\Services\{CustomerPortalAccessService,ServiceRequestWorkflowService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\View\View;
@@ -26,6 +26,7 @@ class CustomerWorkAcceptanceController extends Controller
         return view('customer.work-acceptance',[
             'pending'=>WorkOrder::whereIn('asset_id',$assetIds)->where('status','COMPLETED')->whereNull('customer_accepted_at')->whereNull('customer_rejected_at')->latest('completed_at')->get(),
             'history'=>WorkOrder::whereIn('asset_id',$assetIds)->where(function($q){$q->whereNotNull('customer_accepted_at')->orWhereNotNull('customer_rejected_at');})->latest()->limit(50)->get(),
+            'satisfactionRequests'=>ServiceRequest::where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)->where('workflow_stage','CSAT')->latest('id')->get(),
         ]);
     }
 
@@ -62,5 +63,41 @@ class CustomerWorkAcceptanceController extends Controller
         }
 
         return back()->with('status',$data['decision']==='ACCEPT'?'تم اعتماد الأعمال ونقل الطلب للمرحلة التالية.':'تم طلب إعادة العمل وإرجاع الطلب للتنفيذ.');
+    }
+
+    public function satisfaction(Request $request, ServiceRequest $serviceRequest, ServiceRequestWorkflowService $workflow): RedirectResponse
+    {
+        $user=$this->customerUser();
+        abort_unless((int)$serviceRequest->tenant_id===(int)$user->tenant_id && (int)$serviceRequest->customer_id===(int)$user->customer_id,404);
+        abort_unless($serviceRequest->workflow_stage==='CSAT',422,'This request is not waiting for customer satisfaction.');
+        abort_if(CustomerActivityEvent::where('customer_id',$user->customer_id)->where('event_type','CUSTOMER_SATISFACTION')->where('reference_type',ServiceRequest::class)->where('reference_id',$serviceRequest->id)->exists(),422,'Customer satisfaction was already submitted.');
+
+        $data=$request->validate([
+            'rating'=>['required','integer','between:1,5'],
+            'nps'=>['nullable','integer','between:0,10'],
+            'comment'=>['nullable','string','max:2000'],
+        ]);
+
+        CustomerActivityEvent::create([
+            'tenant_id'=>$serviceRequest->tenant_id,
+            'organization_id'=>$serviceRequest->organization_id,
+            'customer_id'=>$serviceRequest->customer_id,
+            'event_type'=>'CUSTOMER_SATISFACTION',
+            'reference_type'=>ServiceRequest::class,
+            'reference_id'=>$serviceRequest->id,
+            'title'=>'Customer satisfaction submitted',
+            'description'=>$data['comment']??null,
+            'visibility'=>'BOTH',
+            'metadata'=>['rating'=>$data['rating'],'nps'=>$data['nps']??null,'submitted_by'=>$user->id,'submitted_at'=>now()->toIso8601String()],
+        ]);
+
+        $workflow->advance($serviceRequest,'CSAT',$user->id,$data['comment']??'Customer satisfaction submitted.');
+        $context=(array)($serviceRequest->fresh()->workflow_context??[]);
+        $context['fully_closed_at']=now()->toIso8601String();
+        $context['csat_rating']=$data['rating'];
+        $context['csat_nps']=$data['nps']??null;
+        $serviceRequest->update(['status'=>'CLOSED','workflow_context'=>$context]);
+
+        return back()->with('status','شكراً لك. تم تسجيل تقييمك وإغلاق الطلب بالكامل.');
     }
 }
