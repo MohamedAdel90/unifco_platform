@@ -84,4 +84,22 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
             'completion_notes'=>'Attempted completion.',
         ])->assertForbidden();
     }
+
+    public function test_operations_closure_marks_resolved_and_moves_to_csat(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('CLOSURE');
+        $ops=$this->user($tenant,$org,'OPERATIONS_MANAGER','ops-close@example.test');
+        $this->step($serviceRequest,$ops,'CLOSURE','OPERATIONS_MANAGER',1,'PENDING');
+        $this->step($serviceRequest,$ops,'CSAT','CUSTOMER',2,'WAITING');
+
+        $this->actingAs($ops)->post(route('service-requests.workflow.close',$serviceRequest),[
+            'notes'=>'Operational work verified and closed.',
+        ])->assertRedirect();
+
+        $serviceRequest->refresh();
+        $this->assertSame('RESOLVED',$serviceRequest->status);
+        $this->assertSame('CSAT',$serviceRequest->workflow_stage);
+        $this->assertNotNull($serviceRequest->resolved_at);
+        $this->assertArrayHasKey('operationally_closed_at',$serviceRequest->workflow_context);
+    }
 }
