@@ -10,4 +10,5 @@ return [
     App\Providers\Wave12ServiceProvider::class,
     App\Providers\Wave13ServiceProvider::class,
     App\Providers\UatResetServiceProvider::class,
+    App\Providers\CustomerServiceRequestWorkspaceServiceProvider::class,
 ];
