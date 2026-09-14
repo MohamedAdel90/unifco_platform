@@ -15,6 +15,8 @@ Route::middleware('auth')->group(function () {
         ->name('operations-manager.reports');
     Route::get('/service-requests/{serviceRequest}/workflow',[MaintenanceRequestWorkflowController::class,'show'])
         ->name('service-requests.workflow.show');
+    Route::post('/service-requests/{serviceRequest}/workflow/close',[MaintenanceRequestWorkflowController::class,'close'])
+        ->name('service-requests.workflow.close');
     Route::prefix('field')->name('field.')->group(function () {
         Route::get('/operations',[FieldServiceController::class,'operations'])->name('operations');
         Route::post('/assignments',[FieldServiceController::class,'assign'])->name('assign');
