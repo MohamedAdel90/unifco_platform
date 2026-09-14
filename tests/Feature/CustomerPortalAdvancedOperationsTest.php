@@ -51,7 +51,10 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
     public function test_customer_360_exposes_requests_quotations_and_timeline_sections(): void
     {
         $c=$this->context();
-        $this->actingAs($c['user'])->get('/customer/requests')->assertOk()->assertSee('Service Requests');
+        $this->actingAs($c['user'])->get('/customer/requests')
+            ->assertRedirect(route('customer.service-requests.index'));
+        $this->actingAs($c['user'])->get(route('customer.service-requests.index'))
+            ->assertOk()->assertSee('Service Requests');
         $this->actingAs($c['user'])->get('/customer/quotations')->assertOk()->assertSee('Quotations');
         $this->actingAs($c['user'])->get('/customer/timeline')->assertOk()->assertSee('Timeline');
         $this->actingAs($c['user'])->get('/customer')->assertOk()->assertSee('Customer 360');
