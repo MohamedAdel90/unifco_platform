@@ -27,6 +27,8 @@
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.complete-execution',$serviceRequest) }}">@csrf<textarea name="completion_notes" rows="5" required placeholder="Work performed, readings, findings and completion notes"></textarea><button>Complete Technical Execution</button></form>
 @elseif(in_array($serviceRequest->workflow_stage,['QUALITY_VERIFICATION','HSE_VERIFICATION']))
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.verify',$serviceRequest) }}">@csrf<select name="decision" required><option value="APPROVE">Approve</option><option value="REWORK">Return for rework</option></select><textarea name="notes" rows="3" placeholder="Verification notes"></textarea><button>Record Verification</button></form>
+@elseif($serviceRequest->workflow_stage==='CLOSURE')
+<form class="wf-form" method="post" action="{{ route('service-requests.workflow.close',$serviceRequest) }}">@csrf<textarea name="notes" rows="3" placeholder="Operational closure notes"></textarea><button>Operational Close & Send CSAT</button></form>
 @endif
 </div>
 @else
