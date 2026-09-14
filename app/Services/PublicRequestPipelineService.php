@@ -97,7 +97,7 @@ class PublicRequestPipelineService
                 } else $links['status']='CONVERTED_TO_OPPORTUNITY';
             }
 
-            if($requestType==='MAINTENANCE'&&($contract||$priority==='EMERGENCY')) {
+            if($requestType==='MAINTENANCE') {
                 $workOrder=WorkOrder::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'service_contract_id'=>$contract?->id,'work_order_no'=>'WO-'.$public->reference_no,'asset_id'=>$asset->id,'maintenance_type'=>'CORRECTIVE','priority'=>$priority,'status'=>'OPEN','planned_start'=>$plannedStart]);
                 $serviceRequest->update(['work_order_id'=>$workOrder->id]);
                 $links+=['work_order_id'=>$workOrder->id,'status'=>'CONVERTED_TO_WORK_ORDER'];
