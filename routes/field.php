@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\CustomerProfileController;
-use App\Http\Controllers\FieldServiceController;
+use App\Http\Controllers\{CustomerProfileController,CustomerWorkAcceptanceController,FieldServiceController};
 use App\Http\Controllers\Operations\{OperationsReportController,ProjectSiteOperationsController};
+use App\Http\Controllers\Workflow\MaintenanceRequestWorkflowController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
@@ -12,6 +12,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/operations-manager/reports',OperationsReportController::class)
         ->middleware('permission:reporting.executive.read')
         ->name('operations-manager.reports');
+    Route::get('/service-requests/{serviceRequest}/workflow',[MaintenanceRequestWorkflowController::class,'show'])
+        ->name('service-requests.workflow.show');
+    Route::post('/service-requests/{serviceRequest}/workflow/close',[MaintenanceRequestWorkflowController::class,'close'])
+        ->name('service-requests.workflow.close');
+    Route::post('/customer/service-requests/{serviceRequest}/satisfaction',[CustomerWorkAcceptanceController::class,'satisfaction'])
+        ->name('customer.requests.satisfaction');
     Route::prefix('field')->name('field.')->group(function () {
         Route::get('/operations',[FieldServiceController::class,'operations'])->name('operations');
         Route::post('/assignments',[FieldServiceController::class,'assign'])->name('assign');

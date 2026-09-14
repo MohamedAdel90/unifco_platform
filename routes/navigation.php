@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AccessControlController;
 use App\Http\Controllers\Admin\SystemCatalogController;
 use App\Http\Controllers\NavigationWorkspaceController;
 use App\Http\Controllers\Operations\{OperationsManagerDashboardController,ServiceRequestOperationsController};
+use App\Http\Controllers\Workflow\MaintenanceRequestWorkflowController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/temporary-files/{token}', [TemporaryFileController::class, 'show'])
@@ -26,6 +27,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/service-requests',[ServiceRequestOperationsController::class,'index'])->middleware('permission:service_requests.read')->name('service-requests.index');
         Route::post('/service-requests/{serviceRequest}/assign',[ServiceRequestOperationsController::class,'assign'])->middleware('permission:service_requests.assign')->name('service-requests.assign');
         Route::post('/service-requests/{serviceRequest}/escalate',[ServiceRequestOperationsController::class,'escalate'])->middleware('permission:service_requests.escalate')->name('service-requests.escalate');
+    });
+    Route::prefix('service-requests/{serviceRequest}/workflow')->name('service-requests.workflow.')->group(function () {
+        Route::post('/triage',[MaintenanceRequestWorkflowController::class,'triage'])->name('triage');
+        Route::post('/project-review',[MaintenanceRequestWorkflowController::class,'projectReview'])->name('project-review');
+        Route::post('/assign-technician',[MaintenanceRequestWorkflowController::class,'assignTechnician'])->name('assign-technician');
+        Route::post('/complete-execution',[MaintenanceRequestWorkflowController::class,'completeExecution'])->name('complete-execution');
+        Route::post('/verify',[MaintenanceRequestWorkflowController::class,'verify'])->name('verify');
     });
     Route::post('/admin/users/{user}/impersonate',[ImpersonationController::class,'start'])->middleware('permission:impersonation.read_only')->name('admin.impersonation.start');
     Route::delete('/admin/impersonation',[ImpersonationController::class,'stop'])->name('admin.impersonation.stop');

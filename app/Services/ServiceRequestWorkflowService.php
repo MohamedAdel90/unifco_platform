@@ -8,47 +8,51 @@ use Illuminate\Support\Collection;
 class ServiceRequestWorkflowService
 {
     public const SLA = [
+        'TRIAGE' => 60,
+        'EMERGENCY_DISPATCH' => 10,
+        'SALES_REVIEW' => 120,
+        'OPERATIONS_REVIEW' => 120,
+        'PROJECT_MANAGER_REVIEW' => 120,
+        'TECHNICIAN_ASSIGNMENT' => 60,
+        'EXECUTION' => 1440,
         'TECHNICAL_REVIEW' => 120,
-        'MAINTENANCE_MANAGER' => 120,
-        'PROCUREMENT' => 240,
-        'TENDERS_CONTRACTS' => 240,
-        'FINANCE' => 120,
-        'PROJECT_MANAGER' => 120,
-        'CEO' => 240,
+        'TEAM_AND_SCHEDULE' => 240,
+        'SITE_VISIT' => 1440,
+        'TECHNICAL_REPORT' => 480,
+        'PRICING' => 240,
+        'PRICING_PROCUREMENT' => 240,
+        'CONTRACT_REVIEW' => 240,
+        'OPERATIONS_FEASIBILITY' => 240,
+        'INTERNAL_APPROVAL' => 240,
+        'FINANCE_REVIEW' => 120,
+        'EXECUTIVE_APPROVAL' => 240,
+        'QUALITY_VERIFICATION' => 120,
+        'HSE_VERIFICATION' => 120,
+        'CUSTOMER_ACCEPTANCE' => 1440,
+        'CUSTOMER_DECISION' => 2880,
+        'CUSTOMER_DELIVERY' => 1440,
+        'PO_OR_CONTRACT' => 2880,
+        'ONBOARDING' => 1440,
+        'CLOSURE' => 120,
+        'CSAT' => 2880,
+        'COMPLETED' => 1,
     ];
+
+    public function __construct(private ServiceRequestWorkflowTemplateRegistry $templates) {}
 
     public function start(ServiceRequest $request, array $context = []): Collection
     {
-        $type = strtoupper((string) ($request->request_type ?: 'MAINTENANCE'));
-        $value = (float) ($context['estimated_value'] ?? 0);
-        $margin = array_key_exists('margin_pct', $context) && $context['margin_pct'] !== null ? (float) $context['margin_pct'] : null;
-        $paymentDays = (int) ($context['payment_terms_days'] ?? 0);
-        $risk = strtoupper((string) ($context['risk_level'] ?? 'NORMAL'));
-        $procurement = (bool) ($context['procurement_required'] ?? $request->procurement_required);
-        $inContract = ($request->eligibility === 'IN_CONTRACT');
-        $emergency = strtoupper((string) $request->priority) === 'EMERGENCY';
+        $context += [
+            'chargeable' => $request->eligibility === 'CHARGEABLE',
+            'procurement_required' => (bool) $request->procurement_required,
+            'risk_level' => 'NORMAL',
+            'quality_required' => false,
+            'hse_required' => false,
+        ];
 
-        $steps = [['TECHNICAL_REVIEW','MAINTENANCE_ENGINEER']];
-
-        if ($type === 'MAINTENANCE') {
-            if (! $inContract || $procurement || $risk !== 'NORMAL') $steps[] = ['MAINTENANCE_MANAGER','MAINTENANCE_MANAGER'];
-            if ($procurement) $steps[] = ['PROCUREMENT_COST_VALIDATION','PROCUREMENT'];
-            if (! $inContract) $steps[] = ['COMMERCIAL_PREPARATION','TENDERS_CONTRACTS'];
-        } elseif ($type === 'CONSULTATION') {
-            $steps[] = ['TECHNICAL_SCOPE_APPROVAL','MAINTENANCE_MANAGER'];
-            if (($context['paid'] ?? false) === true) $steps[] = ['COMMERCIAL_PREPARATION','TENDERS_CONTRACTS'];
-        } else {
-            $steps[] = ['TECHNICAL_SCOPE_APPROVAL','MAINTENANCE_MANAGER'];
-            if ($procurement) $steps[] = ['PROCUREMENT_COST_VALIDATION','PROCUREMENT'];
-            $steps[] = ['COMMERCIAL_PREPARATION','TENDERS_CONTRACTS'];
-            if ($paymentDays > 30) $steps[] = ['FINANCIAL_TERMS_APPROVAL','FINANCE'];
-            if ($value > 25000 || $risk === 'HIGH') $steps[] = ['EXECUTION_FEASIBILITY','PROJECT_MANAGER'];
-            if ($value > 250000 || ($margin !== null && $margin < 10) || $risk === 'HIGH' || $paymentDays > 90) $steps[] = ['EXECUTIVE_APPROVAL','CEO'];
-        }
-
-        if ($emergency && $type === 'MAINTENANCE') {
-            $steps = [['TECHNICAL_REVIEW','MAINTENANCE_ENGINEER']];
-        }
+        $workflowKey = $this->templates->keyFor($request);
+        $steps = $this->templates->template($workflowKey, $context);
+        $first = $steps[0] ?? ['stage' => 'TRIAGE', 'department' => 'OPERATIONS'];
 
         $requester = User::where('tenant_id', $request->tenant_id)
             ->where('role', '!=', 'CUSTOMER')
@@ -57,44 +61,136 @@ class ServiceRequestWorkflowService
             ->first();
 
         $request->update([
-            'workflow_stage' => 'TECHNICAL_REVIEW',
+            'workflow_key' => $workflowKey,
+            'workflow_stage' => $first['stage'],
+            'assigned_department' => $first['department'],
+            'approval_state' => 'PENDING',
+            'next_action' => $first['stage'],
+            'workflow_context' => $context,
             'workflow_started_at' => $request->workflow_started_at ?: now(),
-            'current_stage_due_at' => now()->addMinutes(self::SLA['TECHNICAL_REVIEW']),
+            'current_stage_due_at' => now()->addMinutes($this->slaFor($first['stage'])),
         ]);
 
         if (! $requester) return collect();
 
-        return collect($steps)->values()->map(function (array $step, int $index) use ($request, $requester, $context) {
-            [$action, $role] = $step;
-            $slaKey = match ($role) {
-                'MAINTENANCE_ENGINEER' => 'TECHNICAL_REVIEW',
-                'MAINTENANCE_MANAGER' => 'MAINTENANCE_MANAGER',
-                'PROCUREMENT' => 'PROCUREMENT',
-                'TENDERS_CONTRACTS' => 'TENDERS_CONTRACTS',
-                'FINANCE' => 'FINANCE',
-                'PROJECT_MANAGER' => 'PROJECT_MANAGER',
-                'CEO' => 'CEO',
-                default => 'TECHNICAL_REVIEW',
-            };
-            $sla = self::SLA[$slaKey];
+        return collect($steps)->values()->map(function (array $step, int $index) use ($request, $requester, $context, $workflowKey) {
+            $stage = $step['stage'];
+            $sla = $this->slaFor($stage);
             $status = $index === 0 ? 'PENDING' : 'WAITING';
 
             return ApprovalRequest::firstOrCreate([
                 'tenant_id' => $request->tenant_id,
                 'entity_type' => ServiceRequest::class,
                 'entity_id' => $request->id,
-                'action' => $action,
+                'action' => $stage,
             ], [
                 'organization_id' => $request->organization_id,
                 'requested_by' => $requester->id,
-                'workflow_key' => 'SERVICE_REQUEST_'.$request->request_type,
-                'approval_role' => $role,
+                'workflow_key' => 'SERVICE_REQUEST_'.$workflowKey,
+                'approval_role' => $step['role'],
                 'step_order' => $index + 1,
                 'sla_minutes' => $sla,
                 'status' => $status,
                 'due_at' => $status === 'PENDING' ? now()->addMinutes($sla) : null,
-                'metadata' => $context,
+                'metadata' => $context + ['department' => $step['department'], 'stage' => $stage],
             ]);
         });
+    }
+
+    public function advance(ServiceRequest $request, string $completedStage, ?int $actorId = null, ?string $note = null): ?ApprovalRequest
+    {
+        $current = ApprovalRequest::query()
+            ->where('tenant_id', $request->tenant_id)
+            ->where('entity_type', ServiceRequest::class)
+            ->where('entity_id', $request->id)
+            ->where('action', $completedStage)
+            ->first();
+
+        if ($current && ! in_array($current->status, ['APPROVED','COMPLETED'], true)) {
+            $current->update([
+                'status' => 'COMPLETED',
+                'decided_by' => $actorId,
+                'decision_note' => $note,
+                'decided_at' => now(),
+            ]);
+        }
+
+        $next = ApprovalRequest::query()
+            ->where('tenant_id', $request->tenant_id)
+            ->where('entity_type', ServiceRequest::class)
+            ->where('entity_id', $request->id)
+            ->where('step_order', '>', (int) ($current?->step_order ?? 0))
+            ->orderBy('step_order')
+            ->first();
+
+        if (! $next) {
+            $request->update([
+                'workflow_stage' => 'COMPLETED',
+                'assigned_department' => null,
+                'approval_state' => 'COMPLETED',
+                'next_action' => null,
+                'current_stage_due_at' => null,
+                'status' => 'COMPLETED',
+            ]);
+            return null;
+        }
+
+        $metadata = (array) ($next->metadata ?? []);
+        $next->update([
+            'status' => 'PENDING',
+            'due_at' => now()->addMinutes((int) $next->sla_minutes),
+            'decided_by' => null,
+            'decision_note' => null,
+            'decided_at' => null,
+        ]);
+        $request->update([
+            'workflow_stage' => $next->action,
+            'assigned_department' => $metadata['department'] ?? null,
+            'approval_state' => 'PENDING',
+            'next_action' => $next->action,
+            'current_stage_due_at' => $next->due_at,
+        ]);
+
+        return $next->fresh();
+    }
+
+    public function returnTo(ServiceRequest $request, string $targetStage, ?int $actorId = null, ?string $note = null): ApprovalRequest
+    {
+        $steps = ApprovalRequest::query()
+            ->where('tenant_id', $request->tenant_id)
+            ->where('entity_type', ServiceRequest::class)
+            ->where('entity_id', $request->id)
+            ->orderBy('step_order')
+            ->get();
+        $target = $steps->firstWhere('action', $targetStage);
+        abort_unless($target, 422, 'The requested return stage is not part of this workflow.');
+
+        foreach ($steps as $step) {
+            if ((int) $step->step_order < (int) $target->step_order) continue;
+            $step->update([
+                'status' => $step->id === $target->id ? 'PENDING' : 'WAITING',
+                'due_at' => $step->id === $target->id ? now()->addMinutes((int) $step->sla_minutes) : null,
+                'decided_by' => $step->id === $target->id ? null : $step->decided_by,
+                'decision_note' => $step->id === $target->id ? $note : $step->decision_note,
+                'decided_at' => $step->id === $target->id ? null : $step->decided_at,
+            ]);
+        }
+
+        $metadata = (array) ($target->metadata ?? []);
+        $request->update([
+            'workflow_stage' => $target->action,
+            'assigned_department' => $metadata['department'] ?? null,
+            'approval_state' => 'REWORK',
+            'next_action' => $target->action,
+            'current_stage_due_at' => now()->addMinutes((int) $target->sla_minutes),
+            'status' => 'OPEN',
+        ]);
+
+        return $target->fresh();
+    }
+
+    private function slaFor(string $stage): int
+    {
+        return self::SLA[$stage] ?? 240;
     }
 }
