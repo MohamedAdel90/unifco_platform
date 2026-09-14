@@ -43,7 +43,8 @@ class PublicRequestPipelineService
             $links=['tenant_id'=>$tenant->id,'organization_id'=>$org->id];
             if($lead) $links['crm_lead_id']=$lead->id;
 
-            $requestType=match(strtoupper((string)$public->request_type)){'QUOTATION'=>'QUOTATION','CONSULTATION'=>'CONSULTATION',default=>'MAINTENANCE'};
+            $intent=strtoupper((string)($public->request_intent ?: $public->request_type));
+            $requestType=match($intent){'QUOTATION'=>'QUOTATION','CONSULTATION'=>'CONSULTATION',default=>'MAINTENANCE'};
             $requestSubtype=strtoupper((string)($public->request_subtype ?: match($requestType){
                 'QUOTATION'=>'SPARE_PARTS_QUOTE',
                 'CONSULTATION'=>'TECHNICAL_CONSULTATION',
