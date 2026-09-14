@@ -20,7 +20,9 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
             'organization_id'=>$admin->organization_id,
             'customer_id'=>$admin->customer_id,
             'request_no'=>'SR-UNRM-TEST-001',
+            'company_name'=>'UNIFCO Workflow Test Customer',
             'request_type'=>'MAINTENANCE',
+            'service_category'=>'Maintenance',
             'subject'=>'Routine pump maintenance',
             'details'=>'Pump vibration requires inspection.',
             'priority'=>'NORMAL',
@@ -62,8 +64,18 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
     {
         [$admin,$request]=$this->adminAndRequest();
         ServiceRequest::create([
-            'tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,'customer_id'=>$admin->customer_id,
-            'request_no'=>'SR-UNQ-TEST-002','request_type'=>'QUOTATION','subject'=>'Spare parts quote','priority'=>'NORMAL','status'=>'OPEN','workflow_stage'=>'SALES_REVIEW',
+            'tenant_id'=>$admin->tenant_id,
+            'organization_id'=>$admin->organization_id,
+            'customer_id'=>$admin->customer_id,
+            'request_no'=>'SR-UNQ-TEST-002',
+            'company_name'=>'UNIFCO Workflow Test Customer',
+            'request_type'=>'QUOTATION',
+            'service_category'=>'Spare Parts',
+            'subject'=>'Spare parts quote',
+            'details'=>'Quotation test request.',
+            'priority'=>'NORMAL',
+            'status'=>'OPEN',
+            'workflow_stage'=>'SALES_REVIEW',
         ]);
 
         $this->actingAs($admin)->get('/customer/service-requests?type=MAINTENANCE&stage=TRIAGE')
@@ -78,8 +90,18 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
             'customer_code'=>'OTHER-REQ','name'=>'Other Request Customer','status'=>'ACTIVE',
         ]);
         $foreign=ServiceRequest::create([
-            'tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,'customer_id'=>$other->id,
-            'request_no'=>'SR-FOREIGN-001','request_type'=>'MAINTENANCE','subject'=>'Foreign request','priority'=>'NORMAL','status'=>'OPEN','workflow_stage'=>'TRIAGE',
+            'tenant_id'=>$admin->tenant_id,
+            'organization_id'=>$admin->organization_id,
+            'customer_id'=>$other->id,
+            'request_no'=>'SR-FOREIGN-001',
+            'company_name'=>'Other Request Customer',
+            'request_type'=>'MAINTENANCE',
+            'service_category'=>'Maintenance',
+            'subject'=>'Foreign request',
+            'details'=>'Foreign customer request for access control test.',
+            'priority'=>'NORMAL',
+            'status'=>'OPEN',
+            'workflow_stage'=>'TRIAGE',
         ]);
 
         $this->actingAs($admin)->get(route('customer.service-requests.show',$foreign))->assertNotFound();
