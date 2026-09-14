@@ -17,23 +17,6 @@ class User extends Authenticatable
     protected $hidden = ['password','remember_token'];
     protected function casts(): array { return ['email_verified_at'=>'datetime','last_login_at'=>'datetime','locked_at'=>'datetime','force_password_change'=>'boolean','session_version'=>'integer','password'=>'hashed']; }
 
-    protected static function booted(): void
-    {
-        static::saving(function (User $user): void {
-            $request=request();
-            if(!$request || !$request->routeIs('admin.users.reset-password') || !$request->boolean('set_temporary_password')) return;
-
-            $data=$request->validate([
-                'password'=>['required','string','min:10','confirmed'],
-            ]);
-
-            $user->password=$data['password'];
-            $user->locked_at=null;
-            $user->force_password_change=true;
-            session()->flash('temporary_password_set',true);
-        });
-    }
-
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'user_roles')
