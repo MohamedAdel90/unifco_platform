@@ -24,8 +24,13 @@ class MaintenanceRequestWorkflowController extends Controller
         ]);
         if ($data['decision'] === 'RETURN') {
             $target = $serviceRequest->workflow_key === 'EMERGENCY_MAINTENANCE' ? 'EMERGENCY_DISPATCH' : 'TRIAGE';
-            $transitions->rework($request->user(), $serviceRequest, 'PROJECT_MANAGER_REVIEW', $data['notes'] ?? 'Project Manager requested additional review.');
-            if ($target !== 'EXECUTION') app(\App\Services\ServiceRequestWorkflowService::class)->returnTo($serviceRequest, $target, $request->user()->id, $data['notes'] ?? null);
+            $transitions->returnToStage(
+                $request->user(),
+                $serviceRequest,
+                ['PROJECT_MANAGER_REVIEW'],
+                $target,
+                $data['notes'] ?? 'Project Manager requested additional review.'
+            );
         } else {
             $transitions->complete($request->user(), $serviceRequest, ['PROJECT_MANAGER_REVIEW'], $data['notes'] ?? null);
         }
@@ -56,6 +61,7 @@ class MaintenanceRequestWorkflowController extends Controller
             'notes' => ['nullable','string','max:2000'],
         ]);
         $stage = $serviceRequest->workflow_stage;
+        abort_unless(in_array($stage, ['QUALITY_VERIFICATION','HSE_VERIFICATION'], true), 422, 'Request is not waiting for Quality or HSE verification.');
         if ($data['decision'] === 'REWORK') $transitions->rework($request->user(), $serviceRequest, $stage, $data['notes'] ?? null);
         else $transitions->complete($request->user(), $serviceRequest, [$stage], $data['notes'] ?? null);
         return back()->with('status', 'Verification decision recorded.');
