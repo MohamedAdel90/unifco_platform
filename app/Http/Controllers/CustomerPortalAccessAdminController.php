@@ -15,7 +15,7 @@ class CustomerPortalAccessAdminController extends Controller
     {
         $user=$request->user();
         abort_unless($user && $user->role==='CUSTOMER' && $user->customer_id,403);
-        abort_unless($access->role($user)==='CUSTOMER_ADMIN',403,'Customer Admin access is required.');
+        abort_unless($access->canManageUsers($user),403,'UNIFCO Customer Portal uses one login per customer. Additional portal users cannot be created from the customer account.');
         return $user;
     }
 
@@ -92,7 +92,7 @@ class CustomerPortalAccessAdminController extends Controller
     {
         $admin=$this->admin($request,$access);
         abort_unless($user->role==='CUSTOMER' && (int)$user->customer_id===(int)$admin->customer_id,404);
-        $request->validate(['password'=>['nullable','string','max:100']]); // legacy field accepted but never stored or displayed
+        $request->validate(['password'=>['nullable','string','max:100']]);
         $user->update(['password'=>str()->random(64),'force_password_change'=>true,'session_version'=>(int)$user->session_version+1]);
         DB::table('user_sessions')->where('user_id',$user->id)->where('status','ACTIVE')->update(['status'=>'REVOKED','revoked_at'=>now(),'revoked_by'=>$admin->id,'revoke_reason'=>'Customer portal password reset','updated_at'=>now()]);
         $invitation=$invitations->issue($user,$admin,2);

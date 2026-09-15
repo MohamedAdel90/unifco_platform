@@ -13,7 +13,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_customer_admin_and_finance_receive_financial_actions(): void
+    public function test_customer_login_receives_financial_actions_regardless_of_legacy_portal_persona(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
@@ -29,10 +29,10 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
 
         $this->actingAs($admin)->get('/customer')->assertOk()->assertSee('Action Required From You');
         $this->actingAs($admin)->get('/customer/actions')->assertOk()->assertSee('Action Required From You')->assertSee('PH2-INV-001');
-        $this->actingAs($finance)->get('/customer/actions')->assertOk()->assertSee('UNIFIED CUSTOMER ACCOUNT')->assertSee('PH2-INV-001');
+        $this->actingAs($finance)->get('/customer/actions')->assertOk()->assertSee('Action Required From You')->assertSee('PH2-INV-001');
     }
 
-    public function test_shared_customer_account_shows_financial_actions_to_all_legacy_portal_users(): void
+    public function test_legacy_site_manager_persona_still_sees_customer_financial_actions(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $site=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
@@ -40,15 +40,15 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
 
         FinancialDocument::create([
             'tenant_id'=>$site->tenant_id,'organization_id'=>$site->organization_id,'customer_id'=>$customer->id,
-            'document_no'=>'PH2-HIDDEN-INV','document_type'=>'AR_INVOICE','counterparty_name'=>$customer->name,
+            'document_no'=>'PH2-FULL-INV','document_type'=>'AR_INVOICE','counterparty_name'=>$customer->name,
             'document_date'=>today(),'due_date'=>today()->addDays(3),'currency'=>'SAR','amount'=>1000,'open_amount'=>1000,
             'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED',
         ]);
 
-        $this->actingAs($site)->get('/customer/actions')->assertOk()->assertSee('PH2-HIDDEN-INV')->assertSee('Invoices Due');
+        $this->actingAs($site)->get('/customer/actions')->assertOk()->assertSee('PH2-FULL-INV')->assertSee('Invoices Due');
     }
 
-    public function test_customer_admin_can_submit_contract_renewal_once(): void
+    public function test_customer_login_can_submit_contract_renewal_once(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
@@ -63,7 +63,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
         $this->assertDatabaseHas('customer_activity_events',['customer_id'=>$admin->customer_id,'event_type'=>'CONTRACT_RENEWAL_REQUESTED','reference_id'=>$contract->id]);
     }
 
-    public function test_any_legacy_customer_portal_user_can_submit_an_invoice_query(): void
+    public function test_invoice_query_is_available_to_full_customer_login_even_with_legacy_persona(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $finance=User::where('email','workflow.finance@unifco.local')->firstOrFail();
@@ -73,7 +73,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
 
         $this->actingAs($finance)->post('/customer/invoices/'.$invoice->id.'/query',['notes'=>'Please confirm payment allocation'])->assertRedirect();
         $this->assertDatabaseHas('customer_portal_action_requests',['customer_id'=>$customer->id,'action_type'=>'INVOICE_QUERY','reference_id'=>$invoice->id]);
-        $this->actingAs($site)->post('/customer/invoices/'.$invoice->id.'/query',['notes'=>'Shared customer account follow-up'])->assertRedirect();
+        $this->actingAs($site)->post('/customer/invoices/'.$invoice->id.'/query',['notes'=>'Full customer account follow-up'])->assertRedirect();
     }
 
     public function test_payment_proof_reaches_internal_finance_and_can_be_resolved(): void
@@ -99,7 +99,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
         $this->assertDatabaseHas('customer_activity_events',['customer_id'=>$customer->id,'event_type'=>'CUSTOMER_ACTION_RESOLVED']);
     }
 
-    public function test_legacy_viewer_uses_the_same_customer_acceptance_workspace(): void
+    public function test_legacy_viewer_persona_has_full_customer_work_acceptance_access(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $viewer=User::where('email','workflow.viewer@unifco.local')->firstOrFail();
