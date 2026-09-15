@@ -28,10 +28,26 @@ class ServiceRequestOperationsController extends Controller
             'escalated' => (clone $query)->where('workflow_stage', 'ESCALATED')->count(),
         ];
 
+        $attention = $request->string('attention')->toString();
+        $search = trim($request->string('q')->toString());
+
         $requests = (clone $query)
+            ->when($search !== '', function ($q) use ($search) {
+                $like = '%'.$search.'%';
+                $q->where(function ($nested) use ($like) {
+                    $nested->where('request_no', 'like', $like)
+                        ->orWhere('subject', 'like', $like)
+                        ->orWhere('company_name', 'like', $like)
+                        ->orWhere('site_city', 'like', $like);
+                });
+            })
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
             ->when($request->filled('priority'), fn ($q) => $q->where('priority', $request->string('priority')))
             ->when($request->filled('stage'), fn ($q) => $q->where('workflow_stage', $request->string('stage')))
+            ->when($attention === 'unassigned', fn ($q) => $q->whereNull('assigned_engineer_id')->whereIn('workflow_stage', $openStages))
+            ->when($attention === 'emergency', fn ($q) => $q->whereIn('priority', ['EMERGENCY','CRITICAL','URGENT'])->whereIn('workflow_stage', $openStages))
+            ->when($attention === 'sla_overdue', fn ($q) => $q->whereNotNull('current_stage_due_at')->where('current_stage_due_at', '<', now())->whereIn('workflow_stage', $openStages))
+            ->when($attention === 'escalated', fn ($q) => $q->where('workflow_stage', 'ESCALATED'))
             ->orderByRaw("CASE priority WHEN 'EMERGENCY' THEN 1 WHEN 'CRITICAL' THEN 2 WHEN 'URGENT' THEN 3 WHEN 'HIGH' THEN 4 ELSE 5 END")
             ->orderByRaw('CASE WHEN current_stage_due_at IS NULL THEN 1 ELSE 0 END')
             ->orderBy('current_stage_due_at')
@@ -54,6 +70,7 @@ class ServiceRequestOperationsController extends Controller
         $user = $request->user();
         abort_unless((int) $serviceRequest->tenant_id === (int) $user->tenant_id, 404);
         $authorization->authorize($user, 'service_requests.assign', $serviceRequest);
+        abort_if(in_array($serviceRequest->status, ['CLOSED','COMPLETED','CANCELLED','RESOLVED'], true), 422, 'Closed service requests cannot be reassigned.');
 
         $data = $request->validate([
             'assigned_engineer_id' => ['required','integer'],
@@ -85,6 +102,7 @@ class ServiceRequestOperationsController extends Controller
         $user = $request->user();
         abort_unless((int) $serviceRequest->tenant_id === (int) $user->tenant_id, 404);
         $authorization->authorize($user, 'service_requests.escalate', $serviceRequest);
+        abort_if(in_array($serviceRequest->status, ['CLOSED','COMPLETED','CANCELLED','RESOLVED'], true), 422, 'Closed service requests cannot be escalated.');
 
         $data = $request->validate(['reason' => ['required','string','max:1000']]);
         $serviceRequest->update([
