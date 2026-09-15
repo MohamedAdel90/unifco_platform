@@ -29,10 +29,10 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
 
         $this->actingAs($admin)->get('/customer')->assertOk()->assertSee('Action Required From You');
         $this->actingAs($admin)->get('/customer/actions')->assertOk()->assertSee('Action Required From You')->assertSee('PH2-INV-001');
-        $this->actingAs($finance)->get('/customer/actions')->assertOk()->assertSee('Phase 2 customer workflow center')->assertSee('PH2-INV-001');
+        $this->actingAs($finance)->get('/customer/actions')->assertOk()->assertSee('UNIFIED CUSTOMER ACCOUNT')->assertSee('PH2-INV-001');
     }
 
-    public function test_site_manager_action_center_hides_financial_actions(): void
+    public function test_shared_customer_account_shows_financial_actions_to_all_legacy_portal_users(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $site=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
@@ -45,7 +45,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
             'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED',
         ]);
 
-        $this->actingAs($site)->get('/customer/actions')->assertOk()->assertDontSee('PH2-HIDDEN-INV')->assertSee('Invoices Due');
+        $this->actingAs($site)->get('/customer/actions')->assertOk()->assertSee('PH2-HIDDEN-INV')->assertSee('Invoices Due');
     }
 
     public function test_customer_admin_can_submit_contract_renewal_once(): void
@@ -63,7 +63,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
         $this->assertDatabaseHas('customer_activity_events',['customer_id'=>$admin->customer_id,'event_type'=>'CONTRACT_RENEWAL_REQUESTED','reference_id'=>$contract->id]);
     }
 
-    public function test_finance_can_submit_invoice_query_but_site_manager_cannot(): void
+    public function test_any_legacy_customer_portal_user_can_submit_an_invoice_query(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $finance=User::where('email','workflow.finance@unifco.local')->firstOrFail();
@@ -73,7 +73,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
 
         $this->actingAs($finance)->post('/customer/invoices/'.$invoice->id.'/query',['notes'=>'Please confirm payment allocation'])->assertRedirect();
         $this->assertDatabaseHas('customer_portal_action_requests',['customer_id'=>$customer->id,'action_type'=>'INVOICE_QUERY','reference_id'=>$invoice->id]);
-        $this->actingAs($site)->post('/customer/invoices/'.$invoice->id.'/query',['notes'=>'Should be blocked'])->assertForbidden();
+        $this->actingAs($site)->post('/customer/invoices/'.$invoice->id.'/query',['notes'=>'Shared customer account follow-up'])->assertRedirect();
     }
 
     public function test_payment_proof_reaches_internal_finance_and_can_be_resolved(): void
@@ -99,11 +99,11 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
         $this->assertDatabaseHas('customer_activity_events',['customer_id'=>$customer->id,'event_type'=>'CUSTOMER_ACTION_RESOLVED']);
     }
 
-    public function test_viewer_cannot_accept_completed_work(): void
+    public function test_legacy_viewer_uses_the_same_customer_acceptance_workspace(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $viewer=User::where('email','workflow.viewer@unifco.local')->firstOrFail();
-        $this->actingAs($viewer)->get('/customer/work-acceptance')->assertForbidden();
+        $this->actingAs($viewer)->get('/customer/work-acceptance')->assertOk();
     }
 
     private function invoice(User $user,Customer $customer,string $number): FinancialDocument

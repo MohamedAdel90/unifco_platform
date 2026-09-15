@@ -6,12 +6,23 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use App\Models\Customer;
 
 class UnifiedServiceRequestController extends Controller
 {
     public function create(Request $request): View
     {
-        return view('public.service-request');
+        $user = $request->user();
+        $portalCustomer = $user && $user->role === 'CUSTOMER' && $user->customer_id
+            ? Customer::whereKey($user->customer_id)->where('tenant_id',$user->tenant_id)->first()
+            : null;
+
+        return view('public.service-request', [
+            'portalCustomerCode' => $portalCustomer?->customer_code,
+            'presetEmergency' => $request->boolean('emergency'),
+            'presetQuotation' => $request->boolean('quotation'),
+            'presetSubtype' => trim((string) $request->query('subtype', '')),
+        ]);
     }
 
     public function customer(Request $request): JsonResponse
