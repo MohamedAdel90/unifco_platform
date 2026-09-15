@@ -20,9 +20,9 @@ class CustomerGlobalSearchController extends Controller
             $customerId=(int)$user->customer_id;
 
             ServiceRequest::where('customer_id',$customerId)
-                ->where(fn($x)=>$x->where('request_no','like',$like)->orWhere('title','like',$like))
+                ->where(fn($x)=>$x->where('request_no','like',$like)->orWhere('subject','like',$like)->orWhere('details','like',$like))
                 ->latest()->limit(8)->get()->each(function($item) use($results){
-                    $results->push((object)['type'=>'Service Request','reference'=>$item->request_no,'title'=>$item->title ?: 'Service Request','status'=>$item->status,'url'=>route('customer.section','requests').'?q='.urlencode($item->request_no)]);
+                    $results->push((object)['type'=>'Service Request','reference'=>$item->request_no,'title'=>$item->subject ?: 'Service Request','status'=>$item->status,'url'=>route('customer.section','requests').'?q='.urlencode($item->request_no)]);
                 });
 
             Asset::where('customer_id',$customerId)
@@ -32,9 +32,10 @@ class CustomerGlobalSearchController extends Controller
                 });
 
             WorkOrder::whereHas('asset',fn($x)=>$x->where('customer_id',$customerId))
-                ->where(fn($x)=>$x->where('work_order_no','like',$like)->orWhere('description','like',$like))
+                ->where(fn($x)=>$x->where('work_order_no','like',$like)->orWhere('execution_notes','like',$like)->orWhere('completion_notes','like',$like))
                 ->latest()->limit(8)->get()->each(function($item) use($results){
-                    $results->push((object)['type'=>'Work Order','reference'=>$item->work_order_no,'title'=>$item->description ?: 'Work Order','status'=>$item->status,'url'=>route('customer.work-orders.show',$item)]);
+                    $title=$item->execution_notes ?: $item->completion_notes ?: 'Work Order';
+                    $results->push((object)['type'=>'Work Order','reference'=>$item->work_order_no,'title'=>$title,'status'=>$item->status,'url'=>route('customer.work-orders.show',$item)]);
                 });
 
             FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')
