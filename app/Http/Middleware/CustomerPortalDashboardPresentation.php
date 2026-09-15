@@ -20,15 +20,18 @@ class CustomerPortalDashboardPresentation
         $html=(string)$response->getContent();
         if($html==='') return $response;
 
-        // Customer Portal is an account-level workspace: one login represents the
-        // entire customer and sees technical, operational, commercial and financial data.
-        // Remove legacy persona wording from the rendered experience while retaining
-        // CUSTOMER_ADMIN internally for backward compatibility with existing policies.
+        // One login represents the whole customer account across every business area.
         $html=str_replace(
             ['CUSTOMER ADMIN · READ ONLY','CUSTOMER ADMIN','Scope-aware customer workspace','Authorized sites','Visible assets'],
             ['FULL CUSTOMER ACCESS','FULL CUSTOMER ACCESS','Unified technical · operational · commercial · financial workspace','Customer sites','Customer assets'],
             $html
         );
+
+        // Turn the decorative sidebar search into a real Customer 360 search.
+        if(str_contains($html,'<div class="side-search">')){
+            $search='<form class="side-search" method="GET" action="'.e(route('customer.search')).'" style="padding:0;overflow:hidden"><span style="padding-left:9px">⌕</span><input name="q" aria-label="Search Customer 360" placeholder="Find request, asset or invoice" style="min-width:0;width:100%;height:33px;border:0;background:transparent;color:#fff;outline:0;font-size:9px;padding:0 8px"></form>';
+            $html=preg_replace('/<div class="side-search">.*?<\/div>/s',$search,$html,1) ?? $html;
+        }
 
         $actionLink='<a href="'.e(route('customer.actions')).'"><span class="ico">⚑</span><span>Action Required</span></a>';
         $inboxNeedle='<a href="'.e(route('customer.inbox')).'">';
@@ -44,8 +47,6 @@ class CustomerPortalDashboardPresentation
             $count=0;
             if($access->canDecideQuotation($user)) $count+=CrmQuotation::where('customer_id',$customerId)->whereIn('status',['SENT','UNDER_REVIEW','REVISION_REQUESTED'])->count();
             if($access->canAcceptWork($user)) $count+=WorkOrder::whereIn('asset_id',$assetIds)->where('status','COMPLETED')->whereNull('customer_accepted_at')->whereNull('customer_rejected_at')->count();
-
-            // Financial and contract attention is always part of the single customer login.
             $count+=FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')->where('open_amount','>',0)->whereNotNull('due_date')->where('due_date','<=',now()->addDays(14))->count();
             $contracts=ServiceContract::where('customer_id',$customerId)->where('status','ACTIVE')->whereNotNull('ends_on')->where('ends_on','<=',now()->addDays(60));
             if($contractIds!==null) $contracts->whereIn('id',$contractIds);
@@ -63,14 +64,30 @@ class CustomerPortalDashboardPresentation
                 if($position!==false) $html=substr($html,0,$position).$panel.substr($html,$position);
             }
 
-            // Make the single-login rule explicit in the dashboard without adding a
-            // separate users/access area. This is informational and does not change data.
             if(!str_contains($html,'data-unified-customer-access')){
                 $banner='<div data-unified-customer-access class="role-note" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#eef5ff;border-color:#cfe0f4;color:#173d6b"><div><strong style="font-size:10px">Unified Customer 360 access</strong><div style="font-size:8px;margin-top:3px;color:#58708d">This single customer login covers technical, operational, commercial and financial information for the full customer account.</div></div><span class="pill green" style="white-space:nowrap">FULL ACCESS</span></div>';
                 $needle='<div class="page-head">';
                 $position=strpos($html,$needle);
                 if($position!==false) $html=substr($html,0,$position).$banner.substr($html,$position);
             }
+
+            // Dashboard request shortcuts now enter the approved unified request form.
+            $oldBase=e(route('customer.section','work-orders'));
+            $html=str_replace(
+                [
+                    'href="'.$oldBase.'#request-service"',
+                    'href="'.$oldBase.'?priority=EMERGENCY#request-service"',
+                    'href="'.$oldBase.'?service_category=Quotation#request-service"',
+                    'href="'.$oldBase.'?service_category=Spare%20Parts#request-service"',
+                ],
+                [
+                    'href="'.e(route('public.request-service')).'"',
+                    'href="'.e(route('public.emergency')).'"',
+                    'href="'.e(route('public.quote')).'"',
+                    'href="'.e(route('public.request-service',['quotation'=>1,'service_category'=>'Spare Parts'])).'"',
+                ],
+                $html
+            );
         }
 
         $response->setContent($html);
