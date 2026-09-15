@@ -29,7 +29,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
 
         $this->actingAs($admin)->get('/customer')->assertOk()->assertSee('Action Required From You');
         $this->actingAs($admin)->get('/customer/actions')->assertOk()->assertSee('Action Required From You')->assertSee('PH2-INV-001');
-        $this->actingAs($finance)->get('/customer/actions')->assertOk()->assertSee('Phase 2 customer workflow center')->assertSee('PH2-INV-001');
+        $this->actingAs($finance)->get('/customer/actions')->assertOk()->assertSee('Action Required From You')->assertSee('PH2-INV-001');
     }
 
     public function test_legacy_site_manager_persona_still_sees_customer_financial_actions(): void
