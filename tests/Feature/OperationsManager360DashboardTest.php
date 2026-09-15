@@ -46,6 +46,6 @@ class OperationsManager360DashboardTest extends TestCase
             ->assertSee('Operational Boundaries')
             ->assertSee('Service Requests & SLA', false)
             ->assertSee('Field Operations')
-            ->assertSee('Projects, Sites & Capacity');
+            ->assertSee('Projects, Sites & Capacity', false);
     }
 }
