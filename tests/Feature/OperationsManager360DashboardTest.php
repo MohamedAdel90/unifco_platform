@@ -44,7 +44,7 @@ class OperationsManager360DashboardTest extends TestCase
             ->assertSee('Service Request Control Queue')
             ->assertSee('Priority Work Queue')
             ->assertSee('Operational Boundaries')
-            ->assertSee('Service Requests & SLA')
+            ->assertSee('Service Requests & SLA', false)
             ->assertSee('Field Operations')
             ->assertSee('Projects, Sites & Capacity');
     }
