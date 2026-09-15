@@ -15,19 +15,18 @@ class CustomerPortalDashboardPresentation
     {
         $response=$next($request);
         $user=$request->user();
-        if(!$user || $user->role!=='CUSTOMER' || !$user->customer_id || !$request->routeIs('customer.portal','customer.section') || !method_exists($response,'getContent') || !method_exists($response,'setContent')) return $response;
+        $isCustomerWorkspace=$request->is('customer') || $request->is('customer/*');
+        if(!$user || $user->role!=='CUSTOMER' || !$user->customer_id || !$isCustomerWorkspace || !method_exists($response,'getContent') || !method_exists($response,'setContent')) return $response;
 
         $html=(string)$response->getContent();
         if($html==='') return $response;
 
-        // One login represents the whole customer account across every business area.
         $html=str_replace(
             ['CUSTOMER ADMIN · READ ONLY','CUSTOMER ADMIN','Scope-aware customer workspace','Authorized sites','Visible assets'],
             ['FULL CUSTOMER ACCESS','FULL CUSTOMER ACCESS','Unified technical · operational · commercial · financial workspace','Customer sites','Customer assets'],
             $html
         );
 
-        // Turn the decorative sidebar search into a real Customer 360 search.
         if(str_contains($html,'<div class="side-search">')){
             $search='<form class="side-search" method="GET" action="'.e(route('customer.search')).'" style="padding:0;overflow:hidden"><span style="padding-left:9px">⌕</span><input name="q" aria-label="Search Customer 360" placeholder="Find request, asset or invoice" style="min-width:0;width:100%;height:33px;border:0;background:transparent;color:#fff;outline:0;font-size:9px;padding:0 8px"></form>';
             $html=preg_replace('/<div class="side-search">.*?<\/div>/s',$search,$html,1) ?? $html;
@@ -37,7 +36,7 @@ class CustomerPortalDashboardPresentation
         $inboxNeedle='<a href="'.e(route('customer.inbox')).'">';
         if(str_contains($html,$inboxNeedle) && !str_contains($html,'href="'.e(route('customer.actions')).'"')) $html=str_replace($inboxNeedle,$actionLink.$inboxNeedle,$html);
 
-        if($request->routeIs('customer.portal')){
+        if($request->is('customer')){
             $access=app(CustomerPortalAccessService::class);
             $customerId=(int)$user->customer_id;
             $assetIds=$access->accessibleAssetIds($user);
@@ -58,20 +57,19 @@ class CustomerPortalDashboardPresentation
             }
 
             if(!str_contains($html,'data-action-center-panel')){
-                $panel='<a href="'.e(route('customer.actions')).'" class="card" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px;margin-bottom:12px;border-left:4px solid #e20b24"><div><div class="title" style="font-size:13px">Action Required From You</div><div class="sub">Approvals, work acceptance, invoices, renewals and customer follow-up.</div></div><span class="pill red">'.$count.' OPEN</span></a>';
+                $panel='<a data-action-center-panel href="'.e(route('customer.actions')).'" class="card" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px;margin-bottom:12px;border-left:4px solid #e20b24"><div><div class="title" style="font-size:13px">Action Required From You</div><div class="sub">Approvals, work acceptance, invoices, renewals and customer follow-up.</div></div><span class="pill red">'.$count.' OPEN</span></a>';
                 $needle='<section class="stats">';
                 $position=strpos($html,$needle);
                 if($position!==false) $html=substr($html,0,$position).$panel.substr($html,$position);
             }
 
             if(!str_contains($html,'data-unified-customer-access')){
-                $banner='<div data-unified-customer-access class="role-note" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#eef5ff;border-color:#cfe0f4;color:#173d6b"><div><strong style="font-size:10px">Unified Customer 360 access</strong><div style="font-size:8px;margin-top:3px;color:#58708d">This single customer login covers technical, operational, commercial and financial information for the full customer account.</div></div><span class="pill green" style="white-space:nowrap">FULL ACCESS</span></div>';
+                $banner='<div data-unified-customer-access class="role-note" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#eef5ff;border-color:#cfe0f4;color:#173d6b"><div><strong style="font-size:10px">Unified Customer 360 access</strong><div style="font-size:8px;margin-top:3px;color:#58708d">This single customer login covers technical, operational, commercial and financial information for the full customer account.</div></div><span class="pill green" style="white-space:nowrap">FULL CUSTOMER ACCESS</span></div>';
                 $needle='<div class="page-head">';
                 $position=strpos($html,$needle);
                 if($position!==false) $html=substr($html,0,$position).$banner.substr($html,$position);
             }
 
-            // Dashboard request shortcuts now enter the approved unified request form.
             $oldBase=e(route('customer.section','work-orders'));
             $html=str_replace(
                 [
