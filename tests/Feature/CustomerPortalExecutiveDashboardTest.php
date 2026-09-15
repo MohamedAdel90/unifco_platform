@@ -6,12 +6,12 @@ use Tests\TestCase;
 
 class CustomerPortalExecutiveDashboardTest extends TestCase
 {
-    public function test_customer_portal_dashboard_contains_executive_360_sections(): void
+    public function test_customer_portal_dashboard_contains_v21_executive_sections_and_drilldowns(): void
     {
         $view = file_get_contents(resource_path('views/customer/portal.blade.php'));
 
         foreach ([
-            'Customer 360 Executive Dashboard',
+            'Customer 360 · Operations, assets, contracts, finance and service delivery in one unified account.',
             'Service Request Journey',
             'Priority Today',
             'Asset Health',
@@ -20,13 +20,29 @@ class CustomerPortalExecutiveDashboardTest extends TestCase
             'Financial Summary',
             'Recent Relationship Activity',
             'Unified customer account',
+            'No eligible completed requests yet',
+            'Requires operational follow-up',
         ] as $section) {
             $this->assertStringContainsString($section, $view);
         }
 
-        $this->assertStringContainsString('/request-service?type=emergency', $view);
-        $this->assertStringContainsString('/request-service?type=quotation', $view);
-        $this->assertStringContainsString('/request-service?type=spare_parts', $view);
-        $this->assertStringContainsString('/request-service?type=consultation', $view);
+        foreach ([
+            '/request-service?type=emergency',
+            '/request-service?type=quotation',
+            '/request-service?type=spare_parts',
+            '/request-service?type=consultation',
+            '/customer/service-requests?status=',
+            '/customer/work-orders',
+            '/customer/assets',
+            '/customer/visits',
+            '/customer/contracts',
+            '/customer/finance',
+            '/customer/activity',
+        ] as $target) {
+            $this->assertStringContainsString($target, $view);
+        }
+
+        $this->assertStringContainsString('grid-template-columns:repeat(8,1fr)', $view);
+        $this->assertStringContainsString("$pendingQ>0?'warn':''", $view);
     }
 }
