@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\User;
+use App\Models\{Asset,ServiceContract,User};
 use Illuminate\Support\Collection;
 
 class CustomerPortalAccessService
@@ -70,9 +70,8 @@ class CustomerPortalAccessService
     }
 
     /**
-     * The one customer login always has the complete scope of its customer_id.
-     * Ownership filters in controllers/queries still prevent cross-customer
-     * access.
+     * Null means unrestricted inside the authenticated customer's root scope.
+     * Every detail assertion below still verifies customer ownership server-side.
      */
     public function accessibleSiteIds(User $user): ?Collection
     {
@@ -91,12 +90,20 @@ class CustomerPortalAccessService
 
     public function assertAsset(User $user,int $assetId): void
     {
-        // Full scope within the authenticated customer's customer_id.
+        abort_unless(
+            $this->isCustomerAccount($user)
+            && Asset::whereKey($assetId)->where('customer_id',$user->customer_id)->exists(),
+            404
+        );
     }
 
     public function assertContract(User $user,int $contractId): void
     {
-        // Full scope within the authenticated customer's customer_id.
+        abort_unless(
+            $this->isCustomerAccount($user)
+            && ServiceContract::whereKey($contractId)->where('customer_id',$user->customer_id)->exists(),
+            404
+        );
     }
 
     private function isCustomerAccount(User $user): bool
