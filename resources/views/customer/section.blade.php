@@ -174,7 +174,7 @@
             @endif
 
             @if($section === 'work-orders')
-                <div class="page-head"><div><h2>Work Orders</h2><p>All execution records across the customer’s sites and assets.</p></div><a class="btn red" href="{{ route('public.request-service',['customer'=>$customer->customer_code]) }}">New Service Request</a></div>
+                <div class="page-head"><div><h2>Work Orders</h2><p>All execution records across the customer’s sites and assets.</p></div><a class="btn red" href="{{ route('public.request-service',['customer'=>$customer->customer_code]) }}">Request Service</a></div>
                 <form class="card panel filters" method="GET" action="{{ route('customer.section','work-orders') }}" style="margin-bottom:12px">
                     <label class="filter"><span>Search</span><input name="q" value="{{ $searchFilter }}" placeholder="Work order or asset" style="height:34px;min-width:190px;border:1px solid var(--line);border-radius:8px;padding:0 9px;font-size:9px"></label>
                     <label class="filter"><span>Site</span><select name="site_id"><option value="">All sites</option>@foreach($sites as $site)<option value="{{ $site->id }}" @selected($siteFilter===$site->id)>{{ $site->name }}</option>@endforeach</select></label>
@@ -184,7 +184,7 @@
                     <button class="filter-button">Apply</button><a class="btn" href="{{ route('customer.section','work-orders') }}" style="height:34px;padding:8px 13px;background:#edf3fb;color:var(--navy)">Reset</a>
                 </form>
                 <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Work Order</th><th>Asset</th><th>Site</th><th>Type</th><th>Priority</th><th>Status</th><th>Planned</th></tr></thead><tbody>@forelse($workOrders as $item)<tr><td><a class="pill" href="{{ route('customer.work-orders.show',$item) }}">{{ $item->work_order_no }}</a></td><td>{{ $item->asset?->asset_code }} · {{ $item->asset?->name }}</td><td>{{ $item->asset?->site?->name ?: '—' }}</td><td>{{ $item->maintenance_type }}</td><td>{{ $item->priority }}</td><td>{{ $item->status }}</td><td>{{ $item->planned_start?->format('Y-m-d H:i') ?: '—' }}</td></tr>@empty<tr><td colspan="7">No work orders in scope.</td></tr>@endforelse</tbody></table></div></div>
-                <div class="card panel" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:14px"><div><h3 style="margin-bottom:5px">Need another service?</h3><div class="row-sub">Use the approved unified request form for maintenance, emergencies, quotations, spare parts and technical consultation.</div></div><a class="btn red" href="{{ route('public.request-service',['customer'=>$customer->customer_code]) }}">New Service Request</a></div>
+                <div class="card panel" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:14px"><div><h3 style="margin-bottom:5px">Need another service?</h3><div class="row-sub">Use the approved unified request form for maintenance, emergencies, quotations, spare parts and technical consultation.</div></div><a class="btn red" href="{{ route('public.request-service',['customer'=>$customer->customer_code]) }}">Request Service</a></div>
             @endif
 
             @if($section === 'sites')
