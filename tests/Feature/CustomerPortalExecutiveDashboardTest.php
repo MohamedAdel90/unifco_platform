@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 
+/** Release qualification for the compact Customer 360 V2.1 dashboard. */
 class CustomerPortalExecutiveDashboardTest extends TestCase
 {
     public function test_customer_portal_dashboard_contains_v21_executive_sections_and_drilldowns(): void
