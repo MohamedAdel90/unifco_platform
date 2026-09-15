@@ -48,7 +48,13 @@ class OperationsManagerProjectSiteTest extends TestCase
         ]);
 
         $this->actingAs($manager)->get('/operations-manager/projects-sites')
-            ->assertOk()->assertSee('Scoped Project')->assertSee('Scoped Site')->assertSee('Technician Utilization Snapshot');
+            ->assertOk()
+            ->assertSee('Scoped Project')
+            ->assertSee('Scoped Site')
+            ->assertSee('Field Capacity Attention')
+            ->assertSee('Emergency / Critical Work')
+            ->assertSee('Overloaded Technicians')
+            ->assertSee('Technician Utilization Snapshot');
     }
 
     public function test_project_site_overview_is_empty_for_structured_manager_without_scope(): void

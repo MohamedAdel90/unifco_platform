@@ -22,7 +22,7 @@ class ProjectSiteOperationsController extends Controller
         $sites=CustomerSite::query()->whereIn('customer_id',$customerIds)->where('status','ACTIVE')->orderBy('name')->get();
 
         $workOrders=$scopes->apply(WorkOrder::query()->where('tenant_id',$user->tenant_id),$user)
-            ->whereNotIn('status',['COMPLETED','CLOSED','CANCELLED'])->get(['id','asset_id','priority','status']);
+            ->whereNotIn('status',['COMPLETED','CLOSED','CANCELLED'])->get(['id','asset_id','priority','status','planned_start']);
         $assignments=WorkOrderAssignment::query()->where('tenant_id',$user->tenant_id)
             ->whereIn('work_order_id',$workOrders->pluck('id'))
             ->whereIn('dispatch_status',['DISPATCHED','ACCEPTED','ARRIVED','IN_PROGRESS'])
@@ -39,6 +39,10 @@ class ProjectSiteOperationsController extends Controller
             ];
         })->sortByDesc('active_assignments')->values()->take(12);
 
+        $emergencyWorkOrders=$workOrders->whereIn('priority',['EMERGENCY','CRITICAL','URGENT'])->count();
+        $overdueWorkOrders=$workOrders->filter(fn($wo)=>$wo->planned_start && $wo->planned_start->isPast())->count();
+        $overloadedTechnicians=$utilization->where('active_assignments','>=',4)->count();
+
         $metrics=[
             'projects'=>$projects->count(),
             'customers'=>$customers->count(),
@@ -46,6 +50,10 @@ class ProjectSiteOperationsController extends Controller
             'open_work_orders'=>$workOrders->count(),
             'field_assignments'=>$assignments->count(),
             'active_technicians'=>$employeeIds->count(),
+            'emergency_work_orders'=>$emergencyWorkOrders,
+            'overdue_work_orders'=>$overdueWorkOrders,
+            'overloaded_technicians'=>$overloadedTechnicians,
+            'attention_total'=>$emergencyWorkOrders+$overdueWorkOrders+$overloadedTechnicians,
         ];
 
         return view('operations.project-sites',compact('projects','customers','sites','utilization','metrics'));

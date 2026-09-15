@@ -67,6 +67,22 @@ class OperationsManagerServiceRequestTest extends TestCase
             ->assertSee('SLA Overdue');
     }
 
+    public function test_attention_and_search_filters_focus_the_operational_queue(): void
+    {
+        $manager = $this->manager();
+        $this->serviceRequest($manager);
+        $this->serviceRequest($manager,[
+            'request_no'=>'SR-OPS-002','subject'=>'Routine inspection','company_name'=>'Second Customer',
+            'priority'=>'NORMAL','current_stage_due_at'=>now()->addDay(),'assigned_engineer_id'=>$manager->id,
+        ]);
+
+        $this->actingAs($manager)->get('/operations-manager/service-requests?attention=sla_overdue')
+            ->assertOk()->assertSee('SR-OPS-001')->assertDontSee('SR-OPS-002');
+
+        $this->actingAs($manager)->get('/operations-manager/service-requests?q=Second+Customer')
+            ->assertOk()->assertSee('SR-OPS-002')->assertDontSee('SR-OPS-001');
+    }
+
     public function test_manager_can_assign_and_escalate_service_request_within_scope(): void
     {
         $manager = $this->manager();
@@ -89,6 +105,24 @@ class OperationsManagerServiceRequestTest extends TestCase
         ])->assertRedirect();
 
         $this->assertSame('ESCALATED', $serviceRequest->fresh()->workflow_stage);
+    }
+
+    public function test_closed_requests_reject_operational_mutations(): void
+    {
+        $manager = $this->manager();
+        $serviceRequest = $this->serviceRequest($manager,['status'=>'CLOSED','workflow_stage'=>'CLOSURE']);
+        $technician = User::create([
+            'tenant_id'=>$manager->tenant_id,'organization_id'=>$manager->organization_id,'name'=>'Closed Request Technician',
+            'email'=>'closed-tech@example.test','password'=>'password','role'=>'TECHNICIAN','status'=>'ACTIVE',
+        ]);
+
+        $this->actingAs($manager)->post(route('operations-manager.service-requests.assign',$serviceRequest),[
+            'assigned_engineer_id'=>$technician->id,
+        ])->assertStatus(422);
+
+        $this->actingAs($manager)->post(route('operations-manager.service-requests.escalate',$serviceRequest),[
+            'reason'=>'Should not mutate a closed request.',
+        ])->assertStatus(422);
     }
 
     public function test_structured_manager_without_scope_cannot_mutate_service_request(): void
