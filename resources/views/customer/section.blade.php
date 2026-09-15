@@ -26,6 +26,10 @@
         @media(max-width:780px){.app{display:block}.sidebar{height:auto;position:sticky;top:0;display:block;padding:7px;overflow:auto}.account,.side-search,.nav-label,.logout{display:none}.nav-scroll{display:flex;overflow:auto;padding:0}.nav-group{display:flex;margin:0}.nav-link{min-width:42px}.main{padding:0 12px 28px}.topbar{margin:0 -12px;padding:0 14px}.top-actions .status-pill{display:none}.page-head{align-items:flex-start;flex-direction:column}.filters{width:100%}.filter{flex:1}.filter select{width:100%;min-width:0}.stats,.quick-actions,.command-grid,.lower-grid,.asset-grid,.site-grid,.form-grid{grid-template-columns:1fr 1fr}.action-breakdown{grid-template-columns:repeat(2,1fr)}.asset-health{grid-template-columns:1fr}.health-ring{margin:auto}}
         @media(max-width:520px){.stats,.quick-actions,.command-grid,.lower-grid,.asset-grid,.site-grid,.form-grid{grid-template-columns:1fr}.stage-grid{grid-template-columns:repeat(2,1fr)}.wide{grid-column:auto}.welcome p{display:none}.main{padding-bottom:20px}}
     </style>
+    <style>
+        .side-tools{display:grid;grid-template-columns:1fr 36px;gap:6px;margin:11px 4px 3px}.side-tools a,.side-tools button{height:36px;border:0;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:9px;font-weight:850;cursor:pointer}.side-tools a{background:#fff;color:var(--navy)}.side-tools button{background:#ffffff1a;color:#fff}.app.sidebar-collapsed{grid-template-columns:82px minmax(0,1fr)}.app.sidebar-collapsed .account strong,.app.sidebar-collapsed .account small,.app.sidebar-collapsed .role-badge,.app.sidebar-collapsed .side-search span,.app.sidebar-collapsed .nav-label,.app.sidebar-collapsed .nav-link span:nth-child(2),.app.sidebar-collapsed .nav-badge,.app.sidebar-collapsed .side-tools a span{display:none}.app.sidebar-collapsed .account-mark,.app.sidebar-collapsed .nav-link{justify-content:center}.app.sidebar-collapsed .side-tools{grid-template-columns:1fr}.app.sidebar-collapsed .side-tools a{width:36px;margin:auto}@media(max-width:1040px){.side-tools button{display:none}}@media(max-width:780px){.side-tools{display:none}}
+        .nav-link{font-size:11px}.welcome p,.page-head p{font-size:10px}.quick-action strong{font-size:11px}.quick-action small,.action-copy p,.trend,.stage span,.row-sub,.health-item span{font-size:9px}.action-copy strong,.panel-head h3{font-size:13px}.action-item{font-size:9px}.action-item b,.row-title{font-size:10px}.table{font-size:10px}.table th{font-size:9px}
+    </style>
 </head>
 <body>
 @php
@@ -47,24 +51,22 @@
         'Finance' => ['invoices'],
         'Reports & Records' => ['reports', 'documents', 'timeline', 'notifications'],
     ];
-    $dashboardTitle = match($portalRole) {
-        'CUSTOMER_ADMIN' => 'Customer 360 Executive Dashboard',
-        'SITE_MANAGER' => 'Site Operations Dashboard',
-        'FINANCE' => 'Customer Finance Dashboard',
-        default => 'Customer Read-Only Dashboard',
-    };
+    $dashboardTitle = 'Customer 360 Executive Dashboard';
     $badges = ['requests' => $openRequestCount, 'work-orders' => $openWorkOrders, 'visits' => $upcomingPlans->count(), 'quotations' => $pendingQuotationCount, 'invoices' => $invoiceActionCount, 'notifications' => $alerts->count()];
     $assetTotal = max(1, $assets->count());
     $assetActiveEnd = round(($activeAssetCount / $assetTotal) * 100);
     $assetMaintenanceEnd = min(100, $assetActiveEnd + round(($maintenanceAssetCount / $assetTotal) * 100));
     $assetStoppedEnd = min(100, $assetMaintenanceEnd + round(($stoppedAssetCount / $assetTotal) * 100));
+    $nextContract = $contracts->where('status', 'ACTIVE')->whereNotNull('ends_on')->sortBy('ends_on')->first();
+    $openInvoiceCount = $invoices->filter(fn($invoice) => (float)$invoice->open_amount > 0)->count();
 @endphp
 <div class="app">
     <aside class="sidebar">
         <div class="account">
             <div class="account-mark"><div class="account-logo">{{ strtoupper(substr($customer->name, 0, 2)) }}</div><div><strong>{{ $customer->name }}</strong><small>{{ $customer->customer_code }}</small></div></div>
-            <span class="role-badge">{{ str_replace('_', ' ', $portalRole) }}{{ $readOnly ? ' · READ ONLY' : '' }}</span>
+            <span class="role-badge">UNIFIED CUSTOMER ACCOUNT</span>
         </div>
+        <div class="side-tools"><a href="{{ route('public.request-service',['customer'=>$customer->customer_code]) }}">＋ <span>New Request</span></a><button type="button" id="sidebar-toggle" title="Collapse sidebar">⇤</button></div>
         <div class="side-search">@include('customer.partials.icon',['name'=>'search'])<span>Find request, asset or invoice</span></div>
         <div class="nav-scroll">
             @foreach($groups as $group => $keys)
@@ -86,7 +88,6 @@
                 <a class="nav-link" href="{{ route('customer.inbox') }}">@include('customer.partials.icon',['name'=>'inbox'])<span>Inbox & Support</span>@if($unreadInbox)<span class="nav-badge urgent">{{ $unreadInbox }}</span>@endif</a>
             </div>
             <div class="nav-group"><div class="nav-label">Account</div>
-                @if($canManageUsers)<a class="nav-link" href="{{ route('customer.access.index') }}">@include('customer.partials.icon',['name'=>'users'])<span>Users &amp; Access</span></a>@endif
                 <a class="nav-link" href="{{ route('customer.profile.edit') }}">@include('customer.partials.icon',['name'=>'profile'])<span>Company Profile</span></a>
             </div>
         </div>
@@ -95,15 +96,11 @@
 
     <main class="main">
         <header class="topbar">
-            <div class="welcome"><h1>Welcome, {{ auth()->user()->name }}</h1><p>{{ $customer->name }} · {{ str_replace('_', ' ', $portalRole) }} · Scope-aware customer workspace</p></div>
+            <div class="welcome"><h1>Welcome, {{ auth()->user()->name }}</h1><p>{{ $customer->name }} · Unified customer account · All company records</p></div>
             <div class="top-actions"><span class="status-pill {{ $customer->status === 'ACTIVE' ? 'green' : 'amber' }}">{{ $customer->status }}</span><div class="avatar">{{ strtoupper(substr(auth()->user()->name ?: 'CU', 0, 2)) }}</div></div>
         </header>
         <div class="content">
             @if(session('status'))<div class="notice">{{ session('status') }}</div>@endif
-            @if($readOnly)<div class="role-note">Read-only access: you can view authorized customer data but cannot create requests or make commercial decisions.</div>
-            @elseif($portalRole === 'SITE_MANAGER')<div class="role-note">Site-scoped access: operational data is limited to sites and assets assigned to your account.</div>
-            @elseif($portalRole === 'FINANCE')<div class="role-note">Finance access: commercial, contract and financial information is available; maintenance execution actions are hidden.</div>@endif
-
             @if($section === 'dashboard')
                 <div class="page-head">
                     <div><div class="eyebrow">UNIFCO Customer Command Center</div><h2>{{ $dashboardTitle }}</h2><p>Everything that needs your attention across operations, assets, contracts and service delivery.</p></div>
@@ -117,22 +114,22 @@
 
                 @if($canCreateRequest)
                     <section class="quick-actions">
-                        <a class="card quick-action" href="{{ route('customer.section','work-orders') }}#request-service"><span class="quick-icon">@include('customer.partials.icon',['name'=>'requests'])</span><span><strong>New Service Request</strong><small>Routine maintenance or support</small></span></a>
-                        <a class="card quick-action emergency" href="{{ route('customer.section','work-orders') }}?priority=EMERGENCY#request-service"><span class="quick-icon">@include('customer.partials.icon',['name'=>'notifications'])</span><span><strong>Emergency Maintenance</strong><small>Report an urgent asset failure</small></span></a>
-                        <a class="card quick-action" href="{{ route('customer.section','work-orders') }}?service_category=Quotation#request-service"><span class="quick-icon">@include('customer.partials.icon',['name'=>'quotations'])</span><span><strong>Request Quotation</strong><small>Start a commercial request</small></span></a>
-                        <a class="card quick-action" href="{{ route('customer.section','work-orders') }}?service_category=Spare%20Parts#request-service"><span class="quick-icon">@include('customer.partials.icon',['name'=>'parts'])</span><span><strong>Request Spare Parts</strong><small>Parts for an authorized asset</small></span></a>
+                        <a class="card quick-action" href="{{ route('public.request-service',['customer'=>$customer->customer_code]) }}"><span class="quick-icon">@include('customer.partials.icon',['name'=>'requests'])</span><span><strong>New Service Request</strong><small>Open the unified request form</small></span></a>
+                        <a class="card quick-action emergency" href="{{ route('public.request-service',['customer'=>$customer->customer_code,'emergency'=>1]) }}"><span class="quick-icon">@include('customer.partials.icon',['name'=>'notifications'])</span><span><strong>Emergency Maintenance</strong><small>Report an urgent asset failure</small></span></a>
+                        <a class="card quick-action" href="{{ route('public.request-service',['customer'=>$customer->customer_code,'quotation'=>1]) }}"><span class="quick-icon">@include('customer.partials.icon',['name'=>'quotations'])</span><span><strong>Request Quotation</strong><small>Open the unified request form</small></span></a>
+                        <a class="card quick-action" href="{{ route('public.request-service',['customer'=>$customer->customer_code,'quotation'=>1,'subtype'=>'parts']) }}"><span class="quick-icon">@include('customer.partials.icon',['name'=>'parts'])</span><span><strong>Request Spare Parts</strong><small>Open the unified request form</small></span></a>
                     </section>
                 @endif
 
                 <a data-action-center-panel class="card action-center" href="{{ route('customer.actions') }}">
-                    <div class="action-head"><span class="quick-icon">@include('customer.partials.icon',['name'=>'actions'])</span><div class="action-copy"><strong>Action Required From You</strong><p>Approvals, work acceptance, payments, renewals and unread customer communication.</p></div><span class="action-total">{{ $actionRequiredCount }}</span></div>
-                    <div class="action-breakdown">
+                    <div class="action-head"><span class="quick-icon">@include('customer.partials.icon',['name'=>'actions'])</span><div class="action-copy"><strong>{{ $actionRequiredCount ? 'Action Required From You' : 'No action is required from you right now' }}</strong><p>{{ $actionRequiredCount ? 'Approvals, work acceptance, payments, renewals and unread customer communication.' : 'Everything is up to date. New customer decisions will appear here.' }}</p></div><span class="action-total {{ $actionRequiredCount ? '' : 'green' }}">{{ $actionRequiredCount ? $actionRequiredCount : '✓' }}</span></div>
+                    @if($actionRequiredCount)<div class="action-breakdown">
                         @if($canDecideQuotation)<span class="action-item">Quotations <b>{{ $quotationActionCount }}</b></span>@endif
                         @if(in_array('work-orders',$allowedSections,true))<span class="action-item">Work acceptance <b>{{ $workAcceptanceActionCount }}</b></span>@endif
                         @if(in_array('invoices',$allowedSections,true))<span class="action-item">Invoices <b>{{ $invoiceActionCount }}</b></span>@endif
                         @if(in_array('contracts',$allowedSections,true))<span class="action-item">Renewals <b>{{ $renewalActionCount }}</b></span>@endif
                         <span class="action-item">Messages <b>{{ $unreadInbox }}</b></span>
-                    </div>
+                    </div>@endif
                 </a>
 
                 <section class="stats">
@@ -163,18 +160,31 @@
                     <div class="card panel"><div class="panel-head"><h3>Upcoming Visits & Maintenance</h3>@if(in_array('visits',$allowedSections,true))<a href="{{ route('customer.section','visits') }}">Open schedule →</a>@endif</div><div class="upcoming-list">@forelse($upcomingPlans as $plan)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $plan->name }}</div><div class="row-sub">{{ $plan->asset?->site?->name ?: 'Site not assigned' }} · {{ $plan->asset?->name }}</div></div><span class="pill">{{ $plan->next_due_date?->format('d M') }}</span></div>@empty<div class="empty"><strong>No scheduled visits</strong>There is no preventive maintenance in the selected period.</div>@endforelse</div></div>
                 </section>
 
+                <section class="lower-grid">
+                    <div class="card panel"><div class="panel-head"><h3>Contracts & SLA</h3><a href="{{ route('customer.section','contracts') }}">Open contracts →</a></div><div class="health-legend"><div class="health-item"><b>{{ $activeContractCount }}</b><span>Active contracts</span></div><div class="health-item"><b>{{ $nextContract?->ends_on?->format('d M Y') ?: '—' }}</b><span>Nearest expiry</span></div><div class="health-item"><b>{{ $slaPerformance===null ? 'N/A' : $slaPerformance.'%' }}</b><span>Measured SLA</span></div><div class="health-item"><b>{{ $renewalActionCount }}</b><span>Renewals due</span></div></div></div>
+                    <div class="card panel"><div class="panel-head"><h3>Financial Summary</h3><a href="{{ route('customer.section','invoices') }}">Open finance →</a></div><div class="health-legend"><div class="health-item"><b>{{ number_format($openInvoiceAmount,2) }}</b><span>Open balance · SAR</span></div><div class="health-item"><b>{{ $openInvoiceCount }}</b><span>Open invoices</span></div><div class="health-item"><b>{{ $invoiceActionCount }}</b><span>Due soon</span></div><div class="health-item"><b>{{ $pendingQuotationCount }}</b><span>Pending quotations</span></div></div></div>
+                </section>
+
                 <section class="card panel activity-panel"><div class="panel-head"><h3>Recent Relationship Activity</h3><a href="{{ route('customer.section','timeline') }}">Full timeline →</a></div><div class="activity-list">@forelse($timeline->take(6) as $event)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $event->title }}</div><div class="row-sub">{{ str_replace('_',' ',$event->event_type) }} · {{ $event->created_at?->format('d M Y, H:i') }}</div></div></div>@empty<div class="empty"><strong>No recent activity</strong>Customer-visible updates will appear here.</div>@endforelse</div></section>
             @endif
 
             @if($section === 'requests')
-                <div class="page-head"><div><h2>Service Requests</h2><p>Requests visible within your assigned scope.</p></div></div>
+                <div class="page-head"><div><h2>Service Requests</h2><p>All service requests belonging to this customer account.</p></div></div>
                 <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Request</th><th>Type</th><th>Subject</th><th>Priority</th><th>Stage</th><th>Status</th><th>Created</th></tr></thead><tbody>@forelse($requests as $item)<tr><td>{{ $item->request_no }}</td><td>{{ $item->request_type }}</td><td>{{ $item->subject }}</td><td><span class="pill {{ in_array($item->priority,['EMERGENCY','HIGH'])?'red':'' }}">{{ $item->priority }}</span></td><td>{{ $item->workflow_stage }}</td><td>{{ $item->status }}</td><td>{{ $item->created_at?->format('Y-m-d') }}</td></tr>@empty<tr><td colspan="7">No requests found.</td></tr>@endforelse</tbody></table></div></div>
             @endif
 
             @if($section === 'work-orders')
-                <div class="page-head"><div><h2>Work Orders</h2><p>Execution records for assets within your scope.</p></div></div>
+                <div class="page-head"><div><h2>Work Orders</h2><p>All execution records across the customer’s sites and assets.</p></div><a class="btn red" href="{{ route('public.request-service',['customer'=>$customer->customer_code]) }}">Request Service</a></div>
+                <form class="card panel filters" method="GET" action="{{ route('customer.section','work-orders') }}" style="margin-bottom:12px">
+                    <label class="filter"><span>Search</span><input name="q" value="{{ $searchFilter }}" placeholder="Work order or asset" style="height:34px;min-width:190px;border:1px solid var(--line);border-radius:8px;padding:0 9px;font-size:9px"></label>
+                    <label class="filter"><span>Site</span><select name="site_id"><option value="">All sites</option>@foreach($sites as $site)<option value="{{ $site->id }}" @selected($siteFilter===$site->id)>{{ $site->name }}</option>@endforeach</select></label>
+                    <label class="filter"><span>Contract</span><select name="contract_id"><option value="">All contracts</option>@foreach($contracts as $contract)<option value="{{ $contract->id }}" @selected($contractFilter===$contract->id)>{{ $contract->contract_no }}</option>@endforeach</select></label>
+                    <label class="filter"><span>Priority</span><select name="priority"><option value="">All priorities</option>@foreach(['NORMAL','HIGH','EMERGENCY'] as $value)<option value="{{ $value }}" @selected($priorityFilter===$value)>{{ str_replace('_',' ',$value) }}</option>@endforeach</select></label>
+                    <label class="filter"><span>Status</span><select name="status"><option value="">All statuses</option>@foreach(['OPEN','ASSIGNED','IN_PROGRESS','COMPLETED','CLOSED'] as $value)<option value="{{ $value }}" @selected($statusFilter===$value)>{{ str_replace('_',' ',$value) }}</option>@endforeach</select></label>
+                    <button class="filter-button">Apply</button><a class="btn" href="{{ route('customer.section','work-orders') }}" style="height:34px;padding:8px 13px;background:#edf3fb;color:var(--navy)">Reset</a>
+                </form>
                 <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Work Order</th><th>Asset</th><th>Site</th><th>Type</th><th>Priority</th><th>Status</th><th>Planned</th></tr></thead><tbody>@forelse($workOrders as $item)<tr><td><a class="pill" href="{{ route('customer.work-orders.show',$item) }}">{{ $item->work_order_no }}</a></td><td>{{ $item->asset?->asset_code }} · {{ $item->asset?->name }}</td><td>{{ $item->asset?->site?->name ?: '—' }}</td><td>{{ $item->maintenance_type }}</td><td>{{ $item->priority }}</td><td>{{ $item->status }}</td><td>{{ $item->planned_start?->format('Y-m-d H:i') ?: '—' }}</td></tr>@empty<tr><td colspan="7">No work orders in scope.</td></tr>@endforelse</tbody></table></div></div>
-                @if($canCreateRequest)<div id="request-service" class="card table-card" style="margin-top:12px"><div class="panel-head"><h3>Request Service</h3><span class="pill">Unified request</span></div><form method="POST" action="{{ route('customer.requests.store') }}">@csrf<div class="form-grid"><label class="field">Contract<select name="service_contract_id"><option value="">—</option>@foreach($contracts as $contract)<option value="{{ $contract->id }}">{{ $contract->contract_no }}</option>@endforeach</select></label><label class="field">Asset<select name="asset_id"><option value="">—</option>@foreach($assets as $asset)<option value="{{ $asset->id }}">{{ $asset->asset_code }} · {{ $asset->name }}</option>@endforeach</select></label><label class="field">Priority<select name="priority"><option @selected(request('priority')==='NORMAL')>NORMAL</option><option @selected(request('priority')==='HIGH')>HIGH</option><option @selected(request('priority')==='EMERGENCY')>EMERGENCY</option></select></label><label class="field">Category<input name="service_category" value="{{ request('service_category') }}" required></label><label class="field">Subject<input name="subject" required></label><label class="field">Site / City<input name="site_city"></label><label class="field wide">Details<textarea name="details" required></textarea></label></div><button class="btn red" style="margin-top:10px">Submit Request</button></form></div>@endif
+                <div class="card panel" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:14px"><div><h3 style="margin-bottom:5px">Need another service?</h3><div class="row-sub">Use the approved unified request form for maintenance, emergencies, quotations, spare parts and technical consultation.</div></div><a class="btn red" href="{{ route('public.request-service',['customer'=>$customer->customer_code]) }}">Request Service</a></div>
             @endif
 
             @if($section === 'sites')
@@ -183,7 +193,7 @@
             @endif
 
             @if($section === 'assets')
-                <div class="page-head"><div><h2>Assets & Equipment</h2><p>Only assets assigned to your permitted sites or explicit asset scope.</p></div><a class="btn" href="{{ route('customer.asset-health') }}">Open Asset Health</a></div>
+                <div class="page-head"><div><h2>Assets & Equipment</h2><p>Every registered asset and equipment item belonging to this customer.</p></div><a class="btn" href="{{ route('customer.asset-health') }}">Open Asset Health</a></div>
                 <div class="asset-grid">@forelse($assets as $asset)<a class="card asset" href="{{ route('customer.asset.show',$asset) }}"><strong>{{ $asset->asset_code }} · {{ $asset->name }}</strong><small>{{ $asset->site?->name ?: 'No site' }}<br>{{ $asset->location_code ?: 'Location not assigned' }}<br>Operational status: {{ $asset->operational_status ?: $asset->status }}<br>Health: {{ $asset->health_score !== null ? $asset->health_score.'%' : 'Not measured' }}</small></a>@empty<div class="card empty">No assets in your scope.</div>@endforelse</div>
             @endif
 
@@ -193,12 +203,12 @@
             @endif
 
             @if($section === 'maintenance')
-                <div class="page-head"><div><h2>Maintenance Plan</h2><p>Preventive plans for authorized assets.</p></div></div>
+                <div class="page-head"><div><h2>Maintenance Plan</h2><p>Preventive plans for all customer assets.</p></div></div>
                 <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Plan</th><th>Asset</th><th>Site</th><th>Frequency</th><th>Next Due</th><th>Status</th></tr></thead><tbody>@forelse($plans as $plan)<tr><td>{{ $plan->plan_no }} · {{ $plan->name }}</td><td>{{ $plan->asset?->asset_code }}</td><td>{{ $plan->asset?->site?->name ?: '—' }}</td><td>{{ $plan->frequency_type }} / {{ $plan->frequency_value }}</td><td>{{ $plan->next_due_date?->format('Y-m-d') }}</td><td>{{ $plan->status }}</td></tr>@empty<tr><td colspan="6">No maintenance plans in scope.</td></tr>@endforelse</tbody></table></div></div>
             @endif
 
             @if($section === 'spare-parts')
-                <div class="page-head"><div><h2>Spare Parts</h2><p>Parts issued against authorized assets and work orders.</p></div>@if($canCreateRequest)<a class="btn red" href="{{ route('customer.section','work-orders') }}?service_category=Spare%20Parts#request-service">Request Spare Parts</a>@endif</div>
+                <div class="page-head"><div><h2>Spare Parts</h2><p>Parts issued against all customer assets and work orders.</p></div><a class="btn red" href="{{ route('public.request-service',['customer'=>$customer->customer_code,'quotation'=>1,'subtype'=>'parts']) }}">Request Spare Parts</a></div>
                 <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Part</th><th>Description</th><th>Work Order</th><th>Asset</th><th>Quantity</th><th>Date</th></tr></thead><tbody>@forelse($materials as $part)<tr><td>{{ $part->item_code }}</td><td>{{ $part->item_name }}</td><td>{{ $part->work_order_no }}</td><td>{{ $part->asset_code }} · {{ $part->asset_name }}</td><td>{{ $part->quantity }} {{ $part->uom }}</td><td>{{ $part->created_at }}</td></tr>@empty<tr><td colspan="6">No spare-parts activity in your scope.</td></tr>@endforelse</tbody></table></div></div>
             @endif
 
@@ -208,7 +218,7 @@
             @endif
 
             @if($section === 'contracts')
-                <div class="page-head"><div><h2>Contracts</h2><p>Contracts assigned to your portal scope.</p></div></div>
+                <div class="page-head"><div><h2>Contracts</h2><p>All contracts and service coverage for this customer account.</p></div></div>
                 <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contract</th><th>Title</th><th>Period</th><th>Status</th><th></th></tr></thead><tbody>@forelse($contracts as $contract)<tr><td>{{ $contract->contract_no }}</td><td>{{ $contract->title }}</td><td>{{ $contract->starts_on?->format('Y-m-d') }} — {{ $contract->ends_on?->format('Y-m-d') }}</td><td>{{ $contract->status }}</td><td><a class="pill" href="{{ route('customer.contracts.pdf',$contract) }}">PDF</a></td></tr>@empty<tr><td colspan="5">No contracts in scope.</td></tr>@endforelse</tbody></table></div></div>
             @endif
 
@@ -218,7 +228,7 @@
             @endif
 
             @if($section === 'sla')
-                <div class="page-head"><div><h2>SLA & KPIs</h2><p>Measured response and resolution performance within your authorized scope.</p></div></div>
+                <div class="page-head"><div><h2>SLA & KPIs</h2><p>Measured response and resolution performance across the complete customer account.</p></div></div>
                 <section class="stats"><div class="card stat"><div class="label">Measured SLA</div><div class="value {{ $slaPerformance===null?'compact':'' }}">{{ $slaPerformance===null?'N/A':$slaPerformance.'%' }}</div><div class="trend muted">{{ $slaPerformance===null?'No eligible measurements':'Response and resolution checks' }}</div></div><div class="card stat"><div class="label">Preventive Work</div><div class="value">{{ $preventiveCount }}</div></div><div class="card stat"><div class="label">Corrective Work</div><div class="value">{{ $correctiveCount }}</div></div><div class="card stat warning"><div class="label">Overdue Work</div><div class="value">{{ $overdueCount }}</div></div></section>
             @endif
 
@@ -228,21 +238,22 @@
             @endif
 
             @if($section === 'reports')
-                <div class="page-head"><div><h2>Reports</h2><p>Technical reports within your authorized asset scope.</p></div></div>
+                <div class="page-head"><div><h2>Reports</h2><p>Technical reports across all customer sites and assets.</p></div></div>
                 <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Report</th><th>Date</th><th>Type</th><th>Technician</th><th></th></tr></thead><tbody>@forelse($visitReports as $report)<tr><td>{{ $report->report_no }}</td><td>{{ $report->visit_date?->format('Y-m-d') }}</td><td>{{ $report->visit_type }}</td><td>{{ $report->technician_name }}</td><td><a class="pill" href="{{ route('customer.visits.pdf',$report) }}">PDF</a></td></tr>@empty<tr><td colspan="5">No reports found.</td></tr>@endforelse</tbody></table></div></div>
             @endif
 
             @if($section === 'documents')
-                <div class="page-head"><div><h2>Document Library</h2><p>Files associated with authorized assets and service activity.</p></div></div>
+                <div class="page-head"><div><h2>Document Library</h2><p>All customer-visible files associated with contracts, assets and service activity.</p></div></div>
                 <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Type</th><th>File</th><th>Created</th><th></th></tr></thead><tbody>@forelse($attachments as $attachment)<tr><td>{{ $attachment->attachment_type }}</td><td>{{ $attachment->original_name }}</td><td>{{ $attachment->created_at }}</td><td><a class="pill" href="{{ route('customer.attachments.download',$attachment->id) }}">Download</a></td></tr>@empty<tr><td colspan="4">No documents in scope.</td></tr>@endforelse</tbody></table></div></div>
             @endif
 
             @if($section === 'notifications')
-                <div class="page-head"><div><h2>Notifications</h2><p>Operational, contractual and financial alerts relevant to your role.</p></div></div>
+                <div class="page-head"><div><h2>Notifications</h2><p>Operational, contractual and financial alerts for the complete customer account.</p></div></div>
                 <div class="site-grid">@forelse($alerts as $alert)<div class="card panel"><span class="pill {{ $alert->severity==='HIGH'?'red':'amber' }}">{{ $alert->type }}</span><h3>{{ $alert->title }}</h3><div class="row-sub">{{ $alert->due_date?->format('Y-m-d') }}</div></div>@empty<div class="card empty">No active alerts.</div>@endforelse</div>
             @endif
         </div>
     </main>
 </div>
+<script>(()=>{const app=document.querySelector('.app'),button=document.getElementById('sidebar-toggle');if(!app||!button)return;const key='unifco-customer-sidebar-collapsed';if(localStorage.getItem(key)==='1')app.classList.add('sidebar-collapsed');button.addEventListener('click',()=>{app.classList.toggle('sidebar-collapsed');localStorage.setItem(key,app.classList.contains('sidebar-collapsed')?'1':'0');button.textContent=app.classList.contains('sidebar-collapsed')?'⇥':'⇤'})})();</script>
 </body>
 </html>

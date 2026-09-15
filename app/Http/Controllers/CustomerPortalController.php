@@ -15,9 +15,9 @@ class CustomerPortalController extends Controller
         $user = $request->user();
         abort_unless($user && $user->role === 'CUSTOMER' && $user->customer_id, 403, 'Customer portal access is not configured for this user.');
 
-        $customer = Customer::findOrFail($user->customer_id);
+        $customer = Customer::whereKey($user->customer_id)->where('tenant_id', $user->tenant_id)->firstOrFail();
         $section = $section ?: 'dashboard';
-        abort_unless($access->canSection($user, $section), 403, 'This section is not available for your customer portal role.');
+        abort_unless($access->canSection($user, $section), 403, 'This section is not available for this customer account.');
 
         $portalRole = $access->role($user);
         $allowedSections = $access->allowedSections($user);
@@ -34,6 +34,9 @@ class CustomerPortalController extends Controller
         $contractFilter = $request->integer('contract_id') ?: null;
         $assetFilter = $request->integer('asset_id') ?: null;
         $locationFilter = trim((string) $request->query('location', '')) ?: null;
+        $statusFilter = trim((string) $request->query('status', '')) ?: null;
+        $priorityFilter = trim((string) $request->query('priority', '')) ?: null;
+        $searchFilter = trim((string) $request->query('q', '')) ?: null;
         $days = in_array($request->integer('days'), [7, 30, 90, 365], true) ? $request->integer('days') : 30;
 
         if ($contractFilter) {
@@ -80,6 +83,12 @@ class CustomerPortalController extends Controller
 
         $workOrdersQuery = WorkOrder::with('asset.site')->whereIn('asset_id', $assetIds)
             ->when($contractFilter, fn ($q) => $q->where('service_contract_id', $contractFilter))
+            ->when($statusFilter, fn ($q) => $q->where('status', $statusFilter))
+            ->when($priorityFilter, fn ($q) => $q->where('priority', $priorityFilter))
+            ->when($searchFilter, fn ($q) => $q->where(function ($inner) use ($searchFilter) {
+                $inner->where('work_order_no', 'like', '%'.$searchFilter.'%')
+                    ->orWhereHas('asset', fn ($asset) => $asset->where('asset_code', 'like', '%'.$searchFilter.'%')->orWhere('name', 'like', '%'.$searchFilter.'%'));
+            }))
             ->when($scopedContractIds !== null, fn ($q) => $q->where(function ($inner) use ($scopedContractIds) {
                 $inner->whereNull('service_contract_id')->orWhereIn('service_contract_id', $scopedContractIds);
             }));
@@ -132,10 +141,8 @@ class CustomerPortalController extends Controller
         foreach ($plans->whereNotNull('next_due_date')->filter(fn ($plan) => $plan->next_due_date->lte(now()->addDays(30))) as $plan) {
             $alerts->push((object) ['type' => 'MAINTENANCE_DUE', 'title' => 'Maintenance due: '.$plan->plan_no, 'due_date' => $plan->next_due_date, 'severity' => $plan->next_due_date->isPast() ? 'HIGH' : 'INFO']);
         }
-        if (in_array($portalRole, ['CUSTOMER_ADMIN', 'FINANCE', 'VIEWER'], true)) {
-            foreach ($invoices->filter(fn ($invoice) => $invoice->open_amount > 0 && $invoice->due_date && $invoice->due_date->lte(now()->addDays(14))) as $invoice) {
-                $alerts->push((object) ['type' => 'INVOICE_DUE', 'title' => 'Invoice due: '.$invoice->document_no, 'due_date' => $invoice->due_date, 'severity' => $invoice->due_date->isPast() ? 'HIGH' : 'INFO']);
-            }
+        foreach ($invoices->filter(fn ($invoice) => $invoice->open_amount > 0 && $invoice->due_date && $invoice->due_date->lte(now()->addDays(14))) as $invoice) {
+            $alerts->push((object) ['type' => 'INVOICE_DUE', 'title' => 'Invoice due: '.$invoice->document_no, 'due_date' => $invoice->due_date, 'severity' => $invoice->due_date->isPast() ? 'HIGH' : 'INFO']);
         }
         foreach ($contracts->filter(fn ($contract) => $contract->ends_on && $contract->ends_on->lte(now()->addDays(60))) as $contract) {
             $alerts->push((object) ['type' => 'CONTRACT_EXPIRY', 'title' => 'Contract expiring: '.$contract->contract_no, 'due_date' => $contract->ends_on, 'severity' => 'INFO']);
@@ -195,12 +202,8 @@ class CustomerPortalController extends Controller
             }
             $workAcceptanceActionCount = $workAcceptanceQuery->count();
         }
-        $invoiceActionCount = in_array($portalRole, ['CUSTOMER_ADMIN', 'FINANCE'], true)
-            ? $invoices->filter(fn ($invoice) => $invoice->open_amount > 0 && $invoice->due_date && $invoice->due_date->lte(now()->addDays(14)))->count()
-            : 0;
-        $renewalActionCount = in_array($portalRole, ['CUSTOMER_ADMIN', 'FINANCE'], true)
-            ? $contracts->filter(fn ($contract) => $contract->status === 'ACTIVE' && $contract->ends_on && $contract->ends_on->lte(now()->addDays(60)))->count()
-            : 0;
+        $invoiceActionCount = $invoices->filter(fn ($invoice) => $invoice->open_amount > 0 && $invoice->due_date && $invoice->due_date->lte(now()->addDays(14)))->count();
+        $renewalActionCount = $contracts->filter(fn ($contract) => $contract->status === 'ACTIVE' && $contract->ends_on && $contract->ends_on->lte(now()->addDays(60)))->count();
 
         $unreadInbox = 0;
         $inboxReady = Schema::hasTable('customer_messages') && Schema::hasTable('customer_conversations');
@@ -222,8 +225,9 @@ class CustomerPortalController extends Controller
             'assetFilter', 'locationFilter', 'days', 'unreadInbox', 'inboxReady', 'portalRole', 'allowedSections',
             'canCreateRequest', 'canDecideQuotation', 'canManageUsers', 'readOnly', 'requestStageCounts', 'activeAssetCount',
             'maintenanceAssetCount', 'stoppedAssetCount', 'criticalAssetCount', 'warrantyExpiringCount',
-            'quotationActionCount', 'workAcceptanceActionCount', 'invoiceActionCount', 'renewalActionCount', 'actionRequiredCount'
-        ))->header('X-UNIFCO-Customer-Portal-Release', 'customer-portal-rbac-phase1-20260827; customer-command-center-20260914')
+            'quotationActionCount', 'workAcceptanceActionCount', 'invoiceActionCount', 'renewalActionCount', 'actionRequiredCount',
+            'statusFilter', 'priorityFilter', 'searchFilter'
+        ))->header('X-UNIFCO-Customer-Portal-Release', 'customer-portal-rbac-phase1-20260827; customer-command-center-20260914; customer-unified-account-20260915')
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }

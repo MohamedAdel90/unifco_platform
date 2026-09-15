@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerAssetReadController;
 use App\Http\Controllers\CustomerInboxController;
 use App\Http\Controllers\CustomerPortalAccessAdminController;
 use App\Http\Controllers\CustomerPortalController;
+use App\Http\Controllers\CustomerPortalSearchController;
 use App\Http\Controllers\CustomerPortalOperationsController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\CustomerWorkAcceptanceController;
@@ -82,6 +83,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
+    Route::get('/customer/search', CustomerPortalSearchController::class)->name('customer.search');
     Route::get('/customer/asset-health', [AssetHealthDashboardController::class, 'customer'])->name('customer.asset-health');
     Route::get('/customer/assets/{asset}', [CustomerAssetReadController::class, 'asset'])->name('customer.asset.show');
     Route::get('/customer/work-orders/{workOrder}', [CustomerAssetReadController::class, 'workOrder'])->name('customer.work-orders.show');

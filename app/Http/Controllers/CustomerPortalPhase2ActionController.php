@@ -35,7 +35,7 @@ class CustomerPortalPhase2ActionController extends Controller
     public function requestContractRenewal(Request $request, ServiceContract $contract, CustomerPortalAccessService $access): RedirectResponse
     {
         $user=$this->customerUser($request);
-        abort_unless(in_array($access->role($user),['CUSTOMER_ADMIN','FINANCE'],true),403);
+        abort_unless($access->canSection($user,'contracts'),403);
         abort_unless((int)$contract->customer_id===(int)$user->customer_id,403);
         $access->assertContract($user,(int)$contract->id);
         $data=$request->validate(['notes'=>['nullable','string','max:2000']]);
@@ -54,7 +54,7 @@ class CustomerPortalPhase2ActionController extends Controller
     public function invoiceQuery(Request $request, FinancialDocument $invoice, CustomerPortalAccessService $access): RedirectResponse
     {
         $user=$this->customerUser($request);
-        abort_unless(in_array($access->role($user),['CUSTOMER_ADMIN','FINANCE'],true),403);
+        abort_unless($access->canSection($user,'invoices'),403);
         abort_unless((int)$invoice->customer_id===(int)$user->customer_id && $invoice->document_type==='AR_INVOICE',403);
         $data=$request->validate(['notes'=>['required','string','max:2000']]);
 
@@ -69,7 +69,7 @@ class CustomerPortalPhase2ActionController extends Controller
     public function paymentProof(Request $request, FinancialDocument $invoice, CustomerPortalAccessService $access): RedirectResponse
     {
         $user=$this->customerUser($request);
-        abort_unless(in_array($access->role($user),['CUSTOMER_ADMIN','FINANCE'],true),403);
+        abort_unless($access->canSection($user,'invoices'),403);
         abort_unless((int)$invoice->customer_id===(int)$user->customer_id && $invoice->document_type==='AR_INVOICE',403);
         $data=$request->validate([
             'proof'=>['required','file','mimes:pdf,jpg,jpeg,png','max:10240'],
