@@ -43,6 +43,6 @@ class CustomerPortalExecutiveDashboardTest extends TestCase
         }
 
         $this->assertStringContainsString('grid-template-columns:repeat(8,1fr)', $view);
-        $this->assertStringContainsString("$pendingQ>0?'warn':''", $view);
+        $this->assertStringContainsString("attention {{ \$pendingQ>0?'warn':'' }}", $view);
     }
 }
