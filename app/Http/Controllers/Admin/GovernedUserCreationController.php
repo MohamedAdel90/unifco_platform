@@ -13,7 +13,8 @@ use Illuminate\View\View;
 class GovernedUserCreationController extends Controller
 {
     private const STATUSES=['ACTIVE','INACTIVE','SUSPENDED'];
-    private const PORTAL_ROLE_CODES=['CUSTOMER_ADMIN','CUSTOMER_SITE_MANAGER','CUSTOMER_FINANCE','CUSTOMER_VIEWER'];
+    // One portal login per customer. Department/persona portal roles are retired.
+    private const PORTAL_ROLE_CODES=['CUSTOMER_ADMIN'];
 
     private function authorize(Request $request,string $permission): void
     {
@@ -56,9 +57,6 @@ class GovernedUserCreationController extends Controller
         $this->authorize($request,'users.create');
         $tenant=$request->user()->tenant_id;
 
-        // Preserve compatibility with existing callers that still submit the
-        // historical singular `role` field while the governed wizard submits
-        // the new multi-role `roles[]` contract.
         if(!$request->has('roles') && filled($request->input('role'))){
             $legacyRole=strtoupper(trim((string)$request->input('role')));
             $request->merge([
@@ -94,14 +92,19 @@ class GovernedUserCreationController extends Controller
         $portalRoles=array_values(array_intersect($roleCodes,self::PORTAL_ROLE_CODES));
         $isPortal=$portalRoles!==[];
         abort_if($isPortal && count($portalRoles)!==count($roleCodes),422,'Customer Portal users cannot be mixed with internal business or system roles.');
-        abort_if($isPortal && count($portalRoles)!==1,422,'Choose exactly one Customer Portal role.');
+        abort_if($isPortal && count($portalRoles)!==1,422,'Customer Portal uses one full-access customer account role.');
 
         $customer=null;$siteIds=[];
         if($isPortal){
             $customer=Customer::where('tenant_id',$tenant)->where('status','ACTIVE')->findOrFail($data['customer_id']??0);
-            $siteIds=CustomerSite::where('customer_id',$customer->id)->where('status','ACTIVE')->whereIn('id',$data['site_ids']??[])->pluck('id')->map(fn($id)=>(int)$id)->all();
-            abort_unless(count($siteIds)===count(array_unique(array_map('intval',$data['site_ids']??[]))),422,'One or more allowed sites do not belong to the selected customer.');
-            if($portalRoles[0]==='CUSTOMER_SITE_MANAGER') abort_if($siteIds===[],422,'Site Manager requires at least one allowed site.');
+            abort_if(
+                User::where('tenant_id',$tenant)->where('role','CUSTOMER')->where('customer_id',$customer->id)->exists(),
+                422,
+                'This customer already has a Customer Portal login. Reset or update the existing account instead of creating another user.'
+            );
+            // Single customer login receives the complete customer scope. Site
+            // selection is intentionally ignored for portal provisioning.
+            $siteIds=[];
         }
 
         $organizationId=$isPortal?($customer->organization_id ?: ($data['organization_id']??null)):($data['organization_id']??null);
@@ -110,7 +113,7 @@ class GovernedUserCreationController extends Controller
         if($employeeId) abort_unless(Employee::where('tenant_id',$tenant)->whereKey($employeeId)->exists(),422);
 
         $displayName=trim((string)($data['name_en']??'')) ?: trim((string)($data['name_ar']??'')) ?: trim((string)($data['name']??''));
-        $portalRole=$isPortal?$this->portalRole($portalRoles[0]):null;
+        $portalRole=$isPortal?'CUSTOMER_ADMIN':null;
         $password=$data['password']??str()->random(64);
 
         $user=DB::transaction(function() use($request,$audit,$tenant,$data,$roleCodes,$isPortal,$customer,$siteIds,$organizationId,$employeeId,$displayName,$portalRole,$password){
@@ -134,7 +137,7 @@ class GovernedUserCreationController extends Controller
             $this->syncRoles($request,$user,$roleCodes);
             if($isPortal) $this->syncPortalScopes($request,$user,$siteIds,$portalRole);
             else $this->syncInternalScopes($request,$user,$data['scope_ids']??[]);
-            $audit->record('security.user.created',$user,[],['email'=>$user->email,'customer_id'=>$user->customer_id,'portal_role'=>$user->customer_portal_role,'roles'=>$roleCodes],reason:$isPortal?'Customer Portal onboarding':'User onboarding');
+            $audit->record('security.user.created',$user,[],['email'=>$user->email,'customer_id'=>$user->customer_id,'portal_role'=>$user->customer_portal_role,'roles'=>$roleCodes],reason:$isPortal?'Single Customer Portal account onboarding':'User onboarding');
             return $user;
         });
 
@@ -143,17 +146,12 @@ class GovernedUserCreationController extends Controller
             $audit->record('security.invitation.sent',$user,[],['email'=>$user->email,'invitation_id'=>$invitation->id,'expires_at'=>$invitation->expires_at->toISOString()]);
         }
 
-        return redirect()->route($isPortal?'admin.customer-portal-users.index':'admin.users.show',$isPortal?[]:$user)->with('status',$isPortal?'Customer Portal user created and linked to '.$customer->name.'.':'User created.');
+        return redirect()->route($isPortal?'admin.customer-portal-users.index':'admin.users.show',$isPortal?[]:$user)->with('status',$isPortal?'Customer Portal login created and linked to '.$customer->name.'.':'User created.');
     }
 
     private function portalRole(string $roleCode): string
     {
-        return match($roleCode){
-            'CUSTOMER_SITE_MANAGER'=>'SITE_MANAGER',
-            'CUSTOMER_FINANCE'=>'FINANCE',
-            'CUSTOMER_VIEWER'=>'VIEWER',
-            default=>'CUSTOMER_ADMIN',
-        };
+        return 'CUSTOMER_ADMIN';
     }
 
     private function syncRoles(Request $request,User $user,array $codes): void
@@ -180,13 +178,13 @@ class GovernedUserCreationController extends Controller
     private function syncPortalScopes(Request $request,User $user,array $siteIds,string $portalRole): void
     {
         if(Schema::hasTable('customer_portal_user_scopes')){
-            foreach($portalRole==='CUSTOMER_ADMIN'?[]:$siteIds as $id) DB::table('customer_portal_user_scopes')->insert(['user_id'=>$user->id,'scope_type'=>'SITE','scope_id'=>$id,'created_at'=>now(),'updated_at'=>now()]);
+            DB::table('customer_portal_user_scopes')->where('user_id',$user->id)->delete();
         }
         if(!Schema::hasTable('user_scopes')) return;
-        $items=$portalRole==='CUSTOMER_ADMIN'?[['type'=>'CUSTOMER','id'=>$user->customer_id]]:array_map(fn($id)=>['type'=>'SITE','id'=>$id],$siteIds);
-        foreach($items as $item){
-            $scope=AccessScope::firstOrCreate(['tenant_id'=>$user->tenant_id,'scope_type'=>$item['type'],'scope_id'=>$item['id']],['name'=>$item['type'].' #'.$item['id'],'is_active'=>true]);
-            DB::table('user_scopes')->insert(['tenant_id'=>$user->tenant_id,'user_id'=>$user->id,'access_scope_id'=>$scope->id,'source'=>'USER','granted_by'=>$request->user()->id,'reason'=>'Customer Portal onboarding','created_at'=>now(),'updated_at'=>now()]);
-        }
+        $scope=AccessScope::firstOrCreate(
+            ['tenant_id'=>$user->tenant_id,'scope_type'=>'CUSTOMER','scope_id'=>$user->customer_id],
+            ['name'=>'CUSTOMER #'.$user->customer_id,'is_active'=>true]
+        );
+        DB::table('user_scopes')->insert(['tenant_id'=>$user->tenant_id,'user_id'=>$user->id,'access_scope_id'=>$scope->id,'source'=>'USER','granted_by'=>$request->user()->id,'reason'=>'Single Customer Portal account onboarding','created_at'=>now(),'updated_at'=>now()]);
     }
 }
