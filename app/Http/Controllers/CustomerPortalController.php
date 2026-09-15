@@ -92,6 +92,12 @@ class CustomerPortalController extends Controller
             ->when($scopedContractIds !== null, fn ($q) => $q->where(function ($inner) use ($scopedContractIds) {
                 $inner->whereNull('service_contract_id')->orWhereIn('service_contract_id', $scopedContractIds);
             }));
+        $currentWorkOrderPeriodCount = (clone $workOrdersQuery)
+            ->where('created_at', '>=', now()->subDays($days))
+            ->count();
+        $previousWorkOrderCount = (clone $workOrdersQuery)
+            ->whereBetween('created_at', [now()->subDays($days * 2), now()->subDays($days)])
+            ->count();
         if ($section === 'dashboard' || $request->filled('days')) {
             $workOrdersQuery->where('created_at', '>=', now()->subDays($days));
         }
@@ -109,14 +115,19 @@ class CustomerPortalController extends Controller
         if ($scopedContractIds !== null) {
             $requestQuery->where(fn ($q) => $q->whereNull('service_contract_id')->orWhereIn('service_contract_id', $scopedContractIds));
         }
-        $requestQuery->when($siteFilter, fn ($q) => $q->where('customer_site_id', $siteFilter));
+        $requestQuery->when($siteFilter, fn ($q) => $q->where('customer_site_id', $siteFilter))
+            ->when($contractFilter, fn ($q) => $q->where('service_contract_id', $contractFilter))
+            ->when($assetFilter, fn ($q) => $q->where('asset_id', $assetFilter));
+        $currentRequestPeriodCount = (clone $requestQuery)
+            ->where('created_at', '>=', now()->subDays($days))
+            ->count();
+        $previousRequestCount = (clone $requestQuery)
+            ->whereBetween('created_at', [now()->subDays($days * 2), now()->subDays($days)])
+            ->count();
         if ($section === 'dashboard' || $request->filled('days')) {
             $requestQuery->where('created_at', '>=', now()->subDays($days));
         }
-        $requests = $requestQuery
-            ->when($contractFilter, fn ($q) => $q->where('service_contract_id', $contractFilter))
-            ->when($assetFilter, fn ($q) => $q->where('asset_id', $assetFilter))
-            ->latest()->limit(100)->get();
+        $requests = $requestQuery->latest()->limit(100)->get();
 
         $quotations = CrmQuotation::where('customer_id', $customer->id)->latest('quotation_date')->limit(50)->get();
         $invoices = FinancialDocument::where('customer_id', $customer->id)->where('document_type', 'AR_INVOICE')->latest('document_date')->limit(100)->get();
@@ -154,11 +165,19 @@ class CustomerPortalController extends Controller
         $inProgressCount = $workOrders->filter(fn ($workOrder) => in_array(strtoupper((string) $workOrder->status), $inProgressStatuses, true))->count();
         $completedCount = $workOrders->filter(fn ($workOrder) => in_array(strtoupper((string) $workOrder->status), $completeStatuses, true))->count();
         $overdueCount = $workOrders->filter(fn ($workOrder) => $workOrder->planned_start && $workOrder->planned_start->isPast() && ! in_array(strtoupper((string) $workOrder->status), $completeStatuses, true))->count();
-        $criticalWorkOrders = $workOrders->filter(fn ($workOrder) => in_array(strtoupper((string) $workOrder->priority), ['HIGH', 'URGENT', 'EMERGENCY', 'CRITICAL'], true) && ! in_array(strtoupper((string) $workOrder->status), $completeStatuses, true))->take(5);
+        $criticalWorkOrders = $workOrders->filter(function ($workOrder) use ($completeStatuses) {
+            $isOpen = ! in_array(strtoupper((string) $workOrder->status), $completeStatuses, true);
+            $isCritical = in_array(strtoupper((string) $workOrder->priority), ['HIGH', 'URGENT', 'EMERGENCY', 'CRITICAL'], true);
+            $isOverdue = $workOrder->planned_start && $workOrder->planned_start->isPast();
+
+            return $isOpen && ($isCritical || $isOverdue);
+        })->sortBy(fn ($workOrder) => $workOrder->planned_start?->timestamp ?? PHP_INT_MAX)->take(5);
 
         $recentWorkOrders = $workOrders->take(5);
         $recentRequests = $requests->take(6);
         $upcomingPlans = $plans->whereNotNull('next_due_date')->filter(fn ($plan) => $plan->next_due_date->gte(today()))->take(5);
+        $visitsDue7Count = $plans->whereNotNull('next_due_date')->filter(fn ($plan) => $plan->next_due_date->between(today(), today()->addDays(7)))->count();
+        $visitsDue30Count = $plans->whereNotNull('next_due_date')->filter(fn ($plan) => $plan->next_due_date->between(today(), today()->addDays(30)))->count();
         $openInvoiceAmount = $invoices->sum(fn ($invoice) => (float) $invoice->open_amount);
         $openRequestCount = $requests->whereNotIn('status', ['CLOSED', 'REJECTED', 'CANCELLED'])->count();
         $pendingQuotationCount = $quotations->whereIn('status', ['DRAFT', 'SENT', 'UNDER_REVIEW', 'REVISION_REQUESTED'])->count();
@@ -176,14 +195,18 @@ class CustomerPortalController extends Controller
             }
         }
         $slaPerformance = $slaChecks->isEmpty() ? null : (int) round(($slaChecks->filter()->count() / $slaChecks->count()) * 100);
+        $slaBreachCount = $slaChecks->reject(fn ($passed) => $passed)->count();
 
         $requestStageCounts = [
             'new' => $requests->filter(fn ($item) => in_array(strtoupper((string) $item->workflow_stage), ['NEW', 'SUBMITTED'], true))->count(),
             'review' => $requests->filter(fn ($item) => str_contains(strtoupper((string) $item->workflow_stage), 'REVIEW'))->count(),
-            'assigned' => $requests->filter(fn ($item) => in_array(strtoupper((string) $item->workflow_stage), ['ASSIGNED', 'ENGINEER_DISPATCH'], true))->count(),
+            'assigned' => $requests->filter(fn ($item) => strtoupper((string) $item->workflow_stage) === 'ASSIGNED')->count(),
+            'scheduled' => $requests->filter(fn ($item) => in_array(strtoupper((string) $item->workflow_stage), ['SCHEDULED', 'VISIT_SCHEDULED'], true))->count(),
+            'dispatch' => $requests->filter(fn ($item) => str_contains(strtoupper((string) $item->workflow_stage), 'DISPATCH') || str_contains(strtoupper((string) $item->workflow_stage), 'ON_THE_WAY'))->count(),
             'progress' => $requests->filter(fn ($item) => in_array(strtoupper((string) $item->workflow_stage), ['IN_PROGRESS', 'EXECUTION'], true))->count(),
             'customer' => $requests->filter(fn ($item) => str_contains(strtoupper((string) $item->next_action), 'CUSTOMER'))->count(),
             'closed' => $requests->filter(fn ($item) => in_array(strtoupper((string) $item->status), ['COMPLETED', 'CLOSED'], true))->count(),
+            'overdue' => $requests->filter(fn ($item) => $item->current_stage_due_at && $item->current_stage_due_at->isPast() && ! in_array(strtoupper((string) $item->status), ['COMPLETED', 'CLOSED', 'CANCELLED', 'REJECTED'], true))->count(),
         ];
 
         $activeAssetCount = $assets->filter(fn ($asset) => in_array(strtoupper((string) ($asset->operational_status ?: $asset->status)), ['ACTIVE', 'REGISTERED', 'OPERATIONAL', 'IN_SERVICE', 'RUNNING'], true))->count();
@@ -213,6 +236,14 @@ class CustomerPortalController extends Controller
         }
         $actionRequiredCount = $quotationActionCount + $workAcceptanceActionCount + $invoiceActionCount + $renewalActionCount + $unreadInbox;
 
+        $requestVolumeDelta = $currentRequestPeriodCount - $previousRequestCount;
+        $workOrderVolumeDelta = $currentWorkOrderPeriodCount - $previousWorkOrderCount;
+        $lastUpdatedAt = collect([$timeline->max('created_at'), $requests->max('updated_at'), $workOrders->max('updated_at')])
+            ->filter()->map(fn ($date) => \Illuminate\Support\Carbon::parse($date))->sortByDesc(fn ($date) => $date->timestamp)->first();
+        $dashboardHealth = $overdueCount > 0 || $stoppedAssetCount > 0 || $requestStageCounts['overdue'] > 0
+            ? 'NEEDS ATTENTION'
+            : ($actionRequiredCount > 0 ? 'FOLLOW-UP REQUIRED' : 'STABLE');
+
         $locations = $assets->pluck('location_code')->filter()->unique()->sort()->values();
         $warrantyParts = $assets->sortBy('warranty_expiry')->values();
 
@@ -226,8 +257,10 @@ class CustomerPortalController extends Controller
             'canCreateRequest', 'canDecideQuotation', 'canManageUsers', 'readOnly', 'requestStageCounts', 'activeAssetCount',
             'maintenanceAssetCount', 'stoppedAssetCount', 'criticalAssetCount', 'warrantyExpiringCount',
             'quotationActionCount', 'workAcceptanceActionCount', 'invoiceActionCount', 'renewalActionCount', 'actionRequiredCount',
-            'statusFilter', 'priorityFilter', 'searchFilter'
-        ))->header('X-UNIFCO-Customer-Portal-Release', 'customer-portal-rbac-phase1-20260827; customer-command-center-20260914; customer-unified-account-20260915')
+            'statusFilter', 'priorityFilter', 'searchFilter', 'previousRequestCount', 'previousWorkOrderCount',
+            'requestVolumeDelta', 'workOrderVolumeDelta', 'slaBreachCount', 'visitsDue7Count', 'visitsDue30Count',
+            'lastUpdatedAt', 'dashboardHealth'
+        ))->header('X-UNIFCO-Customer-Portal-Release', 'customer-portal-rbac-phase1-20260827; customer-command-center-20260914; customer-unified-account-20260915; customer-dashboard-v2-20260915')
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }

@@ -21,6 +21,7 @@ class UnifiedServiceRequestController extends Controller
             'portalCustomerCode' => $portalCustomer?->customer_code,
             'presetEmergency' => $request->boolean('emergency'),
             'presetQuotation' => $request->boolean('quotation'),
+            'presetConsultation' => $request->boolean('consultation'),
             'presetSubtype' => trim((string) $request->query('subtype', '')),
         ]);
     }

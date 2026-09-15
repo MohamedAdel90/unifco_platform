@@ -50,5 +50,23 @@ class CustomerPortalUnifiedAccountTest extends TestCase
             ->assertOk()->assertSee('value="'.$customer->customer_code.'"',false)->assertSee('const preset={emergency:true',false);
         $this->actingAs($user)->get('/request-service?quotation=1&subtype=parts')
             ->assertOk()->assertSee('SPARE_PARTS_QUOTE',false)->assertSee('quotation:true',false);
+        $this->actingAs($user)->get('/request-service?consultation=1')
+            ->assertOk()->assertSee('consultation:true',false);
+    }
+
+    public function test_customer_dashboard_presents_a_decision_ready_operating_summary(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $user=User::where('email','workflow.customer@unifco.local')->firstOrFail();
+
+        $this->actingAs($user)->get('/customer?days=30')
+            ->assertOk()
+            ->assertSee('Overall service status')
+            ->assertSee('Customer scope')
+            ->assertSee('Last customer update')
+            ->assertSee('SLA Compliance')
+            ->assertSee('Upcoming Maintenance')
+            ->assertSee('Visit scheduled')
+            ->assertSee('Technical Consultation');
     }
 }
