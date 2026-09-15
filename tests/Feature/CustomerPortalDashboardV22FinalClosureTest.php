@@ -14,9 +14,9 @@ class CustomerPortalDashboardV22FinalClosureTest extends TestCase
         $this->assertStringContainsString('data-customer-dashboard-v22',$source);
         $this->assertStringContainsString('data-v22-timeline',$source);
         $this->assertStringContainsString('Reason: ',$source);
-        $this->assertStringContainsString("grid-template-columns:1fr 1fr!important",$source);
-        $this->assertStringContainsString("CustomerActivityEvent::where('customer_id',$customerId)",$source);
-        $this->assertStringContainsString("ServiceRequest::where('customer_id',$customerId)",$source);
-        $this->assertStringContainsString("FinancialDocument::where('customer_id',$customerId)",$source);
+        $this->assertStringContainsString('grid-template-columns:1fr 1fr!important',$source);
+        $this->assertStringContainsString('CustomerActivityEvent::where(\'customer_id\',$customerId)',$source);
+        $this->assertStringContainsString('ServiceRequest::where(\'customer_id\',$customerId)',$source);
+        $this->assertStringContainsString('FinancialDocument::where(\'customer_id\',$customerId)',$source);
     }
 }
