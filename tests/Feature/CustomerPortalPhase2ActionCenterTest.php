@@ -106,6 +106,48 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
         $this->actingAs($viewer)->get('/customer/work-acceptance')->assertOk();
     }
 
+    public function test_action_center_keeps_category_summary_visible_when_no_actions_exist(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
+
+        $this->actingAs($admin)->get('/customer/actions')
+            ->assertOk()
+            ->assertSee('Action categories')
+            ->assertSee('No action is required from you right now')
+            ->assertSee('Submitted Actions');
+    }
+
+    public function test_action_center_can_filter_to_invoice_actions_and_marks_overdue_items(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
+        $customer=Customer::findOrFail($admin->customer_id);
+        $invoice=$this->invoice($admin,$customer,'PH2-OVERDUE-INV');
+        $invoice->update(['due_date'=>today()->subDays(2)]);
+
+        $this->actingAs($admin)->get('/customer/actions?type=invoices')
+            ->assertOk()
+            ->assertSee('PH2-OVERDUE-INV')
+            ->assertSee('Overdue by 2 days')
+            ->assertSee('Invoices Requiring Attention')
+            ->assertDontSee('Quotations Awaiting Your Decision');
+    }
+
+    public function test_action_center_arabic_copy_preserves_the_same_action_categories(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
+
+        app()->setLocale('ar');
+        $this->actingAs($admin)->get('/customer/actions')
+            ->assertOk()
+            ->assertSee('فئات الإجراءات')
+            ->assertSee('عروض الأسعار')
+            ->assertSee('الفواتير المستحقة')
+            ->assertSee('الإجراءات المرسلة');
+    }
+
     private function invoice(User $user,Customer $customer,string $number): FinancialDocument
     {
         return FinancialDocument::create([
