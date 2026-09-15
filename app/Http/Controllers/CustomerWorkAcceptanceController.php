@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset,CustomerActivityEvent,ServiceRequest,WorkOrder};
+use App\Models\{Asset,Customer,CustomerActivityEvent,ServiceRequest,WorkOrder};
 use App\Services\{CustomerPortalAccessService,ServiceRequestWorkflowService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\View\View;
@@ -19,11 +19,12 @@ class CustomerWorkAcceptanceController extends Controller
     public function index(CustomerPortalAccessService $access): View
     {
         $user=$this->customerUser();
-        abort_unless($access->canAcceptWork($user),403,'Your portal role cannot accept completed work.');
+        abort_unless($access->canAcceptWork($user),403,'This customer account cannot accept completed work.');
         $assetIds=$access->accessibleAssetIds($user);
         if($assetIds===null) $assetIds=Asset::where('customer_id',$user->customer_id)->pluck('id');
 
         return view('customer.work-acceptance',[
+            'customer'=>Customer::whereKey($user->customer_id)->where('tenant_id',$user->tenant_id)->firstOrFail(),
             'pending'=>WorkOrder::whereIn('asset_id',$assetIds)->where('status','COMPLETED')->whereNull('customer_accepted_at')->whereNull('customer_rejected_at')->latest('completed_at')->get(),
             'history'=>WorkOrder::whereIn('asset_id',$assetIds)->where(function($q){$q->whereNotNull('customer_accepted_at')->orWhereNotNull('customer_rejected_at');})->latest()->limit(50)->get(),
             'satisfactionRequests'=>ServiceRequest::where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)->where('workflow_stage','CSAT')->latest('id')->get(),
@@ -33,7 +34,7 @@ class CustomerWorkAcceptanceController extends Controller
     public function decide(Request $request, WorkOrder $workOrder, CustomerPortalAccessService $access, ServiceRequestWorkflowService $workflow): RedirectResponse
     {
         $user=$this->customerUser();
-        abort_unless($access->canAcceptWork($user),403,'Your portal role cannot accept completed work.');
+        abort_unless($access->canAcceptWork($user),403,'This customer account cannot accept completed work.');
         $access->assertAsset($user,(int)$workOrder->asset_id);
         abort_unless(Asset::whereKey($workOrder->asset_id)->where('customer_id',$user->customer_id)->exists(),403);
         abort_unless($workOrder->status==='COMPLETED',422,'Only completed work can be accepted or rejected.');

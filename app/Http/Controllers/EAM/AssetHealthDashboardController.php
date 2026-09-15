@@ -44,6 +44,7 @@ class AssetHealthDashboardController extends Controller
         $user=auth()->user();
         abort_unless($user && $user->role==='CUSTOMER' && $user->customer_id,403);
         $customerId=(int)$user->customer_id;
+        $customer=Customer::whereKey($customerId)->where('tenant_id',$user->tenant_id)->firstOrFail();
         $siteId=$request->integer('site_id')?:null;
         $contractId=$request->integer('contract_id')?:null;
 
@@ -64,6 +65,7 @@ class AssetHealthDashboardController extends Controller
         $consumption=$this->consumption($assets,false);
 
         return view('customer.asset-health',[
+            'customer'=>$customer,
             'assets'=>$assets,'metrics'=>$metrics,'recommendations'=>$recommendations,'reorderAlerts'=>$reorderAlerts,'consumption'=>$consumption,
             'sites'=>CustomerSite::where('customer_id',$customerId)->orderBy('name')->get(),
             'contracts'=>ServiceContract::where('customer_id',$customerId)->orderByDesc('starts_on')->get(),

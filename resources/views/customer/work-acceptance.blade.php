@@ -1,1 +1,61 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>UNIFCO | اعتماد الأعمال</title><style>:root{font-family:Tahoma,Arial,sans-serif;--navy:#1e315b;--red:#ce122d;--muted:#68758a}*{box-sizing:border-box}body{margin:0;background:#f7f9fc;color:#132137}.wrap{width:min(1050px,94%);margin:24px auto}.head{display:flex;align-items:center;gap:16px;margin-bottom:18px}.logo{width:110px;height:65px;object-fit:contain}.head a{margin-right:auto;color:var(--navy);font-weight:700;text-decoration:none}.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px;margin-bottom:14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.btn{border:0;border-radius:8px;padding:9px 13px;background:var(--navy);color:#fff;font-weight:700;cursor:pointer}.btn.red{background:var(--red)}textarea,select{width:100%;padding:10px;border:1px solid #ccd5e2;border-radius:8px}textarea{min-height:75px}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef3fa}.notice{background:#eaf8ef;color:#207a43;padding:10px;border-radius:9px;margin-bottom:12px}.csat{border-right:4px solid var(--navy)}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}@media(max-width:700px){.grid,.form-grid{grid-template-columns:1fr}.head{flex-wrap:wrap}}</style></head><body><main class="wrap"><div class="head"><img class="logo" src="{{ route('brand.logo') }}" alt="UNIFCO"><div><h1 style="margin:0;color:var(--navy)">اعتماد الأعمال المكتملة</h1><div style="color:var(--muted)">مراجعة واعتماد أو رفض أوامر العمل بعد إتمام الصيانة.</div></div><a href="{{ route('customer.portal') }}">العودة إلى البوابة</a></div>@if(session('status'))<div class="notice">{{ session('status') }}</div>@endif<h2>بانتظار قرارك</h2><div class="grid">@forelse($pending as $w)<section class="card"><strong>{{ $w->work_order_no }}</strong><p>النوع: {{ $w->maintenance_type }}<br>تاريخ الإكمال: {{ $w->completed_at?->format('Y-m-d H:i') }}<br>التكلفة: {{ number_format((float)$w->total_cost,2) }} SAR</p><form method="POST" action="{{ route('customer.work-acceptance.decide',$w) }}">@csrf<textarea name="notes" placeholder="ملاحظات العميل"></textarea><div style="display:flex;gap:8px;margin-top:10px"><button class="btn" name="decision" value="ACCEPT">اعتماد</button><button class="btn red" name="decision" value="REJECT">رفض وطلب مراجعة</button></div></form></section>@empty<section class="card">لا توجد أعمال مكتملة بانتظار الاعتماد.</section>@endforelse</div><h2>قياس رضا العميل</h2><div class="grid">@forelse($satisfactionRequests as $sr)<section class="card csat"><strong>{{ $sr->request_no }}</strong><p>تم إغلاق العمل تشغيليًا. ساعدنا بتقييم الخدمة لإكمال إغلاق الطلب.</p><form method="POST" action="{{ route('customer.requests.satisfaction',$sr) }}">@csrf<div class="form-grid"><label>التقييم<select name="rating" required><option value="">اختر</option><option value="5">5 - ممتاز</option><option value="4">4 - جيد جدًا</option><option value="3">3 - جيد</option><option value="2">2 - يحتاج تحسين</option><option value="1">1 - غير مرضٍ</option></select></label><label>NPS<select name="nps"><option value="">اختياري</option>@for($i=10;$i>=0;$i--)<option value="{{ $i }}">{{ $i }}</option>@endfor</select></label></div><textarea name="comment" placeholder="ملاحظاتك على الخدمة"></textarea><button class="btn" style="margin-top:10px">إرسال التقييم وإغلاق الطلب</button></form></section>@empty<section class="card">لا توجد طلبات بانتظار تقييم الرضا حاليًا.</section>@endforelse</div><h2>سجل القرارات</h2>@forelse($history as $w)<section class="card"><strong>{{ $w->work_order_no }}</strong> <span class="pill">{{ $w->customer_accepted_at ? 'معتمد' : 'مرفوض' }}</span><p>{{ $w->customer_acceptance_notes ?: 'بدون ملاحظات' }}</p></section>@empty<section class="card">لا يوجد سجل قرارات بعد.</section>@endforelse</main></body></html>
+@include('customer.partials.portal-shell-open',[
+    'customer'=>$customer,
+    'activeSection'=>'actions',
+    'pageTitle'=>'اعتماد الأعمال والتقييم · Work Acceptance',
+    'pageDescription'=>'مراجعة الأعمال المكتملة وتقييم خدمات الشركة بالكامل',
+])
+
+<div class="portal-page-head">
+    <div><h2>اعتماد الأعمال المكتملة</h2><p>جميع أوامر العمل المنجزة الخاصة بالشركة والقرارات السابقة وطلبات تقييم الرضا.</p></div>
+    <span class="portal-pill {{ $pending->count() ? 'red' : 'green' }}">{{ $pending->count() }} بانتظار القرار</span>
+</div>
+
+<section class="portal-card portal-panel">
+    <h3>بانتظار قرار العميل · Awaiting Acceptance</h3>
+    <div class="accept-grid">
+        @forelse($pending as $workOrder)
+            <article class="accept-item">
+                <div class="accept-head"><a href="{{ route('customer.work-orders.show',$workOrder) }}"><strong>{{ $workOrder->work_order_no }}</strong></a><span class="portal-pill amber">{{ str_replace('_',' ',$workOrder->maintenance_type) }}</span></div>
+                <div class="accept-meta">اكتمل في {{ $workOrder->completed_at?->format('Y-m-d H:i') ?: '—' }}</div>
+                <form method="POST" action="{{ route('customer.work-acceptance.decide',$workOrder) }}">@csrf
+                    <textarea name="notes" maxlength="2000" placeholder="ملاحظات القرار أو تفاصيل العمل المطلوب مراجعته"></textarea>
+                    <div class="accept-actions"><button class="portal-btn green" name="decision" value="ACCEPT">اعتماد الأعمال</button><button class="portal-btn red" name="decision" value="REJECT">طلب إعادة العمل</button></div>
+                </form>
+            </article>
+        @empty
+            <div class="portal-empty"><strong>لا توجد أعمال بانتظار الاعتماد</strong>كل الأعمال المكتملة تمت مراجعتها حاليًا.</div>
+        @endforelse
+    </div>
+</section>
+
+<section class="portal-card portal-panel section-gap">
+    <h3>قياس رضا العميل · Customer Satisfaction</h3>
+    <div class="accept-grid">
+        @forelse($satisfactionRequests as $request)
+            <article class="accept-item">
+                <a href="{{ route('customer.service-requests.show',$request) }}"><strong>{{ $request->request_no }}</strong></a>
+                <p>تم إغلاق العمل تشغيليًا. قيّم الخدمة لإكمال دورة الطلب.</p>
+                <form method="POST" action="{{ route('customer.requests.satisfaction',$request) }}">@csrf
+                    <div class="score-grid"><label>التقييم<select name="rating" required><option value="">اختر</option>@for($i=5;$i>=1;$i--)<option value="{{ $i }}">{{ $i }} / 5</option>@endfor</select></label><label>NPS<select name="nps"><option value="">اختياري</option>@for($i=10;$i>=0;$i--)<option value="{{ $i }}">{{ $i }}</option>@endfor</select></label></div>
+                    <textarea name="comment" maxlength="2000" placeholder="ملاحظاتك على الخدمة"></textarea>
+                    <button class="portal-btn">إرسال التقييم وإغلاق الطلب</button>
+                </form>
+            </article>
+        @empty
+            <div class="portal-empty"><strong>لا توجد تقييمات مطلوبة</strong>لا توجد طلبات بانتظار قياس الرضا حاليًا.</div>
+        @endforelse
+    </div>
+</section>
+
+<section class="portal-card portal-panel section-gap">
+    <h3>سجل قرارات الشركة · Company Decision History</h3>
+    <div class="portal-table-wrap"><table class="portal-table"><thead><tr><th>أمر العمل</th><th>القرار</th><th>التاريخ</th><th>الملاحظات</th></tr></thead><tbody>
+        @forelse($history as $workOrder)<tr><td><a href="{{ route('customer.work-orders.show',$workOrder) }}"><strong>{{ $workOrder->work_order_no }}</strong></a></td><td><span class="portal-pill {{ $workOrder->customer_accepted_at ? 'green' : 'red' }}">{{ $workOrder->customer_accepted_at ? 'معتمد' : 'إعادة عمل' }}</span></td><td>{{ ($workOrder->customer_accepted_at ?: $workOrder->customer_rejected_at)?->format('Y-m-d H:i') }}</td><td>{{ $workOrder->customer_acceptance_notes ?: '—' }}</td></tr>
+        @empty<tr><td colspan="4" class="portal-empty">لا يوجد سجل قرارات بعد.</td></tr>@endforelse
+    </tbody></table></div>
+</section>
+
+@push('late-styles')<style>
+.accept-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.accept-item{border:1px solid #e5ebf2;border-radius:11px;padding:14px;min-width:0}.accept-head,.accept-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.accept-meta,.accept-item p{color:var(--muted);font-size:9px;margin:7px 0 11px}.accept-item textarea,.accept-item select{width:100%;border:1px solid #d9e1eb;border-radius:8px;padding:9px;background:#fff;font-size:10px}.accept-item textarea{min-height:74px;resize:vertical;margin-bottom:9px}.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}.score-grid label{font-size:9px;font-weight:700}.section-gap{margin-top:12px}@media(max-width:800px){.accept-grid{grid-template-columns:1fr}}
+</style>@endpush
+@include('customer.partials.portal-shell-close')

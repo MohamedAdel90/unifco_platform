@@ -29,7 +29,8 @@ class CustomerAssetReadController extends Controller
         $failureCount=$failures->count();$totalDowntime=(int)$failures->sum('downtime_minutes');$mttr=$failureCount?round($totalDowntime/$failureCount,1):null;$chronological=$failures->sortBy('failed_at')->values();$intervals=[];
         for($i=1;$i<$chronological->count();$i++){if(!$chronological[$i-1]->restored_at)continue;$start=\Carbon\Carbon::parse($chronological[$i-1]->restored_at);$end=\Carbon\Carbon::parse($chronological[$i]->failed_at);if($end->greaterThan($start))$intervals[]=$start->diffInMinutes($end);}
         $mtbf=count($intervals)?round(array_sum($intervals)/count($intervals),1):null;$completed=$workOrders->where('status','COMPLETED')->count();$pm=$workOrders->where('maintenance_type','PREVENTIVE');$pmCompliance=$pm->count()?round($pm->where('status','COMPLETED')->count()/$pm->count()*100,1):100;$metrics=compact('failureCount','totalDowntime','mttr','mtbf','completed','pmCompliance');
-        return view('customer.asset-detail',compact('asset','plans','workOrders','failures','documents','specifications','attachments','metrics'));
+        $customer=$asset->customer;
+        return view('customer.asset-detail',compact('customer','asset','plans','workOrders','failures','documents','specifications','attachments','metrics'));
     }
 
     public function workOrder(WorkOrder $workOrder, CustomerPortalAccessService $access): View
@@ -40,7 +41,8 @@ class CustomerAssetReadController extends Controller
         $attachments=DB::table('work_order_attachments')->where('work_order_id',$workOrder->id)->whereIn('attachment_type',['PHOTO','BEFORE_PHOTO','AFTER_PHOTO','THERMAL_IMAGE'])->latest()->get();
         $materials=DB::table('maintenance_materials')->join('items','items.id','=','maintenance_materials.item_id')->where('maintenance_materials.work_order_id',$workOrder->id)->select('maintenance_materials.quantity','items.item_code','items.name as item_name','items.uom')->get();
         $failures=DB::table('asset_failures')->where('work_order_id',$workOrder->id)->select('failure_mode','failure_effect','corrective_action','failed_at','restored_at','downtime_minutes','severity','status')->get();
-        return view('customer.work-order-detail',compact('workOrder','tasks','attachments','materials','failures'));
+        $customer=$workOrder->asset->customer;
+        return view('customer.work-order-detail',compact('customer','workOrder','tasks','attachments','materials','failures'));
     }
 
     public function attachment(WorkOrder $workOrder,int $attachment, CustomerPortalAccessService $access)
