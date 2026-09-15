@@ -3,136 +3,75 @@
 namespace Tests\Feature;
 
 use App\Models\{Asset,Customer,CustomerSite,User};
+use App\Services\CustomerPortalAccessService;
 use Database\Seeders\WorkflowTestUsersSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class CustomerPortalRbacPhase1Test extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_customer_roles_receive_different_sidebar_sections(): void
+    public function test_customer_login_has_one_full_cross_functional_portal_scope(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
-        $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
-        $site=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
-        $finance=User::where('email','workflow.finance@unifco.local')->firstOrFail();
-        $viewer=User::where('email','workflow.viewer@unifco.local')->firstOrFail();
+        $user=User::where('email','workflow.customer@unifco.local')->firstOrFail();
+        $access=app(CustomerPortalAccessService::class);
 
-        $this->actingAs($admin)->get('/customer')->assertOk()->assertSee('CUSTOMER ADMIN')->assertSee('Invoices')->assertSee('Assets')->assertSee('Users &amp; Access',false);
-        $this->actingAs($site)->get('/customer')->assertOk()->assertSee('SITE MANAGER')->assertSee('Work Orders')->assertDontSee('Invoices')->assertDontSee('Users &amp; Access',false);
-        $this->actingAs($finance)->get('/customer')->assertOk()->assertSee('FINANCE')->assertSee('Invoices')->assertSee('Quotations')->assertDontSee('Work Orders')->assertDontSee('Users &amp; Access',false);
-        $this->actingAs($viewer)->get('/customer')->assertOk()->assertSee('READ ONLY')->assertDontSee('Users &amp; Access',false);
+        $this->assertSame('CUSTOMER_ACCOUNT',$access->role($user));
+        foreach(['requests','sites','assets','work-orders','maintenance','spare-parts','quotations','contracts','invoices','reports','documents','notifications'] as $section){
+            $this->assertTrue($access->canSection($user,$section),$section.' should be visible to the single customer login.');
+        }
+
+        $this->assertTrue($access->canCreateServiceRequest($user));
+        $this->assertTrue($access->canDecideQuotation($user));
+        $this->assertTrue($access->canAcceptWork($user));
+        $this->assertFalse($access->isReadOnly($user));
     }
 
-    public function test_customer_command_center_exposes_role_aware_grouped_navigation(): void
+    public function test_legacy_customer_portal_role_does_not_hide_finance_or_operations(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
-        $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
-        $siteManager=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
-        $finance=User::where('email','workflow.finance@unifco.local')->firstOrFail();
+        $user=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
 
-        $this->actingAs($admin)->get('/customer')
+        // Legacy persona values may still exist during migration, but the new
+        // policy is customer-account based: one login sees the whole customer.
+        $this->actingAs($user)->get('/customer/invoices')->assertOk();
+        $this->actingAs($user)->get('/customer/contracts')->assertOk();
+        $this->actingAs($user)->get('/customer/assets')->assertOk();
+        $this->actingAs($user)->get('/customer/work-orders')->assertOk();
+    }
+
+    public function test_single_customer_login_is_not_allowed_to_create_more_portal_users(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $user=User::where('email','workflow.customer@unifco.local')->firstOrFail();
+        $access=app(CustomerPortalAccessService::class);
+
+        $this->assertFalse($access->canManageUsers($user));
+        $this->actingAs($user)->get('/customer/users-access')->assertForbidden();
+    }
+
+    public function test_single_login_sees_all_sites_and_assets_but_never_another_customer(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $user=User::where('email','workflow.customer@unifco.local')->firstOrFail();
+        $customer=Customer::findOrFail($user->customer_id);
+
+        $siteA=CustomerSite::where('customer_id',$customer->id)->firstOrFail();
+        $siteB=CustomerSite::create(['customer_id'=>$customer->id,'site_code'=>'WF-JED-01','name'=>'Jeddah Site','city'=>'Jeddah','status'=>'ACTIVE']);
+        $assetA=Asset::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'customer_id'=>$customer->id,'customer_site_id'=>$siteA->id,'asset_code'=>'FULL-A-1','name'=>'Riyadh Generator','status'=>'REGISTERED']);
+        $assetB=Asset::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'customer_id'=>$customer->id,'customer_site_id'=>$siteB->id,'asset_code'=>'FULL-A-2','name'=>'Jeddah Generator','status'=>'REGISTERED']);
+
+        $other=Customer::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'customer_code'=>'OTHER-FULL','name'=>'Other Customer','status'=>'ACTIVE']);
+        $otherSite=CustomerSite::create(['customer_id'=>$other->id,'site_code'=>'OTHER-SITE','name'=>'Other Site','city'=>'Dammam','status'=>'ACTIVE']);
+        $foreign=Asset::create(['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'customer_id'=>$other->id,'customer_site_id'=>$otherSite->id,'asset_code'=>'FOREIGN-A-1','name'=>'Foreign Generator','status'=>'REGISTERED']);
+
+        $this->actingAs($user)->get('/customer/assets')
             ->assertOk()
-            ->assertSee('UNIFCO Customer Command Center')
-            ->assertSee('Action Required From You')
-            ->assertSee('My Work')
-            ->assertSee('Sites &amp; Assets', false)
-            ->assertSee('Visits &amp; Schedule', false)
-            ->assertSee('Spare Parts')
-            ->assertSee('Users &amp; Access', false);
-
-        $this->actingAs($siteManager)->get('/customer')
-            ->assertOk()
-            ->assertSee('Sites &amp; Assets', false)
-            ->assertSee('Visits &amp; Schedule', false)
-            ->assertSee('Spare Parts')
-            ->assertDontSee('Invoices &amp; Payments', false);
-
-        $this->actingAs($finance)->get('/customer')
-            ->assertOk()
-            ->assertSee('Commercial &amp; Contracts', false)
-            ->assertSee('Invoices')
-            ->assertDontSee('Spare Parts')
-            ->assertDontSee('Assets &amp; Equipment', false);
-    }
-
-    public function test_new_customer_portal_sections_follow_role_permissions(): void
-    {
-        $this->seed(WorkflowTestUsersSeeder::class);
-        $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
-        $siteManager=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
-        $finance=User::where('email','workflow.finance@unifco.local')->firstOrFail();
-
-        $this->actingAs($admin)->get('/customer/sites')->assertOk()->assertSee('Authorized locations');
-        $this->actingAs($admin)->get('/customer/visits')->assertOk()->assertSee('Visits &amp; Schedule', false);
-        $this->actingAs($siteManager)->get('/customer/spare-parts')->assertOk()->assertSee('Spare Parts');
-        $this->actingAs($finance)->get('/customer/sites')->assertForbidden();
-        $this->actingAs($finance)->get('/customer/spare-parts')->assertForbidden();
-    }
-
-    public function test_site_manager_cannot_open_finance_or_users_access(): void
-    {
-        $this->seed(WorkflowTestUsersSeeder::class);
-        $site=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
-        $this->actingAs($site)->get('/customer/invoices')->assertForbidden();
-        $this->actingAs($site)->get('/customer/users-access')->assertForbidden();
-    }
-
-    public function test_site_scope_hides_assets_from_other_sites(): void
-    {
-        $this->seed(WorkflowTestUsersSeeder::class);
-        $siteUser=User::where('email','workflow.site.manager@unifco.local')->firstOrFail();
-        $customer=Customer::findOrFail($siteUser->customer_id);
-        $allowedSite=CustomerSite::where('customer_id',$customer->id)->where('site_code','WF-RUH-01')->firstOrFail();
-        $otherSite=CustomerSite::create(['customer_id'=>$customer->id,'site_code'=>'WF-JED-01','name'=>'Jeddah Site','city'=>'Jeddah','status'=>'ACTIVE']);
-        $allowed=Asset::create(['tenant_id'=>$siteUser->tenant_id,'organization_id'=>$siteUser->organization_id,'customer_id'=>$customer->id,'customer_site_id'=>$allowedSite->id,'asset_code'=>'WF-A-1','name'=>'Allowed Generator','status'=>'REGISTERED']);
-        $hidden=Asset::create(['tenant_id'=>$siteUser->tenant_id,'organization_id'=>$siteUser->organization_id,'customer_id'=>$customer->id,'customer_site_id'=>$otherSite->id,'asset_code'=>'WF-A-2','name'=>'Hidden Generator','status'=>'REGISTERED']);
-
-        $this->actingAs($siteUser)->get('/customer/assets')->assertOk()->assertSee('Allowed Generator')->assertDontSee('Hidden Generator');
-        $this->actingAs($siteUser)->get('/customer/assets/'.$hidden->id)->assertNotFound();
-        $this->actingAs($siteUser)->get('/customer/assets/'.$allowed->id)->assertOk();
-    }
-
-    public function test_viewer_cannot_create_service_request(): void
-    {
-        $this->seed(WorkflowTestUsersSeeder::class);
-        $viewer=User::where('email','workflow.viewer@unifco.local')->firstOrFail();
-        $this->actingAs($viewer)->post('/customer/service-requests',[
-            'service_category'=>'Maintenance','subject'=>'Should fail','details'=>'Read only user','priority'=>'NORMAL',
-        ])->assertForbidden();
-    }
-
-    public function test_customer_admin_can_create_scoped_site_manager(): void
-    {
-        $this->seed(WorkflowTestUsersSeeder::class);
-        $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
-        $site=CustomerSite::where('customer_id',$admin->customer_id)->where('site_code','WF-RUH-01')->firstOrFail();
-
-        $this->actingAs($admin)->post('/customer/users-access',[
-            'name'=>'Riyadh Operations User','email'=>'riyadh.ops@customer.test','customer_portal_role'=>'SITE_MANAGER','password'=>'CustomerTest!2026','site_ids'=>[$site->id],
-        ])->assertRedirect();
-
-        $user=User::where('email','riyadh.ops@customer.test')->firstOrFail();
-        $this->assertSame('CUSTOMER',(string)$user->role);
-        $this->assertSame('SITE_MANAGER',(string)$user->customer_portal_role);
-        $this->assertSame($admin->customer_id,$user->customer_id);
-        $this->assertDatabaseHas('customer_portal_user_scopes',['user_id'=>$user->id,'scope_type'=>'SITE','scope_id'=>$site->id]);
-    }
-
-    public function test_customer_admin_cannot_assign_scope_from_another_customer(): void
-    {
-        $this->seed(WorkflowTestUsersSeeder::class);
-        $admin=User::where('email','workflow.customer@unifco.local')->firstOrFail();
-        $otherCustomer=Customer::create(['tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,'customer_code'=>'OTHER-1','name'=>'Other Customer','status'=>'ACTIVE']);
-        $foreignSite=CustomerSite::create(['customer_id'=>$otherCustomer->id,'site_code'=>'OTHER-SITE','name'=>'Other Site','city'=>'Jeddah','status'=>'ACTIVE']);
-
-        $this->actingAs($admin)->post('/customer/users-access',[
-            'name'=>'Scoped Viewer','email'=>'scoped.viewer@customer.test','customer_portal_role'=>'VIEWER','password'=>'CustomerTest!2026','site_ids'=>[$foreignSite->id],
-        ])->assertRedirect();
-
-        $user=User::where('email','scoped.viewer@customer.test')->firstOrFail();
-        $this->assertFalse(DB::table('customer_portal_user_scopes')->where('user_id',$user->id)->where('scope_type','SITE')->where('scope_id',$foreignSite->id)->exists());
+            ->assertSee($assetA->name)
+            ->assertSee($assetB->name)
+            ->assertDontSee($foreign->name);
+        $this->actingAs($user)->get('/customer/assets/'.$foreign->id)->assertNotFound();
     }
 }
