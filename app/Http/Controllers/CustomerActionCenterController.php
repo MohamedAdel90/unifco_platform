@@ -22,12 +22,12 @@ class CustomerActionCenterController extends Controller
         $contractIds=$access->accessibleContractIds($user);
 
         $quotationQuery=CrmQuotation::where('customer_id',$customerId)->whereIn('status',['SENT','UNDER_REVIEW','REVISION_REQUESTED']);
-        $quotations=$quotationQuery->latest('quotation_date')->limit(20)->get();
+        $quotations=$quotationQuery->oldest('quotation_date')->limit(20)->get();
 
         $workQuery=WorkOrder::with('asset')->where('status','COMPLETED')->whereNull('customer_accepted_at')->whereNull('customer_rejected_at');
         if($assetIds!==null) $workQuery->whereIn('asset_id',$assetIds);
         else $workQuery->whereIn('asset_id',Asset::where('customer_id',$customerId)->pluck('id'));
-        $workOrders=$workQuery->latest('completed_at')->limit(20)->get();
+        $workOrders=$workQuery->oldest('completed_at')->limit(20)->get();
 
         $invoiceQuery=FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')->where('open_amount','>',0)
             ->whereNotNull('due_date')->where('due_date','<=',now()->addDays(14));
@@ -46,8 +46,23 @@ class CustomerActionCenterController extends Controller
                 ->where('customer_conversations.customer_id',$customerId)->where('customer_messages.sender_side','UNIFCO')->whereNull('customer_messages.read_at')->count();
         }
 
+        $allowedTypes=['all','quotations','work','invoices','renewals','messages'];
+        $actionType=(string)$request->query('type','all');
+        if(!in_array($actionType,$allowedTypes,true)) $actionType='all';
+
+        $today=today();
+        $overdueInvoices=$invoices->filter(fn(FinancialDocument $invoice)=>$invoice->due_date?->lt($today))->count();
+        $dueTodayInvoices=$invoices->filter(fn(FinancialDocument $invoice)=>$invoice->due_date?->isSameDay($today))->count();
+        $renewalsWithin30Days=$contracts->filter(fn(ServiceContract $contract)=>$contract->ends_on?->lte($today->copy()->addDays(30)))->count();
+        $acceptanceOver7Days=$workOrders->filter(fn(WorkOrder $workOrder)=>$workOrder->completed_at?->lt(now()->subDays(7)))->count();
+        $urgentTotal=$overdueInvoices+$dueTodayInvoices+$renewalsWithin30Days+$acceptanceOver7Days;
         $total=$quotations->count()+$workOrders->count()+$invoices->count()+$contracts->count()+$unread;
 
-        return view('customer.action-center',compact('user','customer','role','quotations','workOrders','invoices','contracts','submittedActions','unread','total'));
+        $nextDueAt=$invoices->pluck('due_date')->concat($contracts->pluck('ends_on'))->filter()->sort()->first();
+
+        return view('customer.action-center',compact(
+            'user','customer','role','quotations','workOrders','invoices','contracts','submittedActions','unread','total','actionType',
+            'overdueInvoices','dueTodayInvoices','renewalsWithin30Days','acceptanceOver7Days','urgentTotal','nextDueAt'
+        ));
     }
 }
