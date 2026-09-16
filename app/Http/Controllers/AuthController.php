@@ -48,6 +48,7 @@ class AuthController extends Controller
 
         if($authorization->allows($user,'system.dashboard.view')) return redirect()->intended(route('system-admin.dashboard'));
         if($user->role==='CUSTOMER') return redirect()->intended(route('customer.portal'));
+        if($user->hasRole('OPERATIONS_MANAGER')) return redirect()->intended(route('operations-manager.dashboard'));
         if($user->role==='STOREKEEPER') return redirect()->intended(route('inventory.warehouse.index'));
         if(in_array($user->role,self::WORKFLOW_ROLES,true)) return redirect()->intended(route('workflow.workspace'));
         return redirect()->intended(route('dashboard'));
