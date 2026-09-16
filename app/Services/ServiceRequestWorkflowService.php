@@ -131,6 +131,7 @@ class ServiceRequestWorkflowService
                 'next_action' => null,
                 'current_stage_due_at' => null,
                 'status' => 'COMPLETED',
+                'resolved_at' => $request->resolved_at ?: now(),
             ]);
             return null;
         }
@@ -170,9 +171,9 @@ class ServiceRequestWorkflowService
             $step->update([
                 'status' => $step->id === $target->id ? 'PENDING' : 'WAITING',
                 'due_at' => $step->id === $target->id ? now()->addMinutes((int) $step->sla_minutes) : null,
-                'decided_by' => $step->id === $target->id ? null : $step->decided_by,
-                'decision_note' => $step->id === $target->id ? $note : $step->decision_note,
-                'decided_at' => $step->id === $target->id ? null : $step->decided_at,
+                'decided_by' => null,
+                'decision_note' => $step->id === $target->id ? $note : null,
+                'decided_at' => null,
             ]);
         }
 
@@ -187,6 +188,59 @@ class ServiceRequestWorkflowService
         ]);
 
         return $target->fresh();
+    }
+
+    public function returnToPrevious(ServiceRequest $request, string $currentStage, ?int $actorId = null, ?string $note = null): ApprovalRequest
+    {
+        $current = ApprovalRequest::query()
+            ->where('tenant_id', $request->tenant_id)
+            ->where('entity_type', ServiceRequest::class)
+            ->where('entity_id', $request->id)
+            ->where('action', $currentStage)
+            ->firstOrFail();
+        $previous = ApprovalRequest::query()
+            ->where('tenant_id', $request->tenant_id)
+            ->where('entity_type', ServiceRequest::class)
+            ->where('entity_id', $request->id)
+            ->where('step_order', '<', $current->step_order)
+            ->orderByDesc('step_order')
+            ->first();
+
+        abort_unless($previous, 422, 'This workflow has no previous stage to return to.');
+        return $this->returnTo($request, $previous->action, $actorId, $note);
+    }
+
+    public function reject(ServiceRequest $request, string $currentStage, ?int $actorId = null, ?string $note = null): void
+    {
+        $current = ApprovalRequest::query()
+            ->where('tenant_id', $request->tenant_id)
+            ->where('entity_type', ServiceRequest::class)
+            ->where('entity_id', $request->id)
+            ->where('action', $currentStage)
+            ->first();
+        if ($current) {
+            $current->update([
+                'status' => 'REJECTED',
+                'decided_by' => $actorId,
+                'decision_note' => $note,
+                'decided_at' => now(),
+            ]);
+            ApprovalRequest::query()
+                ->where('tenant_id', $request->tenant_id)
+                ->where('entity_type', ServiceRequest::class)
+                ->where('entity_id', $request->id)
+                ->where('step_order', '>', $current->step_order)
+                ->whereIn('status', ['WAITING','PENDING'])
+                ->update(['status' => 'CANCELLED', 'due_at' => null]);
+        }
+        $request->update([
+            'status' => 'REJECTED',
+            'workflow_stage' => 'REJECTED',
+            'assigned_department' => null,
+            'approval_state' => 'REJECTED',
+            'next_action' => null,
+            'current_stage_due_at' => null,
+        ]);
     }
 
     private function slaFor(string $stage): int

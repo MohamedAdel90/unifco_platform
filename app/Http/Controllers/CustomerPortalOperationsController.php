@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset,CrmQuotation,Customer,FinancialDocument,MaintenanceVisitReport,ServiceContract,ServiceRequest};
+use App\Models\{ApprovalRequest,Asset,CrmQuotation,Customer,FinancialDocument,MaintenanceVisitReport,ServiceContract,ServiceRequest};
 use App\Services\{CustomerLifecycleService,CustomerPdfService,CustomerPortalAccessService,ServiceRequestWorkflowService};
 use Illuminate\Http\{RedirectResponse,Request,Response};
 use Illuminate\Support\Facades\DB;
@@ -31,14 +31,40 @@ class CustomerPortalOperationsController extends Controller
         return redirect()->route('customer.section','requests')->with('status','تم إرسال طلب الخدمة وبدء مسار المراجعة والـSLA.');
     }
 
-    public function decideQuotation(Request $request, CrmQuotation $quotation, CustomerLifecycleService $lifecycle, CustomerPortalAccessService $access): RedirectResponse
+    public function decideQuotation(Request $request, CrmQuotation $quotation, CustomerLifecycleService $lifecycle, CustomerPortalAccessService $access, ServiceRequestWorkflowService $workflow): RedirectResponse
     {
         $user=$this->user(); abort_unless($access->canDecideQuotation($user),403,'Your portal role cannot decide quotations.');
         abort_unless((int)$quotation->customer_id===(int)$user->customer_id,403);
         $data=$request->validate(['decision'=>['required','in:APPROVE,REJECT,REVISION'],'notes'=>['nullable','string','max:2000']]);
         $quotation->update(match($data['decision']){'APPROVE'=>['status'=>'CUSTOMER_APPROVED','customer_approved_at'=>now(),'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null],'REJECT'=>['status'=>'CUSTOMER_REJECTED','customer_rejected_at'=>now(),'customer_approved_at'=>null,'customer_decision_notes'=>$data['notes']??null],default=>['status'=>'REVISION_REQUESTED','customer_approved_at'=>null,'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null]});
+        $serviceRequest=ServiceRequest::query()->where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)->where('quotation_id',$quotation->id)->latest('id')->first();
+        if($serviceRequest && $serviceRequest->workflow_stage==='CUSTOMER_DECISION'){
+            if($data['decision']==='APPROVE') $workflow->advance($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer approved quotation.');
+            elseif($data['decision']==='REJECT') $workflow->reject($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer rejected quotation.');
+            else {
+                $target=collect($serviceRequest->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION'
+                    ? ['FINANCE_REVIEW','OPERATIONS_FEASIBILITY','CONTRACT_REVIEW']
+                    : ['PRICING_PROCUREMENT','PRICING','TECHNICAL_REVIEW'])
+                    ->first(fn($stage)=>ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$serviceRequest->id)->where('action',$stage)->exists());
+                $target?$workflow->returnTo($serviceRequest,$target,$user->id,$data['notes']??'Customer requested quotation revision.'):$workflow->returnToPrevious($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer requested quotation revision.');
+            }
+        }
         $customer=Customer::findOrFail($user->customer_id);$lifecycle->record($customer,'QUOTATION_'.$data['decision'],'Quotation '.$quotation->quotation_no.' '.$data['decision'],$data['notes']??null,$quotation);
         return back()->with('status','تم تسجيل قرار عرض السعر وتحديث سجل العميل.');
+    }
+
+    public function decideServiceRequest(Request $request, ServiceRequest $serviceRequest, CustomerLifecycleService $lifecycle, CustomerPortalAccessService $access, ServiceRequestWorkflowService $workflow): RedirectResponse
+    {
+        $user=$this->user(); abort_unless($access->canSection($user,'requests'),403);
+        abort_unless((int)$serviceRequest->tenant_id===(int)$user->tenant_id && (int)$serviceRequest->customer_id===(int)$user->customer_id,404);
+        abort_unless($serviceRequest->workflow_stage==='CUSTOMER_DELIVERY',422,'This request is not waiting for customer delivery confirmation.');
+        $data=$request->validate(['decision'=>['required','in:ACCEPT,REJECT,REVISION'],'notes'=>['nullable','string','max:2000']]);
+        if($data['decision']==='ACCEPT') $workflow->advance($serviceRequest,'CUSTOMER_DELIVERY',$user->id,$data['notes']??'Customer accepted technical delivery.');
+        elseif($data['decision']==='REJECT') $workflow->reject($serviceRequest,'CUSTOMER_DELIVERY',$user->id,$data['notes']??'Customer rejected technical delivery.');
+        else $workflow->returnTo($serviceRequest,'TECHNICAL_REPORT',$user->id,$data['notes']??'Customer requested report revision.');
+        $customer=Customer::findOrFail($user->customer_id);
+        $lifecycle->record($customer,'TECHNICAL_DELIVERY_'.$data['decision'],'Technical delivery '.$data['decision'],$data['notes']??null,$serviceRequest);
+        return back()->with('status','تم تسجيل قرار العميل على التسليم الفني.');
     }
 
     public function invoicePdf(FinancialDocument $invoice, CustomerPdfService $pdf, CustomerPortalAccessService $access): Response

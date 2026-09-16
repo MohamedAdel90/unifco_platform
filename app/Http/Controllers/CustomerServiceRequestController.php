@@ -143,10 +143,11 @@ class CustomerServiceRequestController extends Controller
         $canAccept=$serviceRequest->workflow_stage==='CUSTOMER_ACCEPTANCE'
             && $workOrder && $workOrder->status==='COMPLETED'
             && $access->canAcceptWork($user);
+        $canDecideDelivery=$serviceRequest->workflow_stage==='CUSTOMER_DELIVERY';
 
         return view('customer.service-requests.show',[
             'customer'=>$customer,'serviceRequest'=>$serviceRequest,'asset'=>$asset,'site'=>$site,'contract'=>$contract,
-            'workOrder'=>$workOrder,'events'=>$events,'attachments'=>$attachments,'canAccept'=>$canAccept,
+            'workOrder'=>$workOrder,'events'=>$events,'attachments'=>$attachments,'canAccept'=>$canAccept,'canDecideDelivery'=>$canDecideDelivery,
             'portalRole'=>$access->role($user),'allowedSections'=>$access->allowedSections($user),
             'canManageUsers'=>$access->canManageUsers($user),'readOnly'=>$access->isReadOnly($user),
         ]);
