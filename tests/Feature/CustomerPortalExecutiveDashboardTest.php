@@ -4,15 +4,32 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 
-/** Release qualification for the compact Customer 360 V2.1 dashboard. */
+/** Release qualification for the live Customer 360 dashboard and final QA semantics. */
 class CustomerPortalExecutiveDashboardTest extends TestCase
 {
-    public function test_customer_portal_dashboard_contains_v21_executive_sections_and_drilldowns(): void
+    public function test_live_dashboard_uses_the_production_section_view_and_final_qa_layer(): void
     {
-        $view = file_get_contents(resource_path('views/customer/portal.blade.php'));
+        $wrapper = file_get_contents(resource_path('views/customer/section.blade.php'));
+        $dashboard = file_get_contents(resource_path('views/customer/section-base.blade.php'));
+
+        $this->assertStringContainsString("@include('customer.section-base')", $wrapper);
 
         foreach ([
-            'Customer 360 · Operations, assets, contracts, finance and service delivery in one unified account.',
+            'Service attention is being tracked by UNIFCO',
+            'No customer decision is required right now.',
+            'active request SLA risk',
+            'performance not yet measurable',
+            'active SLA risk',
+            'SERVICE & MAINTENANCE',
+            ".lower-grid{align-items:start!important}",
+            "roleNote.style.display = 'none'",
+        ] as $requirement) {
+            $this->assertStringContainsString($requirement, $wrapper);
+        }
+
+        foreach ([
+            'Customer 360 Executive Dashboard',
+            'data-action-center-panel',
             'Service Request Journey',
             'Priority Today',
             'Asset Health',
@@ -20,31 +37,14 @@ class CustomerPortalExecutiveDashboardTest extends TestCase
             'Contracts & SLA',
             'Financial Summary',
             'Recent Relationship Activity',
-            'Unified customer account',
-            'No eligible completed requests yet',
-            'Requires operational follow-up',
+            'SLA Compliance',
         ] as $section) {
-            $this->assertStringContainsString($section, $view);
+            $this->assertStringContainsString($section, $dashboard);
         }
 
-        foreach ([
-            '/request-service?type=emergency',
-            '/request-service?type=quotation',
-            '/request-service?type=spare_parts',
-            '/request-service?type=consultation',
-            '/customer/service-requests?status=',
-            '/customer/work-orders',
-            '/customer/assets',
-            '/customer/visits',
-            '/customer/contracts',
-            '/customer/finance',
-            '/customer/activity',
-        ] as $target) {
-            $this->assertStringContainsString($target, $view);
-        }
-
-        $this->assertStringContainsString('grid-template-columns:repeat(8,1fr)', $view);
-        $this->assertStringContainsString("attention {{ \$pendingQ>0?'warn':'' }}", $view);
-        $this->assertStringContainsString('server-authorized scope', $view);
+        // Customer decisions remain separate from UNIFCO operational exceptions.
+        $this->assertStringContainsString('$actionRequiredCount', $dashboard);
+        $this->assertStringContainsString('$dashboardHealth', $dashboard);
+        $this->assertStringContainsString("route('customer.actions')", $dashboard);
     }
 }
