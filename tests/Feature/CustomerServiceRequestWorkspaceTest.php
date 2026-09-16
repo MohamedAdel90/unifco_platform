@@ -106,4 +106,33 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
 
         $this->actingAs($admin)->get(route('customer.service-requests.show',$foreign))->assertNotFound();
     }
+
+    public function test_customer_can_filter_the_workspace_to_overdue_requests(): void
+    {
+        [$admin,$request]=$this->adminAndRequest();
+        $request->update(['current_stage_due_at'=>now()->subHour()]);
+        ServiceRequest::create([
+            'tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,'customer_id'=>$admin->customer_id,
+            'request_no'=>'SR-FUTURE-001','company_name'=>'UNIFCO Workflow Test Customer','request_type'=>'MAINTENANCE',
+            'service_category'=>'Maintenance','subject'=>'Future request','details'=>'Not overdue','priority'=>'NORMAL','status'=>'OPEN','workflow_stage'=>'TRIAGE',
+            'current_stage_due_at'=>now()->addDay(),
+        ]);
+
+        $this->actingAs($admin)->get('/customer/service-requests?bucket=overdue')
+            ->assertOk()
+            ->assertSee($request->request_no)
+            ->assertSee('Overdue')
+            ->assertDontSee('SR-FUTURE-001');
+    }
+
+    public function test_service_request_workspace_shows_full_customer_summary_and_next_action(): void
+    {
+        [$admin,$request]=$this->adminAndRequest();
+
+        $this->actingAs($admin)->get('/customer/service-requests')
+            ->assertOk()
+            ->assertSee('Request portfolio')
+            ->assertSee('Operations triage and routing')
+            ->assertSee('Full customer account');
+    }
 }
