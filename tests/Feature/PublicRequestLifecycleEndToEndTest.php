@@ -64,7 +64,10 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
     {
         $this->post('/service-requests',$this->payload($intent,$subtype,$overrides))->assertRedirect();
         $public=PublicServiceRequest::latest('id')->firstOrFail();
-        $this->assertNotNull($public->converted_at,$public->conversion_error);
+        $this->assertNotNull(
+            $public->converted_at,
+            (string) ($public->conversion_error ?: 'Public request was not converted.')
+        );
         $this->assertNotNull($public->service_request_id);
         return ServiceRequest::findOrFail($public->service_request_id);
     }
