@@ -200,6 +200,9 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('/request-service/assets?', false)
             ->assertSee("const requestForm=routine.closest('form')||document", false)
             ->assertSee('requestForm.querySelector(`input[name="${name}"]`)', false)
+            ->assertSee("requestForm.addEventListener('submit',syncNativeAsset,true)", false)
+            ->assertSee('setTimeout(syncNativeAsset,400)', false)
+            ->assertSee("const f=$('map')?.querySelector('iframe');if(!f)return", false)
             ->assertSee("setHidden('asset_id',a.id)", false)
             ->assertSee("setHidden('asset_type',a.asset_type||a.asset_category||a.name||'GENERAL')", false)
             ->assertSee('assetRefreshSequence', false);
