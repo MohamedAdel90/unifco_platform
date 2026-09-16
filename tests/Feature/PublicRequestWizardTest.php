@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\PublicServiceRequest;
+use App\Models\{PublicServiceRequest,ServiceRequest,WorkOrder};
 use App\Services\PublicRequestPipelineService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -220,7 +220,7 @@ class PublicRequestWizardTest extends TestCase
     public function test_pipeline_failure_does_not_block_ticket_reference_or_receipt_redirect(): void
     {
         $pipeline = $this->mock(PublicRequestPipelineService::class);
-        $pipeline->shouldReceive('convert')->once()->andThrow(new RuntimeException('Simulated downstream CRM failure'));
+        $pipeline->shouldReceive('convert')->twice()->andThrow(new RuntimeException('Simulated downstream CRM failure'));
 
         $response = $this->post('/service-requests', $this->payload('QUOTATION','SPARE_PARTS_QUOTE'));
 
@@ -228,9 +228,55 @@ class PublicRequestWizardTest extends TestCase
         $this->assertDatabaseHas('public_service_requests', [
             'reference_no' => 'UNQ-926000001',
             'ticket_serial' => 926000001,
-            'status' => 'NEW',
+            'status' => 'PROCESSING_FAILED',
         ]);
         $this->get('/request-received/UNQ-926000001?lang=en')->assertOk()->assertSee('UNQ-926000001', false);
+        $this->assertDatabaseHas('public_service_requests', [
+            'reference_no' => 'UNQ-926000001',
+            'status' => 'PROCESSING_FAILED',
+            'conversion_error' => 'Simulated downstream CRM failure',
+        ]);
+    }
+
+    public function test_contract_asset_lookup_supports_assignments_and_unassigned_legacy_customers(): void
+    {
+        $tenantId=DB::table('tenants')->insertGetId(['name'=>'UNIFCO','code'=>'UNIFCO','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $orgId=DB::table('organizations')->insertGetId(['tenant_id'=>$tenantId,'name'=>'HQ','code'=>'HQ','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $customerId=DB::table('customers')->insertGetId(['tenant_id'=>$tenantId,'organization_id'=>$orgId,'customer_code'=>'100','name'=>'Asset Lookup Customer','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $siteId=DB::table('customer_sites')->insertGetId(['customer_id'=>$customerId,'site_code'=>'RUH-1','name'=>'Riyadh Site','city'=>'Riyadh','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $contractId=DB::table('service_contracts')->insertGetId(['tenant_id'=>$tenantId,'organization_id'=>$orgId,'customer_id'=>$customerId,'contract_no'=>'CNT-ASSET-1','title'=>'Asset Coverage','starts_on'=>today()->subDay(),'ends_on'=>today()->addYear(),'contract_value'=>0,'currency'=>'SAR','billing_cycle'=>'MONTHLY','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $assetA=DB::table('assets')->insertGetId(['tenant_id'=>$tenantId,'organization_id'=>$orgId,'customer_id'=>$customerId,'customer_site_id'=>$siteId,'asset_code'=>'AST-A','name'=>'Assigned Pump','status'=>'REGISTERED','acquisition_cost'=>0,'created_at'=>now(),'updated_at'=>now()]);
+        $assetB=DB::table('assets')->insertGetId(['tenant_id'=>$tenantId,'organization_id'=>$orgId,'customer_id'=>$customerId,'customer_site_id'=>$siteId,'asset_code'=>'AST-B','name'=>'Unassigned Pump','status'=>'REGISTERED','acquisition_cost'=>0,'created_at'=>now(),'updated_at'=>now()]);
+
+        // Legacy customers with no explicit coverage still see their customer assets.
+        $this->getJson("/request-service/assets?customer_id={$customerId}&contract_no=CNT-ASSET-1&site_id={$siteId}")
+            ->assertOk()->assertJsonCount(2,'assets');
+
+        DB::table('asset_contract_assignments')->insert(['asset_id'=>$assetA,'service_contract_id'=>$contractId,'coverage_start'=>today()->subDay(),'status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $this->getJson("/request-service/assets?customer_id={$customerId}&contract_no=CNT-ASSET-1&site_id={$siteId}")
+            ->assertOk()->assertJsonCount(1,'assets')->assertJsonPath('assets.0.id',$assetA);
+        $this->assertNotSame($assetA,$assetB);
+    }
+
+    public function test_manual_maintenance_request_creates_customer_scoped_asset_request_and_work_order(): void
+    {
+        $tenantId=DB::table('tenants')->insertGetId(['name'=>'UNIFCO','code'=>'UNIFCO','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $orgId=DB::table('organizations')->insertGetId(['tenant_id'=>$tenantId,'name'=>'HQ','code'=>'HQ','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $customerId=DB::table('customers')->insertGetId(['tenant_id'=>$tenantId,'organization_id'=>$orgId,'customer_code'=>'100','name'=>'ABC Company','email'=>'ahmed@example.test','phone'=>'02123332','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        $siteId=DB::table('customer_sites')->insertGetId(['customer_id'=>$customerId,'site_code'=>'RUH-MOH','name'=>'Ministry of Health','city'=>'Riyadh','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+        DB::table('service_contracts')->insert(['tenant_id'=>$tenantId,'organization_id'=>$orgId,'customer_id'=>$customerId,'contract_no'=>'CNT-ROUTINE-1','title'=>'Routine Contract','starts_on'=>today()->subDay(),'ends_on'=>today()->addYear(),'contract_value'=>0,'currency'=>'SAR','billing_cycle'=>'MONTHLY','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
+
+        $this->post('/service-requests',$this->payload('SERVICE_REQUEST','ROUTINE_MAINTENANCE'))->assertRedirect('/request-received/UNRM-926000001?lang=en');
+
+        $public=PublicServiceRequest::where('reference_no','UNRM-926000001')->firstOrFail();
+        $serviceRequest=ServiceRequest::where('request_no','SR-UNRM-926000001')->firstOrFail();
+        $workOrder=WorkOrder::where('work_order_no','WO-UNRM-926000001')->firstOrFail();
+        $this->assertNotNull($public->converted_at);
+        $this->assertSame($customerId,(int)$serviceRequest->customer_id);
+        $this->assertSame($siteId,(int)$serviceRequest->customer_site_id);
+        $this->assertSame($serviceRequest->work_order_id,$workOrder->id);
+        $this->assertDatabaseHas('assets',['id'=>$workOrder->asset_id,'customer_id'=>$customerId,'customer_site_id'=>$siteId,'contract_reference'=>'CNT-ROUTINE-1']);
+        $this->get('/request-received/UNRM-926000001?lang=en')->assertOk()->assertSee('UNRM-926000001',false);
     }
 
     public function test_ticket_receipt_shows_request_details_and_appointment(): void

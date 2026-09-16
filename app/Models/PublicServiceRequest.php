@@ -13,11 +13,13 @@ class PublicServiceRequest extends Model
         'company_name','responsible_person','contact_role','commercial_registration','email','mobile','status','submitted_at',
         'tenant_id','organization_id','asset_id','crm_lead_id','crm_opportunity_id','crm_quotation_id',
         'service_request_id','work_order_id','converted_at',
+        'conversion_attempts','last_conversion_attempt_at','conversion_error',
     ];
 
     protected $casts = [
         'submitted_at' => 'datetime',
         'converted_at' => 'datetime',
+        'last_conversion_attempt_at' => 'datetime',
         'requested_date' => 'date',
         'equipment_photo_paths' => 'array',
         'problem_photo_paths' => 'array',

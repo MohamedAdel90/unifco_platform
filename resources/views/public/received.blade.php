@@ -1,6 +1,7 @@
 @php
 $locale=request('lang')==='en'?'en':'ar';
 $rtl=$locale==='ar';
+$processingPending=!$record->converted_at || in_array($record->status,['PROCESSING_FAILED','WORKFLOW_PENDING'],true);
 $labels=$rtl?[
     'title'=>'تم استلام طلبك بنجاح',
     'lead'=>'تم تسجيل الطلب وتحويله إلى المسار المناسب داخل UNIFCO. سوف نوافيك بالتحديثات في أقرب وقت.',
@@ -80,6 +81,11 @@ $preferredTime=$record->requested_time;
 $appointment=trim(implode(' - ',array_filter([$preferredDate,$preferredTime])))?:$labels['not_available'];
 $contact=trim(implode(' · ',array_filter([$record->responsible_person,$record->mobile])))?:$labels['not_available'];
 $arrow=$rtl?'←':'→';
+if($processingPending){
+    $labels['lead']=$rtl
+        ? 'تم حفظ رقم طلبك بنجاح، ويجري استكمال ربطه بالمسار التشغيلي تلقائيًا. لن تحتاج إلى إعادة إرسال الطلب.'
+        : 'Your ticket number is saved. UNIFCO is automatically completing its operational routing; you do not need to submit again.';
+}
 @endphp
 <!doctype html>
 <html lang="{{ $locale }}" dir="{{ $rtl?'rtl':'ltr' }}">
