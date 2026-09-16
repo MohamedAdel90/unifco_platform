@@ -114,7 +114,7 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
         ServiceRequest::create([
             'tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,'customer_id'=>$admin->customer_id,
             'request_no'=>'SR-FUTURE-001','company_name'=>'UNIFCO Workflow Test Customer','request_type'=>'MAINTENANCE',
-            'subject'=>'Future request','details'=>'Not overdue','priority'=>'NORMAL','status'=>'OPEN','workflow_stage'=>'TRIAGE',
+            'service_category'=>'Maintenance','subject'=>'Future request','details'=>'Not overdue','priority'=>'NORMAL','status'=>'OPEN','workflow_stage'=>'TRIAGE',
             'current_stage_due_at'=>now()->addDay(),
         ]);
 
