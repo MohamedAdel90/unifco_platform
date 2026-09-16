@@ -77,7 +77,7 @@ class PublicSiteGuestRequestsTest extends TestCase
         $this->assertDatabaseHas('public_service_requests', ['request_type'=>'EMERGENCY_MAINTENANCE','urgency'=>'EMERGENCY','status'=>'CONVERTED_TO_WORK_ORDER']);
         $this->assertDatabaseHas('service_requests', ['company_name'=>'Emergency Client','priority'=>'EMERGENCY','status'=>'OPEN']);
         $this->assertDatabaseHas('work_orders', ['maintenance_type'=>'CORRECTIVE','priority'=>'EMERGENCY','status'=>'OPEN']);
-        $this->assertDatabaseHas('assets', ['asset_code'=>'PUBLIC-SERVICE-INBOX','name'=>'Public Emergency Service Intake']);
+        $this->assertDatabaseHas('assets', ['asset_code'=>'INTAKE-UNUM-926000001','name'=>'لوحات ATS']);
         $this->assertDatabaseHas('crm_leads', ['company'=>'Emergency Client','source_channel'=>'WEBSITE','lifecycle_stage'=>'CONVERTED']);
     }
 }

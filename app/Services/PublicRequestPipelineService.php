@@ -24,8 +24,16 @@ class PublicRequestPipelineService
             $public=PublicServiceRequest::query()->lockForUpdate()->findOrFail($public->id);
             if($public->converted_at) return $public;
 
-            $tenant=Tenant::firstOrCreate(['code'=>'UNIFCO'],['name'=>'UNIFCO','status'=>'ACTIVE']);
-            $org=Organization::firstOrCreate(['tenant_id'=>$tenant->id,'code'=>'HQ'],['name'=>'UNIFCO HQ','status'=>'ACTIVE']);
+            // A registry asset is authoritative for account ownership. Resolve its
+            // tenant and customer before using the requester's contact details,
+            // which may belong to an individual employee rather than the account.
+            $registeredAsset=$public->asset_id?Asset::with('customer')->find($public->asset_id):null;
+            $tenant=$registeredAsset?Tenant::find($registeredAsset->tenant_id):null;
+            $tenant??=Tenant::firstOrCreate(['code'=>'UNIFCO'],['name'=>'UNIFCO','status'=>'ACTIVE']);
+            $registeredCustomer=$registeredAsset?->customer;
+            $organizationId=$registeredAsset?->organization_id?:$registeredCustomer?->organization_id;
+            $org=$organizationId?Organization::where('tenant_id',$tenant->id)->find($organizationId):null;
+            $org??=Organization::firstOrCreate(['tenant_id'=>$tenant->id,'code'=>'HQ'],['name'=>'UNIFCO HQ','status'=>'ACTIVE']);
 
             $acquisition=$this->acquisition->capture((int)$tenant->id,(int)$org->id,null,[
                 'name'=>$public->responsible_person ?: $public->company_name,
@@ -40,7 +48,7 @@ class PublicRequestPipelineService
                 'inquiry_notes'=>$public->subject,
             ]);
 
-            $customer=$this->customers->resolveForPublicRequest($public,$tenant,$org);
+            $customer=$registeredCustomer?:$this->customers->resolveForPublicRequest($public,$tenant,$org);
             $lead=$acquisition['type']==='LEAD' ? $acquisition['lead'] : null;
             if($lead && !$lead->converted_customer_id) $lead=$this->acquisition->linkSystemCustomer($lead,$customer);
 
@@ -66,7 +74,7 @@ class PublicRequestPipelineService
                 ->orderByRaw('CASE WHEN name = ? THEN 0 ELSE 1 END',[$public->site_name])
                 ->first();
 
-            $asset=$public->asset_id?Asset::where('customer_id',$customer->id)->find($public->asset_id):null;
+            $asset=$registeredAsset && (int)$registeredAsset->customer_id===(int)$customer->id?$registeredAsset:null;
             if(!$asset && $requestType==='MAINTENANCE') {
                 $asset=Asset::firstOrCreate(
                     ['tenant_id'=>$tenant->id,'asset_code'=>'INTAKE-'.$public->reference_no],
