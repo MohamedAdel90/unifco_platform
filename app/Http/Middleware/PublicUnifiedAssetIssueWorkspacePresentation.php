@@ -27,6 +27,7 @@ HTML;
 (()=>{
  const $=id=>document.getElementById(id), routine=$('routine-form'), asset=$('asset-section'), contract=$('contract_no'), site=$('site_id'), nativeList=$('asset-list'), service=$('service-type'), subtype=$('service-subtype');
  if(!routine||!asset||!nativeList)return;
+ const requestForm=routine.closest('form')||document;
  let registryAssets=new Map(),assetRefreshSequence=0;
  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
  const panels=[...routine.children].filter(x=>x.matches?.('section.panel')),
@@ -43,7 +44,7 @@ HTML;
  const nativeManual={name:$('manual_name'),type:$('manual_type'),brand:$('manual_brand'),model:$('manual_model'),serial:$('manual_serial')};
  const copy=(from,to)=>from?.addEventListener('input',()=>{if(to){to.value=from.value;to.dispatchEvent(new Event('input',{bubbles:true}))}});
  copy($('ufm-name'),nativeManual.name);copy($('ufm-type'),nativeManual.type);copy($('ufm-brand'),nativeManual.brand);copy($('ufm-model'),nativeManual.model);copy($('ufm-serial'),nativeManual.serial);
- const hidden=name=>routine.querySelector(`input[name="${name}"]`);
+ const hidden=name=>requestForm.querySelector(`input[name="${name}"]`);
  const setHidden=(name,value)=>{const el=hidden(name);if(el)el.value=value??''};
  const clearSelected=()=>{nativeList.value='';setHidden('asset_id','');$('uf-selected').classList.remove('show')};
  const setMode=m=>{document.querySelectorAll('[data-uf-mode]').forEach(b=>b.classList.toggle('active',b.dataset.ufMode===m));$('uf-registered').style.display=m==='registered'?'block':'none';$('uf-manual').classList.toggle('show',m==='manual'); const nb=asset.querySelector(`.asset-method[data-method="${m==='manual'?'manual':'list'}"]`);nb?.click();if(m==='manual')clearSelected()};
