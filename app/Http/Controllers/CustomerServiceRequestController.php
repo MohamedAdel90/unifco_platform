@@ -42,11 +42,23 @@ class CustomerServiceRequestController extends Controller
 
         $filters=[
             'q'=>trim((string)$request->query('q','')),
+            'bucket'=>trim((string)$request->query('bucket','')),
             'type'=>trim((string)$request->query('type','')),
             'priority'=>trim((string)$request->query('priority','')),
             'stage'=>trim((string)$request->query('stage','')),
             'status'=>trim((string)$request->query('status','')),
             'site_id'=>$request->integer('site_id')?:null,
+        ];
+
+        $closedStatuses=['COMPLETED','CLOSED','CANCELLED','REJECTED'];
+        $summary=[
+            'all'=>(clone $base)->count(),
+            'open'=>(clone $base)->whereNotIn('status',$closedStatuses)->count(),
+            'emergency'=>(clone $base)->where('priority','EMERGENCY')->whereNotIn('status',$closedStatuses)->count(),
+            'overdue'=>(clone $base)->whereNotNull('current_stage_due_at')->where('current_stage_due_at','<',now())->whereNotIn('status',$closedStatuses)->count(),
+            'in_progress'=>(clone $base)->where('workflow_stage','IN_PROGRESS')->whereNotIn('status',$closedStatuses)->count(),
+            'awaiting_customer'=>(clone $base)->where('workflow_stage','CUSTOMER_ACCEPTANCE')->whereNotIn('status',$closedStatuses)->count(),
+            'completed'=>(clone $base)->whereIn('status',['COMPLETED','CLOSED'])->count(),
         ];
 
         $query=clone $base;
@@ -60,22 +72,42 @@ class CustomerServiceRequestController extends Controller
                     ->orWhere('site_city','like','%'.$needle.'%');
             });
         }
+        $allowedBuckets=['','all','open','emergency','overdue','in_progress','awaiting_customer','completed'];
+        if(!in_array($filters['bucket'],$allowedBuckets,true)) $filters['bucket']='';
+        match($filters['bucket']){
+            'open'=>$query->whereNotIn('status',$closedStatuses),
+            'emergency'=>$query->where('priority','EMERGENCY')->whereNotIn('status',$closedStatuses),
+            'overdue'=>$query->whereNotNull('current_stage_due_at')->where('current_stage_due_at','<',now())->whereNotIn('status',$closedStatuses),
+            'in_progress'=>$query->where('workflow_stage','IN_PROGRESS')->whereNotIn('status',$closedStatuses),
+            'awaiting_customer'=>$query->where('workflow_stage','CUSTOMER_ACCEPTANCE')->whereNotIn('status',$closedStatuses),
+            'completed'=>$query->whereIn('status',['COMPLETED','CLOSED']),
+            default=>null,
+        };
         foreach(['request_type'=>'type','priority'=>'priority','workflow_stage'=>'stage','status'=>'status'] as $column=>$key){
             if($filters[$key]!=='') $query->where($column,$filters[$key]);
         }
         if($filters['site_id']) $query->where('customer_site_id',$filters['site_id']);
 
-        $requests=$query->latest('id')->paginate(15)->withQueryString();
+        $requests=$query
+            ->orderByRaw("CASE WHEN current_stage_due_at IS NOT NULL AND current_stage_due_at < ? AND status NOT IN ('COMPLETED','CLOSED','CANCELLED','REJECTED') THEN 0 ELSE 1 END",[now()])
+            ->orderByRaw("CASE priority WHEN 'EMERGENCY' THEN 0 WHEN 'HIGH' THEN 1 WHEN 'NORMAL' THEN 2 ELSE 3 END")
+            ->orderByRaw('CASE WHEN current_stage_due_at IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('current_stage_due_at')
+            ->latest('id')->paginate(15)->withQueryString();
         $types=(clone $base)->whereNotNull('request_type')->distinct()->orderBy('request_type')->pluck('request_type');
         $priorities=(clone $base)->whereNotNull('priority')->distinct()->orderBy('priority')->pluck('priority');
         $stages=(clone $base)->whereNotNull('workflow_stage')->distinct()->orderBy('workflow_stage')->pluck('workflow_stage');
         $statuses=(clone $base)->whereNotNull('status')->distinct()->orderBy('status')->pluck('status');
         $siteIds=(clone $base)->whereNotNull('customer_site_id')->distinct()->pluck('customer_site_id');
         $sites=CustomerSite::where('customer_id',$customer->id)->whereIn('id',$siteIds)->orderBy('name')->get();
+        $pageSiteIds=$requests->getCollection()->pluck('customer_site_id')->filter()->unique();
+        $pageAssetIds=$requests->getCollection()->pluck('asset_id')->filter()->unique();
+        $sitesById=CustomerSite::where('customer_id',$customer->id)->whereIn('id',$pageSiteIds)->get()->keyBy('id');
+        $assetsById=Asset::where('customer_id',$customer->id)->whereIn('id',$pageAssetIds)->get()->keyBy('id');
 
         return view('customer.service-requests.index',[
             'customer'=>$customer,'requests'=>$requests,'filters'=>$filters,'types'=>$types,'priorities'=>$priorities,
-            'stages'=>$stages,'statuses'=>$statuses,'sites'=>$sites,'portalRole'=>$access->role($user),
+            'stages'=>$stages,'statuses'=>$statuses,'sites'=>$sites,'sitesById'=>$sitesById,'assetsById'=>$assetsById,'summary'=>$summary,'portalRole'=>$access->role($user),
             'allowedSections'=>$access->allowedSections($user),'canManageUsers'=>$access->canManageUsers($user),'readOnly'=>$access->isReadOnly($user),
         ]);
     }
