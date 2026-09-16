@@ -20,7 +20,7 @@ class CustomerPortalExecutiveDashboardTest extends TestCase
             'Contracts & SLA',
             'Financial Summary',
             'Recent Relationship Activity',
-            'Unified customer account',
+            'All customer sites',
             'No eligible completed requests yet',
             'Requires operational follow-up',
         ] as $section) {
@@ -43,8 +43,8 @@ class CustomerPortalExecutiveDashboardTest extends TestCase
             $this->assertStringContainsString($target, $view);
         }
 
-        $this->assertStringContainsString('grid-template-columns:repeat(8,1fr)', $view);
+        $this->assertStringContainsString('grid-template-columns:repeat(8,minmax(0,1fr))', $view);
         $this->assertStringContainsString("attention {{ \$pendingQ>0?'warn':'' }}", $view);
-        $this->assertStringContainsString('server-authorized scope', $view);
+        $this->assertStringContainsString('authenticated customer scope', $view);
     }
 }
