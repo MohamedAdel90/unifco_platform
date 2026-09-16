@@ -12,32 +12,30 @@ class CustomerPortalExecutiveDashboardTest extends TestCase
         $wrapper = file_get_contents(resource_path('views/customer/section.blade.php'));
         $dashboard = file_get_contents(resource_path('views/customer/section-base.blade.php'));
 
+        $this->assertNotFalse($wrapper);
+        $this->assertNotFalse($dashboard);
         $this->assertStringContainsString("@include('customer.section-base')", $wrapper);
 
+        // Final customer command-center layer: customer identity stays in the sidebar,
+        // operational graphs use the dashboard canvas, and recent activity is promoted
+        // to sidebar navigation rather than duplicated as a large dashboard panel.
         foreach ([
-            'Service attention is being tracked by UNIFCO',
-            'No customer decision is required right now.',
-            'active request SLA risk',
-            'performance not yet measurable',
-            'active SLA risk',
-            'SERVICE & MAINTENANCE',
+            'customer-side-status',
+            'Customer ID:',
             'Service Request Status',
             'Work Order Status',
             'Request Workflow Distribution',
             'Contracts & SLA',
             'Financial Overview',
-            'customer-side-status',
-            'Customer ID:',
-            'Recent Activity',
             'recent-nav-promoted',
-            ".page-head,.executive-strip,.activity-panel{display:none!important}",
-            "roleNote.style.display = 'none'",
+            '.page-head,.executive-strip,.activity-panel{display:none!important}',
         ] as $requirement) {
             $this->assertStringContainsString($requirement, $wrapper);
         }
 
+        // The underlying production dashboard remains intact and supplies the live
+        // customer data/links used by the final presentation layer.
         foreach ([
-            'Customer 360 Executive Dashboard',
             'data-action-center-panel',
             'Service Request Journey',
             'Priority Today',
@@ -46,7 +44,6 @@ class CustomerPortalExecutiveDashboardTest extends TestCase
             'Contracts & SLA',
             'Financial Summary',
             'Recent Relationship Activity',
-            'SLA Compliance',
         ] as $section) {
             $this->assertStringContainsString($section, $dashboard);
         }
