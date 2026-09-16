@@ -4,10 +4,10 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 
-/** Release qualification for the live Customer 360 dashboard and final QA semantics. */
+/** Release qualification for the live Customer 360 dashboard and approved command-center layout. */
 class CustomerPortalExecutiveDashboardTest extends TestCase
 {
-    public function test_live_dashboard_uses_the_production_section_view_and_final_qa_layer(): void
+    public function test_live_dashboard_uses_the_production_section_view_and_final_command_center_layer(): void
     {
         $wrapper = file_get_contents(resource_path('views/customer/section.blade.php'));
         $dashboard = file_get_contents(resource_path('views/customer/section-base.blade.php'));
@@ -21,7 +21,16 @@ class CustomerPortalExecutiveDashboardTest extends TestCase
             'performance not yet measurable',
             'active SLA risk',
             'SERVICE & MAINTENANCE',
-            ".lower-grid{align-items:start!important}",
+            'Service Request Status',
+            'Work Order Status',
+            'Request Workflow Distribution',
+            'Contracts & SLA',
+            'Financial Overview',
+            'customer-side-status',
+            'Customer ID:',
+            'Recent Activity',
+            'recent-nav-promoted',
+            ".page-head,.executive-strip,.activity-panel{display:none!important}",
             "roleNote.style.display = 'none'",
         ] as $requirement) {
             $this->assertStringContainsString($requirement, $wrapper);
