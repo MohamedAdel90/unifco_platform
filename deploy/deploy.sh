@@ -12,38 +12,26 @@ fi
 
 cd "$APP_DIR"
 
-echo "==> Fetching main and checking qualified SHA: $EXPECTED_SHA"
+echo "==> Fetching main and checking release SHA: $EXPECTED_SHA"
 git fetch origin main
 if ! git cat-file -e "${EXPECTED_SHA}^{commit}" 2>/dev/null; then
-  echo "ERROR: qualified SHA is not available after fetching main: $EXPECTED_SHA" >&2
+  echo "ERROR: release SHA is not available after fetching main: $EXPECTED_SHA" >&2
   exit 1
 fi
 REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
 
+# Never silently roll production back to an older functional SHA. A push-triggered
+# deployment must deploy the current main tip; if main advanced while this run was
+# queued, cancel this stale run and let the newer push deploy instead.
 if [[ "$EXPECTED_SHA" != "$REMOTE_MAIN_SHA" ]]; then
-  if ! git merge-base --is-ancestor "$EXPECTED_SHA" "$REMOTE_MAIN_SHA"; then
-    echo "ERROR: refusing stale release: qualified SHA $EXPECTED_SHA is not an ancestor of current main $REMOTE_MAIN_SHA" >&2
-    exit 1
-  fi
-
-  mapfile -t changed_files < <(git diff --name-only "$EXPECTED_SHA..$REMOTE_MAIN_SHA")
-  disallowed=()
-  for file in "${changed_files[@]}"; do
-    [[ "$file" == deploy/status/* ]] || disallowed+=("$file")
-  done
-
-  if (( ${#disallowed[@]} > 0 )); then
-    echo "ERROR: refusing stale release: current main $REMOTE_MAIN_SHA contains functional changes after qualified SHA $EXPECTED_SHA" >&2
-    printf '  - %s\n' "${disallowed[@]}" >&2
-    exit 1
-  fi
-
-  echo "==> Current main only adds qualification bookkeeping; deploying qualified functional SHA $EXPECTED_SHA"
+  echo "ERROR: stale deployment run: requested $EXPECTED_SHA but current main is $REMOTE_MAIN_SHA" >&2
+  echo "A newer main revision must be deployed instead of resetting production backwards." >&2
+  exit 1
 fi
 
-git reset --hard "$EXPECTED_SHA"
+git reset --hard "$REMOTE_MAIN_SHA"
 DEPLOY_SHA="$(git rev-parse HEAD)"
-[[ "$DEPLOY_SHA" == "$EXPECTED_SHA" ]] || { echo "ERROR: server checkout mismatch: expected $EXPECTED_SHA got $DEPLOY_SHA" >&2; exit 1; }
+[[ "$DEPLOY_SHA" == "$REMOTE_MAIN_SHA" ]] || { echo "ERROR: server checkout mismatch: expected $REMOTE_MAIN_SHA got $DEPLOY_SHA" >&2; exit 1; }
 echo "==> Server checkout: $DEPLOY_SHA"
 
 echo "==> Validating current release foundation"
@@ -69,7 +57,6 @@ for file in \
   test -s "$file" || { echo "ERROR: required release file missing: $file"; exit 1; }
 done
 
-# Validate the current Customer Portal architecture rather than a retired historical marker.
 grep -q 'CustomerPortalAccessService' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal access service integration missing"; exit 1; }
 grep -q 'canManageUsers' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal governed user access integration missing"; exit 1; }
 grep -q 'accessibleSiteIds' app/Http/Controllers/CustomerPortalController.php || { echo "ERROR: Customer Portal site scope integration missing"; exit 1; }
@@ -110,9 +97,7 @@ php artisan migrate --force
 php artisan db:seed --class='Database\Seeders\WorkflowTestUsersSeeder' --force
 php artisan unifco:bootstrap-warehouse-access
 php artisan brand:materialize
-if [[ ! -e public/storage && ! -L public/storage ]]; then
-  php artisan storage:link
-fi
+if [[ ! -e public/storage && ! -L public/storage ]]; then php artisan storage:link; fi
 
 echo "==> Verifying Phase B database foundation"
 php -r '
@@ -165,10 +150,7 @@ else
   FALLBACK_PID=$!
   echo "$FALLBACK_PID" > storage/framework/unifco-fallback-server.pid
   sleep 3
-  if kill -0 "$FALLBACK_PID" >/dev/null 2>&1; then
-    started=1
-    echo "==> Fallback application process started with PID $FALLBACK_PID"
-  fi
+  if kill -0 "$FALLBACK_PID" >/dev/null 2>&1; then started=1; echo "==> Fallback application process started with PID $FALLBACK_PID"; fi
 fi
 [ "$started" -eq 1 ] || { echo "ERROR: no application process could be started" >&2; tail -n 120 storage/logs/fallback-server.log 2>/dev/null || true; tail -n 80 storage/logs/laravel.log 2>/dev/null || true; exit 1; }
 
