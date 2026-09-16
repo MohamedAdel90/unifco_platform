@@ -94,10 +94,27 @@ HTML;
             $code=match($data['request_subtype']){'SPARE_PARTS_QUOTE'=>'UNQ-','MAINTENANCE_CONTRACT_QUOTE'=>'UNM-','ROUTINE_MAINTENANCE'=>'UNRM-','URGENT_MAINTENANCE'=>'UNUM-',default=>'UNC-'};
             return PublicServiceRequest::create($data+['ticket_serial'=>$next,'reference_no'=>$code.$next,'submitted_at'=>now(),'status'=>'NEW']);
         });
-        try{$pipeline->convert($record);}catch(Throwable $exception){Log::error('Public request pipeline conversion failed after ticket issuance.',['public_service_request_id'=>$record->id,'reference_no'=>$record->reference_no,'request_type'=>$record->request_type,'request_subtype'=>$record->request_subtype,'exception'=>$exception]);}
+        try{$pipeline->convert($record);}catch(Throwable $exception){
+            $record->forceFill(['status'=>'PROCESSING_FAILED','conversion_error'=>mb_substr($exception->getMessage(),0,4000),'last_conversion_attempt_at'=>now()])->save();
+            Log::error('Public request pipeline conversion failed after ticket issuance.',['public_service_request_id'=>$record->id,'reference_no'=>$record->reference_no,'request_type'=>$record->request_type,'request_subtype'=>$record->request_subtype,'exception'=>$exception]);
+        }
         return redirect()->route('public.request.received',['reference'=>$record->reference_no,'lang'=>$request->input('lang','ar')]);
     }
 
-    public function received(string $reference): View { $record=PublicServiceRequest::where('reference_no',$reference)->firstOrFail(); return view('public.received',compact('record')); }
+    public function received(string $reference, PublicRequestPipelineService $pipeline): View
+    {
+        // The receipt follows a write immediately. Force the writer connection so a
+        // read replica cannot incorrectly return 404 while it is still catching up.
+        $record=PublicServiceRequest::query()->useWritePdo()->where('reference_no',$reference)->firstOrFail();
+        $retryable=!$record->converted_at || $record->status==='WORKFLOW_PENDING';
+        if($retryable && (int)$record->conversion_attempts<3){
+            try{$record=$pipeline->convert($record);}
+            catch(Throwable $exception){
+                $record->forceFill(['status'=>'PROCESSING_FAILED','conversion_error'=>mb_substr($exception->getMessage(),0,4000),'last_conversion_attempt_at'=>now()])->save();
+                Log::error('Public request receipt retry failed.',['public_service_request_id'=>$record->id,'reference_no'=>$record->reference_no,'exception'=>$exception]);
+            }
+        }
+        return view('public.received',compact('record'));
+    }
     public function adminIndex(): View { return view('public.admin-requests',['requests'=>PublicServiceRequest::latest('submitted_at')->limit(250)->get()]); }
 }

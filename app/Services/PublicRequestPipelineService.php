@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\{Asset,CrmOpportunity,CrmQuotation,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,WorkOrder};
+use App\Models\{Asset,CrmOpportunity,CrmQuotation,Customer,CustomerSite,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,WorkOrder};
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB,Log};
+use Throwable;
 
 class PublicRequestPipelineService
 {
@@ -16,7 +17,10 @@ class PublicRequestPipelineService
 
     public function convert(PublicServiceRequest $public): PublicServiceRequest
     {
-        return DB::transaction(function () use ($public) {
+        $public->increment('conversion_attempts');
+        $public->forceFill(['last_conversion_attempt_at'=>now()])->save();
+
+        if(!$public->converted_at) $public=DB::transaction(function () use ($public) {
             $public=PublicServiceRequest::query()->lockForUpdate()->findOrFail($public->id);
             if($public->converted_at) return $public;
 
@@ -53,18 +57,28 @@ class PublicRequestPipelineService
             $priority=match($public->urgency){'EMERGENCY'=>'EMERGENCY','URGENT'=>'HIGH','PRIORITY'=>'MEDIUM',default=>'NORMAL'};
             $plannedStart=$public->requested_date?Carbon::parse($public->requested_date->format('Y-m-d').' '.($public->requested_time?:'00:00')):now();
 
-            $asset=$public->asset_id?Asset::where('customer_id',$customer->id)->find($public->asset_id):null;
-            if(!$asset && $requestType==='MAINTENANCE') {
-                $asset=Asset::firstOrCreate(
-                    ['tenant_id'=>$tenant->id,'asset_code'=>'PUBLIC-SERVICE-INBOX'],
-                    ['organization_id'=>$org->id,'name'=>$priority==='EMERGENCY'?'Public Emergency Service Intake':'Public Service Intake','status'=>'REGISTERED']
-                );
-            }
-
             $contract=ServiceContract::where('customer_id',$customer->id)->where('status','ACTIVE')
                 ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
                 ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))->orderByDesc('starts_on')->first();
             $eligibility=$contract?'IN_CONTRACT':'CHARGEABLE';
+            $site=CustomerSite::where('customer_id',$customer->id)
+                ->where(function($q)use($public){$q->where('name',$public->site_name)->orWhere('city',$public->site_city);})
+                ->orderByRaw('CASE WHEN name = ? THEN 0 ELSE 1 END',[$public->site_name])
+                ->first();
+
+            $asset=$public->asset_id?Asset::where('customer_id',$customer->id)->find($public->asset_id):null;
+            if(!$asset && $requestType==='MAINTENANCE') {
+                $asset=Asset::firstOrCreate(
+                    ['tenant_id'=>$tenant->id,'asset_code'=>'INTAKE-'.$public->reference_no],
+                    [
+                        'organization_id'=>$org->id,'customer_id'=>$customer->id,'customer_site_id'=>$site?->id,
+                        'name'=>$public->asset_type?:($priority==='EMERGENCY'?'Emergency intake asset':'Service intake asset'),
+                        'asset_category'=>$public->asset_type?:'GENERAL','manufacturer'=>$public->equipment_brand,'model_no'=>$public->equipment_model,
+                        'contract_reference'=>$contract?->contract_no,'status'=>'REGISTERED','verification_status'=>'DRAFT',
+                    ]
+                );
+                $public->update(['asset_id'=>$asset->id]);
+            }
 
             $meta=[
                 'نوع الطلب: '.($public->request_intent?:$public->request_type),'مسار الطلب: '.$requestSubtype,'مجموعة الخدمة: '.($public->service_family?:'-'),'الأصل/المعدة: '.($public->asset_type?:'-'),
@@ -73,7 +87,7 @@ class PublicRequestPipelineService
             ];
 
             $serviceRequest=ServiceRequest::create([
-                'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'service_contract_id'=>$contract?->id,'asset_id'=>$asset?->id,
+                'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'customer_site_id'=>$site?->id,'service_contract_id'=>$contract?->id,'asset_id'=>$asset?->id,
                 'request_no'=>'SR-'.$public->reference_no,'request_type'=>$requestType,'request_subtype'=>$requestSubtype,'company_name'=>$public->company_name,'commercial_registration'=>$public->commercial_registration,
                 'email'=>$public->email,'mobile'=>$public->mobile,'service_category'=>$public->service_category,'subject'=>$public->subject,'details'=>$public->details."\n\n".implode("\n",$meta),
                 'site_city'=>$public->site_city,'priority'=>$priority,'status'=>'OPEN','workflow_stage'=>'NEW','approval_state'=>'PENDING','eligibility'=>$eligibility,
@@ -104,29 +118,48 @@ class PublicRequestPipelineService
                 $this->customers->record($customer,'WORK_ORDER_CREATED','Work order '.$workOrder->work_order_no.' created','Maintenance execution record created.',$workOrder);
             }
 
-            $workflowContext=[
+            $public->update($links+['converted_at'=>now(),'conversion_error'=>null]);
+            return $public->fresh();
+        });
+
+        $public=PublicServiceRequest::query()->useWritePdo()->findOrFail($public->id);
+        $serviceRequest=$public->service_request_id?ServiceRequest::find($public->service_request_id):null;
+        $convertedStatus=$public->work_order_id?'CONVERTED_TO_WORK_ORDER':($public->crm_quotation_id?'CONVERTED_TO_QUOTATION':($public->crm_opportunity_id?'CONVERTED_TO_OPPORTUNITY':'CONVERTED'));
+        if(!$serviceRequest || $serviceRequest->workflow_started_at){
+            if($public->status==='WORKFLOW_PENDING') $public->update(['status'=>$convertedStatus,'conversion_error'=>null]);
+            return $public->fresh();
+        }
+
+        $workflowContext=[
                 'estimated_value'=>0,
                 'margin_pct'=>null,
                 'payment_terms_days'=>0,
                 'risk_level'=>'NORMAL',
-                'procurement_required'=>in_array($requestSubtype,['SPARE_PARTS_QUOTE','SPARE_PARTS'],true),
+                'procurement_required'=>in_array($serviceRequest->request_subtype,['SPARE_PARTS_QUOTE','SPARE_PARTS'],true),
                 'quality_required'=>false,
                 'hse_required'=>false,
-                'has_cost'=>$eligibility==='CHARGEABLE',
-                'chargeable'=>$eligibility==='CHARGEABLE',
+                'has_cost'=>$serviceRequest->eligibility==='CHARGEABLE',
+                'chargeable'=>$serviceRequest->eligibility==='CHARGEABLE',
                 'administrative_approval_required'=>true,
             ];
+        try {
             $steps=$this->workflow->start($serviceRequest->fresh(),$workflowContext);
             $serviceRequest=$serviceRequest->fresh();
+            $customer=Customer::find($serviceRequest->customer_id);
+            if($customer) {
             $this->customers->record($customer,'SERVICE_REQUEST_WORKFLOW_STARTED','Request workflow started',$serviceRequest->workflow_key,$serviceRequest,[
                 'workflow_key'=>$serviceRequest->workflow_key,
                 'current_stage'=>$serviceRequest->workflow_stage,
                 'assigned_department'=>$serviceRequest->assigned_department,
                 'steps'=>$steps->count(),
             ]);
+            }
+            $public->update(['status'=>$convertedStatus,'conversion_error'=>null]);
+        } catch (Throwable $exception) {
+            $public->update(['status'=>'WORKFLOW_PENDING','conversion_error'=>mb_substr($exception->getMessage(),0,4000)]);
+            Log::error('Public request workflow initialization is pending.',['public_service_request_id'=>$public->id,'reference_no'=>$public->reference_no,'exception'=>$exception]);
+        }
 
-            $public->update($links+['converted_at'=>now()]);
-            return $public->fresh();
-        });
+        return $public->fresh();
     }
 }

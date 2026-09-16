@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use App\Models\Customer;
 
@@ -79,7 +80,49 @@ class UnifiedServiceRequestController extends Controller
             ->where(fn ($q) => $q->whereNull('a.lifecycle_status')->orWhere('a.lifecycle_status', '!=', 'RETIRED'));
 
         if (! empty($data['contract_no'])) {
-            $query->where('a.contract_reference', $data['contract_no']);
+            $contract = DB::table('service_contracts')
+                ->where('customer_id', $data['customer_id'])
+                ->where('contract_no', $data['contract_no'])
+                ->first(['id','contract_no']);
+
+            abort_unless($contract, 422, 'Selected contract does not belong to this customer.');
+
+            $assignedIds = collect();
+            if (Schema::hasTable('asset_contract_assignments')) {
+                $assignedIds = $assignedIds->merge(
+                    DB::table('asset_contract_assignments')
+                        ->where('service_contract_id', $contract->id)
+                        ->where(fn ($q) => $q->whereNull('status')->orWhere('status', 'ACTIVE'))
+                        ->where(fn ($q) => $q->whereNull('coverage_start')->orWhere('coverage_start', '<=', today()))
+                        ->where(fn ($q) => $q->whereNull('coverage_end')->orWhere('coverage_end', '>=', today()))
+                        ->pluck('asset_id')
+                );
+            }
+            if (Schema::hasTable('contract_assets')) {
+                $assignedIds = $assignedIds->merge(
+                    DB::table('contract_assets')
+                        ->where('service_contract_id', $contract->id)
+                        ->where(fn ($q) => $q->whereNull('covered_from')->orWhere('covered_from', '<=', today()))
+                        ->where(fn ($q) => $q->whereNull('covered_until')->orWhere('covered_until', '>=', today()))
+                        ->pluck('asset_id')
+                );
+            }
+            $assignedIds = $assignedIds->map(fn ($id) => (int) $id)->unique()->values();
+
+            $hasLegacyLinks = DB::table('assets')
+                ->where('customer_id', $data['customer_id'])
+                ->where('contract_reference', $contract->contract_no)
+                ->exists();
+
+            // Explicit coverage is authoritative. Older customer records may not yet
+            // have contract assignments; in that case keep the customer's assets
+            // available instead of presenting an incorrect empty register.
+            if ($assignedIds->isNotEmpty() || $hasLegacyLinks) {
+                $query->where(function ($q) use ($assignedIds, $contract) {
+                    $q->where('a.contract_reference', $contract->contract_no);
+                    if ($assignedIds->isNotEmpty()) $q->orWhereIn('a.id', $assignedIds);
+                });
+            }
         }
         if (! empty($data['site_id'])) {
             $query->where('a.customer_site_id', $data['site_id']);
