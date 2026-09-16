@@ -49,8 +49,12 @@ class CustomerPortalExecutiveDashboardTest extends TestCase
         }
 
         // Customer decisions remain separate from UNIFCO operational exceptions.
+        // The production dashboard now represents operational health directly through
+        // live overdue/in-progress work-order counters rather than the removed
+        // $dashboardHealth presentation variable.
         $this->assertStringContainsString('$actionRequiredCount', $dashboard);
-        $this->assertStringContainsString('$dashboardHealth', $dashboard);
+        $this->assertStringContainsString('$overdueCount', $dashboard);
+        $this->assertStringContainsString('$inProgressCount', $dashboard);
         $this->assertStringContainsString("route('customer.actions')", $dashboard);
     }
 }
