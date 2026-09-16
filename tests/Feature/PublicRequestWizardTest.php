@@ -192,6 +192,17 @@ class PublicRequestWizardTest extends TestCase
             ->assertSee('height:100%!important', false);
     }
 
+    public function test_registered_assets_refresh_after_contract_or_site_changes_and_sync_the_submitted_asset(): void
+    {
+        $this->get('/request-service?customer=100')->assertOk()
+            ->assertSee("site?.addEventListener('change',()=>setTimeout(refreshAssets,0))", false)
+            ->assertSee("contract?.addEventListener('change',()=>setTimeout(refreshAssets,0))", false)
+            ->assertSee('/request-service/assets?', false)
+            ->assertSee("setHidden('asset_id',a.id)", false)
+            ->assertSee("setHidden('asset_type',a.asset_type||a.asset_category||a.name||'GENERAL')", false)
+            ->assertSee('assetRefreshSequence', false);
+    }
+
     public function test_legacy_request_entry_points_redirect_to_the_unified_form(): void
     {
         $this->get('/request-service/current-maintenance')->assertRedirect('/request-service');
