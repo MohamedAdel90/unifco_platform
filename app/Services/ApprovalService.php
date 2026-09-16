@@ -9,7 +9,11 @@ use Illuminate\Validation\ValidationException;
 
 class ApprovalService
 {
-    public function __construct(private AuditService $audit, private CustomerLifecycleService $customers) {}
+    public function __construct(
+        private AuditService $audit,
+        private CustomerLifecycleService $customers,
+        private ServiceRequestWorkflowService $workflow,
+    ) {}
 
     public function request(Model $entity,string $action): ApprovalRequest
     {
@@ -43,23 +47,11 @@ class ApprovalService
     private function advanceServiceRequest(ServiceRequest $serviceRequest,ApprovalRequest $approval,string $decision,?string $note): void
     {
         if($decision==='REJECTED'){
-            ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$serviceRequest->id)->where('status','WAITING')->update(['status'=>'CANCELLED']);
-            $serviceRequest->update(['status'=>'REJECTED','workflow_stage'=>'REJECTED','current_stage_due_at'=>null]);
+            $this->workflow->reject($serviceRequest,$approval->action,Auth::id(),$note);
         } elseif($decision==='RETURNED'){
-            $technical=ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$serviceRequest->id)->orderBy('step_order')->first();
-            ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$serviceRequest->id)->where('step_order','>',1)->whereNotIn('status',['REJECTED','CANCELLED'])->update(['status'=>'WAITING','due_at'=>null,'decided_by'=>null,'decided_at'=>null]);
-            if($technical) $technical->update(['status'=>'PENDING','due_at'=>now()->addMinutes($technical->sla_minutes?:120),'decided_by'=>null,'decided_at'=>null,'decision_note'=>trim('Returned for correction: '.($note?:''))]);
-            $serviceRequest->update(['status'=>'OPEN','workflow_stage'=>'TECHNICAL_REVIEW','current_stage_due_at'=>now()->addMinutes(120)]);
+            $this->workflow->returnToPrevious($serviceRequest,$approval->action,Auth::id(),$note);
         } else {
-            $next=ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$serviceRequest->id)->where('status','WAITING')->orderBy('step_order')->first();
-            if($next){
-                $dueAt=now()->addMinutes($next->sla_minutes?:120);
-                $next->update(['status'=>'PENDING','due_at'=>$dueAt]);
-                $serviceRequest->update(['workflow_stage'=>$next->action,'current_stage_due_at'=>$dueAt]);
-            } else {
-                $nextStage=$serviceRequest->quotation_id?'COMMERCIAL_READY':($serviceRequest->work_order_id?'PLANNING':'QUALIFIED');
-                $serviceRequest->update(['workflow_stage'=>$nextStage,'current_stage_due_at'=>null]);
-            }
+            $this->workflow->advance($serviceRequest,$approval->action,Auth::id(),$note);
         }
 
         if($serviceRequest->customer_id){

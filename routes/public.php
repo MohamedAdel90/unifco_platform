@@ -106,6 +106,7 @@ Route::middleware('auth')->group(function () {
         ->name('customer.section');
     Route::post('/customer/service-requests', [CustomerPortalOperationsController::class, 'requestService'])->name('customer.requests.store');
     Route::post('/customer/quotations/{quotation}/decision', [CustomerPortalOperationsController::class, 'decideQuotation'])->name('customer.quotations.decision');
+    Route::post('/customer/service-requests/{serviceRequest}/decision', [CustomerPortalOperationsController::class, 'decideServiceRequest'])->name('customer.requests.decision');
     Route::get('/customer/invoices/{invoice}/pdf', [CustomerPortalOperationsController::class, 'invoicePdf'])->name('customer.invoices.pdf');
     Route::get('/customer/contracts/{contract}/pdf', [CustomerPortalOperationsController::class, 'contractPdf'])->name('customer.contracts.pdf');
     Route::get('/customer/visit-reports/{report}/pdf', [CustomerPortalOperationsController::class, 'visitPdf'])->name('customer.visits.pdf');
