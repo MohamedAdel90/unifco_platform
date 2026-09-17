@@ -8,6 +8,8 @@
     @include('customer.visits')
 @elseif($section === 'maintenance')
     @include('customer.maintenance-plan')
+@elseif($section === 'spare-parts')
+    @include('customer.spare-parts')
 @else
     @include('customer.workspace')
 @endif
