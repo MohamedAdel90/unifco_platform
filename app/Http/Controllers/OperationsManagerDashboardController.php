@@ -13,7 +13,7 @@ class OperationsManagerDashboardController extends Controller
     {
         $user = $request->user();
         abort_unless($user && $user->hasRole('OPERATIONS_MANAGER'), 403);
-        $authorization->authorize($user, 'dashboard.view');
+        $authorization->authorize($user, 'operations.dashboard.view');
 
         $capabilities = [
             'maintenance'=>$authorization->allows($user,'maintenance.work_order.read'),
