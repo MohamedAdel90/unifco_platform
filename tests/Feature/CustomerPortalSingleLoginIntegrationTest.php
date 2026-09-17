@@ -18,9 +18,10 @@ class CustomerPortalSingleLoginIntegrationTest extends TestCase
 
         $this->actingAs($user)->get('/customer')
             ->assertOk()
-            ->assertSee('FULL CUSTOMER ACCESS')
-            ->assertSee('Unified Customer 360 access')
-            ->assertSee('action="'.route('customer.search').'"',false)
+            ->assertSee('UNIFIED CUSTOMER ACCOUNT')
+            ->assertSee('Find request, asset or invoice')
+            ->assertSee('Open Requests')
+            ->assertSee('Financial Summary')
             ->assertSee(route('public.request-service'),false);
     }
 

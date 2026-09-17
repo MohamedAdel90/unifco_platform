@@ -61,12 +61,12 @@ class CustomerPortalUnifiedAccountTest extends TestCase
 
         $this->actingAs($user)->get('/customer?days=30')
             ->assertOk()
-            ->assertSee('Overall service status')
-            ->assertSee('Customer scope')
-            ->assertSee('Last customer update')
-            ->assertSee('SLA Compliance')
-            ->assertSee('Upcoming Maintenance')
-            ->assertSee('Visit scheduled')
+            ->assertSee('Open Requests')
+            ->assertSee('Work Orders Status')
+            ->assertSee('Asset Health')
+            ->assertSee('Contracts & SLA', false)
+            ->assertSee('Financial Summary')
+            ->assertSee('Request Trend')
             ->assertSee('Technical Consultation');
     }
 }

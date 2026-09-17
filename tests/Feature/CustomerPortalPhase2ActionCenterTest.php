@@ -27,7 +27,7 @@ class CustomerPortalPhase2ActionCenterTest extends TestCase
             'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED',
         ]);
 
-        $this->actingAs($admin)->get('/customer')->assertOk()->assertSee('Action Required From You');
+        $this->actingAs($admin)->get('/customer')->assertOk()->assertSee('Financial Summary')->assertSee('Action Required');
         $this->actingAs($admin)->get('/customer/actions')->assertOk()->assertSee('Action Required From You')->assertSee('PH2-INV-001');
         $this->actingAs($finance)->get('/customer/actions')->assertOk()->assertSee('Action Required From You')->assertSee('PH2-INV-001');
     }
