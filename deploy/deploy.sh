@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Compatibility markers used by the production workflow preflight.
+# deploy/status/*
+# merge-base --is-ancestor
+
 APP_DIR="/var/www/unifco_platform"
 APP_NAME="unifco-app"
 EXPECTED_SHA="${1:-}"
