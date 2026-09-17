@@ -4,47 +4,54 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 
-/** Release qualification for the compact Customer 360 V2.1 dashboard. */
+/** Release qualification for the approved Customer Portal dashboard refresh. */
 class CustomerPortalExecutiveDashboardTest extends TestCase
 {
-    public function test_customer_portal_dashboard_contains_v21_executive_sections_and_drilldowns(): void
+    public function test_customer_portal_dashboard_contains_approved_executive_sections_and_drilldowns(): void
     {
         $view = file_get_contents(resource_path('views/customer/portal.blade.php'));
 
         foreach ([
-            'Customer 360 · Operations, assets, contracts, finance and service delivery in one unified account.',
-            'Service Request Journey',
-            'Priority Today',
+            'Service Request Status',
+            'Work Orders Status',
             'Asset Health',
-            'Upcoming Visits & Maintenance',
+            'Monthly Activity',
             'Contracts & SLA',
             'Financial Summary',
-            'Recent Relationship Activity',
-            'All customer sites',
-            'No eligible completed requests yet',
-            'Requires operational follow-up',
+            'Request Trend',
+            'Needs Attention',
+            'Quick Actions',
+            'New Service Request',
+            'Emergency Maintenance',
+            'Request Quotation',
+            'Request Spare Parts',
+            'Technical Consultation',
+            'Contact UNIFCO support team.',
         ] as $section) {
             $this->assertStringContainsString($section, $view);
         }
 
         foreach ([
+            '/request-service',
             '/request-service?type=emergency',
             '/request-service?type=quotation',
             '/request-service?type=spare_parts',
             '/request-service?type=consultation',
-            '/customer/service-requests?status=',
+            '/customer/service-requests',
             '/customer/work-orders',
             '/customer/assets',
             '/customer/visits',
             '/customer/contracts',
             '/customer/finance',
-            '/customer/activity',
+            '/customer/action-center',
+            '/customer/inbox',
         ] as $target) {
             $this->assertStringContainsString($target, $view);
         }
 
-        $this->assertStringContainsString('grid-template-columns:repeat(8,minmax(0,1fr))', $view);
-        $this->assertStringContainsString("attention {{ \$pendingQ>0?'warn':'' }}", $view);
-        $this->assertStringContainsString('authenticated customer scope', $view);
+        $this->assertStringContainsString('grid-template-columns:repeat(6,minmax(0,1fr))', $view);
+        $this->assertStringContainsString('grid-template-columns:1.18fr 1.18fr .96fr 1.1fr', $view);
+        $this->assertStringContainsString('class="panel attention"', $view);
+        $this->assertStringContainsString("dir=\"{{ app()->getLocale()==='ar' ? 'rtl' : 'ltr' }}\"", $view);
     }
 }
