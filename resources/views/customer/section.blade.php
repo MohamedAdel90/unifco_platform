@@ -6,6 +6,8 @@
     @include('customer.work-orders')
 @elseif($section === 'visits')
     @include('customer.visits')
+@elseif($section === 'maintenance')
+    @include('customer.maintenance-plan')
 @else
     @include('customer.workspace')
 @endif
