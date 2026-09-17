@@ -1,0 +1,90 @@
+/* UNIFCO Customer Portal - approved Action Required presentation */
+body:has(.action-hero){background:#f3f6fb}
+body:has(.action-hero) .portal-app{grid-template-columns:230px minmax(0,1fr)}
+body:has(.action-hero) .portal-sidebar{padding:12px 10px 10px}
+body:has(.action-hero) .portal-main{padding:0 12px 26px!important}
+body:has(.action-hero) .portal-topbar{height:44px!important;margin:0 -12px!important;padding:0 16px!important;justify-content:flex-end!important;background:#fff!important}
+body:has(.action-hero) .portal-topbar .portal-heading{display:none!important}
+body:has(.action-hero) .portal-content{max-width:none!important;margin:0!important;padding-top:8px!important}
+body:has(.action-hero) .portal-breadcrumb,body:has(.action-hero) .portal-page-head{display:none!important}
+body:has(.action-hero) .portal-sidebar .portal-account{display:none!important}
+body:has(.action-hero) .portal-sidebar:before{min-height:52px!important;margin:0 5px 7px!important;padding:4px 4px 4px 49px!important;background-size:37px auto!important;font-size:10px!important;line-height:1.3!important}
+body:has(.action-hero) .portal-create{margin:5px 3px 4px!important}
+body:has(.action-hero) .portal-search{margin:7px 3px 3px!important;height:34px!important}
+body:has(.action-hero) .portal-group{margin-top:10px!important}
+body:has(.action-hero) .portal-group-title{font-size:7.5px!important}
+body:has(.action-hero) .portal-link{min-height:33px!important;font-size:9.5px!important;padding:7px 9px!important}
+
+body:has(.action-hero) .action-hero{position:relative!important;min-height:132px!important;height:132px!important;margin:0 0 9px!important;border:1px solid #d9e6f3!important;border-radius:12px!important;overflow:hidden!important;box-shadow:0 7px 22px rgba(13,54,96,.06)!important;background:
+linear-gradient(90deg,rgba(248,251,255,1) 0%,rgba(248,251,255,.98) 32%,rgba(248,251,255,.65) 47%,rgba(8,45,99,.08) 67%,rgba(5,35,78,.15) 100%),
+url('/images/unifco-home-hero-20260902.webp') center right/58% 100% no-repeat,
+linear-gradient(90deg,#f8fbff 0%,#edf5fd 42%,#082d63 100%)!important}
+body:has(.action-hero) .action-hero:after{display:none!important}
+body:has(.action-hero) .action-hero-bg{display:none!important}
+body:has(.action-hero) .action-hero-main{position:relative!important;z-index:2!important;min-height:132px!important;padding:13px 290px 12px 18px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important}
+body:has(.action-hero) .action-hero-title{gap:11px!important}
+body:has(.action-hero) .action-hero-title-icon{width:44px!important;height:44px!important;background:#eaf3ff!important;color:#1475d1!important}
+body:has(.action-hero) .action-hero-title-icon .ui-icon{width:24px!important;height:24px!important}
+body:has(.action-hero) .action-hero-copy h2{font-size:24px!important;line-height:1.05!important;margin:1px 0 4px!important;letter-spacing:-.025em!important;color:#0a234f!important}
+body:has(.action-hero) .action-hero-copy p{font-size:10px!important;color:#4f637f!important;margin:0!important}
+body:has(.action-hero) .action-hero-details{margin-top:10px!important;display:flex!important;align-items:center!important;flex-wrap:wrap!important}
+body:has(.action-hero) .action-hero-detail{gap:8px!important;padding:0 19px!important;min-height:36px!important;border-inline-end:1px solid #cdd9e7!important}
+body:has(.action-hero) .action-hero-detail:first-child{padding-inline-start:0!important}
+body:has(.action-hero) .action-hero-detail:last-child{border-inline-end:0!important}
+body:has(.action-hero) .action-hero-detail .ui-icon{width:18px!important;height:18px!important;color:#1475d1!important}
+body:has(.action-hero) .action-hero-detail small{font-size:7.5px!important;color:#718197!important}
+body:has(.action-hero) .action-hero-detail strong{font-size:9.5px!important;color:#0a234f!important}
+body:has(.action-hero) .action-hero-brand{right:17px!important;top:13px!important;bottom:13px!important;width:180px!important;border-left:1px solid rgba(255,255,255,.55)!important}
+body:has(.action-hero) .action-hero-brand img{max-width:84px!important;max-height:54px!important}
+body:has(.action-hero) .action-hero-brand b{font-size:14px!important;margin-top:4px!important}
+body:has(.action-hero) .action-hero-brand small{font-size:8px!important;line-height:1.25!important}
+
+body:has(.action-hero) .action-command{min-height:58px!important;padding:10px 15px!important;margin-bottom:9px!important;border-radius:11px!important;background:linear-gradient(90deg,#f2fff8,#fff)!important;box-shadow:none!important}
+body:has(.action-hero) .action-command-mark{width:38px!important;height:38px!important}
+body:has(.action-hero) .action-command h3{font-size:13px!important;margin-bottom:3px!important}
+body:has(.action-hero) .action-command p{font-size:8px!important}
+body:has(.action-hero) .action-command-meta .portal-pill{font-size:7.5px!important}
+
+body:has(.action-hero) .action-summary{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:9px!important;margin-bottom:9px!important}
+body:has(.action-hero) .action-metric{min-height:82px!important;padding:11px 12px!important;grid-template-columns:40px 1fr 26px!important;gap:10px!important;border-radius:12px!important}
+body:has(.action-hero) .action-metric-icon{width:40px!important;height:40px!important}
+body:has(.action-hero) .action-metric-icon .ui-icon{width:20px!important;height:20px!important}
+body:has(.action-hero) .action-metric span{font-size:8.5px!important}
+body:has(.action-hero) .action-metric b{font-size:23px!important;margin:4px 0 2px!important;line-height:1!important}
+body:has(.action-hero) .action-metric small{font-size:7.5px!important;min-height:17px!important}
+body:has(.action-hero) .action-metric-arrow{width:26px!important;height:26px!important;font-size:14px!important}
+
+body:has(.action-hero) .action-filters{min-height:39px!important;padding:7px 9px!important;margin-bottom:9px!important;border-radius:11px!important;box-shadow:none!important}
+body:has(.action-hero) .action-filters strong{font-size:8.5px!important}
+body:has(.action-hero) .action-filter{padding:6px 9px!important;font-size:8px!important}
+
+body:has(.action-hero) .action-grid{gap:9px!important}
+body:has(.action-hero) .action-panel{border-radius:12px!important;box-shadow:0 5px 16px rgba(13,54,96,.045)!important}
+body:has(.action-hero) .action-panel-head{padding:11px 13px 9px!important;min-height:49px!important}
+body:has(.action-hero) .action-panel-head h3{font-size:12px!important;margin:0 0 3px!important}
+body:has(.action-hero) .action-panel-head p{font-size:7.5px!important}
+body:has(.action-hero) .action-empty{min-height:78px!important;padding:22px 14px!important;font-size:8.5px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important}
+body:has(.action-hero) .action-empty strong{font-size:10.5px!important;margin-bottom:4px!important}
+body:has(.action-hero) .action-list{padding:0 13px!important}
+body:has(.action-hero) .action-item{padding:10px 0!important}
+body:has(.action-hero) .action-item-title{font-size:9.5px!important}
+body:has(.action-hero) .action-item small{font-size:7.5px!important}
+body:has(.action-hero) .action-history{margin-top:9px!important;border-radius:12px!important}
+
+@media(max-width:1280px){
+ body:has(.action-hero) .portal-app{grid-template-columns:215px minmax(0,1fr)}
+ body:has(.action-hero) .action-summary{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ body:has(.action-hero) .action-hero-main{padding-inline-end:245px!important}
+ body:has(.action-hero) .action-hero-brand{width:150px!important}
+}
+@media(max-width:950px){
+ body:has(.action-hero) .action-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body:has(.action-hero) .action-grid{grid-template-columns:1fr!important}
+ body:has(.action-hero) .action-hero-main{padding-inline:16px!important}
+ body:has(.action-hero) .action-hero-brand{display:none!important}
+}
+@media(max-width:700px){
+ body:has(.action-hero) .action-summary{grid-template-columns:1fr!important}
+ body:has(.action-hero) .action-hero{height:auto!important;min-height:150px!important}
+ body:has(.action-hero) .action-hero-main{min-height:150px!important}
+}
