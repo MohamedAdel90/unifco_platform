@@ -29,6 +29,23 @@ class OperationsRoutingServiceTest extends TestCase
         ]);
     }
 
+    private function requestPayload(Tenant $tenant, Customer $customer, Asset $asset, string $requestNo, string $subject): array
+    {
+        return [
+            'tenant_id' => $tenant->id,
+            'customer_id' => $customer->id,
+            'request_no' => $requestNo,
+            'company_name' => $customer->name,
+            'service_category' => 'MAINTENANCE',
+            'details' => $subject.' details',
+            'asset_id' => $asset->id,
+            'request_type' => 'CORRECTIVE',
+            'priority' => 'P2',
+            'subject' => $subject,
+            'status' => 'NEW',
+        ];
+    }
+
     public function test_request_inherits_operational_domain_from_asset(): void
     {
         $tenant = $this->tenant();
@@ -50,16 +67,9 @@ class OperationsRoutingServiceTest extends TestCase
             'operational_domain_id' => $domain->id,
         ]);
 
-        $request = ServiceRequest::query()->create([
-            'tenant_id' => $tenant->id,
-            'customer_id' => $customer->id,
-            'request_no' => 'SR-DOMAIN-001',
-            'asset_id' => $asset->id,
-            'request_type' => 'CORRECTIVE',
-            'priority' => 'P2',
-            'subject' => 'Generator request',
-            'status' => 'NEW',
-        ]);
+        $request = ServiceRequest::query()->create(
+            $this->requestPayload($tenant, $customer, $asset, 'SR-DOMAIN-001', 'Generator request')
+        );
 
         $this->assertSame((int) $domain->id, (int) $request->fresh()->operational_domain_id);
     }
@@ -85,16 +95,9 @@ class OperationsRoutingServiceTest extends TestCase
             'operational_domain_id' => $domain->id,
         ]);
 
-        $request = ServiceRequest::query()->create([
-            'tenant_id' => $tenant->id,
-            'customer_id' => $customer->id,
-            'request_no' => 'SR-DOMAIN-002',
-            'asset_id' => $asset->id,
-            'request_type' => 'CORRECTIVE',
-            'priority' => 'P2',
-            'subject' => 'Battery request',
-            'status' => 'NEW',
-        ])->fresh();
+        $request = ServiceRequest::query()->create(
+            $this->requestPayload($tenant, $customer, $asset, 'SR-DOMAIN-002', 'Battery request')
+        )->fresh();
 
         $this->assertSame((int) $domain->id, (int) $request->operational_domain_id);
         $this->assertNull($request->operations_manager_id);
