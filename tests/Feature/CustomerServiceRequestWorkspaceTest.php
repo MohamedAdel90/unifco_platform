@@ -49,7 +49,7 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
         $this->actingAs($admin)->get('/customer/service-requests?q=SR-UNRM-TEST-001')
             ->assertOk()
             ->assertSee('SR-UNRM-TEST-001')
-            ->assertSee('View Details')
+            ->assertSee('View 360')
             ->assertSee(route('customer.service-requests.show',$request),false);
 
         $this->actingAs($admin)->get(route('customer.service-requests.show',$request))
@@ -133,6 +133,6 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
             ->assertOk()
             ->assertSee('Request portfolio')
             ->assertSee('Operations triage and routing')
-            ->assertSee('Full customer account');
+            ->assertSee('Every company request and delivery stage in one unified account.');
     }
 }
