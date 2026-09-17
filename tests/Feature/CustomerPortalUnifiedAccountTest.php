@@ -64,7 +64,7 @@ class CustomerPortalUnifiedAccountTest extends TestCase
             ->assertSee('Open Requests')
             ->assertSee('Work Orders Status')
             ->assertSee('Asset Health')
-            ->assertSee('Contracts &amp; SLA', false)
+            ->assertSee('Contracts & SLA', false)
             ->assertSee('Financial Summary')
             ->assertSee('Request Trend')
             ->assertSee('Technical Consultation');
