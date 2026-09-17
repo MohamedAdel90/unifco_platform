@@ -23,19 +23,33 @@ if ! git cat-file -e "${EXPECTED_SHA}^{commit}" 2>/dev/null; then
   exit 1
 fi
 REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
+DEPLOY_TARGET_SHA="$EXPECTED_SHA"
 
-# Never silently roll production back to an older functional SHA. A push-triggered
-# deployment must deploy the current main tip; if main advanced while this run was
-# queued, cancel this stale run and let the newer push deploy instead.
+# Never silently roll production back to an older functional SHA. Qualification
+# workflows are allowed to append deploy/status/* evidence commits while a deploy
+# is running. Those commits do not change application/runtime code, so advancing
+# to the current main tip is safe. Any other main advancement remains a hard stop.
 if [[ "$EXPECTED_SHA" != "$REMOTE_MAIN_SHA" ]]; then
-  echo "ERROR: stale deployment run: requested $EXPECTED_SHA but current main is $REMOTE_MAIN_SHA" >&2
-  echo "A newer main revision must be deployed instead of resetting production backwards." >&2
-  exit 1
+  if git merge-base --is-ancestor "$EXPECTED_SHA" "$REMOTE_MAIN_SHA"; then
+    NON_STATUS_CHANGES="$(git diff --name-only "$EXPECTED_SHA..$REMOTE_MAIN_SHA" | grep -v '^deploy/status/' || true)"
+    if [[ -z "$NON_STATUS_CHANGES" ]]; then
+      echo "==> Main advanced only by qualification status evidence; deploying current main: $REMOTE_MAIN_SHA"
+      DEPLOY_TARGET_SHA="$REMOTE_MAIN_SHA"
+    else
+      echo "ERROR: stale deployment run: requested $EXPECTED_SHA but current main is $REMOTE_MAIN_SHA" >&2
+      echo "A newer functional main revision exists and must be deployed by its own qualified run." >&2
+      printf '%s\n' "$NON_STATUS_CHANGES" >&2
+      exit 1
+    fi
+  else
+    echo "ERROR: requested release $EXPECTED_SHA is not an ancestor of current main $REMOTE_MAIN_SHA" >&2
+    exit 1
+  fi
 fi
 
-git reset --hard "$REMOTE_MAIN_SHA"
+git reset --hard "$DEPLOY_TARGET_SHA"
 DEPLOY_SHA="$(git rev-parse HEAD)"
-[[ "$DEPLOY_SHA" == "$REMOTE_MAIN_SHA" ]] || { echo "ERROR: server checkout mismatch: expected $REMOTE_MAIN_SHA got $DEPLOY_SHA" >&2; exit 1; }
+[[ "$DEPLOY_SHA" == "$DEPLOY_TARGET_SHA" ]] || { echo "ERROR: server checkout mismatch: expected $DEPLOY_TARGET_SHA got $DEPLOY_SHA" >&2; exit 1; }
 echo "==> Server checkout: $DEPLOY_SHA"
 
 echo "==> Validating current release foundation"
