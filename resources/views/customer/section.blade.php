@@ -10,6 +10,8 @@
     @include('customer.spare-parts')
 @elseif($section === 'sites')
     @include('customer.sites')
+@elseif($section === 'assets')
+    @include('customer.assets')
 @else
     @include('customer.workspace')
 @endif
