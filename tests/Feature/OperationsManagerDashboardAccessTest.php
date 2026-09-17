@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\{Tenant, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,7 +17,15 @@ class OperationsManagerDashboardAccessTest extends TestCase
 
     public function test_non_operations_user_is_forbidden_from_operations_command_center(): void
     {
-        $user = User::factory()->create(['status' => 'ACTIVE']);
+        $tenant = Tenant::create(['name' => 'Access Test', 'code' => 'OPS-ACCESS', 'status' => 'ACTIVE']);
+        $user = User::create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Standard User',
+            'email' => 'standard.operations-access@example.test',
+            'password' => 'password',
+            'role' => 'USER',
+            'status' => 'ACTIVE',
+        ]);
 
         $this->actingAs($user)->get('/operations')->assertForbidden();
     }
