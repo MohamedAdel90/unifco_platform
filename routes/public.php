@@ -83,6 +83,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/customer', CustomerPortalController::class)->name('customer.portal');
+    Route::get('/customer/dashboard', fn () => redirect()->route('customer.portal', [], 301))->name('customer.dashboard');
     Route::get('/customer/search', CustomerPortalSearchController::class)->name('customer.search');
     Route::get('/customer/asset-health', [AssetHealthDashboardController::class, 'customer'])->name('customer.asset-health');
     Route::get('/customer/assets/{asset}', [CustomerAssetReadController::class, 'asset'])->name('customer.asset.show');
@@ -102,7 +103,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/customer/users-access/{user}/reset-password', [CustomerPortalAccessAdminController::class, 'resetPassword'])->name('customer.access.reset-password');
 
     Route::get('/customer/{section}', CustomerPortalController::class)
-        ->whereIn('section', ['dashboard', 'requests', 'quotations', 'timeline', 'contracts', 'sites', 'assets', 'work-orders', 'visits', 'maintenance', 'spare-parts', 'invoices', 'reports', 'sla', 'documents', 'notifications'])
+        ->whereIn('section', ['requests', 'quotations', 'timeline', 'contracts', 'sites', 'assets', 'work-orders', 'visits', 'maintenance', 'spare-parts', 'invoices', 'reports', 'sla', 'documents', 'notifications'])
         ->name('customer.section');
     Route::post('/customer/service-requests', [CustomerPortalOperationsController::class, 'requestService'])->name('customer.requests.store');
     Route::post('/customer/quotations/{quotation}/decision', [CustomerPortalOperationsController::class, 'decideQuotation'])->name('customer.quotations.decision');

@@ -2,5 +2,5 @@
     @include('customer.dashboard-v3')
     @include('customer.partials.dashboard-sidebar-sync')
 @else
-    @include('customer.section-legacy')
+    @include('customer.workspace')
 @endif
