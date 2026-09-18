@@ -307,4 +307,36 @@ class HomepageCmsAdminTest extends TestCase
         $this->assertFalse(cache()->has('homepage_content_ar'));
         $this->assertFalse(cache()->has('homepage_content_en'));
     }
+    public function test_separate_cms_cards_show_saved_display_modes(): void
+    {
+        \App\Models\HomepageSection::updateOrCreate(
+            ['section_key' => 'operations'],
+            ['sort_order' => 60, 'is_active' => true, 'data_ar' => ['maintenance_display_mode' => 'full_section_image', 'portal_display_mode' => 'structured'], 'data_en' => ['maintenance_display_mode' => 'structured', 'portal_display_mode' => 'full_section_image']]
+        );
+
+        $this->actingAs($this->admin())->get(route('admin.homepage.sections.index'))
+            ->assertOk()
+            ->assertSee('Display Mode:', false)
+            ->assertSee('Full Section Image')
+            ->assertDontSee('Display Mode + bilingual content', false);
+    }
+
+    public function test_separate_cms_editors_render_display_mode_controls(): void
+    {
+        \App\Models\HomepageSection::updateOrCreate(
+            ['section_key' => 'operations'],
+            ['sort_order' => 60, 'is_active' => true, 'data_ar' => ['maintenance_display_mode' => 'full_section_image'], 'data_en' => ['maintenance_display_mode' => 'structured']]
+        );
+
+        $this->actingAs($this->admin())->get(route('admin.maintenance-cms'))
+            ->assertOk()
+            ->assertSee('name="scalar_ar_maintenance_display_mode"', false)
+            ->assertSee('name="scalar_en_maintenance_full_section_image"', false);
+
+        $this->actingAs($this->admin())->get(route('admin.client-portal-cms'))
+            ->assertOk()
+            ->assertSee('name="scalar_ar_portal_display_mode"', false)
+            ->assertSee('name="scalar_en_portal_full_section_image"', false);
+    }
+
 }

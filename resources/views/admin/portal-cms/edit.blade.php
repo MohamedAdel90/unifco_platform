@@ -43,6 +43,21 @@
   <section class="cms-card">
     <h3>{{ $language }}</h3>
 
+    <label>Display mode</label>
+    <select name="scalar_{{ $locale }}_{{ $prefix }}_display_mode" style="width:100%;box-sizing:border-box;border:1px solid #d7dfe9;border-radius:8px;padding:9px 11px;font-size:13px;color:#17243c;background:#fff">
+      @php($displayMode = old('scalar_'.$locale.'_'.$prefix.'_display_mode', $section->{'data_'.$locale}[$prefix.'_display_mode'] ?? 'structured'))
+      <option value="structured" {{ $displayMode === 'structured' ? 'selected' : '' }}>Structured Section</option>
+      <option value="full_section_image" {{ $displayMode === 'full_section_image' ? 'selected' : '' }}>Full Section Image</option>
+    </select>
+
+    <label>Full section image ({{ strtoupper($locale) }})</label>
+    @include('admin.homepage.sections.partials.image-field', [
+      'name' => 'scalar_'.$locale.'_'.$prefix.'_full_section_image',
+      'value' => old('scalar_'.$locale.'_'.$prefix.'_full_section_image', $section->{'data_'.$locale}[$prefix.'_full_section_image'] ?? ''),
+      'placeholder' => '/images/...',
+      'label' => $language.' full section image',
+    ])
+
     <label>{{ $labels['image'] }} ({{ strtoupper($locale) }})</label>
     @include('admin.homepage.sections.partials.image-field', [
       'name' => 'scalar_'.$locale.'_'.$prefix.'_image',
