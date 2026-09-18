@@ -34,15 +34,19 @@ class User extends Authenticatable
             ->withPivot(['source', 'granted_by', 'expires_at', 'reason'])->withTimestamps();
     }
 
-    public function sessions(): HasMany
+    public function operationalDomains(): BelongsToMany
     {
-        return $this->hasMany(UserSession::class);
+        return $this->belongsToMany(OperationalDomain::class, 'user_operational_domains')
+            ->withPivot(['assignment_type','priority','is_active'])->withTimestamps();
     }
 
-    public function employee(): BelongsTo
+    public function routedServiceRequests(): HasMany
     {
-        return $this->belongsTo(Employee::class);
+        return $this->hasMany(ServiceRequest::class, 'operations_manager_id');
     }
+
+    public function sessions(): HasMany { return $this->hasMany(UserSession::class); }
+    public function employee(): BelongsTo { return $this->belongsTo(Employee::class); }
 
     public function hasRole(string $code): bool
     {

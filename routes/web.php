@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\{ApiTokenController,AuditController,PermissionCon
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CRM\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OperationsManagerDashboardController;
 use App\Http\Controllers\EAM\AssetController;
 use App\Http\Controllers\Finance\{FinanceCoreController,JournalController};
 use App\Http\Controllers\HealthController;
@@ -30,6 +31,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout',[AuthController::class,'destroy'])->name('logout');
     Route::get('/',DashboardController::class)->name('dashboard');
+    Route::get('/operations',OperationsManagerDashboardController::class)->name('operations-manager.dashboard');
     Route::get('/modules/{module}',[ModuleController::class,'index'])->name('modules.index');
 
     Route::prefix('finance')->name('finance.')->group(function () {

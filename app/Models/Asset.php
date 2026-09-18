@@ -11,7 +11,7 @@ class Asset extends Model
     use BelongsToTenant;
 
     protected $fillable = [
-        'tenant_id','organization_id','customer_id','customer_site_id','asset_location_id','parent_asset_id','asset_category_template_id','asset_code','customer_asset_code','name','location_code','serial_no','manufacturer_asset_number',
+        'tenant_id','organization_id','customer_id','customer_site_id','asset_location_id','parent_asset_id','asset_category_template_id','operational_domain_id','asset_code','customer_asset_code','name','location_code','serial_no','manufacturer_asset_number',
         'asset_category','asset_subcategory','asset_type','manufacturer','model_no','criticality','impact_safety','impact_operation','impact_financial','impact_customer','impact_environmental','probability_failure','probability_condition','probability_age','criticality_matrix_score','criticality_class',
         'ownership_type','lifecycle_status','operational_status','maintenance_strategy','pm_template','pm_frequency','last_pm','next_pm','last_inspection','next_inspection',
         'building','floor','zone','room','room_code','physical_location','latitude','longitude','manufacture_date','purchase_date','po_number','purchase_value','installation_date','warranty_start','warranty_expiry','warranty_provider','warranty_terms','contract_reference','sla_reference','coverage_type',
@@ -37,6 +37,7 @@ class Asset extends Model
     public function site(): BelongsTo { return $this->belongsTo(CustomerSite::class,'customer_site_id'); }
     public function location(): BelongsTo { return $this->belongsTo(AssetLocation::class,'asset_location_id'); }
     public function template(): BelongsTo { return $this->belongsTo(AssetCategoryTemplate::class,'asset_category_template_id'); }
+    public function operationalDomain(): BelongsTo { return $this->belongsTo(OperationalDomain::class); }
     public function documents(): HasMany { return $this->hasMany(AssetDocument::class); }
     public function lifecycleEvents(): HasMany { return $this->hasMany(AssetLifecycleEvent::class)->orderByDesc('performed_at'); }
     public function commissioningRecords(): HasMany { return $this->hasMany(AssetCommissioningRecord::class)->orderByDesc('id'); }

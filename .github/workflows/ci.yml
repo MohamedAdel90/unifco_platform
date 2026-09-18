@@ -9,6 +9,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [unit, feature-a-f, feature-g-l, feature-m-r, feature-s-v, feature-w-z]
     env:
       DB_CONNECTION: mysql
       DB_HOST: 127.0.0.1
@@ -47,5 +51,37 @@ jobs:
           php artisan key:generate
       - name: Run migrations
         run: php artisan migrate --force
-      - name: Run tests
-        run: composer test
+      - name: Run unit tests
+        if: matrix.suite == 'unit'
+        run: php artisan test tests/Unit
+      - name: Run feature tests A-F
+        if: matrix.suite == 'feature-a-f'
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\n' | sort | awk 'toupper(substr($0,1,1)) >= "A" && toupper(substr($0,1,1)) <= "F"' | sed 's#^#tests/Feature/#')
+          if ((${#files[@]})); then php artisan test "${files[@]}"; fi
+      - name: Run feature tests G-L
+        if: matrix.suite == 'feature-g-l'
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\n' | sort | awk 'toupper(substr($0,1,1)) >= "G" && toupper(substr($0,1,1)) <= "L"' | sed 's#^#tests/Feature/#')
+          if ((${#files[@]})); then php artisan test "${files[@]}"; fi
+      - name: Run feature tests M-R
+        if: matrix.suite == 'feature-m-r'
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\n' | sort | awk 'toupper(substr($0,1,1)) >= "M" && toupper(substr($0,1,1)) <= "R"' | sed 's#^#tests/Feature/#')
+          if ((${#files[@]})); then php artisan test "${files[@]}"; fi
+      - name: Run feature tests S-V
+        if: matrix.suite == 'feature-s-v'
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\n' | sort | awk 'toupper(substr($0,1,1)) >= "S" && toupper(substr($0,1,1)) <= "V"' | sed 's#^#tests/Feature/#')
+          if ((${#files[@]})); then php artisan test "${files[@]}"; fi
+
+      - name: Run feature tests W-Z
+        if: matrix.suite == 'feature-w-z'
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\\n' | sort | awk 'toupper(substr($0,1,1)) >= "W" && toupper(substr($0,1,1)) <= "Z"' | sed 's|^|tests/Feature/|')
+          if ((files_count=${#files[@]})); then php artisan test "${files[@]}"; fi

@@ -6,8 +6,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  mysql-qualification:
+  mysql-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [unit, feature-a-f, feature-g-l, feature-m-r, feature-s-v, feature-w-z]
     services:
       mysql:
         image: mysql:8.0
@@ -44,9 +48,59 @@ jobs:
           php artisan key:generate
       - name: Validate migrations
         run: php artisan migrate:fresh --seed --force
-      - name: Run full tests on MySQL
-        run: php artisan test
+      - name: Run unit tests
+        if: matrix.suite == 'unit'
+        run: php artisan test tests/Unit
+      - name: Run feature tests A-F
+        if: matrix.suite == 'feature-a-f'
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\n' | sort | awk 'toupper(substr($0,1,1)) >= "A" && toupper(substr($0,1,1)) <= "F"' | sed 's#^#tests/Feature/#')
+          if ((${#files[@]})); then php artisan test "${files[@]}"; fi
+      - name: Run feature tests G-L
+        if: matrix.suite == 'feature-g-l'
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\n' | sort | awk 'toupper(substr($0,1,1)) >= "G" && toupper(substr($0,1,1)) <= "L"' | sed 's#^#tests/Feature/#')
+          if ((${#files[@]})); then php artisan test "${files[@]}"; fi
+      - name: Run feature tests M-R
+        if: matrix.suite == 'feature-m-r'
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\n' | sort | awk 'toupper(substr($0,1,1)) >= "M" && toupper(substr($0,1,1)) <= "R"' | sed 's#^#tests/Feature/#')
+          if ((${#files[@]})); then php artisan test "${files[@]}"; fi
+      - name: Run feature tests S-V
+        if: matrix.suite == 'feature-s-v'
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\n' | sort | awk 'toupper(substr($0,1,1)) >= "S" && toupper(substr($0,1,1)) <= "V"' | sed 's#^#tests/Feature/#')
+          if ((${#files[@]})); then php artisan test "${files[@]}"; fi
+
+      - name: Run feature tests W-Z
+        if: matrix.suite == 'feature-w-z'
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\\n' | sort | awk 'toupper(substr($0,1,1)) >= "W" && toupper(substr($0,1,1)) <= "Z"' | sed 's|^|tests/Feature/|')
+          if ((files_count=${#files[@]})); then php artisan test "${files[@]}"; fi
+
+  staging-validation:
+    runs-on: ubuntu-latest
+    needs: mysql-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql
+          coverage: none
+      - name: Prepare Laravel
+        run: |
+          mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+          cp .env.example .env
+          php artisan key:generate
       - name: Validate scheduler
         run: php artisan schedule:list
       - name: Validate staging compose
         run: docker compose -f docker-compose.staging.yml config >/dev/null
+
