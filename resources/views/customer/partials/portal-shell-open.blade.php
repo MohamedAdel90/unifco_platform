@@ -38,7 +38,7 @@
         ],
         ($isArabic ? 'التواصل والحساب' : 'Communication & Account') => [
             ['inbox', 'inbox', $isArabic ? 'صندوق الوارد والدعم' : 'Inbox & Support', route('customer.inbox', ['lang'=>$locale])],
-            ['profile', 'profile', $isArabic ? 'ملف الشركة والإعدادات' : 'Company Profile & Settings', route('customer.profile.edit', ['lang'=>$locale])],
+            ['profile', 'profile', 'Company Profile & Settings', route('customer.profile.edit', ['lang'=>$locale])],
         ],
     ];
     $navBadges = $navBadges ?? [
