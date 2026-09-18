@@ -23,48 +23,32 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
 
     private function opportunity(array $c, string $suffix): CrmOpportunity
     {
-        $lead=CrmLead::create([
-            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'lead_no'=>'LEAD-'.$suffix,
-            'name'=>'Portal quotation '.$suffix,'company'=>'Portal Client','email'=>'portal-'.$suffix.'@example.test','status'=>'QUALIFIED',
-        ]);
-        return CrmOpportunity::create([
-            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'lead_id'=>$lead->id,'opportunity_no'=>'OPP-'.$suffix,
-            'name'=>'Portal opportunity '.$suffix,'stage'=>'PROPOSAL','expected_value'=>7500,'probability'=>50,'status'=>'OPEN',
-        ]);
+        $lead=CrmLead::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'lead_no'=>'LEAD-'.$suffix,'name'=>'Portal quotation '.$suffix,'company'=>'Portal Client','email'=>'portal-'.$suffix.'@example.test','status'=>'QUALIFIED']);
+        return CrmOpportunity::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'lead_id'=>$lead->id,'opportunity_no'=>'OPP-'.$suffix,'name'=>'Portal opportunity '.$suffix,'stage'=>'PROPOSAL','expected_value'=>7500,'probability'=>50,'status'=>'OPEN']);
     }
 
     public function test_customer_can_submit_contract_asset_service_request_with_sla(): void
     {
         $c=$this->context();
-        $this->actingAs($c['user'])->post('/customer/service-requests',[
-            'service_contract_id'=>$c['contract']->id,'asset_id'=>$c['asset']->id,'service_category'=>'Maintenance',
-            'subject'=>'Urgent generator issue','details'=>'Generator is unavailable','site_city'=>'Riyadh','priority'=>'EMERGENCY',
-        ])->assertRedirect();
-
-        $this->assertDatabaseHas('service_requests',[
-            'customer_id'=>$c['customer']->id,'asset_id'=>$c['asset']->id,'service_contract_id'=>$c['contract']->id,
-            'request_type'=>'MAINTENANCE','eligibility'=>'IN_CONTRACT','priority'=>'EMERGENCY','response_sla_minutes'=>10,'resolution_sla_minutes'=>240,'status'=>'OPEN',
-        ]);
+        $this->actingAs($c['user'])->post('/customer/service-requests',['service_contract_id'=>$c['contract']->id,'asset_id'=>$c['asset']->id,'service_category'=>'Maintenance','subject'=>'Urgent generator issue','details'=>'Generator is unavailable','site_city'=>'Riyadh','priority'=>'EMERGENCY'])->assertRedirect();
+        $this->assertDatabaseHas('service_requests',['customer_id'=>$c['customer']->id,'asset_id'=>$c['asset']->id,'service_contract_id'=>$c['contract']->id,'request_type'=>'MAINTENANCE','eligibility'=>'IN_CONTRACT','priority'=>'EMERGENCY','response_sla_minutes'=>10,'resolution_sla_minutes'=>240,'status'=>'OPEN']);
         $this->assertDatabaseHas('customer_activity_events',['customer_id'=>$c['customer']->id,'event_type'=>'SERVICE_REQUEST_CREATED']);
     }
 
-    public function test_customer_360_exposes_requests_quotations_and_timeline_sections(): void
+    public function test_customer_portal_exposes_requests_quotations_timeline_and_current_dashboard(): void
     {
         $c=$this->context();
-        $this->actingAs($c['user'])->get('/customer/requests')
-            ->assertRedirect(route('customer.service-requests.index'));
-        $this->actingAs($c['user'])->get(route('customer.service-requests.index'))
-            ->assertOk()->assertSee('Service Requests');
+        $this->actingAs($c['user'])->get('/customer/requests')->assertRedirect(route('customer.service-requests.index'));
+        $this->actingAs($c['user'])->get(route('customer.service-requests.index'))->assertOk()->assertSee('Service Requests');
         $this->actingAs($c['user'])->get('/customer/quotations')->assertOk()->assertSee('Quotations');
         $this->actingAs($c['user'])->get('/customer/timeline')->assertOk()->assertSee('Timeline');
-        $this->actingAs($c['user'])->get('/customer')->assertOk()->assertSee('Customer 360');
+        $this->actingAs($c['user'])->get('/customer')->assertOk()->assertSee('Financial Summary')->assertSee('Quick Actions');
     }
 
     public function test_customer_can_download_own_invoice_and_contract_as_pdf(): void
     {
         $c=$this->context();
         $invoice=FinancialDocument::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,'document_no'=>'INV-100','document_type'=>'AR_INVOICE','counterparty_name'=>'Client One','document_date'=>now(),'due_date'=>now()->addDays(30),'currency'=>'SAR','amount'=>5000,'open_amount'=>5000,'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED']);
-
         $this->actingAs($c['user'])->get('/customer/invoices/'.$invoice->id.'/pdf')->assertOk()->assertHeader('Content-Type','application/pdf')->assertSee('%PDF',false);
         $this->actingAs($c['user'])->get('/customer/contracts/'.$c['contract']->id.'/pdf')->assertOk()->assertHeader('Content-Type','application/pdf')->assertSee('%PDF',false);
     }
@@ -77,7 +61,6 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
         $this->actingAs($c['user'])->post('/customer/quotations/'.$quotation->id.'/decision',['decision'=>'APPROVE','notes'=>'Approved'])->assertRedirect();
         $this->assertDatabaseHas('crm_quotations',['id'=>$quotation->id,'status'=>'CUSTOMER_APPROVED','customer_decision_notes'=>'Approved']);
         $this->assertDatabaseHas('customer_activity_events',['customer_id'=>$c['customer']->id,'event_type'=>'QUOTATION_APPROVE']);
-
         $other=Customer::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_code'=>'C2','name'=>'Other','status'=>'ACTIVE']);
         $otherOpportunity=$this->opportunity($c,'2');
         $otherQuote=CrmQuotation::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'opportunity_id'=>$otherOpportunity->id,'customer_id'=>$other->id,'quotation_no'=>'QT-2','quotation_date'=>now(),'currency'=>'SAR','amount'=>1000,'status'=>'SENT']);
