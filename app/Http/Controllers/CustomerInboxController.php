@@ -56,7 +56,11 @@ class CustomerInboxController extends Controller
         $data = $request->validate(['subject'=>['required','string','max:255'],'body'=>['required','string','max:5000']]);
         $id = DB::table('customer_conversations')->insertGetId(['customer_id'=>$user->customer_id,'subject'=>$data['subject'],'status'=>'OPEN','last_message_at'=>now(),'created_at'=>now(),'updated_at'=>now()]);
         DB::table('customer_messages')->insert(['conversation_id'=>$id,'sender_user_id'=>$user->id,'sender_side'=>'CUSTOMER','body'=>$data['body'],'created_at'=>now(),'updated_at'=>now()]);
-        return redirect()->route('customer.inbox',['conversation'=>$id])->with('status','تم إرسال الرسالة إلى UNIFCO.');
+        $locale = $request->query('lang');
+        if (!in_array($locale, ['ar', 'en'], true)) {
+            $locale = $request->session()->get('customer_portal_locale', 'en');
+        }
+        return redirect()->route('customer.inbox',['conversation'=>$id,'lang'=>$locale])->with('status','Message sent to UNIFCO.');
     }
 
     public function customerReply(Request $request, int $conversation): RedirectResponse
@@ -69,7 +73,11 @@ class CustomerInboxController extends Controller
         $data = $request->validate(['body'=>['required','string','max:5000']]);
         DB::table('customer_messages')->insert(['conversation_id'=>$conversation,'sender_user_id'=>$user->id,'sender_side'=>'CUSTOMER','body'=>$data['body'],'created_at'=>now(),'updated_at'=>now()]);
         DB::table('customer_conversations')->where('id',$conversation)->update(['status'=>'OPEN','last_message_at'=>now(),'updated_at'=>now()]);
-        return back()->with('status','تم إرسال الرد.');
+        $locale = $request->query('lang');
+        if (!in_array($locale, ['ar', 'en'], true)) {
+            $locale = $request->session()->get('customer_portal_locale', 'en');
+        }
+        return redirect()->route('customer.inbox',['conversation'=>$conversation,'lang'=>$locale])->with('status','Reply sent.');
     }
 
     public function adminIndex(Request $request): View
