@@ -27,6 +27,18 @@ class CustomerPortalController extends Controller
         }
 
         $customer = Customer::whereKey($user->customer_id)->where('tenant_id', $user->tenant_id)->firstOrFail();
+
+        // Keep one locale for the complete customer portal. Explicit ?lang=ar|en
+        // changes the preference; ordinary sidebar navigation inherits it.
+        $requestedLocale = $request->query('lang');
+        if (in_array($requestedLocale, ['ar', 'en'], true)) {
+            $request->session()->put('customer_portal_locale', $requestedLocale);
+        }
+        $locale = in_array($requestedLocale, ['ar', 'en'], true)
+            ? $requestedLocale
+            : $request->session()->get('customer_portal_locale', 'en');
+        app()->setLocale($locale);
+
         $section = $section ?: 'dashboard';
         abort_unless($access->canSection($user, $section), 403, 'This section is not available for this customer account.');
 
@@ -295,7 +307,7 @@ class CustomerPortalController extends Controller
             'quotationActionCount', 'workAcceptanceActionCount', 'invoiceActionCount', 'renewalActionCount', 'actionRequiredCount',
             'statusFilter', 'priorityFilter', 'searchFilter', 'previousRequestCount', 'previousWorkOrderCount',
             'requestVolumeDelta', 'workOrderVolumeDelta', 'requestVolumeChange', 'workOrderVolumeChange', 'monthlyActivity', 'slaBreachCount', 'visitsDue7Count', 'visitsDue30Count',
-            'lastUpdatedAt', 'dashboardHealth'
+            'lastUpdatedAt', 'dashboardHealth', 'locale'
         ))->header('X-UNIFCO-Customer-Portal-Release', 'customer-portal-rbac-phase1-20260827; customer-command-center-20260914; customer-unified-account-20260915; customer-dashboard-v2-20260915')
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
