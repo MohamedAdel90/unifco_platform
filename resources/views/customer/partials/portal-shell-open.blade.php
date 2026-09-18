@@ -1,41 +1,44 @@
 @php
-    $isArabic = isset($locale) ? $locale === 'ar' : app()->getLocale() === 'ar';
+    $locale = isset($locale) && in_array($locale, ['ar','en'], true)
+        ? $locale
+        : request()->session()->get('customer_portal_locale', request('lang') === 'ar' ? 'ar' : 'en');
+    $isArabic = $locale === 'ar';
     $activeSection = $activeSection ?? ($section ?? 'dashboard');
     $pageTitle = $pageTitle ?? 'Customer 360';
     $pageDescription = $pageDescription ?? ($isArabic ? 'جميع بيانات وأعمال الشركة في حساب عميل موحد.' : 'All company records and services in one unified customer account.');
     $navGroups = [
         ($isArabic ? 'الرئيسية' : 'Overview') => [
-            ['dashboard', 'dashboard', $isArabic ? 'لوحة التحكم' : 'Dashboard', route('customer.portal')],
-            ['actions', 'actions', $isArabic ? 'الإجراءات المطلوبة' : 'Action Required', route('customer.actions')],
+            ['dashboard', 'dashboard', $isArabic ? 'لوحة التحكم' : 'Dashboard', route('customer.portal', ['lang'=>$locale])],
+            ['actions', 'actions', $isArabic ? 'الإجراءات المطلوبة' : 'Action Required', route('customer.actions', ['lang'=>$locale])],
         ],
         ($isArabic ? 'أعمالي' : 'My Work') => [
-            ['requests', 'requests', $isArabic ? 'طلبات الخدمة' : 'Service Requests', route('customer.section', 'requests')],
-            ['work-orders', 'work-orders', $isArabic ? 'أوامر العمل' : 'Work Orders', route('customer.section', 'work-orders')],
-            ['visits', 'visits', $isArabic ? 'الزيارات والمواعيد' : 'Visits & Schedule', route('customer.section', 'visits')],
-            ['maintenance', 'maintenance', $isArabic ? 'خطة الصيانة' : 'Maintenance Plan', route('customer.section', 'maintenance')],
-            ['spare-parts', 'parts', $isArabic ? 'قطع الغيار' : 'Spare Parts', route('customer.section', 'spare-parts')],
+            ['requests', 'requests', $isArabic ? 'طلبات الخدمة' : 'Service Requests', route('customer.section', ['section'=>'requests','lang'=>$locale])],
+            ['work-orders', 'work-orders', $isArabic ? 'أوامر العمل' : 'Work Orders', route('customer.section', ['section'=>'work-orders','lang'=>$locale])],
+            ['visits', 'visits', $isArabic ? 'الزيارات والمواعيد' : 'Visits & Schedule', route('customer.section', ['section'=>'visits','lang'=>$locale])],
+            ['maintenance', 'maintenance', $isArabic ? 'خطة الصيانة' : 'Maintenance Plan', route('customer.section', ['section'=>'maintenance','lang'=>$locale])],
+            ['spare-parts', 'parts', $isArabic ? 'قطع الغيار' : 'Spare Parts', route('customer.section', ['section'=>'spare-parts','lang'=>$locale])],
         ],
         ($isArabic ? 'المواقع والأصول' : 'Sites & Assets') => [
-            ['sites', 'sites', $isArabic ? 'المواقع' : 'Sites', route('customer.section', 'sites')],
-            ['assets', 'assets', $isArabic ? 'الأصول والمعدات' : 'Assets & Equipment', route('customer.section', 'assets')],
+            ['sites', 'sites', $isArabic ? 'المواقع' : 'Sites', route('customer.section', ['section'=>'sites','lang'=>$locale])],
+            ['assets', 'assets', $isArabic ? 'الأصول والمعدات' : 'Assets & Equipment', route('customer.section', ['section'=>'assets','lang'=>$locale])],
         ],
         ($isArabic ? 'التجاري والعقود' : 'Commercial & Contracts') => [
-            ['quotations', 'quotations', $isArabic ? 'عروض الأسعار' : 'Quotations', route('customer.section', 'quotations')],
-            ['contracts', 'contracts', $isArabic ? 'العقود' : 'Contracts', route('customer.section', 'contracts')],
-            ['sla', 'sla', $isArabic ? 'مؤشرات SLA وKPI' : 'SLA & KPIs', route('customer.section', 'sla')],
+            ['quotations', 'quotations', $isArabic ? 'عروض الأسعار' : 'Quotations', route('customer.section', ['section'=>'quotations','lang'=>$locale])],
+            ['contracts', 'contracts', $isArabic ? 'العقود' : 'Contracts', route('customer.section', ['section'=>'contracts','lang'=>$locale])],
+            ['sla', 'sla', $isArabic ? 'مؤشرات SLA وKPI' : 'SLA & KPIs', route('customer.section', ['section'=>'sla','lang'=>$locale])],
         ],
         ($isArabic ? 'المالية' : 'Finance') => [
-            ['invoices', 'invoices', $isArabic ? 'الفواتير والدفعات' : 'Invoices & Payments', route('customer.section', 'invoices')],
+            ['invoices', 'invoices', $isArabic ? 'الفواتير والدفعات' : 'Invoices & Payments', route('customer.section', ['section'=>'invoices','lang'=>$locale])],
         ],
         ($isArabic ? 'التقارير والمستندات' : 'Reports & Records') => [
-            ['reports', 'reports', $isArabic ? 'التقارير' : 'Reports', route('customer.section', 'reports')],
-            ['documents', 'documents', $isArabic ? 'مكتبة المستندات' : 'Document Library', route('customer.section', 'documents')],
-            ['timeline', 'activity', $isArabic ? 'النشاط الأخير' : 'Recent Activity', route('customer.section', 'timeline')],
-            ['notifications', 'notifications', $isArabic ? 'الإشعارات' : 'Notifications', route('customer.section', 'notifications')],
+            ['reports', 'reports', $isArabic ? 'التقارير' : 'Reports', route('customer.section', ['section'=>'reports','lang'=>$locale])],
+            ['documents', 'documents', $isArabic ? 'مكتبة المستندات' : 'Document Library', route('customer.section', ['section'=>'documents','lang'=>$locale])],
+            ['timeline', 'activity', $isArabic ? 'النشاط الأخير' : 'Recent Activity', route('customer.section', ['section'=>'timeline','lang'=>$locale])],
+            ['notifications', 'notifications', $isArabic ? 'الإشعارات' : 'Notifications', route('customer.section', ['section'=>'notifications','lang'=>$locale])],
         ],
         ($isArabic ? 'التواصل والحساب' : 'Communication & Account') => [
-            ['inbox', 'inbox', $isArabic ? 'صندوق الوارد والدعم' : 'Inbox & Support', route('customer.inbox')],
-            ['profile', 'profile', $isArabic ? 'ملف الشركة والإعدادات' : 'Company Profile & Settings', route('customer.profile.edit')],
+            ['inbox', 'inbox', $isArabic ? 'صندوق الوارد والدعم' : 'Inbox & Support', route('customer.inbox', ['lang'=>$locale])],
+            ['profile', 'profile', $isArabic ? 'ملف الشركة والإعدادات' : 'Company Profile & Settings', route('customer.profile.edit', ['lang'=>$locale])],
         ],
     ];
     $navBadges = $navBadges ?? [
@@ -70,7 +73,7 @@
     <aside class="portal-sidebar" id="customer-sidebar">
         <div class="portal-account"><div class="portal-account-row"><div class="portal-logo">{{ strtoupper(substr($customer->name, 0, 2)) }}</div><div><strong>{{ $customer->name }}</strong><small>{{ $customer->customer_code }}</small></div></div><span class="portal-role">{{ $isArabic ? 'حساب العميل الموحد' : 'UNIFIED CUSTOMER ACCOUNT' }}</span></div>
         <div class="portal-create"><a class="primary" href="{{ route('public.request-service', ['customer' => $customer->customer_code]) }}">＋ <span>{{ $isArabic ? 'إنشاء طلب' : 'New Request' }}</span></a><a class="emergency" title="{{ $isArabic ? 'بلاغ طارئ' : 'Emergency Request' }}" href="{{ route('public.request-service', ['customer' => $customer->customer_code, 'emergency' => 1]) }}">!</a><button class="collapse" id="portal-sidebar-toggle" type="button" title="Collapse sidebar">⇤</button></div>
-        <form class="portal-search" method="GET" action="{{ route('customer.search') }}">@include('customer.partials.icon',['name'=>'search'])<input name="q" aria-label="{{ $isArabic ? 'بحث عام' : 'Global search' }}" placeholder="{{ $isArabic ? 'طلب، أصل، فاتورة أو عقد' : 'Request, asset, invoice or contract' }}"></form>
+        <form class="portal-search" method="GET" action="{{ route('customer.search', ['lang'=>$locale]) }}">@include('customer.partials.icon',['name'=>'search'])<input name="q" aria-label="{{ $isArabic ? 'بحث عام' : 'Global search' }}" placeholder="{{ $isArabic ? 'طلب، أصل، فاتورة أو عقد' : 'Request, asset, invoice or contract' }}"></form>
         <nav class="portal-nav">
             @foreach($navGroups as $group => $items)
                 <div class="portal-group"><div class="portal-group-title">{{ $group }}</div>
@@ -85,5 +88,5 @@
     <main class="portal-main">
         <header class="portal-topbar"><div class="portal-heading"><h1>{{ $pageTitle }}</h1><p>{{ $customer->name }} · {{ $pageDescription }}</p></div><span class="portal-status">{{ $customer->status }}</span><div class="portal-avatar">{{ strtoupper(substr(auth()->user()->name ?: $customer->name,0,2)) }}</div></header>
         <div class="portal-content">
-            <div class="portal-breadcrumb"><a href="{{ route('customer.portal') }}">{{ $isArabic ? 'لوحة العميل' : 'Customer 360' }}</a><span>›</span><span>{{ $pageTitle }}</span></div>
+            <div class="portal-breadcrumb"><a href="{{ route('customer.portal', ['lang'=>$locale]) }}">{{ $isArabic ? 'لوحة العميل' : 'Customer 360' }}</a><span>›</span><span>{{ $pageTitle }}</span></div>
             @if(session('status'))<div class="portal-notice">{{ session('status') }}</div>@endif
