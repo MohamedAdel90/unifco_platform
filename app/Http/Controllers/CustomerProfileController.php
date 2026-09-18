@@ -19,7 +19,14 @@ class CustomerProfileController extends Controller
     public function edit(Request $request): Response
     {
         $customer = $this->customer();
-        $locale = $request->query('lang') === 'en' ? 'en' : 'ar';
+        $requestedLocale = $request->query('lang');
+        if (in_array($requestedLocale, ['ar', 'en'], true)) {
+            $request->session()->put('customer_portal_locale', $requestedLocale);
+        }
+        $locale = in_array($requestedLocale, ['ar', 'en'], true)
+            ? $requestedLocale
+            : $request->session()->get('customer_portal_locale', 'en');
+        app()->setLocale($locale);
         $html = view('customer.profile', compact('customer','locale'))->render();
         $direction = $locale === 'ar' ? 'rtl' : 'ltr';
         $html = str_replace('</head>', '<style id="profile-logo-position">.brand-row{direction:ltr}.hero-center{direction:'.$direction.'}</style></head>', $html);
@@ -39,7 +46,9 @@ class CustomerProfileController extends Controller
             'project_name'=>['sometimes','nullable','string','max:255'],
         ]);
         $customer->update($data);
-        return back()->with('status', request('lang') === 'en' ? 'Profile field updated successfully.' : 'تم تحديث البيانات بنجاح.');
+        $locale = $request->session()->get('customer_portal_locale', 'en');
+        return redirect()->route('customer.profile.edit', ['lang' => $locale])
+            ->with('status', $locale === 'en' ? 'Profile field updated successfully.' : 'تم تحديث البيانات بنجاح.');
     }
 
     public function updateLogo(Request $request): RedirectResponse
@@ -49,7 +58,9 @@ class CustomerProfileController extends Controller
         if ($customer->logo_path) Storage::disk('public')->delete($customer->logo_path);
         $path = $request->file('logo')->store('customer-logos', 'public');
         $customer->update(['logo_path'=>$path]);
-        return back()->with('status', request('lang') === 'en' ? 'Customer logo updated.' : 'تم تحديث شعار العميل.');
+        $locale = $request->session()->get('customer_portal_locale', 'en');
+        return redirect()->route('customer.profile.edit', ['lang' => $locale])
+            ->with('status', $locale === 'en' ? 'Customer logo updated.' : 'تم تحديث شعار العميل.');
     }
 
     public function updatePassword(Request $request): RedirectResponse
@@ -61,9 +72,13 @@ class CustomerProfileController extends Controller
         ]);
         $user = auth()->user();
         if (! Hash::check($data['current_password'], $user->password)) {
-            return back()->withErrors(['current_password'=>request('lang') === 'en' ? 'Current password is incorrect.' : 'كلمة المرور الحالية غير صحيحة.']);
+            $locale = $request->session()->get('customer_portal_locale', 'en');
+            return redirect()->route('customer.profile.edit', ['lang' => $locale])
+                ->withErrors(['current_password'=>$locale === 'en' ? 'Current password is incorrect.' : 'كلمة المرور الحالية غير صحيحة.']);
         }
         $user->update(['password'=>$data['password']]);
-        return back()->with('status', request('lang') === 'en' ? 'Password changed successfully.' : 'تم تغيير كلمة المرور بنجاح.');
+        $locale = $request->session()->get('customer_portal_locale', 'en');
+        return redirect()->route('customer.profile.edit', ['lang' => $locale])
+            ->with('status', $locale === 'en' ? 'Password changed successfully.' : 'تم تغيير كلمة المرور بنجاح.');
     }
 }
