@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{AccessScope,Asset,Customer,CustomerSite,Role,ServiceContract,User};
-use App\Services\{AuditService,CustomerPortalAccessService,InvitationService};
+use App\Services\{AuditService,CustomerPortalAccessService,CustomerPortalScopeService,InvitationService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -123,7 +123,11 @@ class CustomerPortalAccessAdminController extends Controller
         DB::table('user_roles')->updateOrInsert(['user_id'=>$user->id,'role_id'=>$role->id],['tenant_id'=>$user->tenant_id,'is_primary'=>true,'granted_by'=>$actor->id,'granted_at'=>now(),'revoked_at'=>null,'reason'=>'Customer portal access management','created_at'=>now(),'updated_at'=>now()]);
 
         DB::table('user_scopes')->where('user_id',$user->id)->delete();
-        $scopeRows=$data['customer_portal_role']==='CUSTOMER_ADMIN' ? [['type'=>'CUSTOMER','id'=>$user->customer_id]] : collect(['SITE'=>$data['site_ids']??[],'CONTRACT'=>$data['contract_ids']??[],'ASSET'=>$data['asset_ids']??[]])->flatMap(fn($ids,$type)=>collect($ids)->map(fn($id)=>['type'=>$type,'id'=>(int)$id]))->all();
+        if ($data['customer_portal_role']==='CUSTOMER_ADMIN') {
+            app(CustomerPortalScopeService::class)->grant($user,$actor->id);
+            return;
+        }
+        $scopeRows=collect(['SITE'=>$data['site_ids']??[],'CONTRACT'=>$data['contract_ids']??[],'ASSET'=>$data['asset_ids']??[]])->flatMap(fn($ids,$type)=>collect($ids)->map(fn($id)=>['type'=>$type,'id'=>(int)$id]))->all();
         foreach($scopeRows as $item){
             $scope=AccessScope::firstOrCreate(['tenant_id'=>$user->tenant_id,'scope_type'=>$item['type'],'scope_id'=>$item['id']],['name'=>$item['type'].' #'.$item['id'],'is_active'=>true]);
             DB::table('user_scopes')->insert(['tenant_id'=>$user->tenant_id,'user_id'=>$user->id,'access_scope_id'=>$scope->id,'source'=>'USER','granted_by'=>$actor->id,'reason'=>'Customer portal access management','created_at'=>now(),'updated_at'=>now()]);

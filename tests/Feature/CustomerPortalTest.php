@@ -26,7 +26,7 @@ class CustomerPortalTest extends TestCase
         FinancialDocument::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$other->id,'document_no'=>'INV-OTHER','document_type'=>'AR_INVOICE','counterparty_name'=>$other->name,'document_date'=>now(),'currency'=>'SAR','amount'=>20000,'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'POSTED','open_amount'=>20000]);
 
         $this->post('/login',['email'=>$user->email,'password'=>'VerySecure1234'])->assertRedirect(route('customer.portal'));
-        $this->actingAs($user)->get('/customer')->assertOk()->assertSee('UNIFIED CUSTOMER ACCOUNT')->assertSee('Open Requests')->assertSee('Work Orders')->assertDontSee('INV-OTHER');
+        $this->actingAs($user)->get('/customer')->assertOk()->assertSee('Welcome back,')->assertSee('Customer Code')->assertSee('Open Requests')->assertSee('Monthly Activity')->assertSee('Messages & Support', false)->assertDontSee('INV-OTHER');
         $this->actingAs($user)->get('/customer/contracts')->assertOk()->assertSee('Contracts')->assertSee('AMC-001')->assertDontSee('INV-001');
         $this->actingAs($user)->get('/customer/assets')->assertOk()->assertSee('GEN-001')->assertDontSee('OTHER-001');
         $this->actingAs($user)->get('/customer/maintenance')->assertOk()->assertSee('PM-001');
@@ -42,12 +42,12 @@ class CustomerPortalTest extends TestCase
         $this->get('/login')->assertOk()->assertSee('One Facility Shop')->assertSee('All Your Facility Needs')->assertSee('One Trusted Partner')->assertSee('Welcome back')->assertSee('SECURE &amp; COMPLIANT', false)->assertSee('ROLE BASED ACCESS')->assertSee('RESPONSIVE DESIGN');
     }
 
-    public function test_non_customer_user_cannot_open_customer_portal(): void
+    public function test_non_customer_user_is_redirected_away_from_customer_portal(): void
     {
         $tenant = Tenant::create(['name'=>'Test','code'=>'TEST','status'=>'ACTIVE']);
         $org = Organization::create(['tenant_id'=>$tenant->id,'name'=>'HQ','code'=>'HQ','status'=>'ACTIVE']);
         $admin = User::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>'Admin','email'=>'admin@example.test','password'=>'password12345','role'=>'ADMIN','status'=>'ACTIVE']);
-        $this->actingAs($admin)->get('/customer')->assertForbidden();
-        $this->actingAs($admin)->get('/customer/contracts')->assertForbidden();
+        $this->actingAs($admin)->get('/customer')->assertRedirect(route('system-admin.dashboard'))->assertSessionHas('status', 'The customer portal is available to customer accounts only.');
+        $this->actingAs($admin)->get('/customer/contracts')->assertRedirect(route('system-admin.dashboard'));
     }
 }

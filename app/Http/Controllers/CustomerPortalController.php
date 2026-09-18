@@ -2,18 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset, CrmQuotation, Customer, CustomerActivityEvent, CustomerSite, FinancialDocument, MaintenancePlan, MaintenanceVisitReport, ServiceContract, ServiceRequest, WorkOrder};
-use App\Services\CustomerPortalAccessService;
-use Illuminate\Http\Request;
+use App\Models\{Asset, CrmQuotation, Customer, CustomerActivityEvent, CustomerSite, FinancialDocument, MaintenancePlan, MaintenanceVisitReport, ServiceContract, ServiceRequest, User, WorkOrder};
+use App\Services\{AuthorizationService, CustomerPortalAccessService};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\{DB, Schema};
 
 class CustomerPortalController extends Controller
 {
-    public function __invoke(Request $request, CustomerPortalAccessService $access, ?string $section = null): Response
+    private const WORKFLOW_ROLES = [
+        'MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','PROJECT_MANAGER','CEO',
+    ];
+
+    public function __construct(private AuthorizationService $authorization) {}
+
+    public function __invoke(Request $request, CustomerPortalAccessService $access, ?string $section = null): Response|RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user && $user->role === 'CUSTOMER' && $user->customer_id, 403, 'Customer portal access is not configured for this user.');
+        if (! $user || $user->role !== 'CUSTOMER' || ! $user->customer_id) {
+            if ($user && ($home = $this->homeRoute($user))) {
+                return redirect()->route($home)->with('status', 'The customer portal is available to customer accounts only.');
+            }
+            abort(403, 'Customer portal access is not configured for this user.');
+        }
 
         $customer = Customer::whereKey($user->customer_id)->where('tenant_id', $user->tenant_id)->firstOrFail();
         $section = $section ?: 'dashboard';
@@ -81,6 +92,7 @@ class CustomerPortalController extends Controller
             }))
             ->orderBy('next_due_date')->get();
 
+        $trendStart = now()->copy()->startOfMonth()->subMonths(5);
         $workOrdersQuery = WorkOrder::with('asset.site')->whereIn('asset_id', $assetIds)
             ->when($contractFilter, fn ($q) => $q->where('service_contract_id', $contractFilter))
             ->when($statusFilter, fn ($q) => $q->where('status', $statusFilter))
@@ -98,7 +110,10 @@ class CustomerPortalController extends Controller
         $previousWorkOrderCount = (clone $workOrdersQuery)
             ->whereBetween('created_at', [now()->subDays($days * 2), now()->subDays($days)])
             ->count();
-        if ($section === 'dashboard' || $request->filled('days')) {
+        $monthlyWorkOrderActivity = $section === 'dashboard'
+            ? (clone $workOrdersQuery)->where('created_at', '>=', $trendStart)->get(['id', 'created_at'])
+            : collect();
+        if ($section !== 'dashboard' && $request->filled('days')) {
             $workOrdersQuery->where('created_at', '>=', now()->subDays($days));
         }
         $workOrders = $workOrdersQuery->latest('created_at')->limit(100)->get();
@@ -124,10 +139,25 @@ class CustomerPortalController extends Controller
         $previousRequestCount = (clone $requestQuery)
             ->whereBetween('created_at', [now()->subDays($days * 2), now()->subDays($days)])
             ->count();
-        if ($section === 'dashboard' || $request->filled('days')) {
+        $monthlyRequestActivity = $section === 'dashboard'
+            ? (clone $requestQuery)->where('created_at', '>=', $trendStart)->get(['id', 'created_at'])
+            : collect();
+        if ($section !== 'dashboard' && $request->filled('days')) {
             $requestQuery->where('created_at', '>=', now()->subDays($days));
         }
         $requests = $requestQuery->latest()->limit(100)->get();
+
+        $monthlyActivity = collect(range(5, 0))->map(function (int $offset) use ($requests, $workOrders, $monthlyRequestActivity, $monthlyWorkOrderActivity, $section) {
+            $month = now()->copy()->subMonths($offset);
+            $requestActivity = $section === 'dashboard' ? $monthlyRequestActivity : $requests;
+            $workOrderActivity = $section === 'dashboard' ? $monthlyWorkOrderActivity : $workOrders;
+
+            return [
+                'label' => $month->format('M'),
+                'requests' => $requestActivity->filter(fn ($item) => optional($item->created_at)->format('Y-m') === $month->format('Y-m'))->count(),
+                'work_orders' => $workOrderActivity->filter(fn ($item) => optional($item->created_at)->format('Y-m') === $month->format('Y-m'))->count(),
+            ];
+        })->values();
 
         $quotations = CrmQuotation::where('customer_id', $customer->id)->latest('quotation_date')->limit(50)->get();
         $invoices = FinancialDocument::where('customer_id', $customer->id)->where('document_type', 'AR_INVOICE')->latest('document_date')->limit(100)->get();
@@ -238,6 +268,12 @@ class CustomerPortalController extends Controller
 
         $requestVolumeDelta = $currentRequestPeriodCount - $previousRequestCount;
         $workOrderVolumeDelta = $currentWorkOrderPeriodCount - $previousWorkOrderCount;
+        $requestVolumeChange = $previousRequestCount === 0
+            ? ($currentRequestPeriodCount === 0 ? 0 : null)
+            : (int) round(($requestVolumeDelta / $previousRequestCount) * 100);
+        $workOrderVolumeChange = $previousWorkOrderCount === 0
+            ? ($currentWorkOrderPeriodCount === 0 ? 0 : null)
+            : (int) round(($workOrderVolumeDelta / $previousWorkOrderCount) * 100);
         $lastUpdatedAt = collect([$timeline->max('created_at'), $requests->max('updated_at'), $workOrders->max('updated_at')])
             ->filter()->map(fn ($date) => \Illuminate\Support\Carbon::parse($date))->sortByDesc(fn ($date) => $date->timestamp)->first();
         $dashboardHealth = $overdueCount > 0 || $stoppedAssetCount > 0 || $requestStageCounts['overdue'] > 0
@@ -258,9 +294,31 @@ class CustomerPortalController extends Controller
             'maintenanceAssetCount', 'stoppedAssetCount', 'criticalAssetCount', 'warrantyExpiringCount',
             'quotationActionCount', 'workAcceptanceActionCount', 'invoiceActionCount', 'renewalActionCount', 'actionRequiredCount',
             'statusFilter', 'priorityFilter', 'searchFilter', 'previousRequestCount', 'previousWorkOrderCount',
-            'requestVolumeDelta', 'workOrderVolumeDelta', 'slaBreachCount', 'visitsDue7Count', 'visitsDue30Count',
+            'requestVolumeDelta', 'workOrderVolumeDelta', 'requestVolumeChange', 'workOrderVolumeChange', 'monthlyActivity', 'slaBreachCount', 'visitsDue7Count', 'visitsDue30Count',
             'lastUpdatedAt', 'dashboardHealth'
         ))->header('X-UNIFCO-Customer-Portal-Release', 'customer-portal-rbac-phase1-20260827; customer-command-center-20260914; customer-unified-account-20260915; customer-dashboard-v2-20260915')
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+
+    /**
+     * Best-home routing for authenticated users who are not a customer account.
+     * Mirrors the post-login routing in AuthController so internal roles always
+     * land somewhere they can use instead of a dead-end 403.
+     */
+    private function homeRoute(User $user): ?string
+    {
+        if ($this->authorization->allows($user, 'system.dashboard.view')) {
+            return 'system-admin.dashboard';
+        }
+        if ($user->hasRole('OPERATIONS_MANAGER')) {
+            return 'operations-manager.dashboard';
+        }
+        if ($user->role === 'STOREKEEPER') {
+            return 'inventory.warehouse.index';
+        }
+        if (in_array($user->role, self::WORKFLOW_ROLES, true)) {
+            return 'workflow.workspace';
+        }
+        return 'dashboard';
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\CRM;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Asset,Customer,CustomerContact,CustomerSite,FinancialDocument,ServiceContract,User};
+use App\Services\CustomerPortalScopeService;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
@@ -61,10 +62,11 @@ class CustomerPortalAdminController extends Controller
         return back()->with('status','Customer onboarding activated.');
     }
 
-    public function provisionUser(Request $request, Customer $customer): RedirectResponse
+    public function provisionUser(Request $request, Customer $customer, CustomerPortalScopeService $scopes): RedirectResponse
     {
         $data=$request->validate(['name'=>['required','string','max:180'],'email'=>['required','email','max:255','unique:users,email'],'password'=>['required','confirmed',Password::min(12)->letters()->numbers()],'customer_portal_role'=>['required','in:CUSTOMER_ADMIN,FACILITY_MANAGER,FINANCE,REQUESTER,VIEWER']]);
-        User::create(['tenant_id'=>Auth::user()->tenant_id,'organization_id'=>Auth::user()->organization_id,'customer_id'=>$customer->id,'name'=>$data['name'],'email'=>$data['email'],'password'=>$data['password'],'role'=>'CUSTOMER','customer_portal_role'=>$data['customer_portal_role'],'status'=>'ACTIVE']);
+        $user=User::create(['tenant_id'=>Auth::user()->tenant_id,'organization_id'=>Auth::user()->organization_id,'customer_id'=>$customer->id,'name'=>$data['name'],'email'=>$data['email'],'password'=>$data['password'],'role'=>'CUSTOMER','customer_portal_role'=>$data['customer_portal_role'],'status'=>'ACTIVE']);
+        $scopes->grant($user, Auth::id());
         return back()->with('status','Customer portal user created.');
     }
 
