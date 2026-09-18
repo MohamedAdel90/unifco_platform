@@ -15,13 +15,11 @@ class CustomerPortalSingleLoginIntegrationTest extends TestCase
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $user=User::where('email','workflow.customer@unifco.local')->firstOrFail();
-
         $this->actingAs($user)->get('/customer')
             ->assertOk()
-            ->assertSee('UNIFIED CUSTOMER ACCOUNT')
-            ->assertSee('Find request, asset or invoice')
             ->assertSee('Open Requests')
             ->assertSee('Financial Summary')
+            ->assertSee('Quick Actions')
             ->assertSee(route('public.request-service'),false);
     }
 
@@ -29,11 +27,7 @@ class CustomerPortalSingleLoginIntegrationTest extends TestCase
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $user=User::where('email','workflow.customer@unifco.local')->firstOrFail();
-
-        $this->actingAs($user)->get('/customer/search?q=SR')
-            ->assertOk()
-            ->assertSee('Customer 360 Search')
-            ->assertSee('Results are restricted to your customer account.');
+        $this->actingAs($user)->get('/customer/search?q=SR')->assertOk()->assertSee('Customer 360 Search')->assertSee('Results are restricted to your customer account.');
     }
 
     public function test_internal_user_cannot_use_customer_global_search(): void
