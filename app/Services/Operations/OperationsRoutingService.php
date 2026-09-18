@@ -38,7 +38,7 @@ class OperationsRoutingService
         $manager = $this->resolve($request);
         $request->operations_manager_id = $manager?->id;
         $request->operations_routing_status = $manager ? 'ASSIGNED' : 'UNASSIGNED';
-        $request->save();
+        $request->saveQuietly();
         return $request->refresh();
     }
 
