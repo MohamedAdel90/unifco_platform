@@ -79,17 +79,30 @@
         <div class="portal-card calendar-shell">
             <div class="calendar-top"><h3>@include('customer.partials.icon',['name'=>'visits']) Calendar</h3><div class="calendar-month">{{ now()->format('M Y') }} <span class="calendar-today">Today</span></div></div>
             <div class="calendar-grid">
-                @foreach(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as $day)<div class="calendar-weekday">{{ $day }}</div>@endforeach
-                @for($i=0;$i<$calendarOffset;$i++)<div class="calendar-day blank"></div>@endfor
-                @for($day=1;$day<=$calendarDays;$day++)
+                @foreach(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as $weekday)
+                    <div class="calendar-weekday">{{ $weekday }}</div>
+                @endforeach
+                @foreach(array_fill(0, $calendarOffset, null) as $blank)
+                    <div class="calendar-day blank"></div>
+                @endforeach
+                @foreach(range(1, $calendarDays) as $calendarDay)
                     @php
-                        $date=$calendarStart->copy()->day($day);
-                        $hasUpcoming=$upcoming->contains(fn($p)=>$p->next_due_date && $p->next_due_date->isSameDay($date));
-                        $hasReport=$reports->contains(fn($r)=>isset($r->visit_date) && $r->visit_date && $r->visit_date->isSameDay($date));
-                        $hasOverdue=$upcoming->contains(fn($p)=>$p->next_due_date && $p->next_due_date->isSameDay($date) && $p->next_due_date->lt($today));
+                        $date = $calendarStart->copy()->day($calendarDay);
+                        $hasUpcoming = $upcoming->contains(fn ($plan) => $plan->next_due_date && $plan->next_due_date->isSameDay($date));
+                        $hasReport = $reports->contains(fn ($report) => $report->visit_date && $report->visit_date->isSameDay($date));
+                        $hasOverdue = $upcoming->contains(fn ($plan) => $plan->next_due_date && $plan->next_due_date->isSameDay($date) && $plan->next_due_date->lt($today));
                     @endphp
-                    <div class="calendar-day {{ $date->isToday() ? 'today' : '' }}"><span>{{ $day }}</span>@if($hasUpcoming||$hasReport||$hasOverdue)<div class="calendar-badges">@if($hasUpcoming)<i></i>@endif @if($hasReport)<i class="completed"></i>@endif @if($hasOverdue)<i class="overdue"></i>@endif</div>@endif</div>
-                @endfor
+                    <div class="calendar-day {{ $date->isToday() ? 'today' : '' }}">
+                        <span>{{ $calendarDay }}</span>
+                        @if($hasUpcoming || $hasReport || $hasOverdue)
+                            <div class="calendar-badges">
+                                @if($hasUpcoming)<i></i>@endif
+                                @if($hasReport)<i class="completed"></i>@endif
+                                @if($hasOverdue)<i class="overdue"></i>@endif
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
             </div>
             <div class="calendar-legend"><span><i></i>Scheduled</span><span><i class="green"></i>Completed</span><span><i class="red"></i>Requires Attention</span></div>
         </div>
