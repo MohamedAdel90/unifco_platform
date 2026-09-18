@@ -23,6 +23,11 @@ $homepageSections = $sections->where('section_key', '!=', 'operations')->values(
 $operations = $sections->firstWhere('section_key', 'operations');
 $maintenanceEnabled = (bool) (($operations?->data_ar['maintenance_enabled'] ?? true) && ($operations?->is_active ?? true));
 $portalEnabled = (bool) (($operations?->data_ar['portal_enabled'] ?? true) && ($operations?->is_active ?? true));
+$displayModeLabels = ['structured' => 'Structured Section', 'full_section_image' => 'Full Section Image'];
+$maintenanceModeAr = $operations?->data_ar['maintenance_display_mode'] ?? 'structured';
+$maintenanceModeEn = $operations?->data_en['maintenance_display_mode'] ?? $maintenanceModeAr;
+$portalModeAr = $operations?->data_ar['portal_display_mode'] ?? 'structured';
+$portalModeEn = $operations?->data_en['portal_display_mode'] ?? $portalModeAr;
 $totalSections = $homepageSections->count() + 2;
 $totalActive = $homepageSections->where('is_active', true)->count() + ($maintenanceEnabled ? 1 : 0) + ($portalEnabled ? 1 : 0);
 $operationsUpdated = $operations?->updated_at ? $operations->updated_at->diffForHumans() : '—';
@@ -72,7 +77,7 @@ $operationsUpdated = $operations?->updated_at ? $operations->updated_at->diffFor
   <div class="hp-ic">⚒</div>
   <div class="hp-card-body">
     <div class="hp-top"><span class="hp-title">Maintenance <span class="hp-key">maintenance</span></span><span class="badge {{ $maintenanceEnabled ? 'on' : 'off' }}">{{ $maintenanceEnabled ? 'Active' : 'Off' }}</span></div>
-    <div class="hp-meta"><b>Display Mode + bilingual content</b> · separate CMS</div>
+    <div class="hp-meta"><b>Display Mode:</b> AR <b>{{ $displayModeLabels[$maintenanceModeAr] ?? "Structured Section" }}</b> · EN <b>{{ $displayModeLabels[$maintenanceModeEn] ?? "Structured Section" }}</b> · separate CMS</div>
     <div class="hp-foot"><span class="hp-meta" style="margin:0">Updated {{ $operationsUpdated }}</span><div class="hp-actions"><a class="btn" href="{{ route('admin.maintenance-cms') }}">Edit</a><form method="POST" action="{{ route('admin.maintenance-cms.toggle') }}" style="display:inline">@csrf<button class="btn btn-ghost" type="submit">{{ $maintenanceEnabled ? 'Disable' : 'Enable' }}</button></form></div></div>
   </div>
 </div>
@@ -81,7 +86,7 @@ $operationsUpdated = $operations?->updated_at ? $operations->updated_at->diffFor
   <div class="hp-ic">▣</div>
   <div class="hp-card-body">
     <div class="hp-top"><span class="hp-title">Client Portal <span class="hp-key">client_portal</span></span><span class="badge {{ $portalEnabled ? 'on' : 'off' }}">{{ $portalEnabled ? 'Active' : 'Off' }}</span></div>
-    <div class="hp-meta"><b>Display Mode + bilingual content</b> · separate CMS</div>
+    <div class="hp-meta"><b>Display Mode:</b> AR <b>{{ $displayModeLabels[$portalModeAr] ?? "Structured Section" }}</b> · EN <b>{{ $displayModeLabels[$portalModeEn] ?? "Structured Section" }}</b> · separate CMS</div>
     <div class="hp-foot"><span class="hp-meta" style="margin:0">Updated {{ $operationsUpdated }}</span><div class="hp-actions"><a class="btn" href="{{ route('admin.client-portal-cms') }}">Edit</a><form method="POST" action="{{ route('admin.client-portal-cms.toggle') }}" style="display:inline">@csrf<button class="btn btn-ghost" type="submit">{{ $portalEnabled ? 'Disable' : 'Enable' }}</button></form></div></div>
   </div>
 </div>
