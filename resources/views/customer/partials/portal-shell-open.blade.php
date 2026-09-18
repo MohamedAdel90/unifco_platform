@@ -9,7 +9,7 @@
             ['actions', 'actions', $isArabic ? 'الإجراءات المطلوبة' : 'Action Required', route('customer.actions')],
         ],
         ($isArabic ? 'أعمالي' : 'My Work') => [
-            ['requests', 'requests', $isArabic ? 'طلبات الخدمة' : 'Service Requests', route('customer.service-requests.index')],
+            ['requests', 'requests', $isArabic ? 'طلبات الخدمة' : 'Service Requests', route('customer.section', 'requests')],
             ['work-orders', 'work-orders', $isArabic ? 'أوامر العمل' : 'Work Orders', route('customer.section', 'work-orders')],
             ['visits', 'visits', $isArabic ? 'الزيارات والمواعيد' : 'Visits & Schedule', route('customer.section', 'visits')],
             ['maintenance', 'maintenance', $isArabic ? 'خطة الصيانة' : 'Maintenance Plan', route('customer.section', 'maintenance')],
