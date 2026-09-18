@@ -1,0 +1,41 @@
+name: Diagnose Customer Visits
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnose-customer-visits.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read latest customer visits production error
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_deploy_key"
+          chmod 600 "$HOME/.ssh/unifco_deploy_key"
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_deploy_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" '
+            set -e
+            cd /var/www/unifco_platform
+            echo "=== RELEASE ==="
+            git rev-parse HEAD
+            echo "=== ROUTES ==="
+            php artisan route:list --name=customer.visits.pdf --name=customer.section --name=customer.actions || true
+            echo "=== LATEST LARAVEL ERRORS ==="
+            if [ -f storage/logs/laravel.log ]; then
+              grep -E "production.ERROR|local.ERROR|Route \[|View \[|Undefined|ErrorException|Exception|TypeError" storage/logs/laravel.log | tail -n 80
+            else
+              echo "No laravel.log found"
+            fi
+          '
