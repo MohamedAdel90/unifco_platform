@@ -46,7 +46,8 @@ class WorkOrderPartRequestService
         if(in_array($request->priority,['CRITICAL','EMERGENCY'],true) && !in_array(Auth::user()->role,['ADMIN','MANAGER','SUPERVISOR'],true)) {
             throw ValidationException::withMessages(['approval'=>'Critical and emergency part requests require supervisor or manager approval.']);
         }
-        return DB::transaction(function() use($request,$note){
+        $shortage=null;
+        $result=DB::transaction(function() use($request,$note,&$shortage){
             $request->load(['lines.item','sourceWarehouse']);
             foreach($request->lines as $line){
                 $balance=DB::table('stock_balances')->where([
@@ -65,17 +66,21 @@ class WorkOrderPartRequestService
                         ['line_no'=>$line->id,'quantity'=>$shortage,'estimated_unit_price'=>0]
                     );
                     $this->audit->record('procurement.requisition.created_from_shortage',$requisition,[],['work_order_id'=>$request->work_order_id,'part_request_id'=>$request->id,'item_id'=>$line->item_id,'shortage'=>$shortage]);
-                    throw ValidationException::withMessages(['stock'=>$line->item->item_code.' has only '.number_format($available,4).' available in '.$request->sourceWarehouse->code.'. Purchase requisition '.$requisition->requisition_no.' created for the shortage.']);
+                    $shortage=['message'=>$line->item->item_code.' has only '.number_format($available,4).' available in '.$request->sourceWarehouse->code.'. Purchase requisition '.$requisition->requisition_no.' created for the shortage.'];
+                    return $request->fresh(['lines.item','sourceWarehouse','destinationWarehouse']);
                 }
                 DB::table('stock_balances')->where([
                     'tenant_id'=>$request->tenant_id,'item_id'=>$line->item_id,'warehouse_code'=>$request->sourceWarehouse->code,
                 ])->update(['reserved_quantity'=>$reserved+$qty,'updated_at'=>now()]);
                 $line->update(['approved_quantity'=>$qty,'reserved_quantity'=>$qty]);
             }
+            if($shortage) return $request->fresh(['lines.item','sourceWarehouse','destinationWarehouse']);
             $request->update(['status'=>'APPROVED','approved_by'=>Auth::id(),'approved_at'=>now(),'decision_note'=>$note]);
             $this->audit->record('inventory.part_request.approved',$request,['status'=>'REQUESTED'],['status'=>'APPROVED']);
             return $request->fresh(['lines.item','sourceWarehouse','destinationWarehouse']);
         });
+        if($shortage) throw ValidationException::withMessages(['stock'=>$shortage['message']]);
+        return $result;
     }
 
     public function reject(WorkOrderPartRequest $request, string $note): WorkOrderPartRequest
