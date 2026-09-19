@@ -139,4 +139,52 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertTrue($steps->skip(1)->every(fn($step)=>$step->status==='WAITING'));
         $this->assertSame('EMERGENCY_DISPATCH',$request->fresh()->workflow_stage);
     }
+    public function test_all_four_core_request_types_reach_their_expected_customer_and_closure_stages(): void
+    {
+        $c=$this->context();
+        $cases=[
+            ['no'=>'SR-E2E-ROUTINE','type'=>'MAINTENANCE','subtype'=>null,'priority'=>'NORMAL','eligibility'=>'IN_CONTRACT','expected'=>'MAINTENANCE','customer'=>'CUSTOMER_ACCEPTANCE','final'=>'CSAT'],
+            ['no'=>'SR-E2E-EMERGENCY','type'=>'MAINTENANCE','subtype'=>'EMERGENCY_MAINTENANCE','priority'=>'EMERGENCY','eligibility'=>'CHARGEABLE','expected'=>'EMERGENCY_MAINTENANCE','customer'=>'CUSTOMER_ACCEPTANCE','final'=>'CSAT'],
+            ['no'=>'SR-E2E-QUOTE','type'=>'QUOTATION','subtype'=>null,'priority'=>'NORMAL','eligibility'=>'CHARGEABLE','expected'=>'QUOTATION','customer'=>'CUSTOMER_DECISION','final'=>'COMPLETED'],
+            ['no'=>'SR-E2E-CONSULT','type'=>'CONSULTATION','subtype'=>'TECHNICAL_CONSULTATION','priority'=>'NORMAL','eligibility'=>'CHARGEABLE','expected'=>'TECHNICAL_CONSULTATION','customer'=>'CUSTOMER_DELIVERY','final'=>'CLOSURE'],
+        ];
+
+        foreach($cases as $case){
+            $request=ServiceRequest::create([
+                'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+                'request_no'=>$case['no'],'request_type'=>$case['type'],'request_subtype'=>$case['subtype'],
+                'company_name'=>$c['customer']->name,'email'=>$c['customer']->email,'service_category'=>$case['type'],
+                'subject'=>$case['no'],'details'=>'Core business closure scenario','priority'=>$case['priority'],
+                'status'=>'OPEN','workflow_stage'=>'NEW','eligibility'=>$case['eligibility'],
+            ]);
+            app(ServiceRequestWorkflowService::class)->start($request,[
+                'estimated_value'=>$case['type']==='QUOTATION'?50000:0,
+                'procurement_required'=>false,'risk_level'=>'NORMAL',
+            ]);
+            $request->refresh();
+            $this->assertSame($case['expected'],$request->workflow_key);
+            $actions=ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$request->id)->orderBy('step_order')->pluck('action');
+            $this->assertTrue($actions->contains($case['customer']),$case['no'].' must include its customer decision/acceptance stage.');
+            $this->assertSame($case['final'],$actions->last());
+        }
+    }
+
+    public function test_workflow_advance_does_not_skip_waiting_stages(): void
+    {
+        $c=$this->context();
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'request_no'=>'SR-E2E-SEQUENCE','request_type'=>'MAINTENANCE','company_name'=>$c['customer']->name,
+            'email'=>$c['customer']->email,'service_category'=>'Maintenance','subject'=>'Sequence guard','details'=>'Scope',
+            'priority'=>'NORMAL','status'=>'OPEN','workflow_stage'=>'NEW','eligibility'=>'IN_CONTRACT',
+        ]);
+        $workflow=app(ServiceRequestWorkflowService::class);
+        $workflow->start($request);
+        $this->assertSame('TRIAGE',$request->fresh()->workflow_stage);
+        $workflow->advance($request,'TRIAGE',$c['requester']->id,'triaged');
+        $this->assertSame('PROJECT_MANAGER_REVIEW',$request->fresh()->workflow_stage);
+        $pending=ApprovalRequest::where('entity_id',$request->id)->where('status','PENDING')->pluck('action')->all();
+        $this->assertSame(['PROJECT_MANAGER_REVIEW'],$pending);
+    }
+
 }
