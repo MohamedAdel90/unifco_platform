@@ -20,7 +20,7 @@ class CustomerPortalUnifiedAccountTest extends TestCase
         $this->actingAs($user)->get('/customer/actions')->assertOk()->assertSee('UNIFIED CUSTOMER ACCOUNT')->assertSee('Inbox &amp; Support',false);
         $this->actingAs($user)->get('/customer/service-requests')->assertOk()->assertSee('UNIFIED CUSTOMER ACCOUNT')->assertSee('New Service Request');
         $this->actingAs($user)->get('/customer/inbox')->assertOk()->assertSee('UNIFIED CUSTOMER ACCOUNT')->assertSee('Inbox &amp; Support',false);
-        $this->actingAs($user)->get('/customer/profile?lang=en')->assertOk()->assertSee('UNIFIED CUSTOMER ACCOUNT')->assertSee('Unified Login Security');
+        $this->actingAs($user)->get('/customer/profile?lang=en')->assertOk()->assertSee('UNIFIED CUSTOMER ACCOUNT')->assertSee('Login &amp; Security', false);
         $this->actingAs($user)->get('/customer/work-acceptance')->assertOk()->assertSee('UNIFIED CUSTOMER ACCOUNT')->assertSee('Company Decision History');
         if($request){
             $this->actingAs($user)->get(route('customer.service-requests.show',$request))->assertOk()->assertSee('UNIFIED CUSTOMER ACCOUNT')->assertSee('Related Records');
