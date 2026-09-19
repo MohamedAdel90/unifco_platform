@@ -277,11 +277,9 @@
             @endif
 
             @if($section === 'sla')
-                @php
-                    $slaWorkTotal = max(0, $preventiveCount + $correctiveCount);
-                    $preventiveShare = $slaWorkTotal ? round(($preventiveCount / $slaWorkTotal) * 100) : 0;
-                    $correctiveShare = $slaWorkTotal ? 100 - $preventiveShare : 0;
-                @endphp
+                @php($slaWorkTotal = max(0, $preventiveCount + $correctiveCount))
+                @php($preventiveShare = $slaWorkTotal ? round(($preventiveCount / $slaWorkTotal) * 100) : 0)
+                @php($correctiveShare = $slaWorkTotal ? 100 - $preventiveShare : 0)
                 <div class="page-head sla-page-head"><div><div class="eyebrow">Service Performance</div><h2>SLA & KPIs</h2><p>Measured response and resolution performance across the complete customer account.</p></div></div>
                 <section class="sla-kpi-grid">
                     <div class="card sla-kpi"><span class="sla-kpi-icon">@include('customer.partials.icon',['name'=>'sla'])</span><div><div class="label">Measured SLA</div><div class="value">{{ $slaPerformance===null?'N/A':$slaPerformance.'%' }}</div><div class="trend muted">{{ $slaPerformance===null?'No eligible measurements':'Response and resolution checks' }}</div></div></div>
