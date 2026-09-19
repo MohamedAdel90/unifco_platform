@@ -245,8 +245,35 @@
             @endif
 
             @if($section === 'invoices')
-                <div class="page-head"><div><h2>Invoices & Payments</h2><p>Financial documents for the customer account.</p></div></div>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Invoice</th><th>Date</th><th>Due</th><th>Amount</th><th>Open</th><th>Status</th><th></th></tr></thead><tbody>@forelse($invoices as $invoice)<tr><td>{{ $invoice->document_no }}</td><td>{{ $invoice->document_date?->format('Y-m-d') }}</td><td>{{ $invoice->due_date?->format('Y-m-d') }}</td><td>{{ number_format((float)$invoice->amount,2) }} {{ $invoice->currency }}</td><td>{{ number_format((float)$invoice->open_amount,2) }}</td><td>{{ $invoice->status }}</td><td><a class="pill" href="{{ route('customer.invoices.pdf',$invoice) }}">PDF</a></td></tr>@empty<tr><td colspan="7">No invoices found.</td></tr>@endforelse</tbody></table></div></div>
+                @php
+                    $invoiceTotal = $invoices->sum(fn($i)=>(float)$i->amount);
+                    $invoiceOpen = $invoices->sum(fn($i)=>(float)$i->open_amount);
+                    $invoicePaid = max(0,$invoiceTotal-$invoiceOpen);
+                    $invoiceOverdue = $invoices->filter(fn($i)=>$i->due_date && $i->due_date->isPast() && (float)$i->open_amount>0)->sum(fn($i)=>(float)$i->open_amount);
+                    $invoiceOpenCount = $invoices->filter(fn($i)=>(float)$i->open_amount>0)->count();
+                @endphp
+                <div class="page-head"><div><div class="eyebrow">Customer Finance</div><h2>Invoices & Payments</h2><p>View invoices, balances, due dates and payment status for your customer account.</p></div></div>
+                <section class="stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
+                    <div class="card stat warning"><div class="label">Total Outstanding</div><div class="value compact">SAR {{ number_format($invoiceOpen,2) }}</div><div class="trend muted">{{ $invoiceOpenCount }} open invoice{{ $invoiceOpenCount===1?'':'s' }}</div></div>
+                    <div class="card stat"><div class="label">Paid Amount</div><div class="value compact">SAR {{ number_format($invoicePaid,2) }}</div><div class="trend muted">Across visible invoices</div></div>
+                    <div class="card stat warning"><div class="label">Overdue Amount</div><div class="value compact">SAR {{ number_format($invoiceOverdue,2) }}</div><div class="trend {{ $invoiceOverdue>0?'danger':'muted' }}">{{ $invoiceOverdue>0?'Action may be required':'No overdue balance' }}</div></div>
+                    <div class="card stat"><div class="label">Open Invoices</div><div class="value">{{ $invoiceOpenCount }}</div><div class="trend muted">{{ $invoices->count() }} total invoice{{ $invoices->count()===1?'':'s' }}</div></div>
+                </section>
+                <div class="card panel" style="margin-bottom:12px">
+                    <div class="filters"><label class="filter" style="flex:1"><span>Search invoices</span><input id="invoice-search" placeholder="Invoice number, status or amount" style="height:34px;width:100%;min-width:190px;border:1px solid var(--line);border-radius:8px;padding:0 10px;font-size:9px"></label><label class="filter"><span>Status</span><select id="invoice-status"><option value="">All statuses</option><option>OPEN</option><option>PAID</option><option>OVERDUE</option><option>PARTIALLY PAID</option></select></label><button class="filter-button" type="button" id="invoice-reset">Reset</button></div>
+                </div>
+                <div class="card table-card">
+                    <div class="table-wrap"><table class="table" id="invoice-table"><thead><tr><th>Invoice #</th><th>Issue Date</th><th>Due Date</th><th>Amount</th><th>Balance Due</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+                    @forelse($invoices as $invoice)<tr data-invoice-row data-search="{{ strtolower($invoice->document_no.' '.$invoice->status.' '.$invoice->amount.' '.$invoice->open_amount) }}" data-status="{{ strtoupper($invoice->status) }}"><td><strong>{{ $invoice->document_no }}</strong></td><td>{{ $invoice->document_date?->format('d M Y') ?: '—' }}</td><td>{{ $invoice->due_date?->format('d M Y') ?: '—' }}</td><td>{{ number_format((float)$invoice->amount,2) }} {{ $invoice->currency }}</td><td>{{ number_format((float)$invoice->open_amount,2) }} {{ $invoice->currency }}</td><td><span class="pill {{ (float)$invoice->open_amount<=0?'green':($invoice->due_date && $invoice->due_date->isPast()?'red':'amber') }}">{{ $invoice->status }}</span></td><td><a class="pill" href="{{ route('customer.invoices.pdf',$invoice) }}">View / PDF</a></td></tr>
+                    @empty<tr><td colspan="7"><div class="empty" style="padding:42px 20px"><strong style="font-size:14px;color:var(--ink)">No invoices found</strong><div style="margin:7px 0 16px">You don't have any invoices yet. They will appear here once issued.</div><a class="btn" href="{{ route('customer.inbox') }}">Contact Support</a></div></td></tr>@endforelse
+                    </tbody></table></div>
+                </div>
+                <section class="lower-grid">
+                    <div class="card panel"><div class="panel-head"><h3>Payment Summary</h3></div><div class="health-legend"><div class="health-item"><b>SAR {{ number_format($invoiceTotal,2) }}</b><span>Total invoiced</span></div><div class="health-item"><b>SAR {{ number_format($invoicePaid,2) }}</b><span>Recorded paid amount</span></div></div></div>
+                    <div class="card panel"><div class="panel-head"><h3>Need Help?</h3></div><div class="row-sub" style="margin-bottom:12px">Contact UNIFCO support for questions about invoices or account balances.</div><a class="btn" href="{{ route('customer.inbox') }}">Contact Support</a></div>
+                </section>
+                <script>document.addEventListener('DOMContentLoaded',()=>{const q=document.getElementById('invoice-search'),s=document.getElementById('invoice-status'),r=document.getElementById('invoice-reset'),rows=[...document.querySelectorAll('[data-invoice-row]')];const apply=()=>{const text=(q?.value||'').toLowerCase(),status=(s?.value||'').toUpperCase();rows.forEach(row=>row.style.display=(!text||row.dataset.search.includes(text))&&(!status||row.dataset.status===status)?'':'none')};q?.addEventListener('input',apply);s?.addEventListener('change',apply);r?.addEventListener('click',()=>{q.value='';s.value='';apply()})});</script>
+                <style>@media(max-width:780px){body:has(#invoice-table) .stats{grid-template-columns:1fr 1fr!important}#invoice-table th:nth-child(2),#invoice-table td:nth-child(2),#invoice-table th:nth-child(4),#invoice-table td:nth-child(4){display:none}}@media(max-width:520px){body:has(#invoice-table) .stats{grid-template-columns:1fr!important}.filters .filter{flex-basis:100%}.filters .filter-button{width:100%}#invoice-table{min-width:560px}}</style>
             @endif
 
             @if($section === 'sla')
