@@ -520,14 +520,83 @@
 
 
             @if($section === 'notifications')
-                <div class="page-head"><div><h2>Notifications</h2><p>Operational, contractual and financial alerts for the complete customer account.</p></div></div>
-                <div class="site-grid">@forelse($alerts as $alert)<div class="card panel"><span class="pill {{ $alert->severity==='HIGH'?'red':'amber' }}">{{ $alert->type }}</span><h3>{{ $alert->title }}</h3><div class="row-sub">{{ $alert->due_date?->format('Y-m-d') }}</div></div>
-@empty
-<div class="card empty">No active alerts.</div>
-@endforelse
-</div>
-            
-@endif
+                @php
+                    $notificationTotal = $alerts->count();
+                    $notificationCritical = $alerts->filter(fn($a) => strtoupper((string)($a->severity ?? '')) === 'HIGH')->count();
+                    $notificationAction = $alerts->filter(fn($a) => in_array(strtoupper((string)($a->severity ?? '')), ['HIGH','MEDIUM']))->count();
+                    $notificationUnread = $notificationTotal;
+                    $notificationGroups = $alerts->groupBy(fn($a) => strtolower((string)($a->type ?? 'other')));
+                @endphp
+                <div class="notification-page">
+                    <div class="page-head notification-head">
+                        <div><div class="eyebrow">Customer Updates</div><h2>Notifications</h2><p>Stay updated with operational, contractual and financial alerts for your account.</p></div>
+                        @if($notificationTotal)<button type="button" class="notification-read-all">✓ Mark all as read</button>@endif
+                    </div>
+
+                    <section class="notification-stats">
+                        <div class="card notification-stat"><span class="notification-stat-icon">@include('customer.partials.icon',['name'=>'notifications'])</span><div><b>{{ $notificationTotal }}</b><small>All Notifications</small></div></div>
+                        <div class="card notification-stat action"><span class="notification-stat-icon">@include('customer.partials.icon',['name'=>'actions'])</span><div><b>{{ $notificationAction }}</b><small>Action Required</small></div></div>
+                        <div class="card notification-stat unread"><span class="notification-stat-icon">@include('customer.partials.icon',['name'=>'inbox'])</span><div><b>{{ $notificationUnread }}</b><small>Unread</small></div></div>
+                        <div class="card notification-stat critical"><span class="notification-stat-icon">@include('customer.partials.icon',['name'=>'notifications'])</span><div><b>{{ $notificationCritical }}</b><small>Critical</small></div></div>
+                    </section>
+
+                    <div class="notification-tabs" role="tablist">
+                        <button class="active" type="button" data-notification-filter="">All ({{ $notificationTotal }})</button>
+                        @foreach($notificationGroups as $type => $items)
+                            <button type="button" data-notification-filter="{{ $type }}">{{ ucwords(str_replace(['_','-'],' ',$type)) }} ({{ $items->count() }})</button>
+                        @endforeach
+                    </div>
+
+                    @if($alerts->isEmpty())
+                        <div class="card notification-empty">
+                            <div class="notification-empty-icon">@include('customer.partials.icon',['name'=>'notifications'])<i>✓</i></div>
+                            <h3>You're all caught up!</h3>
+                            <p>No notifications require your attention right now.</p>
+                            <div class="notification-empty-actions">
+                                <a href="{{ route('customer.section','requests') }}">@include('customer.partials.icon',['name'=>'requests'])<span>View Requests</span></a>
+                                <a href="{{ route('customer.section','visits') }}">@include('customer.partials.icon',['name'=>'visits'])<span>Upcoming Visits</span></a>
+                                <a href="{{ route('customer.section','work-orders') }}">@include('customer.partials.icon',['name'=>'work-orders'])<span>Open Work Orders</span></a>
+                            </div>
+                            <div class="notification-info">@include('customer.partials.icon',['name'=>'info'])<span>We'll notify you here about important updates related to service requests, visits, work orders, quotations, contracts and invoices.</span></div>
+                        </div>
+                    @else
+                        <section class="notification-layout">
+                            <div class="card notification-list-card">
+                                <div class="notification-toolbar"><strong>Recent Notifications</strong><label><span class="ui-icon-wrap">@include('customer.partials.icon',['name'=>'search'])</span><input id="notification-search" type="search" placeholder="Search notifications..."></label></div>
+                                <div id="notification-list">
+                                    @foreach($alerts as $alert)
+                                        @php($severity = strtoupper((string)($alert->severity ?? '')))
+                                        <article class="notification-row {{ $severity==='HIGH'?'critical':($severity==='MEDIUM'?'warning':'') }}" data-notification-row data-type="{{ strtolower((string)($alert->type ?? 'other')) }}" data-search="{{ strtolower(trim(($alert->title ?? '').' '.($alert->type ?? '').' '.($alert->severity ?? ''))) }}">
+                                            <span class="notification-row-icon">@include('customer.partials.icon',['name'=>$severity==='HIGH'?'actions':'notifications'])</span>
+                                            <div class="notification-row-copy"><div class="notification-row-top"><strong>{{ $alert->title }}</strong><small>{{ $alert->created_at?->diffForHumans() ?? ($alert->due_date?->format('d M Y') ?? 'Active') }}</small></div><p>{{ ucwords(str_replace(['_','-'],' ',(string)$alert->type)) }}</p>@if($alert->due_date)<span class="notification-meta">Due {{ $alert->due_date->format('d M Y') }}</span>@endif</div>
+                                            <span class="pill {{ $severity==='HIGH'?'red':($severity==='MEDIUM'?'amber':'') }}">{{ $severity==='HIGH'?'Action Required':($severity ?: 'Active') }}</span>
+                                        </article>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <aside class="notification-side">
+                                <div class="card panel"><div class="panel-head"><h3>Needs Your Attention</h3></div>
+                                    <div class="notification-side-item"><span>@include('customer.partials.icon',['name'=>'actions'])</span><div><b>{{ $notificationAction }} items require your action</b><small>Review priority customer alerts</small></div></div>
+                                    <div class="notification-side-item"><span>@include('customer.partials.icon',['name'=>'notifications'])</span><div><b>{{ $notificationCritical }} critical alerts</b><small>Items marked high priority</small></div></div>
+                                </div>
+                                <div class="card panel no-print"><div class="panel-head"><h3>Quick Actions</h3></div><div class="notification-quick">
+                                    <a href="{{ route('customer.section','requests') }}">@include('customer.partials.icon',['name'=>'requests'])<span>View Requests</span></a>
+                                    <a href="{{ route('customer.section','visits') }}">@include('customer.partials.icon',['name'=>'visits'])<span>Upcoming Visits</span></a>
+                                    <a href="{{ route('customer.section','work-orders') }}">@include('customer.partials.icon',['name'=>'work-orders'])<span>Open Work Orders</span></a>
+                                    <a href="{{ route('customer.inbox') }}">@include('customer.partials.icon',['name'=>'inbox'])<span>Contact Support</span></a>
+                                </div></div>
+                            </aside>
+                        </section>
+                    @endif
+                </div>
+                <style>
+                    .notification-page{display:grid;gap:12px}.notification-head{align-items:center;margin-bottom:0}.notification-read-all{border:1px solid #cdddf0;background:#fff;color:var(--blue);height:36px;padding:0 13px;border-radius:9px;font-size:9px;font-weight:850}.notification-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.notification-stat{padding:14px;min-height:88px;display:flex;align-items:center;gap:12px}.notification-stat-icon{width:42px;height:42px;border-radius:11px;background:#eaf3ff;color:var(--blue);display:grid;place-items:center}.notification-stat-icon .ui-icon{width:21px;height:21px}.notification-stat.action .notification-stat-icon{background:#fff1df;color:#e67e00}.notification-stat.critical .notification-stat-icon{background:#fdebed;color:var(--red)}.notification-stat b{font-size:23px;display:block;line-height:1}.notification-stat small{font-size:9px;color:var(--muted);display:block;margin-top:6px}.notification-tabs{display:flex;gap:7px;overflow:auto;padding:1px 0 2px;scrollbar-width:none}.notification-tabs button{white-space:nowrap;border:1px solid #e0e7f0;background:#fff;color:var(--blue);padding:8px 13px;border-radius:9px;font-size:9px;font-weight:800}.notification-tabs button.active{background:var(--navy);border-color:var(--navy);color:#fff}.notification-layout{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(260px,.65fr);gap:12px}.notification-list-card{overflow:hidden}.notification-toolbar{padding:13px 15px;border-bottom:1px solid #edf1f5;display:flex;align-items:center;justify-content:space-between;gap:12px}.notification-toolbar strong{font-size:12px}.notification-toolbar label{height:34px;width:min(280px,45%);border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:7px;padding:0 9px}.notification-toolbar input{border:0;outline:0;width:100%;font-size:9px}.notification-toolbar .ui-icon{width:14px}.notification-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:11px;align-items:center;padding:13px 15px;border-bottom:1px solid #edf1f5;border-left:3px solid var(--blue)}.notification-row:last-child{border-bottom:0}.notification-row.critical{border-left-color:var(--red)}.notification-row.warning{border-left-color:var(--amber)}.notification-row-icon{width:36px;height:36px;border-radius:10px;background:#eef5ff;color:var(--blue);display:grid;place-items:center}.notification-row.critical .notification-row-icon{background:#fdebed;color:var(--red)}.notification-row.warning .notification-row-icon{background:#fff3df;color:var(--amber)}.notification-row-icon .ui-icon{width:18px;height:18px}.notification-row-top{display:flex;justify-content:space-between;gap:10px}.notification-row-top strong{font-size:10px}.notification-row-top small,.notification-row-copy p,.notification-meta{font-size:8px;color:var(--muted)}.notification-row-copy p{margin:4px 0}.notification-meta{display:inline-block}.notification-side{display:grid;gap:12px;align-content:start}.notification-side-item{display:grid;grid-template-columns:34px 1fr;gap:9px;align-items:center;padding:10px 0;border-bottom:1px solid #edf1f5}.notification-side-item:last-child{border-bottom:0}.notification-side-item>span{width:32px;height:32px;border-radius:9px;background:#eef5ff;color:var(--blue);display:grid;place-items:center}.notification-side-item .ui-icon{width:16px;height:16px}.notification-side-item b{font-size:9px}.notification-side-item small{font-size:7px;color:var(--muted);display:block;margin-top:3px}.notification-quick{display:grid;grid-template-columns:1fr 1fr;gap:7px}.notification-quick a{min-height:64px;border:1px solid #e5ebf2;border-radius:9px;background:#f8fbff;color:var(--blue);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;font-size:8px;font-weight:800}.notification-quick .ui-icon{width:18px;height:18px}.notification-empty{min-height:440px;padding:35px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.notification-empty-icon{width:84px;height:84px;border-radius:24px;background:#eef5ff;color:#8db5ea;display:grid;place-items:center;position:relative}.notification-empty-icon>.ui-icon{width:42px;height:42px}.notification-empty-icon i{position:absolute;right:-4px;bottom:-4px;width:30px;height:30px;border-radius:50%;background:#2fb879;color:#fff;display:grid;place-items:center;font-style:normal;border:4px solid #fff}.notification-empty h3{font-size:18px;margin:18px 0 5px}.notification-empty>p{font-size:10px;color:var(--muted);margin:0}.notification-empty-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;width:min(560px,100%);margin:26px 0 18px;padding-top:18px;border-top:1px solid #e8edf4}.notification-empty-actions a{min-height:72px;border:1px solid #dfe8f3;border-radius:10px;background:#f8fbff;color:var(--blue);display:flex;align-items:center;justify-content:center;gap:8px;font-size:9px;font-weight:800}.notification-empty-actions .ui-icon{width:20px;height:20px}.notification-info{width:min(620px,100%);background:#edf6ff;border-radius:10px;padding:13px 15px;color:#496783;display:flex;gap:10px;text-align:left;font-size:9px;line-height:1.55}.notification-info .ui-icon{width:18px;height:18px;color:var(--blue)}
+                    @media(max-width:1000px){.notification-layout{grid-template-columns:1fr}.notification-side{grid-template-columns:1fr 1fr}.notification-stats{grid-template-columns:1fr 1fr}}
+                    @media(max-width:780px){.notification-page{gap:10px}.notification-head{flex-direction:row;align-items:flex-start}.notification-head h2{font-size:28px}.notification-head p{line-height:1.5}.notification-read-all{flex:0 0 auto}.notification-stats{grid-template-columns:repeat(4,1fr);gap:7px}.notification-stat{padding:10px 6px;min-height:100px;flex-direction:column;text-align:center;gap:7px}.notification-stat-icon{width:36px;height:36px}.notification-stat b{font-size:20px}.notification-stat small{font-size:7px}.notification-toolbar{align-items:flex-start;flex-direction:column}.notification-toolbar label{width:100%}.notification-row{grid-template-columns:38px minmax(0,1fr);padding:12px 10px}.notification-row>.pill{grid-column:2;justify-self:start}.notification-row-top small{white-space:nowrap}.notification-side{grid-template-columns:1fr}.notification-empty{min-height:420px;padding:24px 14px}.notification-empty-actions{grid-template-columns:repeat(3,1fr)}}
+                    @media(max-width:520px){.notification-head{gap:8px}.notification-head .eyebrow{display:none}.notification-head h2{font-size:27px}.notification-head p{font-size:9px}.notification-read-all{height:34px;padding:0 9px;font-size:8px}.notification-stats{gap:6px}.notification-stat{min-height:94px;border-radius:10px}.notification-stat-icon{width:32px;height:32px}.notification-stat-icon .ui-icon{width:17px;height:17px}.notification-tabs button{padding:8px 11px}.notification-row-top{display:block}.notification-row-top small{display:block;margin-top:3px}.notification-empty h3{font-size:17px}.notification-empty-actions{gap:6px}.notification-empty-actions a{min-height:76px;flex-direction:column;padding:7px;font-size:8px}.notification-info{font-size:8px}}
+                </style>
+                <script>document.addEventListener('DOMContentLoaded',()=>{const buttons=[...document.querySelectorAll('[data-notification-filter]')],rows=[...document.querySelectorAll('[data-notification-row]')],search=document.getElementById('notification-search');let filter='';const apply=()=>{const q=(search?.value||'').toLowerCase();rows.forEach(row=>row.style.display=(!filter||row.dataset.type===filter)&&(!q||row.dataset.search.includes(q))?'':'none')};buttons.forEach(button=>button.addEventListener('click',()=>{buttons.forEach(b=>b.classList.remove('active'));button.classList.add('active');filter=button.dataset.notificationFilter||'';apply()}));search?.addEventListener('input',apply)});</script>
+            @endif
 
         </div>
     </main>
