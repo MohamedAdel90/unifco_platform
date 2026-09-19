@@ -108,7 +108,7 @@
 </a>
             </div>
             <div class="nav-group"><div class="nav-label">Account</div>
-                <a class="nav-link" href="{{ route('customer.profile.edit') }}">@include('customer.partials.icon',['name'=>'profile'])<span>Company Profile</span></a>
+                <a class="nav-link" href="{{ route('customer.profile.edit') }}">@include('customer.partials.icon',['name'=>'profile'])<span>Company Profile & Settings</span></a>
             </div>
         </div>
         <form class="logout" method="POST" action="{{ route('logout') }}">@csrf<button>Sign out</button></form>
