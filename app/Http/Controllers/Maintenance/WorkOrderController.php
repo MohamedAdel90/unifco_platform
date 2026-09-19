@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Asset,Item,WorkOrder};
-use App\Services\{AuditService,ScopeService};
+use App\Models\{Asset,Item,ServiceRequest,WorkOrder};
+use App\Services\{AuditService,ScopeService,ServiceRequestWorkflowService};
 use App\Services\Inventory\StockService;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\{Auth,DB,Storage};
@@ -208,7 +208,7 @@ class WorkOrderController extends Controller
         return back()->with('status','Failure history and reliability data recorded.');
     }
 
-    public function complete(Request $request, WorkOrder $workOrder, AuditService $audit): RedirectResponse
+    public function complete(Request $request, WorkOrder $workOrder, AuditService $audit, ServiceRequestWorkflowService $workflow): RedirectResponse
     {
         if (! in_array($workOrder->status,['OPEN','IN_PROGRESS'],true)) throw ValidationException::withMessages(['work_order'=>'Only active work orders can be completed.']);
         $data=$request->validate([
@@ -238,6 +238,10 @@ class WorkOrderController extends Controller
             'labor_cost'=>$labor,'external_cost'=>$external,'total_cost'=>$labor+$external+$material,'completion_notes'=>$data['completion_notes'],
         ]);
         $audit->record('maintenance.work_order.completed',$workOrder,$before,$workOrder->fresh()->toArray());
+        $serviceRequest=ServiceRequest::query()->where('tenant_id',$workOrder->tenant_id)->where('work_order_id',$workOrder->id)->latest('id')->first();
+        if($serviceRequest && $serviceRequest->workflow_stage==='EXECUTION'){
+            $workflow->advance($serviceRequest,'EXECUTION',Auth::id(),'Work order completed: '.$workOrder->work_order_no);
+        }
         return back()->with('status','Work order completed with execution evidence and final cost.');
     }
 
