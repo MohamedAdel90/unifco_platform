@@ -74,11 +74,7 @@
         <div class="side-search">@include('customer.partials.icon',['name'=>'search'])<span>Find request, asset or invoice</span></div>
         <div class="nav-scroll">
             @foreach($groups as $group => $keys)
-                @php
-                    $visibleKeys = array_values(array_filter($keys, function ($key) use ($allowedSections) {
-                        return in_array($key, $allowedSections, true);
-                    }));
-                @endphp
+                @php($visibleKeys = array_values(array_intersect($keys, $allowedSections)))
                 @if(count($visibleKeys))
                     <div class="nav-group"><div class="nav-label">{{ $group }}</div>
                         @if($group === 'Overview')
