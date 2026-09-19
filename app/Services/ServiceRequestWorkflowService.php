@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{ApprovalRequest,ServiceRequest,User};
+use App\Models\{ApprovalRequest,Customer,FinancialDocument,ServiceRequest,User,WorkOrder};
 use Illuminate\Support\Collection;
 
 class ServiceRequestWorkflowService
@@ -70,6 +70,8 @@ class ServiceRequestWorkflowService
             'workflow_started_at' => $request->workflow_started_at ?: now(),
             'current_stage_due_at' => now()->addMinutes($this->slaFor($first['stage'])),
         ]);
+
+        $this->ensureStageArtifacts($request);
 
         if (! $requester) return collect();
 
@@ -152,7 +154,56 @@ class ServiceRequestWorkflowService
             'current_stage_due_at' => $next->due_at,
         ]);
 
+        $this->ensureStageArtifacts($request->fresh());
+
         return $next->fresh();
+    }
+
+    private function ensureStageArtifacts(ServiceRequest $request): void
+    {
+        if ($request->workflow_stage === 'EXECUTION' && ! $request->work_order_id && $request->asset_id) {
+            $workOrder = WorkOrder::create([
+                'tenant_id' => $request->tenant_id,
+                'organization_id' => $request->organization_id,
+                'work_order_no' => 'SR-'.$request->id.'-WO',
+                'asset_id' => $request->asset_id,
+                'service_contract_id' => $request->service_contract_id,
+                'maintenance_type' => 'CORRECTIVE',
+                'priority' => $request->priority === 'EMERGENCY' ? 'CRITICAL' : ($request->priority ?: 'NORMAL'),
+                'status' => 'OPEN',
+                'planned_start' => now(),
+            ]);
+            $request->update(['work_order_id' => $workOrder->id]);
+        }
+
+        if ($request->workflow_stage === 'FINANCE_REVIEW' && $request->eligibility === 'CHARGEABLE' && $request->customer_id) {
+            $context = (array) ($request->workflow_context ?? []);
+            if (! empty($context['invoice_id'])) return;
+            $amount = $request->work_order_id ? (float) WorkOrder::whereKey($request->work_order_id)->value('total_cost') : (float) ($context['estimated_value'] ?? 0);
+            if ($amount <= 0) return;
+            $customer = Customer::find($request->customer_id);
+            if (! $customer) return;
+            $invoice = FinancialDocument::firstOrCreate([
+                'tenant_id' => $request->tenant_id,
+                'document_no' => 'INV-SR-'.$request->id,
+            ], [
+                'organization_id' => $request->organization_id,
+                'customer_id' => $request->customer_id,
+                'document_type' => 'AR_INVOICE',
+                'counterparty_name' => $customer->name,
+                'document_date' => today(),
+                'due_date' => today()->addDays((int) ($context['payment_terms_days'] ?? 30)),
+                'currency' => 'SAR',
+                'amount' => $amount,
+                'open_amount' => $amount,
+                'control_account_code' => 'AR',
+                'offset_account_code' => 'REV',
+                'status' => 'DRAFT',
+            ]);
+            $context['invoice_id'] = $invoice->id;
+            $context['invoice_no'] = $invoice->document_no;
+            $request->update(['workflow_context' => $context]);
+        }
     }
 
     public function returnTo(ServiceRequest $request, string $targetStage, ?int $actorId = null, ?string $note = null): ApprovalRequest

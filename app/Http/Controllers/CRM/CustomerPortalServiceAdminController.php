@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\CRM;
 
 use App\Http\Controllers\Controller;
-use App\Models\{MaintenanceAttachment,MaintenanceVisitReport,ServiceRequest};
+use App\Models\{MaintenanceAttachment,MaintenanceVisitReport,ServiceRequest,WorkOrder};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -34,6 +34,12 @@ class CustomerPortalServiceAdminController extends Controller
             'recommendations'=>['nullable','string','max:10000'],'technician_name'=>['nullable','string','max:180'],
             'customer_acknowledgement'=>['nullable','string','max:255'],
         ]);
+        if(!empty($data['work_order_id'])){
+            $workOrder=WorkOrder::findOrFail($data['work_order_id']);
+            abort_unless((int)$workOrder->asset_id===(int)$data['asset_id'],422,'Work order does not belong to the selected asset.');
+            $linkedRequest=ServiceRequest::query()->where('work_order_id',$workOrder->id)->first();
+            if($linkedRequest) abort_unless((int)$linkedRequest->customer_id===(int)$data['customer_id'],422,'Work order does not belong to the selected customer.');
+        }
         MaintenanceVisitReport::create($data+[
             'tenant_id'=>Auth::user()->tenant_id,'organization_id'=>Auth::user()->organization_id,
             'report_no'=>'TVR-'.now()->format('Ymd').'-'.strtoupper(Str::random(5)),

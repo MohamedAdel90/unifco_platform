@@ -2,14 +2,14 @@
 
 namespace App\Services\Finance;
 
-use App\Models\{ChartAccount,FinancialDocument,FiscalPeriod,Journal,Payment};
+use App\Models\{ChartAccount,FinancialDocument,FiscalPeriod,Journal,Payment,ServiceRequest};
 use App\Services\AuditService;
 use Illuminate\Support\Facades\{Auth,DB};
 use Illuminate\Validation\ValidationException;
 
 class FinancialPostingService
 {
-    public function __construct(private AuditService $audit) {}
+    public function __construct(private AuditService $audit, private \App\Services\ServiceRequestWorkflowService $workflow) {}
 
     public function assertOpenPeriod(string $date): void
     {
@@ -46,6 +46,10 @@ class FinancialPostingService
             $before=$document->toArray();
             $document->update(['status'=>'POSTED','posted_by'=>Auth::id(),'posted_at'=>now(),'journal_id'=>$journal->id,'open_amount'=>$document->amount]);
             $this->audit->record('finance.document.posted',$document,$before,$document->fresh()->toArray());
+            $serviceRequest=ServiceRequest::query()->where('tenant_id',$document->tenant_id)->where('customer_id',$document->customer_id)->where('workflow_stage','FINANCE_REVIEW')->get()->first(function($request) use($document){
+                return (int)data_get($request->workflow_context,'invoice_id')===(int)$document->id;
+            });
+            if($serviceRequest) $this->workflow->advance($serviceRequest,'FINANCE_REVIEW',Auth::id(),'Invoice posted: '.$document->document_no);
             return $document->fresh('journal');
         });
     }
