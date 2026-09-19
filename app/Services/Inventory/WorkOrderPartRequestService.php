@@ -126,23 +126,13 @@ class WorkOrderPartRequestService
     {
         if($request->status!=='ISSUED') throw ValidationException::withMessages(['request'=>'Only issued part requests can be received.']);
         return DB::transaction(function() use($request){
-            $request->load(['lines.item','destinationWarehouse']);
+            $request->load(['lines.item','sourceWarehouse','destinationWarehouse']);
             foreach($request->lines as $line){
                 $qty=(float)$line->issued_quantity;
                 $this->stock->move($line->item,$request->destinationWarehouse->code,'RECEIPT',$qty,'part-request-receipt-'.$request->id.'-'.$line->id,'WORK_ORDER_PART_REQUEST',$request->id);
                 $line->update(['received_quantity'=>$qty]);
             }
             $request->update(['status'=>'RECEIVED','received_by'=>Auth::id(),'received_at'=>now()]);
-            foreach($request->lines as $line){
-                $unitCost=(float) (DB::table('stock_balances')->where(['tenant_id'=>$request->tenant_id,'item_id'=>$line->item_id,'warehouse_code'=>$request->sourceWarehouse->code])->value('average_cost') ?? 0);
-                DB::table('maintenance_materials')->updateOrInsert(
-                    ['work_order_id'=>$request->work_order_id,'item_id'=>$line->item_id,'warehouse_code'=>$request->destinationWarehouse->code],
-                    ['tenant_id'=>$request->tenant_id,'organization_id'=>$request->organization_id,'quantity'=>$line->received_quantity,'unit_cost'=>$unitCost,'total_cost'=>round((float)$line->received_quantity*$unitCost,2),'created_at'=>now(),'updated_at'=>now()]
-                );
-            }
-            $materialCost=(float)DB::table('maintenance_materials')->where('work_order_id',$request->work_order_id)->sum('total_cost');
-            $workOrder=WorkOrder::find($request->work_order_id);
-            if($workOrder) $workOrder->update(['material_cost'=>$materialCost,'total_cost'=>$materialCost+(float)$workOrder->labor_cost+(float)$workOrder->external_cost]);
             $this->audit->record('inventory.part_request.received',$request,['status'=>'ISSUED'],['status'=>'RECEIVED']);
             return $request->fresh(['lines.item','sourceWarehouse','destinationWarehouse']);
         });
