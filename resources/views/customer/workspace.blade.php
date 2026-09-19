@@ -245,13 +245,11 @@
             @endif
 
             @if($section === 'invoices')
-                @php
-                    $invoiceTotal = $invoices->sum(fn($i)=>(float)$i->amount);
-                    $invoiceOpen = $invoices->sum(fn($i)=>(float)$i->open_amount);
-                    $invoicePaid = max(0,$invoiceTotal-$invoiceOpen);
-                    $invoiceOverdue = $invoices->filter(fn($i)=>$i->due_date && $i->due_date->isPast() && (float)$i->open_amount>0)->sum(fn($i)=>(float)$i->open_amount);
-                    $invoiceOpenCount = $invoices->filter(fn($i)=>(float)$i->open_amount>0)->count();
-                @endphp
+                @php($invoiceTotal = $invoices->sum(fn($i)=>(float)$i->amount))
+                @php($invoiceOpen = $invoices->sum(fn($i)=>(float)$i->open_amount))
+                @php($invoicePaid = max(0,$invoiceTotal-$invoiceOpen))
+                @php($invoiceOverdue = $invoices->filter(fn($i)=>$i->due_date && $i->due_date->isPast() && (float)$i->open_amount>0)->sum(fn($i)=>(float)$i->open_amount))
+                @php($invoiceOpenCount = $invoices->filter(fn($i)=>(float)$i->open_amount>0)->count())
                 <div class="page-head"><div><div class="eyebrow">Customer Finance</div><h2>Invoices & Payments</h2><p>View invoices, balances, due dates and payment status for your customer account.</p></div></div>
                 <section class="stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
                     <div class="card stat warning"><div class="label">Total Outstanding</div><div class="value compact">SAR {{ number_format($invoiceOpen,2) }}</div><div class="trend muted">{{ $invoiceOpenCount }} open invoice{{ $invoiceOpenCount===1?'':'s' }}</div></div>
