@@ -117,7 +117,7 @@ class WorkOrderPartRequestService
             }
             $request->update(['status'=>'RECEIVED','received_by'=>Auth::id(),'received_at'=>now()]);
             foreach($request->lines as $line){
-                $unitCost=(float) DB::table('items')->where('id',$line->item_id)->value('standard_cost');
+                $unitCost=(float) (DB::table('stock_balances')->where(['tenant_id'=>$request->tenant_id,'item_id'=>$line->item_id,'warehouse_code'=>$request->sourceWarehouse->code])->value('average_cost') ?? 0);
                 DB::table('maintenance_materials')->updateOrInsert(
                     ['work_order_id'=>$request->work_order_id,'item_id'=>$line->item_id,'warehouse_code'=>$request->destinationWarehouse->code],
                     ['tenant_id'=>$request->tenant_id,'organization_id'=>$request->organization_id,'quantity'=>$line->received_quantity,'unit_cost'=>$unitCost,'total_cost'=>round((float)$line->received_quantity*$unitCost,2),'created_at'=>now(),'updated_at'=>now()]
