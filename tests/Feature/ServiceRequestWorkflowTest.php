@@ -245,9 +245,9 @@ class ServiceRequestWorkflowTest extends TestCase
             'currency'=>'SAR','amount'=>100,'open_amount'=>100,'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'DRAFT','created_by'=>$c['requester']->id,
         ]);
         $request->update(['workflow_context'=>['invoice_id'=>$invoice->id]]);
-        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'FINANCE_REVIEW','approval_role'=>'FINANCE','step_order'=>1,'status'=>'PENDING']);
-        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CLOSURE','approval_role'=>'OPERATIONS_MANAGER','step_order'=>2,'status'=>'WAITING']);
-        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CSAT','approval_role'=>'CUSTOMER','step_order'=>3,'status'=>'WAITING']);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'FINANCE_REVIEW','approval_role'=>'FINANCE','step_order'=>1,'status'=>'PENDING','requested_by'=>$c['requester']->id]);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CLOSURE','approval_role'=>'OPERATIONS_MANAGER','step_order'=>2,'status'=>'WAITING','requested_by'=>$c['requester']->id]);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CSAT','approval_role'=>'CUSTOMER','step_order'=>3,'status'=>'WAITING','requested_by'=>$c['requester']->id]);
         foreach([['AR','Accounts Receivable','ASSET','DEBIT'],['REV','Service Revenue','REVENUE','CREDIT']] as $a) ChartAccount::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'code'=>$a[0],'name'=>$a[1],'type'=>$a[2],'normal_balance'=>$a[3],'posting_allowed'=>true,'status'=>'ACTIVE']);
         FiscalPeriod::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'code'=>'E2E','starts_on'=>today()->startOfMonth(),'ends_on'=>today()->endOfMonth(),'status'=>'OPEN']);
         $this->actingAs($poster);
@@ -265,8 +265,8 @@ class ServiceRequestWorkflowTest extends TestCase
             'service_category'=>'Corrective','subject'=>'Closure and CSAT','details'=>'Final closure','priority'=>'NORMAL',
             'status'=>'OPEN','workflow_stage'=>'CLOSURE','workflow_key'=>'MAINTENANCE','eligibility'=>'IN_CONTRACT',
         ]);
-        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CLOSURE','approval_role'=>'OPERATIONS_MANAGER','step_order'=>1,'status'=>'PENDING']);
-        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CSAT','approval_role'=>'CUSTOMER','step_order'=>2,'status'=>'WAITING']);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CLOSURE','approval_role'=>'OPERATIONS_MANAGER','step_order'=>1,'status'=>'PENDING','requested_by'=>$c['requester']->id]);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CSAT','approval_role'=>'CUSTOMER','step_order'=>2,'status'=>'WAITING','requested_by'=>$c['requester']->id]);
 
         $workflow=app(ServiceRequestWorkflowService::class);
         $workflow->advance($request,'CLOSURE',$c['requester']->id,'Operational closure complete');
