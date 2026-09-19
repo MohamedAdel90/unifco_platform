@@ -17,7 +17,7 @@ class CustomerPortalSingleLoginIntegrationTest extends TestCase
         $user=User::where('email','workflow.customer@unifco.local')->firstOrFail();
         $this->actingAs($user)->get('/customer')
             ->assertOk()
-            ->assertSee('Find request, asset or invoice')
+            ->assertSee('Search your workspace')
             ->assertSee('Open Requests')
             ->assertSee('Financial Summary')
             ->assertSee('Quick Actions')
