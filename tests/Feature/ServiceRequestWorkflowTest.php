@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ApprovalRequest,Asset,Customer,FinancialDocument,Organization,ServiceRequest,Tenant,User,WorkOrder};
+use App\Models\{ApprovalRequest,Asset,ChartAccount,Customer,FinancialDocument,FiscalPeriod,Organization,ServiceRequest,Tenant,User,WorkOrder};
 use App\Services\{ApprovalService,ServiceRequestWorkflowService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -227,6 +227,33 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('AR_INVOICE',$invoice->document_type);
         $this->assertSame('175.00',(string)$invoice->amount);
         $this->assertSame('DRAFT',$invoice->status);
+    }
+
+    public function test_posting_generated_invoice_advances_chargeable_request_to_closure(): void
+    {
+        $c=$this->context();
+        $poster=User::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'name'=>'Finance Poster','email'=>'finance.poster@example.test','password'=>'password','role'=>'ADMIN','status'=>'ACTIVE']);
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'request_no'=>'SR-E2E-FINANCE','request_type'=>'MAINTENANCE','company_name'=>$c['customer']->name,'email'=>$c['customer']->email,
+            'service_category'=>'Corrective','subject'=>'Finance closure','details'=>'Invoice closure','priority'=>'NORMAL','status'=>'OPEN',
+            'workflow_stage'=>'FINANCE_REVIEW','workflow_key'=>'MAINTENANCE','eligibility'=>'CHARGEABLE',
+        ]);
+        $invoice=FinancialDocument::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,'document_no'=>'INV-SR-FIN',
+            'document_type'=>'AR_INVOICE','counterparty_name'=>$c['customer']->name,'document_date'=>today(),'due_date'=>today()->addDays(30),
+            'currency'=>'SAR','amount'=>100,'open_amount'=>100,'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'DRAFT','created_by'=>$c['requester']->id,
+        ]);
+        $request->update(['workflow_context'=>['invoice_id'=>$invoice->id]]);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'FINANCE_REVIEW','approval_role'=>'FINANCE','step_order'=>1,'status'=>'PENDING']);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CLOSURE','approval_role'=>'OPERATIONS_MANAGER','step_order'=>2,'status'=>'WAITING']);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CSAT','approval_role'=>'CUSTOMER','step_order'=>3,'status'=>'WAITING']);
+        foreach([['AR','Accounts Receivable','ASSET','DEBIT'],['REV','Service Revenue','REVENUE','CREDIT']] as $a) ChartAccount::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'code'=>$a[0],'name'=>$a[1],'type'=>$a[2],'normal_balance'=>$a[3],'posting_allowed'=>true,'status'=>'ACTIVE']);
+        FiscalPeriod::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'code'=>'E2E','starts_on'=>today()->startOfMonth(),'ends_on'=>today()->endOfMonth(),'status'=>'OPEN']);
+        $this->actingAs($poster);
+        app(\App\Services\Finance\FinancialPostingService::class)->postDocument($invoice);
+        $this->assertSame('CLOSURE',$request->fresh()->workflow_stage);
+        $this->assertSame('POSTED',$invoice->fresh()->status);
     }
 
 }
