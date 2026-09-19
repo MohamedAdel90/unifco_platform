@@ -17,8 +17,8 @@ class CustomerPortalExecutiveDashboardTest extends TestCase
             $this->assertStringContainsString($target, $view);
         }
         $this->assertStringContainsString('grid-template-columns:repeat(6,minmax(0,1fr))', $view);
-        $this->assertStringContainsString('class="panel attention"', $view);
-        $this->assertStringContainsString("dir=\"{{ app()->getLocale()==='ar' ? 'rtl' : 'ltr' }}\"", $view);
+        $this->assertStringContainsString('class="card attention"', $view);
+        $this->assertStringContainsString("dir=\"{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}\"", $view);
     }
 
     public function test_customer_dashboard_has_one_canonical_entry_and_no_duplicate_portal_view(): void
