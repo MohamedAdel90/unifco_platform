@@ -492,7 +492,7 @@
                 @php($activityRequests = $timeline->filter(fn($e)=>str_contains(strtoupper((string)$e->event_type),'SERVICE_REQUEST'))->count())
                 @php($activityWorkOrders = $timeline->filter(fn($e)=>str_contains(strtoupper((string)$e->event_type),'WORK_ORDER'))->count())
                 @php($activityQuotations = $timeline->filter(fn($e)=>str_contains(strtoupper((string)$e->event_type),'QUOTATION'))->count())
-                @php($activityGroups = $timeline->groupBy(fn($e)=>$e->created_at?->format('Y-m-d') ?? 'unknown'))
+                @php($activityGroups = $timeline->groupBy(fn($e)=>$e->created_at ? \Illuminate\Support\Carbon::parse($e->created_at)->format('Y-m-d') : 'unknown'))
                 <div class="page-head activity-page-head"><div><div class="eyebrow">Customer History</div><h2>Recent Activity</h2><p>Customer-visible transaction and relationship history.</p></div></div>
                 <section class="activity-kpis">
                     <div class="card activity-kpi"><span>@include('customer.partials.icon',['name'=>'activity'])</span><div><b>{{ $activityTotal }}</b><small>All Activity</small></div></div>
@@ -510,7 +510,7 @@
                             @php($activityKind = str_contains($eventType,'WORK_ORDER')?'WORK_ORDER':(str_contains($eventType,'QUOTATION')?'QUOTATION':(str_contains($eventType,'SERVICE_REQUEST')?'SERVICE_REQUEST':'SYSTEM')))
                             @php($displayTitle = $event->title === 'Existing customer matched to public request' ? 'Customer Account Verified' : $event->title)
                             <article class="activity-entry {{ strtolower($activityKind) }}" data-activity-row data-type="{{ $activityKind }}" data-search="{{ strtolower($displayTitle.' '.$event->event_type) }}">
-                                <time>{{ $event->created_at?->format('H:i') ?? '—' }}</time><span class="activity-dot"></span><span class="activity-icon">@include('customer.partials.icon',['name'=>$activityKind==='WORK_ORDER'?'work-orders':($activityKind==='QUOTATION'?'quotations':($activityKind==='SERVICE_REQUEST'?'requests':'activity'))])</span>
+                                <time>{{ $event->created_at ? \Illuminate\Support\Carbon::parse($event->created_at)->format('H:i') : '—' }}</time><span class="activity-dot"></span><span class="activity-icon">@include('customer.partials.icon',['name'=>$activityKind==='WORK_ORDER'?'work-orders':($activityKind==='QUOTATION'?'quotations':($activityKind==='SERVICE_REQUEST'?'requests':'activity'))])</span>
                                 <div class="activity-copy"><strong>{{ $displayTitle }}</strong><small>{{ str_replace('_',' ',strtolower($event->event_type)) }}</small></div><span class="activity-tag">{{ ucwords(strtolower(str_replace('_',' ',$activityKind))) }}</span>
                             </article>
                         @endforeach</div></section>
