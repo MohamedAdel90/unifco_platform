@@ -256,4 +256,29 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('POSTED',$invoice->fresh()->status);
     }
 
+    public function test_closure_advances_to_csat_and_csat_fully_completes_workflow(): void
+    {
+        $c=$this->context();
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'request_no'=>'SR-E2E-CSAT','request_type'=>'MAINTENANCE','company_name'=>$c['customer']->name,'email'=>$c['customer']->email,
+            'service_category'=>'Corrective','subject'=>'Closure and CSAT','details'=>'Final closure','priority'=>'NORMAL',
+            'status'=>'OPEN','workflow_stage'=>'CLOSURE','workflow_key'=>'MAINTENANCE','eligibility'=>'IN_CONTRACT',
+        ]);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CLOSURE','approval_role'=>'OPERATIONS_MANAGER','step_order'=>1,'status'=>'PENDING']);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CSAT','approval_role'=>'CUSTOMER','step_order'=>2,'status'=>'WAITING']);
+
+        $workflow=app(ServiceRequestWorkflowService::class);
+        $workflow->advance($request,'CLOSURE',$c['requester']->id,'Operational closure complete');
+        $this->assertSame('CSAT',$request->fresh()->workflow_stage);
+        $this->assertSame('PENDING',ApprovalRequest::where('entity_id',$request->id)->where('action','CSAT')->value('status'));
+
+        $workflow->advance($request->fresh(),'CSAT',$c['requester']->id,'Customer satisfaction submitted');
+        $request->refresh();
+        $this->assertSame('COMPLETED',$request->workflow_stage);
+        $this->assertSame('COMPLETED',$request->approval_state);
+        $this->assertSame('COMPLETED',$request->status);
+        $this->assertNotNull($request->resolved_at);
+    }
+
 }
