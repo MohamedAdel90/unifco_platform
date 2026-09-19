@@ -488,14 +488,45 @@
 
 
             @if($section === 'timeline')
-                <div class="page-head"><div><h2>Recent Activity</h2><p>Customer-visible transaction and relationship history.</p></div></div>
-                <div class="card panel">@forelse($timeline as $event)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $event->title }}</div><div class="row-sub">{{ str_replace('_',' ',$event->event_type) }} · {{ $event->created_at?->format('Y-m-d H:i') }}</div></div></div>
-@empty
-<div class="empty">No timeline activity.</div>
-@endforelse
-</div>
-            
-@endif
+                @php($activityTotal = $timeline->count())
+                @php($activityRequests = $timeline->filter(fn($e)=>str_contains(strtoupper((string)$e->event_type),'SERVICE_REQUEST'))->count())
+                @php($activityWorkOrders = $timeline->filter(fn($e)=>str_contains(strtoupper((string)$e->event_type),'WORK_ORDER'))->count())
+                @php($activityQuotations = $timeline->filter(fn($e)=>str_contains(strtoupper((string)$e->event_type),'QUOTATION'))->count())
+                @php($activityGroups = $timeline->groupBy(fn($e)=>$e->created_at ? \Illuminate\Support\Carbon::parse($e->created_at)->format('Y-m-d') : 'unknown'))
+                <div class="page-head activity-page-head"><div><div class="eyebrow">Customer History</div><h2>Recent Activity</h2><p>Customer-visible transaction and relationship history.</p></div></div>
+                <section class="activity-kpis">
+                    <div class="card activity-kpi"><span>@include('customer.partials.icon',['name'=>'activity'])</span><div><b>{{ $activityTotal }}</b><small>All Activity</small></div></div>
+                    <div class="card activity-kpi"><span>@include('customer.partials.icon',['name'=>'requests'])</span><div><b>{{ $activityRequests }}</b><small>Service Requests</small></div></div>
+                    <div class="card activity-kpi work"><span>@include('customer.partials.icon',['name'=>'work-orders'])</span><div><b>{{ $activityWorkOrders }}</b><small>Work Orders</small></div></div>
+                    <div class="card activity-kpi quote"><span>@include('customer.partials.icon',['name'=>'quotations'])</span><div><b>{{ $activityQuotations }}</b><small>Quotations</small></div></div>
+                </section>
+                <div class="card activity-tools"><label class="activity-search">@include('customer.partials.icon',['name'=>'search'])<input id="activity-search" type="search" placeholder="Search by number, title or keyword..."></label><select id="activity-type"><option value="">All Types</option><option value="SERVICE_REQUEST">Service Requests</option><option value="WORK_ORDER">Work Orders</option><option value="QUOTATION">Quotations</option></select><button id="activity-reset" type="button">Clear</button></div>
+                <div class="activity-layout">
+                    <main class="activity-stream">
+                    @forelse($activityGroups as $date => $events)
+                        <section class="activity-day"><div class="activity-day-head"><strong>{{ $date==='unknown'?'Earlier':\Illuminate\Support\Carbon::parse($date)->isToday()?'Today':\Illuminate\Support\Carbon::parse($date)->format('d F Y') }}</strong><small>{{ $date==='unknown'?'':\Illuminate\Support\Carbon::parse($date)->format('l') }}</small></div>
+                        <div class="card activity-timeline">@foreach($events as $event)
+                            @php($eventType = strtoupper((string)$event->event_type))
+                            @php($activityKind = str_contains($eventType,'WORK_ORDER')?'WORK_ORDER':(str_contains($eventType,'QUOTATION')?'QUOTATION':(str_contains($eventType,'SERVICE_REQUEST')?'SERVICE_REQUEST':'SYSTEM')))
+                            @php($displayTitle = $event->title === 'Existing customer matched to public request' ? 'Customer Account Verified' : $event->title)
+                            <article class="activity-entry {{ strtolower($activityKind) }}" data-activity-row data-type="{{ $activityKind }}" data-search="{{ strtolower($displayTitle.' '.$event->event_type) }}">
+                                <time>{{ $event->created_at ? \Illuminate\Support\Carbon::parse($event->created_at)->format('H:i') : '—' }}</time><span class="activity-dot"></span><span class="activity-icon">@include('customer.partials.icon',['name'=>$activityKind==='WORK_ORDER'?'work-orders':($activityKind==='QUOTATION'?'quotations':($activityKind==='SERVICE_REQUEST'?'requests':'activity'))])</span>
+                                <div class="activity-copy"><strong>{{ $displayTitle }}</strong><small>{{ str_replace('_',' ',strtolower($event->event_type)) }}</small></div><span class="activity-tag">{{ ucwords(strtolower(str_replace('_',' ',$activityKind))) }}</span>
+                            </article>
+                        @endforeach</div></section>
+                    @empty<div class="card empty"><strong>No timeline activity</strong>Customer-visible activity will appear here as work progresses.</div>@endforelse
+                    </main>
+                    <aside class="activity-side">
+                        <div class="card panel"><div class="panel-head"><h3>Activity Summary</h3></div><div class="activity-summary-row"><b>{{ $activityTotal }}</b><span>Total activities</span></div><div class="activity-summary-row"><b>{{ $activityRequests }}</b><span>Service requests</span></div><div class="activity-summary-row"><b>{{ $activityWorkOrders }}</b><span>Work orders</span></div><div class="activity-summary-row"><b>{{ $activityQuotations }}</b><span>Quotations</span></div></div>
+                        <div class="card panel activity-up-to-date"><span>✓</span><div><strong>Customer history</strong><small>Only customer-visible events are shown here.</small></div></div>
+                    </aside>
+                </div>
+                <style>
+                    .activity-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.activity-kpi{padding:14px;display:flex;align-items:center;gap:11px}.activity-kpi>span,.activity-icon{width:40px;height:40px;border-radius:11px;background:#eaf3ff;color:var(--blue);display:grid;place-items:center;flex:0 0 auto}.activity-kpi.work>span{background:#e7f7ee;color:var(--green)}.activity-kpi.quote>span{background:#f2eaff;color:#7347c7}.activity-kpi .ui-icon,.activity-icon .ui-icon{width:20px}.activity-kpi b{display:block;font-size:21px}.activity-kpi small{display:block;font-size:8px;color:var(--muted);margin-top:3px}.activity-tools{padding:11px;display:grid;grid-template-columns:minmax(260px,1fr) 180px auto;gap:9px;margin-bottom:12px}.activity-search,.activity-tools select,.activity-tools button{height:38px;border:1px solid var(--line);border-radius:8px;background:#fff}.activity-search{display:flex;align-items:center;gap:8px;padding:0 11px}.activity-search input{border:0;outline:0;width:100%;font-size:9px}.activity-tools select,.activity-tools button{padding:0 11px;font-size:9px}.activity-tools button{font-weight:800;cursor:pointer}.activity-layout{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(220px,.65fr);gap:12px}.activity-stream{display:grid;gap:14px}.activity-day-head{display:flex;align-items:baseline;gap:8px;margin:0 2px 7px}.activity-day-head strong{font-size:12px}.activity-day-head small{font-size:8px;color:var(--muted)}.activity-timeline{padding:7px 14px}.activity-entry{display:grid;grid-template-columns:42px 12px 40px minmax(0,1fr) auto;gap:9px;align-items:center;min-height:72px;border-bottom:1px solid #edf1f5;position:relative}.activity-entry:last-child{border-bottom:0}.activity-entry time{font-size:8px;font-weight:800;color:#52657d}.activity-dot{width:8px;height:8px;border:2px solid var(--blue);border-radius:50%;background:#fff}.activity-entry:not(:last-child) .activity-dot:after{content:"";position:absolute;width:1px;background:#dce6f1;top:41px;bottom:-32px;margin-left:2px}.activity-copy strong{display:block;font-size:10px}.activity-copy small{display:block;font-size:8px;color:var(--muted);margin-top:5px;text-transform:capitalize}.activity-tag{padding:5px 8px;border-radius:999px;background:#edf4fd;color:#3268a5;font-size:7px;font-weight:800}.activity-entry.work_order .activity-icon{background:#e7f7ee;color:var(--green)}.activity-entry.quotation .activity-icon{background:#f2eaff;color:#7347c7}.activity-entry.system .activity-icon{background:#f0f3f7;color:#53647a}.activity-summary-row{display:grid;grid-template-columns:32px 1fr;align-items:center;padding:9px 0;border-bottom:1px solid #edf1f5}.activity-summary-row:last-child{border:0}.activity-summary-row b{font-size:13px}.activity-summary-row span{font-size:8px;color:var(--muted)}.activity-up-to-date{margin-top:12px;display:flex;gap:10px;align-items:center}.activity-up-to-date>span{width:30px;height:30px;border-radius:9px;background:#e7f7ee;color:var(--green);display:grid;place-items:center;font-weight:900}.activity-up-to-date strong{display:block;font-size:9px}.activity-up-to-date small{display:block;font-size:7px;color:var(--muted);margin-top:3px}
+                    @media(max-width:900px){.activity-layout{grid-template-columns:1fr}.activity-side{display:none}}@media(max-width:780px){.activity-kpis{grid-template-columns:1fr 1fr}.activity-tools{grid-template-columns:1fr auto}.activity-search{grid-column:1/-1}.activity-entry{grid-template-columns:36px 10px 36px minmax(0,1fr) auto;min-height:76px;padding:3px 0}.activity-icon{width:36px;height:36px}.activity-tag{align-self:start;margin-top:13px}.activity-copy strong{font-size:9px}.activity-copy small{font-size:7px}}@media(max-width:520px){.activity-page-head h2{font-size:27px}.activity-kpis{gap:8px}.activity-kpi{padding:11px}.activity-kpi>span{width:35px;height:35px}.activity-kpi b{font-size:18px}.activity-timeline{padding:6px 10px}.activity-entry{grid-template-columns:31px 8px 34px minmax(0,1fr)}.activity-entry .activity-tag{display:none}.activity-entry time{font-size:7px}.activity-icon{width:34px;height:34px}}
+                </style>
+                <script>document.addEventListener('DOMContentLoaded',()=>{const rows=[...document.querySelectorAll('[data-activity-row]')],q=document.getElementById('activity-search'),t=document.getElementById('activity-type'),r=document.getElementById('activity-reset');const apply=()=>{const s=(q?.value||'').toLowerCase(),type=t?.value||'';rows.forEach(row=>row.style.display=(!s||row.dataset.search.includes(s))&&(!type||row.dataset.type===type)?'':'none')};q?.addEventListener('input',apply);t?.addEventListener('change',apply);r?.addEventListener('click',()=>{q.value='';t.value='';apply()})});</script>
+            @endif
 
 
             @if($section === 'reports')
