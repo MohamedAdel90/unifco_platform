@@ -369,26 +369,53 @@
 
 
             @if($section === 'quotations')
-                <div class="page-head"><div><h2>Quotations</h2><p>Commercial proposals for your customer account.</p></div></div>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Quotation</th><th>Revision</th><th>Value</th><th>Status</th><th>Decision</th></tr></thead><tbody>@forelse($quotations as $quotation)<tr><td>{{ $quotation->quotation_no }}</td><td>R{{ $quotation->revision_no }}</td><td>{{ number_format((float)$quotation->amount,2) }} {{ $quotation->currency }}</td><td>{{ $quotation->status }}</td><td>@if($canDecideQuotation && in_array($quotation->status,['SENT','UNDER_REVIEW','REVISION_REQUESTED']))
-<form method="POST" action="{{ route('customer.quotations.decision',$quotation) }}">
-    @csrf
-    <select name="decision"><option value="APPROVE">Approve</option><option value="REVISION">Request revision</option><option value="REJECT">Reject</option></select>
-    <input name="notes" placeholder="Notes"><button class="btn">Submit</button>
-</form>
-
-@else
-
-<span class="pill">{{ $readOnly ? 'Read only' : 'No action required' }}</span>
-
-@endif
-</td></tr>
-@empty
-<tr><td colspan="5">No quotations found.</td></tr>
-@endforelse
-</tbody></table></div></div>
-            
-@endif
+                @php($quotationTotal = $quotations->count())
+                @php($quotationDraft = $quotations->where('status','DRAFT')->count())
+                @php($quotationAwaiting = $quotations->whereIn('status',['SENT','UNDER_REVIEW','REVISION_REQUESTED'])->count())
+                @php($quotationApproved = $quotations->whereIn('status',['CUSTOMER_APPROVED','APPROVED','ACCEPTED'])->count())
+                @php($quotationRejected = $quotations->whereIn('status',['CUSTOMER_REJECTED','REJECTED'])->count())
+                <div class="page-head quotation-head"><div><div class="eyebrow">Commercial Workspace</div><h2>Quotations</h2><p>Commercial proposals for your customer account. Review quotations, documents and actions in one place.</p></div><a class="btn quotation-request" href="{{ route('public.request-service',['customer'=>$customer->customer_code,'quotation'=>1]) }}">＋ Request Quotation</a></div>
+                <section class="quotation-stats">
+                    <div class="card quotation-stat"><span>@include('customer.partials.icon',['name'=>'quotations'])</span><div><b>{{ $quotationTotal }}</b><strong>Total Quotations</strong><small>All quotations in your account</small></div></div>
+                    <div class="card quotation-stat draft"><span>@include('customer.partials.icon',['name'=>'requests'])</span><div><b>{{ $quotationDraft }}</b><strong>Draft</strong><small>Being prepared</small></div></div>
+                    <div class="card quotation-stat awaiting"><span>@include('customer.partials.icon',['name'=>'actions'])</span><div><b>{{ $quotationAwaiting }}</b><strong>Awaiting Decision</strong><small>Require your action</small></div></div>
+                    <div class="card quotation-stat approved"><span>✓</span><div><b>{{ $quotationApproved }}</b><strong>Approved</strong><small>Accepted quotations</small></div></div>
+                    <div class="card quotation-stat rejected"><span>×</span><div><b>{{ $quotationRejected }}</b><strong>Rejected</strong><small>Not accepted</small></div></div>
+                </section>
+                <div class="card quotation-toolbar">
+                    <label class="quotation-search">@include('customer.partials.icon',['name'=>'search'])<input id="quotation-search" type="search" placeholder="Search quotations by number, status or value..."></label>
+                    <select id="quotation-status"><option value="">All Statuses</option><option value="DRAFT">Draft</option><option value="SENT">Sent</option><option value="UNDER_REVIEW">Under Review</option><option value="REVISION_REQUESTED">Revision Requested</option><option value="CUSTOMER_APPROVED">Approved</option><option value="CUSTOMER_REJECTED">Rejected</option></select>
+                    <button type="button" id="quotation-reset">Reset</button>
+                </div>
+                <div class="card table-card quotation-table-card"><div class="table-wrap"><table class="table quotation-table"><thead><tr><th>#</th><th>Quotation</th><th>Revision</th><th>Value</th><th>Updated</th><th>Status</th><th>Customer Action</th></tr></thead><tbody>
+                @forelse($quotations as $quotation)
+                    @php($quotationStatus = strtoupper((string)$quotation->status))
+                    <tr data-quotation-row data-status="{{ $quotationStatus }}" data-search="{{ strtolower($quotation->quotation_no.' '.$quotation->status.' '.$quotation->amount.' '.$quotation->currency) }}">
+                        <td>{{ $loop->iteration }}</td>
+                        <td><strong class="quotation-number">{{ $quotation->quotation_no }}</strong><small class="quotation-sub">Created {{ $quotation->quotation_date?->format('d M Y') ?? '—' }}</small></td>
+                        <td>R{{ $quotation->revision_no }}</td>
+                        <td><strong>{{ number_format((float)$quotation->amount,2) }} {{ $quotation->currency }}</strong></td>
+                        <td>{{ $quotation->updated_at?->format('d M Y') ?? $quotation->quotation_date?->format('d M Y') ?? '—' }}</td>
+                        <td><span class="pill {{ in_array($quotationStatus,['CUSTOMER_APPROVED','APPROVED','ACCEPTED'])?'green':(in_array($quotationStatus,['CUSTOMER_REJECTED','REJECTED'])?'red':(in_array($quotationStatus,['SENT','UNDER_REVIEW','REVISION_REQUESTED'])?'amber':'')) }}">{{ str_replace('_',' ',$quotationStatus) }}</span></td>
+                        <td>@if($canDecideQuotation && in_array($quotation->status,['SENT','UNDER_REVIEW','REVISION_REQUESTED']))
+                            <form method="POST" action="{{ route('customer.quotations.decision',$quotation) }}">@csrf<select name="decision"><option value="APPROVE">Approve</option><option value="REVISION">Request revision</option><option value="REJECT">Reject</option></select><input name="notes" placeholder="Notes"><button class="btn">Submit</button></form>
+                        @else
+                            <span class="pill">{{ $readOnly ? 'Read only' : 'No action required' }}</span>
+                        @endif</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="7"><div class="empty"><strong>No quotations found</strong>New commercial proposals will appear here.</div></td></tr>
+                @endforelse
+                </tbody></table></div><div class="quotation-footer"><span>Showing <b>{{ $quotationTotal }}</b> quotation{{ $quotationTotal===1?'':'s' }}</span><span>Customer commercial workspace</span></div></div>
+                <style>
+                    .quotation-head{align-items:center}.quotation-request{padding:11px 16px;box-shadow:0 8px 18px rgba(20,117,209,.18);background:var(--blue)}
+                    .quotation-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}.quotation-stat{min-height:98px;padding:14px;display:flex;align-items:center;gap:11px}.quotation-stat>span{width:40px;height:40px;border-radius:11px;background:#eaf3ff;color:var(--blue);display:grid;place-items:center;font-size:22px;font-weight:900}.quotation-stat>span .ui-icon{width:20px}.quotation-stat.draft>span{background:#fff3df;color:#d88900}.quotation-stat.awaiting>span,.quotation-stat.rejected>span{background:#fdebed;color:var(--red)}.quotation-stat.approved>span{background:#e7f7ee;color:var(--green)}.quotation-stat b{font-size:21px;display:block;line-height:1}.quotation-stat strong{font-size:9px;display:block;margin-top:5px}.quotation-stat small{font-size:7px;color:var(--muted);display:block;margin-top:4px}
+                    .quotation-toolbar{padding:11px;display:grid;grid-template-columns:minmax(280px,1fr) 180px auto;gap:9px;margin-bottom:12px}.quotation-toolbar select,.quotation-toolbar button,.quotation-search{height:38px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}.quotation-search{display:flex;align-items:center;gap:8px;padding:0 11px}.quotation-search .ui-icon{width:15px;color:var(--muted)}.quotation-search input{border:0;outline:0;width:100%;font-size:9px}.quotation-toolbar select{padding:0 10px;font-size:9px}.quotation-toolbar button{padding:0 14px;font-size:9px;font-weight:800;cursor:pointer}
+                    .quotation-table-card{padding:0;overflow:hidden}.quotation-table th,.quotation-table td{padding:13px 12px}.quotation-table th:first-child,.quotation-table td:first-child{padding-left:18px}.quotation-number{color:var(--blue);font-size:10px}.quotation-sub{display:block;color:var(--muted);font-size:7px;margin-top:4px}.quotation-footer{display:flex;justify-content:space-between;padding:12px 18px;font-size:8px;color:var(--muted);border-top:1px solid #edf0f4}.quotation-footer b{color:var(--ink)}
+                    @media(max-width:1100px){.quotation-stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:780px){.quotation-stats{grid-template-columns:repeat(2,1fr)}.quotation-toolbar{grid-template-columns:1fr 1fr}.quotation-search{grid-column:1/-1}.quotation-table th:nth-child(1),.quotation-table td:nth-child(1),.quotation-table th:nth-child(5),.quotation-table td:nth-child(5){display:none}}@media(max-width:520px){.quotation-stats{grid-template-columns:1fr 1fr}.quotation-stat{min-height:90px;padding:10px}.quotation-toolbar{grid-template-columns:1fr}.quotation-search{grid-column:auto}.quotation-table th:nth-child(3),.quotation-table td:nth-child(3){display:none}.quotation-footer span:last-child{display:none}}
+                </style>
+                <script>document.addEventListener('DOMContentLoaded',()=>{const rows=[...document.querySelectorAll('[data-quotation-row]')],search=document.getElementById('quotation-search'),status=document.getElementById('quotation-status'),reset=document.getElementById('quotation-reset');const apply=()=>{const q=(search?.value||'').toLowerCase(),s=status?.value||'';rows.forEach(row=>row.style.display=(!q||row.dataset.search.includes(q))&&(!s||row.dataset.status===s)?'':'none')};search?.addEventListener('input',apply);status?.addEventListener('change',apply);reset?.addEventListener('click',()=>{if(search)search.value='';if(status)status.value='';apply()})});</script>
+            @endif
 
 
             @if($section === 'contracts')
