@@ -2,7 +2,7 @@
 
 namespace App\Services\Inventory;
 
-use App\Models\{Item,Warehouse,WorkOrder,WorkOrderPartRequest,WorkOrderPartRequestLine};
+use App\Models\{Item,PurchaseRequisition,PurchaseRequisitionLine,Warehouse,WorkOrder,WorkOrderPartRequest,WorkOrderPartRequestLine};
 use App\Services\AuditService;
 use Illuminate\Support\Facades\{Auth,DB};
 use Illuminate\Validation\ValidationException;
@@ -54,7 +54,19 @@ class WorkOrderPartRequestService
                 ])->lockForUpdate()->first();
                 $onHand=(float)($balance->quantity??0);$reserved=(float)($balance->reserved_quantity??0);$available=max(0,$onHand-$reserved);
                 $qty=(float)$line->requested_quantity;
-                if($available<$qty) throw ValidationException::withMessages(['stock'=>$line->item->item_code.' has only '.number_format($available,4).' available in '.$request->sourceWarehouse->code.'.']);
+                if($available<$qty) {
+                    $shortage=max(0,$qty-$available);
+                    $requisition=PurchaseRequisition::firstOrCreate(
+                        ['tenant_id'=>$request->tenant_id,'requisition_no'=>'WO-PR-'.$request->id],
+                        ['organization_id'=>$request->organization_id,'requested_date'=>today(),'purpose'=>'Stock shortage for work order '.$request->work_order_id.' / part request '.$request->request_no,'status'=>'DRAFT','created_by'=>Auth::id()]
+                    );
+                    PurchaseRequisitionLine::updateOrCreate(
+                        ['purchase_requisition_id'=>$requisition->id,'item_id'=>$line->item_id],
+                        ['line_no'=>$line->id,'quantity'=>$shortage,'estimated_unit_price'=>0]
+                    );
+                    $this->audit->record('procurement.requisition.created_from_shortage',$requisition,[],['work_order_id'=>$request->work_order_id,'part_request_id'=>$request->id,'item_id'=>$line->item_id,'shortage'=>$shortage]);
+                    throw ValidationException::withMessages(['stock'=>$line->item->item_code.' has only '.number_format($available,4).' available in '.$request->sourceWarehouse->code.'. Purchase requisition '.$requisition->requisition_no.' created for the shortage.']);
+                }
                 DB::table('stock_balances')->where([
                     'tenant_id'=>$request->tenant_id,'item_id'=>$line->item_id,'warehouse_code'=>$request->sourceWarehouse->code,
                 ])->update(['reserved_quantity'=>$reserved+$qty,'updated_at'=>now()]);
