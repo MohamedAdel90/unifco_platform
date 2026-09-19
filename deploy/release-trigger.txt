@@ -1,2 +1,4 @@
 Force production release after customer portal profile, locale, sidebar label, and Inbox & Support updates.
 Release requested: 2026-09-19
+Force production release for responsive Invoices & Payments workspace after deploy workflow did not start.
+Release requested: 2026-09-19 invoices-payments
