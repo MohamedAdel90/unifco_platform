@@ -83,17 +83,33 @@
                     <div class="nav-group"><div class="nav-label">{{ $group }}</div>
                         @if($group === 'Overview')
                             <a class="nav-link {{ $section === 'dashboard' ? 'active' : '' }}" href="{{ route('customer.portal') }}">@include('customer.partials.icon',['name'=>'dashboard'])<span>Dashboard</span></a>
-                            <a class="nav-link" href="{{ route('customer.actions') }}">@include('customer.partials.icon',['name'=>'actions'])<span>Action Required</span>@if($actionRequiredCount)<span class="nav-badge urgent">{{ $actionRequiredCount }}</span>@endif</a>
-                        @else
+                            <a class="nav-link" href="{{ route('customer.actions') }}">@include('customer.partials.icon',['name'=>'actions'])<span>Action Required</span>@if($actionRequiredCount)<span class="nav-badge urgent">{{ $actionRequiredCount }}</span>
+@endif
+</a>
+                        
+@else
+
                             @foreach($visibleKeys as $key)
-                                <a class="nav-link {{ $section === $key ? 'active' : '' }}" href="{{ route('customer.section', $key) }}">@include('customer.partials.icon',['name'=>$sectionItems[$key][0]])<span>{{ $sectionItems[$key][1] }}</span>@if(($badges[$key] ?? 0) > 0)<span class="nav-badge">{{ $badges[$key] }}</span>@endif</a>
-                            @endforeach
-                        @endif
+                                <a class="nav-link {{ $section === $key ? 'active' : '' }}" href="{{ route('customer.section', $key) }}">@include('customer.partials.icon',['name'=>$sectionItems[$key][0]])<span>{{ $sectionItems[$key][1] }}</span>@if(($badges[$key] ?? 0) > 0)<span class="nav-badge">{{ $badges[$key] }}</span>
+@endif
+</a>
+                            
+@endforeach
+
+                        
+@endif
+
                     </div>
-                @endif
-            @endforeach
+                
+@endif
+
+            
+@endforeach
+
             <div class="nav-group"><div class="nav-label">Communication</div>
-                <a class="nav-link" href="{{ route('customer.inbox') }}">@include('customer.partials.icon',['name'=>'inbox'])<span>Inbox & Support</span>@if($unreadInbox)<span class="nav-badge urgent">{{ $unreadInbox }}</span>@endif</a>
+                <a class="nav-link" href="{{ route('customer.inbox') }}">@include('customer.partials.icon',['name'=>'inbox'])<span>Inbox & Support</span>@if($unreadInbox)<span class="nav-badge urgent">{{ $unreadInbox }}</span>
+@endif
+</a>
             </div>
             <div class="nav-group"><div class="nav-label">Account</div>
                 <a class="nav-link" href="{{ route('customer.profile.edit') }}">@include('customer.partials.icon',['name'=>'profile'])<span>Company Profile</span></a>
@@ -108,14 +124,26 @@
             <div class="top-actions"><span class="status-pill {{ $customer->status === 'ACTIVE' ? 'green' : 'amber' }}">{{ $customer->status }}</span><div class="avatar">{{ strtoupper(substr(auth()->user()->name ?: 'CU', 0, 2)) }}</div></div>
         </header>
         <div class="content">
-            @if(session('status'))<div class="notice">{{ session('status') }}</div>@endif
+            @if(session('status'))<div class="notice">{{ session('status') }}</div>
+@endif
+
             @if($section === 'dashboard')
                 <div class="page-head">
                     <div><div class="eyebrow">UNIFCO Customer Command Center</div><h2>{{ $dashboardTitle }}</h2><p>Everything that needs your attention across operations, assets, contracts and service delivery.</p></div>
                     <form class="filters" method="GET" action="{{ route('customer.portal') }}">
-                        @if($sites->isNotEmpty())<label class="filter"><span>Site</span><select name="site_id"><option value="">All sites</option>@foreach($sites as $site)<option value="{{ $site->id }}" @selected($siteFilter === $site->id)>{{ $site->name }}</option>@endforeach</select></label>@endif
-                        @if($contracts->isNotEmpty())<label class="filter"><span>Contract</span><select name="contract_id"><option value="">All contracts</option>@foreach($contracts as $contract)<option value="{{ $contract->id }}" @selected($contractFilter === $contract->id)>{{ $contract->contract_no }}</option>@endforeach</select></label>@endif
-                        <label class="filter"><span>Period</span><select name="days">@foreach([7=>'7 days',30=>'30 days',90=>'90 days',365=>'12 months'] as $value=>$label)<option value="{{ $value }}" @selected($days===$value)>{{ $label }}</option>@endforeach</select></label>
+                        @if($sites->isNotEmpty())<label class="filter"><span>Site</span><select name="site_id"><option value="">All sites</option>@foreach($sites as $site)<option value="{{ $site->id }}" @selected($siteFilter === $site->id)>{{ $site->name }}</option>
+@endforeach
+</select></label>
+@endif
+
+                        @if($contracts->isNotEmpty())<label class="filter"><span>Contract</span><select name="contract_id"><option value="">All contracts</option>@foreach($contracts as $contract)<option value="{{ $contract->id }}" @selected($contractFilter === $contract->id)>{{ $contract->contract_no }}</option>
+@endforeach
+</select></label>
+@endif
+
+                        <label class="filter"><span>Period</span><select name="days">@foreach([7=>'7 days',30=>'30 days',90=>'90 days',365=>'12 months'] as $value=>$label)<option value="{{ $value }}" @selected($days===$value)>{{ $label }}</option>
+@endforeach
+</select></label>
                         <button class="filter-button">Apply</button>
                     </form>
                 </div>
@@ -138,31 +166,57 @@
                         <a class="card quick-action" href="{{ route('public.request-service',['customer'=>$customer->customer_code,'quotation'=>1,'subtype'=>'parts']) }}"><span class="quick-icon">@include('customer.partials.icon',['name'=>'parts'])</span><span><strong>Request Spare Parts</strong><small>Open the unified request form</small></span></a>
                         <a class="card quick-action" href="{{ route('public.request-service',['customer'=>$customer->customer_code,'consultation'=>1]) }}"><span class="quick-icon">@include('customer.partials.icon',['name'=>'reports'])</span><span><strong>Technical Consultation</strong><small>Ask the UNIFCO technical team</small></span></a>
                     </section>
-                @endif
+                
+@endif
+
 
                 <a data-action-center-panel class="card action-center {{ $actionRequiredCount ? '' : 'is-clear' }}" href="{{ route('customer.actions') }}">
                     <div class="action-head"><span class="quick-icon">@include('customer.partials.icon',['name'=>'actions'])</span><div class="action-copy"><strong>{{ $actionRequiredCount ? 'Action Required From You' : 'No action is required from you right now' }}</strong><p>{{ $actionRequiredCount ? 'Approvals, work acceptance, payments, renewals and unread customer communication.' : 'Everything is up to date. New customer decisions will appear here.' }}</p></div><span class="action-total {{ $actionRequiredCount ? '' : 'green' }}">{{ $actionRequiredCount ? $actionRequiredCount : '✓' }}</span></div>
                     @if($actionRequiredCount)<div class="action-breakdown">
-                        @if($canDecideQuotation)<span class="action-item">Quotations <b>{{ $quotationActionCount }}</b></span>@endif
-                        @if(in_array('work-orders',$allowedSections,true))<span class="action-item">Work acceptance <b>{{ $workAcceptanceActionCount }}</b></span>@endif
-                        @if(in_array('invoices',$allowedSections,true))<span class="action-item">Invoices <b>{{ $invoiceActionCount }}</b></span>@endif
-                        @if(in_array('contracts',$allowedSections,true))<span class="action-item">Renewals <b>{{ $renewalActionCount }}</b></span>@endif
+                        @if($canDecideQuotation)<span class="action-item">Quotations <b>{{ $quotationActionCount }}</b></span>
+@endif
+
+                        @if(in_array('work-orders',$allowedSections,true))<span class="action-item">Work acceptance <b>{{ $workAcceptanceActionCount }}</b></span>
+@endif
+
+                        @if(in_array('invoices',$allowedSections,true))<span class="action-item">Invoices <b>{{ $invoiceActionCount }}</b></span>
+@endif
+
+                        @if(in_array('contracts',$allowedSections,true))<span class="action-item">Renewals <b>{{ $renewalActionCount }}</b></span>
+@endif
+
                         <span class="action-item">Messages <b>{{ $unreadInbox }}</b></span>
-                    </div>@endif
+                    </div>
+@endif
+
                 </a>
 
                 <section class="stats">
-                    @if(in_array('requests',$allowedSections,true))<a class="card stat" href="{{ route('customer.section','requests') }}"><div class="label">Open Requests</div><div class="value">{{ $openRequestCount }}</div><div class="trend">Across the selected customer scope</div><span class="comparison {{ $requestVolumeDelta > 0 ? 'up' : ($requestVolumeDelta < 0 ? 'down' : 'neutral') }}">{{ $requestVolumeDelta > 0 ? '↑ +' : ($requestVolumeDelta < 0 ? '↓ ' : '→ ') }}{{ $requestVolumeDelta }} created vs prior period</span></a>@endif
-                    @if(in_array('work-orders',$allowedSections,true))<a class="card stat {{ $overdueCount ? 'warning' : '' }}" href="{{ route('customer.section','work-orders') }}"><div class="label">Open Work Orders</div><div class="value">{{ $openWorkOrders }}</div><div class="trend {{ $overdueCount ? 'danger' : '' }}">{{ $inProgressCount }} in progress · {{ $overdueCount }} overdue</div><span class="comparison {{ $workOrderVolumeDelta > 0 ? 'up' : ($workOrderVolumeDelta < 0 ? 'down' : 'neutral') }}">{{ $workOrderVolumeDelta > 0 ? '↑ +' : ($workOrderVolumeDelta < 0 ? '↓ ' : '→ ') }}{{ $workOrderVolumeDelta }} created vs prior period</span></a>@endif
-                    @if(in_array('sla',$allowedSections,true))<a class="card stat {{ $slaBreachCount > 0 || ($slaPerformance !== null && $slaPerformance < 90) ? 'warning' : '' }}" href="{{ route('customer.section','sla') }}"><div class="label">SLA Compliance</div><div class="value {{ $slaPerformance === null ? 'compact' : '' }}">{{ $slaPerformance === null ? 'N/A' : $slaPerformance.'%' }}</div><div class="trend {{ $slaBreachCount ? 'danger' : ($slaPerformance === null ? 'muted' : '') }}">{{ $slaPerformance === null ? 'No eligible measurements' : $slaBreachCount.' measured breaches' }}</div></a>@endif
-                    @if(in_array('assets',$allowedSections,true))<a class="card stat {{ $stoppedAssetCount ? 'warning' : '' }}" href="{{ route('customer.section','assets') }}"><div class="label">Assets Requiring Attention</div><div class="value">{{ $stoppedAssetCount + $maintenanceAssetCount }}</div><div class="trend {{ $stoppedAssetCount ? 'danger' : '' }}">{{ $stoppedAssetCount }} stopped · {{ $maintenanceAssetCount }} under maintenance</div></a>@endif
-                    @if(in_array('visits',$allowedSections,true))<a class="card stat" href="{{ route('customer.section','visits') }}"><div class="label">Upcoming Maintenance</div><div class="value">{{ $visitsDue7Count }}</div><div class="trend">Next 7 days · {{ $visitsDue30Count }} within 30 days</div></a>@endif
-                    @if(in_array('invoices',$allowedSections,true))<a class="card stat {{ $invoiceActionCount ? 'warning' : '' }}" href="{{ route('customer.section','invoices') }}"><div class="label">Open Balance</div><div class="value compact">{{ number_format($openInvoiceAmount,2) }}</div><div class="trend {{ $invoiceActionCount ? 'danger' : '' }}">SAR · {{ $invoiceActionCount }} due soon</div></a>@endif
+                    @if(in_array('requests',$allowedSections,true))<a class="card stat" href="{{ route('customer.section','requests') }}"><div class="label">Open Requests</div><div class="value">{{ $openRequestCount }}</div><div class="trend">Across the selected customer scope</div><span class="comparison {{ $requestVolumeDelta > 0 ? 'up' : ($requestVolumeDelta < 0 ? 'down' : 'neutral') }}">{{ $requestVolumeDelta > 0 ? '↑ +' : ($requestVolumeDelta < 0 ? '↓ ' : '→ ') }}{{ $requestVolumeDelta }} created vs prior period</span></a>
+@endif
+
+                    @if(in_array('work-orders',$allowedSections,true))<a class="card stat {{ $overdueCount ? 'warning' : '' }}" href="{{ route('customer.section','work-orders') }}"><div class="label">Open Work Orders</div><div class="value">{{ $openWorkOrders }}</div><div class="trend {{ $overdueCount ? 'danger' : '' }}">{{ $inProgressCount }} in progress · {{ $overdueCount }} overdue</div><span class="comparison {{ $workOrderVolumeDelta > 0 ? 'up' : ($workOrderVolumeDelta < 0 ? 'down' : 'neutral') }}">{{ $workOrderVolumeDelta > 0 ? '↑ +' : ($workOrderVolumeDelta < 0 ? '↓ ' : '→ ') }}{{ $workOrderVolumeDelta }} created vs prior period</span></a>
+@endif
+
+                    @if(in_array('sla',$allowedSections,true))<a class="card stat {{ $slaBreachCount > 0 || ($slaPerformance !== null && $slaPerformance < 90) ? 'warning' : '' }}" href="{{ route('customer.section','sla') }}"><div class="label">SLA Compliance</div><div class="value {{ $slaPerformance === null ? 'compact' : '' }}">{{ $slaPerformance === null ? 'N/A' : $slaPerformance.'%' }}</div><div class="trend {{ $slaBreachCount ? 'danger' : ($slaPerformance === null ? 'muted' : '') }}">{{ $slaPerformance === null ? 'No eligible measurements' : $slaBreachCount.' measured breaches' }}</div></a>
+@endif
+
+                    @if(in_array('assets',$allowedSections,true))<a class="card stat {{ $stoppedAssetCount ? 'warning' : '' }}" href="{{ route('customer.section','assets') }}"><div class="label">Assets Requiring Attention</div><div class="value">{{ $stoppedAssetCount + $maintenanceAssetCount }}</div><div class="trend {{ $stoppedAssetCount ? 'danger' : '' }}">{{ $stoppedAssetCount }} stopped · {{ $maintenanceAssetCount }} under maintenance</div></a>
+@endif
+
+                    @if(in_array('visits',$allowedSections,true))<a class="card stat" href="{{ route('customer.section','visits') }}"><div class="label">Upcoming Maintenance</div><div class="value">{{ $visitsDue7Count }}</div><div class="trend">Next 7 days · {{ $visitsDue30Count }} within 30 days</div></a>
+@endif
+
+                    @if(in_array('invoices',$allowedSections,true))<a class="card stat {{ $invoiceActionCount ? 'warning' : '' }}" href="{{ route('customer.section','invoices') }}"><div class="label">Open Balance</div><div class="value compact">{{ number_format($openInvoiceAmount,2) }}</div><div class="trend {{ $invoiceActionCount ? 'danger' : '' }}">SAR · {{ $invoiceActionCount }} due soon</div></a>
+@endif
+
                 </section>
 
                 @if(in_array('requests',$allowedSections,true) && in_array('work-orders',$allowedSections,true))
                 <section class="command-grid">
-                    <div class="card panel"><div class="panel-head"><h3>Service Request Journey</h3><div class="panel-tools">@if($requestStageCounts['overdue'])<span class="pill red">{{ $requestStageCounts['overdue'] }} SLA overdue</span>@endif<a href="{{ route('customer.section','requests') }}">View all requests →</a></div></div><div class="stage-grid journey-grid">
+                    <div class="card panel"><div class="panel-head"><h3>Service Request Journey</h3><div class="panel-tools">@if($requestStageCounts['overdue'])<span class="pill red">{{ $requestStageCounts['overdue'] }} SLA overdue</span>
+@endif
+<a href="{{ route('customer.section','requests') }}">View all requests →</a></div></div><div class="stage-grid journey-grid">
                         <div class="stage {{ $requestStageCounts['new'] ? 'active' : '' }}"><b>{{ $requestStageCounts['new'] }}</b><span>New</span></div>
                         <div class="stage {{ $requestStageCounts['review'] ? 'active' : '' }}"><b>{{ $requestStageCounts['review'] }}</b><span>Under review</span></div>
                         <div class="stage {{ $requestStageCounts['assigned'] ? 'active' : '' }}"><b>{{ $requestStageCounts['assigned'] }}</b><span>Assigned</span></div>
@@ -172,18 +226,38 @@
                         <div class="stage {{ $requestStageCounts['customer'] ? 'alert' : '' }}"><b>{{ $requestStageCounts['customer'] }}</b><span>Awaiting customer</span></div>
                         <div class="stage"><b>{{ $requestStageCounts['closed'] }}</b><span>Completed</span></div>
                     </div></div>
-                    <div class="card panel"><div class="panel-head"><h3>Priority Today</h3><a href="{{ route('customer.section','work-orders') }}">Open work orders →</a></div><div class="priority-list">@forelse($criticalWorkOrders as $workOrder)@php($lateDays = $workOrder->planned_start && $workOrder->planned_start->isPast() ? max(1, (int) ceil($workOrder->planned_start->diffInDays(now()))) : 0)<a class="list-row" href="{{ route('customer.work-orders.show',$workOrder) }}"><i class="indicator red"></i><div><div class="row-title">{{ $workOrder->work_order_no }} · {{ $workOrder->asset?->name }}</div><div class="row-sub">{{ $workOrder->asset?->site?->name ?: 'Site not assigned' }} · {{ $workOrder->planned_start?->format('d M, H:i') ?: 'Not scheduled' }}</div></div><span class="row-meta">@if($lateDays)<span class="pill red">{{ $lateDays }}d overdue</span>@else<span class="pill {{ in_array(strtoupper((string)$workOrder->priority),['EMERGENCY','CRITICAL']) ? 'red' : 'amber' }}">{{ str_replace('_',' ',$workOrder->priority) }}</span>@endif</span></a>@empty<div class="empty"><strong>No urgent or overdue work</strong>There are no high-priority or overdue work orders in this period.</div>@endforelse</div></div>
+                    <div class="card panel"><div class="panel-head"><h3>Priority Today</h3><a href="{{ route('customer.section','work-orders') }}">Open work orders →</a></div><div class="priority-list">@forelse($criticalWorkOrders as $workOrder)@php($lateDays = $workOrder->planned_start && $workOrder->planned_start->isPast() ? max(1, (int) ceil($workOrder->planned_start->diffInDays(now()))) : 0)<a class="list-row" href="{{ route('customer.work-orders.show',$workOrder) }}"><i class="indicator red"></i><div><div class="row-title">{{ $workOrder->work_order_no }} · {{ $workOrder->asset?->name }}</div><div class="row-sub">{{ $workOrder->asset?->site?->name ?: 'Site not assigned' }} · {{ $workOrder->planned_start?->format('d M, H:i') ?: 'Not scheduled' }}</div></div><span class="row-meta">@if($lateDays)<span class="pill red">{{ $lateDays }}d overdue</span>
+@else
+<span class="pill {{ in_array(strtoupper((string)$workOrder->priority),['EMERGENCY','CRITICAL']) ? 'red' : 'amber' }}">{{ str_replace('_',' ',$workOrder->priority) }}</span>
+@endif
+</span></a>
+@empty
+<div class="empty"><strong>No urgent or overdue work</strong>There are no high-priority or overdue work orders in this period.</div>
+@endforelse
+</div></div>
                 </section>
-                @else
+                
+@else
+
                 <section class="command-grid">
                     <div class="card panel"><div class="panel-head"><h3>Commercial Overview</h3><a href="{{ route('customer.section','quotations') }}">View quotations →</a></div><div class="stage-grid"><div class="stage"><b>{{ $pendingQuotationCount }}</b><span>Pending quotations</span></div><div class="stage"><b>{{ $activeContractCount }}</b><span>Active contracts</span></div><div class="stage"><b>{{ $renewalActionCount }}</b><span>Renewals due</span></div></div></div>
                     <div class="card panel"><div class="panel-head"><h3>Financial Attention</h3><a href="{{ route('customer.section','invoices') }}">View invoices →</a></div><div class="priority-list"><div class="list-row"><i class="indicator {{ $invoiceActionCount?'red':'' }}"></i><div><div class="row-title">{{ $invoiceActionCount }} invoices require attention</div><div class="row-sub">Open balance {{ number_format($openInvoiceAmount,2) }} SAR</div></div></div></div></div>
                 </section>
-                @endif
+                
+@endif
+
 
                 <section class="lower-grid">
-                    @if(in_array('assets',$allowedSections,true))<div class="card panel"><div class="panel-head"><h3>Asset Health</h3><a href="{{ route('customer.asset-health') }}">Asset 360 →</a></div><div class="asset-health"><div class="health-ring" style="--active:{{ $assetActiveEnd }}%;--maint:{{ $assetMaintenanceEnd }}%;--down:{{ $assetStoppedEnd }}%"><div><b>{{ $assets->count() }}</b><span>Visible assets</span></div></div><div class="health-legend"><div class="health-item"><b>{{ $activeAssetCount }}</b><span>Operational</span></div><div class="health-item"><b>{{ $maintenanceAssetCount }}</b><span>Maintenance</span></div><div class="health-item"><b>{{ $stoppedAssetCount }}</b><span>Stopped</span></div><div class="health-item"><b>{{ $criticalAssetCount }}</b><span>Critical assets</span></div><div class="health-item"><b>{{ $warrantyExpiringCount }}</b><span>Warranty ≤ 60 days</span></div><div class="health-item"><b>{{ $sites->count() }}</b><span>Authorized sites</span></div></div></div></div>@endif
-                    <div class="card panel"><div class="panel-head"><h3>Upcoming Visits & Maintenance</h3>@if(in_array('visits',$allowedSections,true))<a href="{{ route('customer.section','visits') }}">Open schedule →</a>@endif</div><div class="upcoming-list">@forelse($upcomingPlans as $plan)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $plan->name }}</div><div class="row-sub">{{ $plan->asset?->site?->name ?: 'Site not assigned' }} · {{ $plan->asset?->name }}</div></div><span class="pill">{{ $plan->next_due_date?->format('d M') }}</span></div>@empty<div class="empty"><strong>No scheduled visits</strong>There is no preventive maintenance in the selected period.</div>@endforelse</div></div>
+                    @if(in_array('assets',$allowedSections,true))<div class="card panel"><div class="panel-head"><h3>Asset Health</h3><a href="{{ route('customer.asset-health') }}">Asset 360 →</a></div><div class="asset-health"><div class="health-ring" style="--active:{{ $assetActiveEnd }}%;--maint:{{ $assetMaintenanceEnd }}%;--down:{{ $assetStoppedEnd }}%"><div><b>{{ $assets->count() }}</b><span>Visible assets</span></div></div><div class="health-legend"><div class="health-item"><b>{{ $activeAssetCount }}</b><span>Operational</span></div><div class="health-item"><b>{{ $maintenanceAssetCount }}</b><span>Maintenance</span></div><div class="health-item"><b>{{ $stoppedAssetCount }}</b><span>Stopped</span></div><div class="health-item"><b>{{ $criticalAssetCount }}</b><span>Critical assets</span></div><div class="health-item"><b>{{ $warrantyExpiringCount }}</b><span>Warranty ≤ 60 days</span></div><div class="health-item"><b>{{ $sites->count() }}</b><span>Authorized sites</span></div></div></div></div>
+@endif
+
+                    <div class="card panel"><div class="panel-head"><h3>Upcoming Visits & Maintenance</h3>@if(in_array('visits',$allowedSections,true))<a href="{{ route('customer.section','visits') }}">Open schedule →</a>
+@endif
+</div><div class="upcoming-list">@forelse($upcomingPlans as $plan)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $plan->name }}</div><div class="row-sub">{{ $plan->asset?->site?->name ?: 'Site not assigned' }} · {{ $plan->asset?->name }}</div></div><span class="pill">{{ $plan->next_due_date?->format('d M') }}</span></div>
+@empty
+<div class="empty"><strong>No scheduled visits</strong>There is no preventive maintenance in the selected period.</div>
+@endforelse
+</div></div>
                 </section>
 
                 <section class="lower-grid">
@@ -191,62 +265,146 @@
                     <div class="card panel"><div class="panel-head"><h3>Financial Summary</h3><a href="{{ route('customer.section','invoices') }}">Open finance →</a></div><div class="health-legend"><div class="health-item"><b>{{ number_format($openInvoiceAmount,2) }}</b><span>Open balance · SAR</span></div><div class="health-item"><b>{{ $openInvoiceCount }}</b><span>Open invoices</span></div><div class="health-item"><b>{{ $invoiceActionCount }}</b><span>Due soon</span></div><div class="health-item"><b>{{ $pendingQuotationCount }}</b><span>Pending quotations</span></div></div></div>
                 </section>
 
-                <section class="card panel activity-panel"><div class="panel-head"><h3>Recent Relationship Activity</h3><a href="{{ route('customer.section','timeline') }}">Full timeline →</a></div><div class="activity-list">@forelse($timeline->take(6) as $event)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $event->title }}</div><div class="row-sub">{{ str_replace('_',' ',$event->event_type) }} · {{ $event->created_at?->format('d M Y, H:i') }}</div></div></div>@empty<div class="empty"><strong>No recent activity</strong>Customer-visible updates will appear here.</div>@endforelse</div></section>
-            @endif
+                <section class="card panel activity-panel"><div class="panel-head"><h3>Recent Relationship Activity</h3><a href="{{ route('customer.section','timeline') }}">Full timeline →</a></div><div class="activity-list">@forelse($timeline->take(6) as $event)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $event->title }}</div><div class="row-sub">{{ str_replace('_',' ',$event->event_type) }} · {{ $event->created_at?->format('d M Y, H:i') }}</div></div></div>
+@empty
+<div class="empty"><strong>No recent activity</strong>Customer-visible updates will appear here.</div>
+@endforelse
+</div></section>
+            
+@endif
+
 
             @if($section === 'requests')
                 <div class="page-head"><div><h2>Service Requests</h2><p>All service requests belonging to this customer account.</p></div></div>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Request</th><th>Type</th><th>Subject</th><th>Priority</th><th>Stage</th><th>Status</th><th>Created</th></tr></thead><tbody>@forelse($requests as $item)<tr><td>{{ $item->request_no }}</td><td>{{ $item->request_type }}</td><td>{{ $item->subject }}</td><td><span class="pill {{ in_array($item->priority,['EMERGENCY','HIGH'])?'red':'' }}">{{ $item->priority }}</span></td><td>{{ $item->workflow_stage }}</td><td>{{ $item->status }}</td><td>{{ $item->created_at?->format('Y-m-d') }}</td></tr>@empty<tr><td colspan="7">No requests found.</td></tr>@endforelse</tbody></table></div></div>
-            @endif
+                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Request</th><th>Type</th><th>Subject</th><th>Priority</th><th>Stage</th><th>Status</th><th>Created</th></tr></thead><tbody>@forelse($requests as $item)<tr><td>{{ $item->request_no }}</td><td>{{ $item->request_type }}</td><td>{{ $item->subject }}</td><td><span class="pill {{ in_array($item->priority,['EMERGENCY','HIGH'])?'red':'' }}">{{ $item->priority }}</span></td><td>{{ $item->workflow_stage }}</td><td>{{ $item->status }}</td><td>{{ $item->created_at?->format('Y-m-d') }}</td></tr>
+@empty
+<tr><td colspan="7">No requests found.</td></tr>
+@endforelse
+</tbody></table></div></div>
+            
+@endif
+
 
             @if($section === 'work-orders')
                 <div class="page-head"><div><h2>Work Orders</h2><p>All execution records across the customer’s sites and assets.</p></div><a class="btn red" href="{{ route('public.request-service',['customer'=>$customer->customer_code]) }}">Request Service</a></div>
                 <form class="card panel filters" method="GET" action="{{ route('customer.section','work-orders') }}" style="margin-bottom:12px">
                     <label class="filter"><span>Search</span><input name="q" value="{{ $searchFilter }}" placeholder="Work order or asset" style="height:34px;min-width:190px;border:1px solid var(--line);border-radius:8px;padding:0 9px;font-size:9px"></label>
-                    <label class="filter"><span>Site</span><select name="site_id"><option value="">All sites</option>@foreach($sites as $site)<option value="{{ $site->id }}" @selected($siteFilter===$site->id)>{{ $site->name }}</option>@endforeach</select></label>
-                    <label class="filter"><span>Contract</span><select name="contract_id"><option value="">All contracts</option>@foreach($contracts as $contract)<option value="{{ $contract->id }}" @selected($contractFilter===$contract->id)>{{ $contract->contract_no }}</option>@endforeach</select></label>
-                    <label class="filter"><span>Priority</span><select name="priority"><option value="">All priorities</option>@foreach(['NORMAL','HIGH','EMERGENCY'] as $value)<option value="{{ $value }}" @selected($priorityFilter===$value)>{{ str_replace('_',' ',$value) }}</option>@endforeach</select></label>
-                    <label class="filter"><span>Status</span><select name="status"><option value="">All statuses</option>@foreach(['OPEN','ASSIGNED','IN_PROGRESS','COMPLETED','CLOSED'] as $value)<option value="{{ $value }}" @selected($statusFilter===$value)>{{ str_replace('_',' ',$value) }}</option>@endforeach</select></label>
+                    <label class="filter"><span>Site</span><select name="site_id"><option value="">All sites</option>@foreach($sites as $site)<option value="{{ $site->id }}" @selected($siteFilter===$site->id)>{{ $site->name }}</option>
+@endforeach
+</select></label>
+                    <label class="filter"><span>Contract</span><select name="contract_id"><option value="">All contracts</option>@foreach($contracts as $contract)<option value="{{ $contract->id }}" @selected($contractFilter===$contract->id)>{{ $contract->contract_no }}</option>
+@endforeach
+</select></label>
+                    <label class="filter"><span>Priority</span><select name="priority"><option value="">All priorities</option>@foreach(['NORMAL','HIGH','EMERGENCY'] as $value)<option value="{{ $value }}" @selected($priorityFilter===$value)>{{ str_replace('_',' ',$value) }}</option>
+@endforeach
+</select></label>
+                    <label class="filter"><span>Status</span><select name="status"><option value="">All statuses</option>@foreach(['OPEN','ASSIGNED','IN_PROGRESS','COMPLETED','CLOSED'] as $value)<option value="{{ $value }}" @selected($statusFilter===$value)>{{ str_replace('_',' ',$value) }}</option>
+@endforeach
+</select></label>
                     <button class="filter-button">Apply</button><a class="btn" href="{{ route('customer.section','work-orders') }}" style="height:34px;padding:8px 13px;background:#edf3fb;color:var(--navy)">Reset</a>
                 </form>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Work Order</th><th>Asset</th><th>Site</th><th>Type</th><th>Priority</th><th>Status</th><th>Planned</th></tr></thead><tbody>@forelse($workOrders as $item)<tr><td><a class="pill" href="{{ route('customer.work-orders.show',$item) }}">{{ $item->work_order_no }}</a></td><td>{{ $item->asset?->asset_code }} · {{ $item->asset?->name }}</td><td>{{ $item->asset?->site?->name ?: '—' }}</td><td>{{ $item->maintenance_type }}</td><td>{{ $item->priority }}</td><td>{{ $item->status }}</td><td>{{ $item->planned_start?->format('Y-m-d H:i') ?: '—' }}</td></tr>@empty<tr><td colspan="7">No work orders in scope.</td></tr>@endforelse</tbody></table></div></div>
+                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Work Order</th><th>Asset</th><th>Site</th><th>Type</th><th>Priority</th><th>Status</th><th>Planned</th></tr></thead><tbody>@forelse($workOrders as $item)<tr><td><a class="pill" href="{{ route('customer.work-orders.show',$item) }}">{{ $item->work_order_no }}</a></td><td>{{ $item->asset?->asset_code }} · {{ $item->asset?->name }}</td><td>{{ $item->asset?->site?->name ?: '—' }}</td><td>{{ $item->maintenance_type }}</td><td>{{ $item->priority }}</td><td>{{ $item->status }}</td><td>{{ $item->planned_start?->format('Y-m-d H:i') ?: '—' }}</td></tr>
+@empty
+<tr><td colspan="7">No work orders in scope.</td></tr>
+@endforelse
+</tbody></table></div></div>
                 <div class="card panel" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:14px"><div><h3 style="margin-bottom:5px">Need another service?</h3><div class="row-sub">Use the approved unified request form for maintenance, emergencies, quotations, spare parts and technical consultation.</div></div><a class="btn red" href="{{ route('public.request-service',['customer'=>$customer->customer_code]) }}">Request Service</a></div>
-            @endif
+            
+@endif
+
 
             @if($section === 'sites')
                 <div class="page-head"><div><h2>Sites</h2><p>Authorized locations, reception contacts and operational coverage.</p></div></div>
-                <div class="site-grid">@forelse($sites as $site)<a class="card site-card" href="{{ route('customer.portal',['site_id'=>$site->id]) }}"><strong>{{ $site->site_code }} · {{ $site->name }}</strong><small>{{ $site->city ?: 'City not specified' }}<br>{{ $site->address ?: 'Address not specified' }}<br>Reception: {{ $site->contact_name ?: '—' }} · {{ $site->contact_mobile ?: '—' }}</small><div class="site-meta"><span class="pill {{ $site->status==='ACTIVE'?'green':'amber' }}">{{ $site->status }}</span><span class="pill">{{ $assets->where('customer_site_id',$site->id)->count() }} assets</span></div></a>@empty<div class="card empty">No sites in your authorized scope.</div>@endforelse</div>
-            @endif
+                <div class="site-grid">@forelse($sites as $site)<a class="card site-card" href="{{ route('customer.portal',['site_id'=>$site->id]) }}"><strong>{{ $site->site_code }} · {{ $site->name }}</strong><small>{{ $site->city ?: 'City not specified' }}<br>{{ $site->address ?: 'Address not specified' }}<br>Reception: {{ $site->contact_name ?: '—' }} · {{ $site->contact_mobile ?: '—' }}</small><div class="site-meta"><span class="pill {{ $site->status==='ACTIVE'?'green':'amber' }}">{{ $site->status }}</span><span class="pill">{{ $assets->where('customer_site_id',$site->id)->count() }} assets</span></div></a>
+@empty
+<div class="card empty">No sites in your authorized scope.</div>
+@endforelse
+</div>
+            
+@endif
+
 
             @if($section === 'assets')
                 <div class="page-head"><div><h2>Assets & Equipment</h2><p>Every registered asset and equipment item belonging to this customer.</p></div><a class="btn" href="{{ route('customer.asset-health') }}">Open Asset Health</a></div>
-                <div class="asset-grid">@forelse($assets as $asset)<a class="card asset" href="{{ route('customer.asset.show',$asset) }}"><strong>{{ $asset->asset_code }} · {{ $asset->name }}</strong><small>{{ $asset->site?->name ?: 'No site' }}<br>{{ $asset->location_code ?: 'Location not assigned' }}<br>Operational status: {{ $asset->operational_status ?: $asset->status }}<br>Health: {{ $asset->health_score !== null ? $asset->health_score.'%' : 'Not measured' }}</small></a>@empty<div class="card empty">No assets in your scope.</div>@endforelse</div>
-            @endif
+                <div class="asset-grid">@forelse($assets as $asset)<a class="card asset" href="{{ route('customer.asset.show',$asset) }}"><strong>{{ $asset->asset_code }} · {{ $asset->name }}</strong><small>{{ $asset->site?->name ?: 'No site' }}<br>{{ $asset->location_code ?: 'Location not assigned' }}<br>Operational status: {{ $asset->operational_status ?: $asset->status }}<br>Health: {{ $asset->health_score !== null ? $asset->health_score.'%' : 'Not measured' }}</small></a>
+@empty
+<div class="card empty">No assets in your scope.</div>
+@endforelse
+</div>
+            
+@endif
+
 
             @if($section === 'visits')
                 <div class="page-head"><div><h2>Visits & Schedule</h2><p>Upcoming preventive work and completed technician visits.</p></div></div>
-                <section class="lower-grid"><div class="card panel"><div class="panel-head"><h3>Upcoming Maintenance</h3></div>@forelse($upcomingPlans as $plan)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $plan->name }}</div><div class="row-sub">{{ $plan->asset?->site?->name }} · {{ $plan->asset?->name }}</div></div><span class="pill">{{ $plan->next_due_date?->format('Y-m-d') }}</span></div>@empty<div class="empty">No upcoming visits.</div>@endforelse</div><div class="card panel"><div class="panel-head"><h3>Completed Visits</h3></div>@forelse($visitReports->take(6) as $report)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $report->report_no }} · {{ $report->visit_type }}</div><div class="row-sub">{{ $report->technician_name ?: 'UNIFCO team' }}</div></div><a class="pill" href="{{ route('customer.visits.pdf',$report) }}">PDF</a></div>@empty<div class="empty">No completed visits.</div>@endforelse</div></section>
-            @endif
+                <section class="lower-grid"><div class="card panel"><div class="panel-head"><h3>Upcoming Maintenance</h3></div>@forelse($upcomingPlans as $plan)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $plan->name }}</div><div class="row-sub">{{ $plan->asset?->site?->name }} · {{ $plan->asset?->name }}</div></div><span class="pill">{{ $plan->next_due_date?->format('Y-m-d') }}</span></div>
+@empty
+<div class="empty">No upcoming visits.</div>
+@endforelse
+</div><div class="card panel"><div class="panel-head"><h3>Completed Visits</h3></div>@forelse($visitReports->take(6) as $report)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $report->report_no }} · {{ $report->visit_type }}</div><div class="row-sub">{{ $report->technician_name ?: 'UNIFCO team' }}</div></div><a class="pill" href="{{ route('customer.visits.pdf',$report) }}">PDF</a></div>
+@empty
+<div class="empty">No completed visits.</div>
+@endforelse
+</div></section>
+            
+@endif
+
 
             @if($section === 'maintenance')
                 <div class="page-head"><div><h2>Maintenance Plan</h2><p>Preventive plans for all customer assets.</p></div></div>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Plan</th><th>Asset</th><th>Site</th><th>Frequency</th><th>Next Due</th><th>Status</th></tr></thead><tbody>@forelse($plans as $plan)<tr><td>{{ $plan->plan_no }} · {{ $plan->name }}</td><td>{{ $plan->asset?->asset_code }}</td><td>{{ $plan->asset?->site?->name ?: '—' }}</td><td>{{ $plan->frequency_type }} / {{ $plan->frequency_value }}</td><td>{{ $plan->next_due_date?->format('Y-m-d') }}</td><td>{{ $plan->status }}</td></tr>@empty<tr><td colspan="6">No maintenance plans in scope.</td></tr>@endforelse</tbody></table></div></div>
-            @endif
+                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Plan</th><th>Asset</th><th>Site</th><th>Frequency</th><th>Next Due</th><th>Status</th></tr></thead><tbody>@forelse($plans as $plan)<tr><td>{{ $plan->plan_no }} · {{ $plan->name }}</td><td>{{ $plan->asset?->asset_code }}</td><td>{{ $plan->asset?->site?->name ?: '—' }}</td><td>{{ $plan->frequency_type }} / {{ $plan->frequency_value }}</td><td>{{ $plan->next_due_date?->format('Y-m-d') }}</td><td>{{ $plan->status }}</td></tr>
+@empty
+<tr><td colspan="6">No maintenance plans in scope.</td></tr>
+@endforelse
+</tbody></table></div></div>
+            
+@endif
+
 
             @if($section === 'spare-parts')
                 <div class="page-head"><div><h2>Spare Parts</h2><p>Parts issued against all customer assets and work orders.</p></div><a class="btn red" href="{{ route('public.request-service',['customer'=>$customer->customer_code,'quotation'=>1,'subtype'=>'parts']) }}">Request Spare Parts</a></div>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Part</th><th>Description</th><th>Work Order</th><th>Asset</th><th>Quantity</th><th>Date</th></tr></thead><tbody>@forelse($materials as $part)<tr><td>{{ $part->item_code }}</td><td>{{ $part->item_name }}</td><td>{{ $part->work_order_no }}</td><td>{{ $part->asset_code }} · {{ $part->asset_name }}</td><td>{{ $part->quantity }} {{ $part->uom }}</td><td>{{ $part->created_at }}</td></tr>@empty<tr><td colspan="6">No spare-parts activity in your scope.</td></tr>@endforelse</tbody></table></div></div>
-            @endif
+                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Part</th><th>Description</th><th>Work Order</th><th>Asset</th><th>Quantity</th><th>Date</th></tr></thead><tbody>@forelse($materials as $part)<tr><td>{{ $part->item_code }}</td><td>{{ $part->item_name }}</td><td>{{ $part->work_order_no }}</td><td>{{ $part->asset_code }} · {{ $part->asset_name }}</td><td>{{ $part->quantity }} {{ $part->uom }}</td><td>{{ $part->created_at }}</td></tr>
+@empty
+<tr><td colspan="6">No spare-parts activity in your scope.</td></tr>
+@endforelse
+</tbody></table></div></div>
+            
+@endif
+
 
             @if($section === 'quotations')
                 <div class="page-head"><div><h2>Quotations</h2><p>Commercial proposals for your customer account.</p></div></div>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Quotation</th><th>Revision</th><th>Value</th><th>Status</th><th>Decision</th></tr></thead><tbody>@forelse($quotations as $quotation)<tr><td>{{ $quotation->quotation_no }}</td><td>R{{ $quotation->revision_no }}</td><td>{{ number_format((float)$quotation->amount,2) }} {{ $quotation->currency }}</td><td>{{ $quotation->status }}</td><td>@if($canDecideQuotation && in_array($quotation->status,['SENT','UNDER_REVIEW','REVISION_REQUESTED']))<form method="POST" action="{{ route('customer.quotations.decision',$quotation) }}">@csrf<select name="decision"><option value="APPROVE">Approve</option><option value="REVISION">Request revision</option><option value="REJECT">Reject</option></select><input name="notes" placeholder="Notes"><button class="btn">Submit</button></form>@else<span class="pill">{{ $readOnly?'Read only':'No action required' }}</span>@endif</td></tr>@empty<tr><td colspan="5">No quotations found.</td></tr>@endforelse</tbody></table></div></div>
-            @endif
+                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Quotation</th><th>Revision</th><th>Value</th><th>Status</th><th>Decision</th></tr></thead><tbody>@forelse($quotations as $quotation)<tr><td>{{ $quotation->quotation_no }}</td><td>R{{ $quotation->revision_no }}</td><td>{{ number_format((float)$quotation->amount,2) }} {{ $quotation->currency }}</td><td>{{ $quotation->status }}</td><td>@if($canDecideQuotation && in_array($quotation->status,['SENT','UNDER_REVIEW','REVISION_REQUESTED']))
+<form method="POST" action="{{ route('customer.quotations.decision',$quotation) }}">
+    @csrf
+    <select name="decision"><option value="APPROVE">Approve</option><option value="REVISION">Request revision</option><option value="REJECT">Reject</option></select>
+    <input name="notes" placeholder="Notes"><button class="btn">Submit</button>
+</form>
+
+@else
+
+<span class="pill">{{ $readOnly ? 'Read only' : 'No action required' }}</span>
+
+@endif
+</td></tr>
+@empty
+<tr><td colspan="5">No quotations found.</td></tr>
+@endforelse
+</tbody></table></div></div>
+            
+@endif
+
 
             @if($section === 'contracts')
                 <div class="page-head"><div><h2>Contracts</h2><p>All contracts and service coverage for this customer account.</p></div></div>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contract</th><th>Title</th><th>Period</th><th>Status</th><th></th></tr></thead><tbody>@forelse($contracts as $contract)<tr><td>{{ $contract->contract_no }}</td><td>{{ $contract->title }}</td><td>{{ $contract->starts_on?->format('Y-m-d') }} — {{ $contract->ends_on?->format('Y-m-d') }}</td><td>{{ $contract->status }}</td><td><a class="pill" href="{{ route('customer.contracts.pdf',$contract) }}">PDF</a></td></tr>@empty<tr><td colspan="5">No contracts in scope.</td></tr>@endforelse</tbody></table></div></div>
-            @endif
+                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contract</th><th>Title</th><th>Period</th><th>Status</th><th></th></tr></thead><tbody>@forelse($contracts as $contract)<tr><td>{{ $contract->contract_no }}</td><td>{{ $contract->title }}</td><td>{{ $contract->starts_on?->format('Y-m-d') }} — {{ $contract->ends_on?->format('Y-m-d') }}</td><td>{{ $contract->status }}</td><td><a class="pill" href="{{ route('customer.contracts.pdf',$contract) }}">PDF</a></td></tr>
+@empty
+<tr><td colspan="5">No contracts in scope.</td></tr>
+@endforelse
+</tbody></table></div></div>
+            
+@endif
+
 
             @if($section === 'invoices')
                 @php
@@ -269,7 +427,11 @@
                 <div class="card table-card">
                     <div class="table-wrap"><table class="table" id="invoice-table"><thead><tr><th>Invoice #</th><th>Issue Date</th><th>Due Date</th><th>Amount</th><th>Balance Due</th><th>Status</th><th>Actions</th></tr></thead><tbody>
                     @forelse($invoices as $invoice)<tr data-invoice-row data-search="{{ strtolower($invoice->document_no.' '.$invoice->status.' '.$invoice->amount.' '.$invoice->open_amount) }}" data-status="{{ strtoupper($invoice->status) }}"><td><strong>{{ $invoice->document_no }}</strong></td><td>{{ $invoice->document_date?->format('d M Y') ?: '—' }}</td><td>{{ $invoice->due_date?->format('d M Y') ?: '—' }}</td><td>{{ number_format((float)$invoice->amount,2) }} {{ $invoice->currency }}</td><td>{{ number_format((float)$invoice->open_amount,2) }} {{ $invoice->currency }}</td><td><span class="pill {{ (float)$invoice->open_amount<=0?'green':($invoice->due_date && $invoice->due_date->isPast()?'red':'amber') }}">{{ $invoice->status }}</span></td><td><a class="pill" href="{{ route('customer.invoices.pdf',$invoice) }}">View / PDF</a></td></tr>
-                    @empty<tr><td colspan="7"><div class="empty" style="padding:42px 20px"><strong style="font-size:14px;color:var(--ink)">No invoices found</strong><div style="margin:7px 0 16px">You don't have any invoices yet. They will appear here once issued.</div><a class="btn" href="{{ route('customer.inbox') }}">Contact Support</a></div></td></tr>@endforelse
+                    
+@empty
+<tr><td colspan="7"><div class="empty" style="padding:42px 20px"><strong style="font-size:14px;color:var(--ink)">No invoices found</strong><div style="margin:7px 0 16px">You don't have any invoices yet. They will appear here once issued.</div><a class="btn" href="{{ route('customer.inbox') }}">Contact Support</a></div></td></tr>
+@endforelse
+
                     </tbody></table></div>
                 </div>
                 <section class="lower-grid">
@@ -278,7 +440,9 @@
                 </section>
                 <script>document.addEventListener('DOMContentLoaded',()=>{const q=document.getElementById('invoice-search'),s=document.getElementById('invoice-status'),r=document.getElementById('invoice-reset'),rows=[...document.querySelectorAll('[data-invoice-row]')];const apply=()=>{const text=(q?.value||'').toLowerCase(),status=(s?.value||'').toUpperCase();rows.forEach(row=>row.style.display=(!text||row.dataset.search.includes(text))&&(!status||row.dataset.status===status)?'':'none')};q?.addEventListener('input',apply);s?.addEventListener('change',apply);r?.addEventListener('click',()=>{q.value='';s.value='';apply()})});</script>
                 <style>@media(max-width:780px){body:has(#invoice-table) .stats{grid-template-columns:1fr 1fr!important}#invoice-table th:nth-child(2),#invoice-table td:nth-child(2),#invoice-table th:nth-child(4),#invoice-table td:nth-child(4){display:none}}@media(max-width:520px){body:has(#invoice-table) .stats{grid-template-columns:1fr!important}.filters .filter{flex-basis:100%}.filters .filter-button{width:100%}#invoice-table{min-width:560px}}</style>
-            @endif
+            
+@endif
+
 
             @if($section === 'sla')
                 @php
@@ -296,7 +460,11 @@
                 <section class="sla-insights">
                     <div class="card panel sla-trend-card"><div class="panel-head"><h3>SLA Performance Trend</h3><span class="pill">Current account</span></div>
                         @if($slaPerformance===null)<div class="sla-empty-chart"><div class="sla-bars"><i></i><i></i><i></i><i></i></div><strong>No SLA data available</strong><span>SLA measurements will appear here once eligible requests are available.</span></div>
-                        @else<div class="sla-score"><strong>{{ $slaPerformance }}%</strong><span>Measured SLA performance</span><div class="sla-meter"><i style="width:{{ min(100,max(0,$slaPerformance)) }}%"></i></div></div>@endif
+                        
+@else
+<div class="sla-score"><strong>{{ $slaPerformance }}%</strong><span>Measured SLA performance</span><div class="sla-meter"><i style="width:{{ min(100,max(0,$slaPerformance)) }}%"></i></div></div>
+@endif
+
                     </div>
                     <div class="card panel"><div class="panel-head"><h3>Work Orders by Type</h3><strong>{{ $slaWorkTotal }} total</strong></div>
                         <div class="sla-mix"><div class="sla-mix-bar"><i style="width:{{ $preventiveShare }}%"></i><b style="width:{{ $correctiveShare }}%"></b></div><div class="sla-legend"><span><i></i>Preventive Work <b>{{ $preventiveCount }} · {{ $preventiveShare }}%</b></span><span><i class="corrective"></i>Corrective Work <b>{{ $correctiveCount }} · {{ $correctiveShare }}%</b></span><span><i class="overdue-dot"></i>Overdue Work <b>{{ $overdueCount }}</b></span></div></div>
@@ -307,27 +475,53 @@
                     @media(max-width:1000px){.sla-kpi-grid{grid-template-columns:1fr 1fr}.sla-insights{grid-template-columns:1fr}}
                     @media(max-width:520px){.sla-page-head{margin-bottom:12px}.sla-page-head h2{font-size:27px}.sla-kpi-grid{grid-template-columns:1fr 1fr;gap:8px}.sla-kpi{min-height:132px;padding:12px;gap:8px;flex-direction:column}.sla-kpi-icon{width:34px;height:34px;border-radius:10px}.sla-kpi-icon .ui-icon{width:18px;height:18px}.sla-kpi .label{font-size:8px}.sla-kpi .value{font-size:24px;margin:6px 0 3px}.sla-kpi .trend{font-size:8px;line-height:1.35}.sla-insights{gap:8px;margin-top:8px}.sla-insights .panel{padding:13px}.sla-empty-chart,.sla-score{min-height:170px}.sla-legend span{font-size:8px}}
                 </style>
-            @endif
+            
+@endif
+
 
             @if($section === 'timeline')
                 <div class="page-head"><div><h2>Recent Activity</h2><p>Customer-visible transaction and relationship history.</p></div></div>
-                <div class="card panel">@forelse($timeline as $event)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $event->title }}</div><div class="row-sub">{{ str_replace('_',' ',$event->event_type) }} · {{ $event->created_at?->format('Y-m-d H:i') }}</div></div></div>@empty<div class="empty">No timeline activity.</div>@endforelse</div>
-            @endif
+                <div class="card panel">@forelse($timeline as $event)<div class="list-row"><i class="indicator"></i><div><div class="row-title">{{ $event->title }}</div><div class="row-sub">{{ str_replace('_',' ',$event->event_type) }} · {{ $event->created_at?->format('Y-m-d H:i') }}</div></div></div>
+@empty
+<div class="empty">No timeline activity.</div>
+@endforelse
+</div>
+            
+@endif
+
 
             @if($section === 'reports')
                 <div class="page-head"><div><h2>Reports</h2><p>Technical reports across all customer sites and assets.</p></div></div>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Report</th><th>Date</th><th>Type</th><th>Technician</th><th></th></tr></thead><tbody>@forelse($visitReports as $report)<tr><td>{{ $report->report_no }}</td><td>{{ $report->visit_date?->format('Y-m-d') }}</td><td>{{ $report->visit_type }}</td><td>{{ $report->technician_name }}</td><td><a class="pill" href="{{ route('customer.visits.pdf',$report) }}">PDF</a></td></tr>@empty<tr><td colspan="5">No reports found.</td></tr>@endforelse</tbody></table></div></div>
-            @endif
+                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Report</th><th>Date</th><th>Type</th><th>Technician</th><th></th></tr></thead><tbody>@forelse($visitReports as $report)<tr><td>{{ $report->report_no }}</td><td>{{ $report->visit_date?->format('Y-m-d') }}</td><td>{{ $report->visit_type }}</td><td>{{ $report->technician_name }}</td><td><a class="pill" href="{{ route('customer.visits.pdf',$report) }}">PDF</a></td></tr>
+@empty
+<tr><td colspan="5">No reports found.</td></tr>
+@endforelse
+</tbody></table></div></div>
+            
+@endif
+
 
             @if($section === 'documents')
                 <div class="page-head"><div><h2>Document Library</h2><p>All customer-visible files associated with contracts, assets and service activity.</p></div></div>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Type</th><th>File</th><th>Created</th><th></th></tr></thead><tbody>@forelse($attachments as $attachment)<tr><td>{{ $attachment->attachment_type }}</td><td>{{ $attachment->original_name }}</td><td>{{ $attachment->created_at }}</td><td><a class="pill" href="{{ route('customer.attachments.download',$attachment->id) }}">Download</a></td></tr>@empty<tr><td colspan="4">No documents in scope.</td></tr>@endforelse</tbody></table></div></div>
-            @endif
+                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Type</th><th>File</th><th>Created</th><th></th></tr></thead><tbody>@forelse($attachments as $attachment)<tr><td>{{ $attachment->attachment_type }}</td><td>{{ $attachment->original_name }}</td><td>{{ $attachment->created_at }}</td><td><a class="pill" href="{{ route('customer.attachments.download',$attachment->id) }}">Download</a></td></tr>
+@empty
+<tr><td colspan="4">No documents in scope.</td></tr>
+@endforelse
+</tbody></table></div></div>
+            
+@endif
+
 
             @if($section === 'notifications')
                 <div class="page-head"><div><h2>Notifications</h2><p>Operational, contractual and financial alerts for the complete customer account.</p></div></div>
-                <div class="site-grid">@forelse($alerts as $alert)<div class="card panel"><span class="pill {{ $alert->severity==='HIGH'?'red':'amber' }}">{{ $alert->type }}</span><h3>{{ $alert->title }}</h3><div class="row-sub">{{ $alert->due_date?->format('Y-m-d') }}</div></div>@empty<div class="card empty">No active alerts.</div>@endforelse</div>
-            @endif
+                <div class="site-grid">@forelse($alerts as $alert)<div class="card panel"><span class="pill {{ $alert->severity==='HIGH'?'red':'amber' }}">{{ $alert->type }}</span><h3>{{ $alert->title }}</h3><div class="row-sub">{{ $alert->due_date?->format('Y-m-d') }}</div></div>
+@empty
+<div class="card empty">No active alerts.</div>
+@endforelse
+</div>
+            
+@endif
+
         </div>
     </main>
 </div>
