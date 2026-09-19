@@ -110,10 +110,12 @@ class WorkOrderPartRequestService
                     'tenant_id'=>$request->tenant_id,'item_id'=>$line->item_id,'warehouse_code'=>$request->sourceWarehouse->code,
                 ])->lockForUpdate()->first();
                 if(!$balance || (float)$balance->quantity<$qty || (float)$balance->reserved_quantity<$qty) throw ValidationException::withMessages(['stock'=>'Reserved stock is no longer consistent for '.$line->item->item_code.'.']);
-                $this->stock->move($line->item,$request->sourceWarehouse->code,'ISSUE',$qty,'part-request-issue-'.$request->id.'-'.$line->id,'WORK_ORDER_PART_REQUEST',$request->id);
+                // Release the reservation before posting the issue. StockService writes the
+                // balance row too, so doing this afterwards would restore the stale reserved value.
                 DB::table('stock_balances')->where([
                     'tenant_id'=>$request->tenant_id,'item_id'=>$line->item_id,'warehouse_code'=>$request->sourceWarehouse->code,
                 ])->update(['reserved_quantity'=>max(0,(float)$balance->reserved_quantity-$qty),'updated_at'=>now()]);
+                $this->stock->move($line->item,$request->sourceWarehouse->code,'ISSUE',$qty,'part-request-issue-'.$request->id.'-'.$line->id,'WORK_ORDER_PART_REQUEST',$request->id);
                 $line->update(['reserved_quantity'=>0,'issued_quantity'=>$qty]);
             }
             $request->update(['status'=>'ISSUED','issued_by'=>Auth::id(),'issued_at'=>now()]);
