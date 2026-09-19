@@ -54,7 +54,7 @@
                     @endforeach</div>
                 @endif
             @endforeach
-            <div class="nav-group"><div class="nav-label">Communication & Account</div><a class="nav-link" href="{{ route('customer.inbox') }}">@include('customer.partials.icon',['name'=>'inbox'])<span>Contact Support</span>@if($unreadInbox)<em class="nav-badge urgent">{{ $unreadInbox }}</em>@endif</a><a class="nav-link" href="{{ route('customer.profile.edit') }}">@include('customer.partials.icon',['name'=>'profile'])<span>My Account</span></a></div>
+            <div class="nav-group"><div class="nav-label">Communication & Account</div><a class="nav-link" href="{{ route('customer.inbox') }}">@include('customer.partials.icon',['name'=>'inbox'])<span>Inbox & Support</span>@if($unreadInbox)<em class="nav-badge urgent">{{ $unreadInbox }}</em>@endif</a><a class="nav-link" href="{{ route('customer.profile.edit') }}">@include('customer.partials.icon',['name'=>'profile'])<span>Company Profile & Settings</span></a></div>
         </nav>
         <form class="sidebar-footer" method="POST" action="{{ route('logout') }}">@csrf<button>Sign out</button></form>
     </aside>
