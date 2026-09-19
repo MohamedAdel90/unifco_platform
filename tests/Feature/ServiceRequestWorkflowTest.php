@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ApprovalRequest,Customer,Organization,ServiceRequest,Tenant,User};
+use App\Models\{ApprovalRequest,Asset,Customer,FinancialDocument,Organization,ServiceRequest,Tenant,User,WorkOrder};
 use App\Services\{ApprovalService,ServiceRequestWorkflowService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -185,6 +185,48 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('PROJECT_MANAGER_REVIEW',$request->fresh()->workflow_stage);
         $pending=ApprovalRequest::where('entity_id',$request->id)->where('status','PENDING')->pluck('action')->all();
         $this->assertSame(['PROJECT_MANAGER_REVIEW'],$pending);
+    }
+
+    public function test_maintenance_execution_creates_linked_work_order_and_finance_stage_creates_invoice(): void
+    {
+        $c=$this->context();
+        $asset=Asset::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'asset_code'=>'E2E-GEN-100','name'=>'Customer 100 Generator','status'=>'REGISTERED',
+        ]);
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,'asset_id'=>$asset->id,
+            'request_no'=>'SR-E2E-INTEGRATED','request_type'=>'MAINTENANCE','company_name'=>$c['customer']->name,'email'=>$c['customer']->email,
+            'service_category'=>'Corrective','subject'=>'Integrated maintenance','details'=>'End to end','priority'=>'HIGH',
+            'status'=>'OPEN','workflow_stage'=>'NEW','eligibility'=>'CHARGEABLE',
+        ]);
+        $workflow=app(ServiceRequestWorkflowService::class);
+        $workflow->start($request,['estimated_value'=>0,'payment_terms_days'=>30]);
+
+        foreach(['TRIAGE','PROJECT_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT'] as $stage){
+            $workflow->advance($request->fresh(),$stage,$c['requester']->id,'E2E');
+        }
+
+        $request->refresh();
+        $this->assertSame('EXECUTION',$request->workflow_stage);
+        $this->assertNotNull($request->work_order_id);
+        $workOrder=WorkOrder::findOrFail($request->work_order_id);
+        $this->assertSame($asset->id,$workOrder->asset_id);
+
+        $workOrder->update(['labor_cost'=>100,'material_cost'=>50,'external_cost'=>25,'total_cost'=>175,'status'=>'COMPLETED','completed_at'=>now()]);
+        $workflow->advance($request->fresh(),'EXECUTION',$c['requester']->id,'Work completed');
+        $this->assertSame('CUSTOMER_ACCEPTANCE',$request->fresh()->workflow_stage);
+
+        $workflow->advance($request->fresh(),'CUSTOMER_ACCEPTANCE',$c['requester']->id,'Customer accepted');
+        $request->refresh();
+        $this->assertSame('FINANCE_REVIEW',$request->workflow_stage);
+        $invoiceId=(int) data_get($request->workflow_context,'invoice_id');
+        $this->assertGreaterThan(0,$invoiceId);
+        $invoice=FinancialDocument::findOrFail($invoiceId);
+        $this->assertSame($c['customer']->id,$invoice->customer_id);
+        $this->assertSame('AR_INVOICE',$invoice->document_type);
+        $this->assertSame('175.00',(string)$invoice->amount);
+        $this->assertSame('DRAFT',$invoice->status);
     }
 
 }
