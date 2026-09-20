@@ -26,7 +26,19 @@ class CustomerPortalOperationsController extends Controller
         if(!empty($data['service_contract_id'])){$access->assertContract($user,(int)$data['service_contract_id']);abort_unless(ServiceContract::whereKey($data['service_contract_id'])->where('customer_id',$customerId)->exists(),403);}
         $customer=Customer::findOrFail($customerId);
         $serviceRequest=ServiceRequest::create($data+['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'customer_id'=>$customerId,'request_no'=>'CP-'.now()->format('Ymd').'-'.strtoupper(Str::random(6)),'request_type'=>'MAINTENANCE','company_name'=>$customer->name,'commercial_registration'=>$customer->commercial_registration,'email'=>$customer->email,'mobile'=>$customer->phone,'status'=>'OPEN','workflow_stage'=>'NEW','eligibility'=>!empty($data['service_contract_id'])?'IN_CONTRACT':'CHARGEABLE','response_sla_minutes'=>$data['priority']==='EMERGENCY'?10:120,'resolution_sla_minutes'=>$data['priority']==='EMERGENCY'?240:1440]);
-        $workflow->start($serviceRequest,['procurement_required'=>false,'risk_level'=>'NORMAL','estimated_value'=>0,'payment_terms_days'=>0]);
+        $assetCriticality=!empty($data['asset_id'])
+            ? strtoupper((string)(Asset::whereKey($data['asset_id'])->value('criticality')??''))
+            : '';
+        $emergency=$data['priority']==='EMERGENCY';
+        $highCriticality=in_array($assetCriticality,['HIGH','CRITICAL'],true);
+        $workflow->start($serviceRequest,[
+            'procurement_required'=>false,
+            'risk_level'=>($emergency||$highCriticality)?'HIGH':'NORMAL',
+            'quality_required'=>$emergency||$highCriticality,
+            'hse_required'=>$emergency||$highCriticality,
+            'estimated_value'=>0,
+            'payment_terms_days'=>0,
+        ]);
         $lifecycle->record($customer,'SERVICE_REQUEST_CREATED','Service request '.$serviceRequest->request_no.' created',$serviceRequest->subject,$serviceRequest,['priority'=>$serviceRequest->priority,'eligibility'=>$serviceRequest->eligibility]);
         return redirect()->route('customer.section','requests')->with('status','تم إرسال طلب الخدمة وبدء مسار المراجعة والـSLA.');
     }
