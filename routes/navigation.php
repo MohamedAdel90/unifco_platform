@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/service-requests/{serviceRequest}/escalate',[ServiceRequestOperationsController::class,'escalate'])->middleware('permission:service_requests.escalate')->name('service-requests.escalate');
     });
     Route::prefix('service-requests/{serviceRequest}/workflow')->name('service-requests.workflow.')->group(function () {
+        Route::get('/',[MaintenanceRequestWorkflowController::class,'show'])->name('show');
         Route::post('/triage',[MaintenanceRequestWorkflowController::class,'triage'])->name('triage');
         Route::post('/project-review',[MaintenanceRequestWorkflowController::class,'projectReview'])->name('project-review');
         Route::post('/stage-review',[MaintenanceRequestWorkflowController::class,'stageReview'])->name('stage-review');
@@ -36,6 +37,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/assign-stage-owner',[MaintenanceRequestWorkflowController::class,'assignStageOwner'])->name('assign-stage-owner');
         Route::post('/complete-execution',[MaintenanceRequestWorkflowController::class,'completeExecution'])->name('complete-execution');
         Route::post('/verify',[MaintenanceRequestWorkflowController::class,'verify'])->name('verify');
+        Route::post('/close',[MaintenanceRequestWorkflowController::class,'close'])->name('close');
     });
     Route::post('/admin/users/{user}/impersonate',[ImpersonationController::class,'start'])->middleware('permission:impersonation.read_only')->name('admin.impersonation.start');
     Route::delete('/admin/impersonation',[ImpersonationController::class,'stop'])->name('admin.impersonation.stop');
