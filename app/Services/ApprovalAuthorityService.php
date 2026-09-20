@@ -52,6 +52,54 @@ class ApprovalAuthorityService
         }
     }
 
+    public function assertTransaction(User $user,string $approvalType,float $amount,array $scopeContext=[]): void
+    {
+        $type=strtoupper($approvalType);
+        $authorities=ApprovalAuthority::query()
+            ->where('tenant_id',$user->tenant_id)
+            ->where('approval_type',$type)
+            ->where('is_active',true)
+            ->orderBy('level')
+            ->get();
+
+        if($authorities->isEmpty()) return;
+
+        $roleIds=DB::table('user_roles')
+            ->where('tenant_id',$user->tenant_id)
+            ->where('user_id',$user->id)
+            ->whereNull('revoked_at')
+            ->pluck('role_id');
+
+        $allowed=$authorities->contains(function(ApprovalAuthority $authority) use($roleIds,$amount,$scopeContext){
+            if(!$roleIds->contains((int)$authority->role_id)) return false;
+
+            $from=$authority->amount_from!==null?(float)$authority->amount_from:0.0;
+            $to=$authority->amount_to!==null?(float)$authority->amount_to:($authority->amount_limit!==null?(float)$authority->amount_limit:null);
+            if($amount<$from) return false;
+            if($to!==null && $amount>$to) return false;
+
+            if(!$authority->access_scope_id) return true;
+            $scope=AccessScope::query()->where('is_active',true)->find($authority->access_scope_id);
+            if(!$scope) return false;
+
+            return match($scope->scope_type){
+                'GLOBAL'=>true,
+                'PROJECT'=>(int)($scopeContext['project_id']??0)===(int)$scope->scope_id,
+                'SITE'=>(int)($scopeContext['site_id']??0)===(int)$scope->scope_id,
+                'CUSTOMER'=>(int)($scopeContext['customer_id']??0)===(int)$scope->scope_id,
+                'CONTRACT'=>(int)($scopeContext['contract_id']??0)===(int)$scope->scope_id,
+                'ASSET'=>(int)($scopeContext['asset_id']??0)===(int)$scope->scope_id,
+                default=>false,
+            };
+        });
+
+        if(!$allowed){
+            throw ValidationException::withMessages([
+                'approval'=>'Your approval authority does not cover this transaction amount or scope.',
+            ]);
+        }
+    }
+
     public function amount(ApprovalRequest $approval,?ServiceRequest $serviceRequest=null): float
     {
         if($serviceRequest){
