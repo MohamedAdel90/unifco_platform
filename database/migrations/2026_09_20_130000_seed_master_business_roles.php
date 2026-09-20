@@ -127,9 +127,31 @@ return new class extends Migration {
             }
         }
 
-        // Keep historical customer role rows for migrated accounts, but retire them
-        // from new assignments. The unified CUSTOMER role is authoritative going forward.
-        DB::table('roles')->whereNull('tenant_id')->whereIn('code',[
+        // Migrate existing portal assignments to the unified CUSTOMER role before
+        // retiring the historical persona roles. Existing portal accounts keep access.
+        $customerRoleId=DB::table('roles')->whereNull('tenant_id')->where('code','CUSTOMER')->value('id');
+        $legacyRoleIds=DB::table('roles')->whereIn('code',[
+            'CUSTOMER_ADMIN','CUSTOMER_SITE_MANAGER','CUSTOMER_FINANCE','CUSTOMER_VIEWER'
+        ])->pluck('id');
+        if($customerRoleId && $legacyRoleIds->isNotEmpty()){
+            DB::table('user_roles')->whereIn('role_id',$legacyRoleIds)->whereNull('revoked_at')->orderBy('id')->each(function($assignment) use($customerRoleId){
+                DB::table('user_roles')->updateOrInsert(
+                    ['user_id'=>$assignment->user_id,'role_id'=>$customerRoleId],
+                    [
+                        'tenant_id'=>$assignment->tenant_id,'is_primary'=>$assignment->is_primary,
+                        'granted_by'=>$assignment->granted_by,'granted_at'=>$assignment->granted_at ?: now(),
+                        'revoked_at'=>null,'reason'=>'Unified Customer role migration',
+                        'created_at'=>now(),'updated_at'=>now(),
+                    ]
+                );
+                DB::table('user_roles')->where('id',$assignment->id)->update([
+                    'is_primary'=>false,'revoked_at'=>now(),'reason'=>'Replaced by unified CUSTOMER role','updated_at'=>now(),
+                ]);
+            });
+        }
+
+        // Keep historical role records only for audit/history; they cannot be assigned anew.
+        DB::table('roles')->whereIn('code',[
             'CUSTOMER_ADMIN','CUSTOMER_SITE_MANAGER','CUSTOMER_FINANCE','CUSTOMER_VIEWER'
         ])->update(['is_active'=>false,'updated_at'=>now()]);
     }
