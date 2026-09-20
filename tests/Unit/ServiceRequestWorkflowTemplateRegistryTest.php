@@ -48,12 +48,32 @@ class ServiceRequestWorkflowTemplateRegistryTest extends TestCase
         $key = $this->registry->keyFor($request);
         $stages = array_column($this->registry->template($key, ['procurement_required' => true]), 'stage');
 
-        $this->assertSame(ServiceRequestWorkflowTemplateRegistry::QUOTATION, $key);
+        $this->assertSame(ServiceRequestWorkflowTemplateRegistry::SPARE_PARTS_QUOTATION, $key);
         $this->assertContains('SALES_REVIEW', $stages);
         $this->assertContains('PRICING_PROCUREMENT', $stages);
         $this->assertContains('CONTRACT_REVIEW', $stages);
         $this->assertContains('CUSTOMER_DECISION', $stages);
-        $this->assertContains('PO_OR_CONTRACT', $stages);
+        $this->assertContains('PROCUREMENT_HANDOFF', $stages);
+    }
+
+
+    public function test_technical_visit_uses_project_team_visit_and_commercial_route(): void
+    {
+        $request = new ServiceRequest(['request_type' => 'QUOTATION', 'request_subtype' => 'TECHNICAL_VISIT']);
+        $key = $this->registry->keyFor($request);
+        $template = $this->registry->template($key);
+        $stages = array_column($template, 'stage');
+        $roles = array_column($template, 'role');
+
+        $this->assertSame(ServiceRequestWorkflowTemplateRegistry::TECHNICAL_VISIT, $key);
+        $this->assertSame([
+            'SALES_REVIEW','PROJECT_MANAGER_REVIEW','TEAM_AND_SCHEDULE','SITE_VISIT',
+            'TECHNICAL_REPORT','PRICING','CONTRACT_REVIEW','CUSTOMER_DECISION','COMPLETED',
+        ], $stages);
+        $this->assertSame([
+            'SALES','PROJECT_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN',
+            'MAINTENANCE_ENGINEER','SALES','TENDERS_CONTRACTS','CUSTOMER','SALES',
+        ], $roles);
     }
 
     public function test_maintenance_contract_quotation_has_operations_finance_and_executive_approval(): void
