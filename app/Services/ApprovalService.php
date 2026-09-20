@@ -15,6 +15,7 @@ class ApprovalService
         private ServiceRequestWorkflowService $workflow,
         private AuthorizationService $authorization,
         private ScopeService $scopes,
+        private ApprovalAuthorityService $authorities,
     ) {}
 
     public function request(Model $entity,string $action): ApprovalRequest
@@ -49,6 +50,7 @@ class ApprovalService
             if(!$visible) throw ValidationException::withMessages(['approval'=>'This approval is outside your access scope.']);
 
             $this->assertProjectAssignment($user,$serviceRequest,(string)$request->approval_role);
+            $this->authorities->assertAllows($user,$request,$serviceRequest);
 
             if(strtoupper((string)$request->approval_role)==='TECHNICIAN' && $serviceRequest->assigned_engineer_id){
                 if((int)$serviceRequest->assigned_engineer_id!==(int)$user->id){
