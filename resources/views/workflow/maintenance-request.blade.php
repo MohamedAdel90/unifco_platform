@@ -31,12 +31,21 @@
 <textarea name="notes" rows="3" placeholder="Triage / dispatch notes"></textarea><button>Complete & Route</button></form>
 @elseif($serviceRequest->workflow_stage==='PROJECT_MANAGER_REVIEW')
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.project-review',$serviceRequest) }}">@csrf<select name="decision" required><option value="APPROVE">Approve</option><option value="RETURN">Return for review</option></select><textarea name="notes" rows="3" placeholder="Project review notes"></textarea><button>Record Project Review</button></form>
+@elseif(in_array($serviceRequest->workflow_stage,['MAINTENANCE_MANAGER_REVIEW','TECHNICAL_ASSESSMENT','TECHNICAL_REVIEW']))
+<form class="wf-form" method="post" action="{{ route('service-requests.workflow.stage-review',$serviceRequest) }}">@csrf
+<select name="decision" required>
+<option value="APPROVE">Approve & Continue</option>
+<option value="RETURN">Return for revision</option>
+</select>
+<textarea name="notes" rows="4" placeholder="Technical review notes, findings, risks, recommendations"></textarea>
+<button>Record Review</button>
+</form>
 @elseif($serviceRequest->workflow_stage==='TECHNICIAN_ASSIGNMENT')
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.assign-technician',$serviceRequest) }}">@csrf<select name="technician_id" required><option value="">Select technician</option>@foreach($technicians as $tech)<option value="{{ $tech->id }}">{{ $tech->name }} · {{ $tech->role }}</option>@endforeach</select><textarea name="notes" rows="2" placeholder="Assignment notes"></textarea><button>Assign & Start Execution</button></form>
 @elseif($serviceRequest->workflow_stage==='EXECUTION')
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.complete-execution',$serviceRequest) }}">@csrf<textarea name="completion_notes" rows="5" required placeholder="Work performed, readings, findings and completion notes"></textarea><button>Complete Technical Execution</button></form>
-@elseif(in_array($serviceRequest->workflow_stage,['QUALITY_VERIFICATION','HSE_VERIFICATION']))
-<form class="wf-form" method="post" action="{{ route('service-requests.workflow.verify',$serviceRequest) }}">@csrf<select name="decision" required><option value="APPROVE">Approve</option><option value="REWORK">Return for rework</option></select><textarea name="notes" rows="3" placeholder="Verification notes"></textarea><button>Record Verification</button></form>
+@elseif(in_array($serviceRequest->workflow_stage,['QUALITY_VERIFICATION','HSE_CLEARANCE']))
+<form class="wf-form" method="post" action="{{ route('service-requests.workflow.verify',$serviceRequest) }}">@csrf<select name="decision" required><option value="APPROVE">Approve</option><option value="REWORK">Return / Require corrective action</option></select><textarea name="notes" rows="3" placeholder="Verification / clearance notes"></textarea><button>Record Verification</button></form>
 @elseif($serviceRequest->workflow_stage==='CLOSURE')
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.close',$serviceRequest) }}">@csrf<textarea name="notes" rows="3" placeholder="Operational closure notes"></textarea><button>Operational Close & Send CSAT</button></form>
 @endif
