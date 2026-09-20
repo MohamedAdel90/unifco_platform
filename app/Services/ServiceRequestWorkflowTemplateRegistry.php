@@ -61,6 +61,8 @@ class ServiceRequestWorkflowTemplateRegistry
             self::MAINTENANCE => [
                 ['stage' => 'TRIAGE', 'role' => 'OPERATIONS_MANAGER', 'department' => 'OPERATIONS'],
                 ['stage' => 'PROJECT_MANAGER_REVIEW', 'role' => 'PROJECT_MANAGER', 'department' => 'OPERATIONS'],
+                ['stage' => 'MAINTENANCE_MANAGER_REVIEW', 'role' => 'MAINTENANCE_MANAGER', 'department' => 'MAINTENANCE'],
+                ['stage' => 'TECHNICAL_ASSESSMENT', 'role' => 'MAINTENANCE_ENGINEER', 'department' => 'MAINTENANCE'],
                 ['stage' => 'TECHNICIAN_ASSIGNMENT', 'role' => 'TECHNICAL_SUPERVISOR', 'department' => 'OPERATIONS'],
                 ['stage' => 'EXECUTION', 'role' => 'TECHNICIAN', 'department' => 'OPERATIONS'],
                 ...($needsQuality ? [['stage' => 'QUALITY_VERIFICATION', 'role' => 'QUALITY', 'department' => 'QUALITY']] : []),
@@ -73,8 +75,10 @@ class ServiceRequestWorkflowTemplateRegistry
             self::EMERGENCY_MAINTENANCE => [
                 ['stage' => 'EMERGENCY_DISPATCH', 'role' => 'OPERATIONS_MANAGER', 'department' => 'OPERATIONS'],
                 ['stage' => 'PROJECT_MANAGER_REVIEW', 'role' => 'PROJECT_MANAGER', 'department' => 'OPERATIONS'],
+                ['stage' => 'MAINTENANCE_MANAGER_REVIEW', 'role' => 'MAINTENANCE_MANAGER', 'department' => 'MAINTENANCE'],
                 ['stage' => 'TECHNICIAN_ASSIGNMENT', 'role' => 'TECHNICAL_SUPERVISOR', 'department' => 'OPERATIONS'],
                 ['stage' => 'EXECUTION', 'role' => 'TECHNICIAN', 'department' => 'OPERATIONS'],
+                ['stage' => 'TECHNICAL_REVIEW', 'role' => 'MAINTENANCE_ENGINEER', 'department' => 'MAINTENANCE'],
                 ...($needsHse ? [['stage' => 'HSE_VERIFICATION', 'role' => 'HSE', 'department' => 'HSE']] : []),
                 ...($needsQuality ? [['stage' => 'QUALITY_VERIFICATION', 'role' => 'QUALITY', 'department' => 'QUALITY']] : []),
                 ['stage' => 'CUSTOMER_ACCEPTANCE', 'role' => 'CUSTOMER', 'department' => 'CUSTOMER'],
