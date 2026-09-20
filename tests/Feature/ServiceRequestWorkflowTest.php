@@ -107,7 +107,7 @@ class ServiceRequestWorkflowTest extends TestCase
             'TRIAGE','PROJECT_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT','EXECUTION','CUSTOMER_ACCEPTANCE','CLOSURE','CSAT',
         ],$steps->pluck('action')->all());
         $this->assertSame([
-            'OPERATIONS_MANAGER','PROJECT_MANAGER','PROJECT_MANAGER','TECHNICIAN','CUSTOMER','OPERATIONS_MANAGER','CUSTOMER',
+            'OPERATIONS_MANAGER','PROJECT_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN','CUSTOMER','OPERATIONS_MANAGER','CUSTOMER',
         ],$steps->pluck('approval_role')->all());
         $this->assertSame('PENDING',$steps->first()->status);
         $this->assertSame(60,(int)$steps->first()->sla_minutes);
@@ -131,7 +131,7 @@ class ServiceRequestWorkflowTest extends TestCase
             'EMERGENCY_DISPATCH','PROJECT_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT','EXECUTION','CUSTOMER_ACCEPTANCE','FINANCE_REVIEW','CLOSURE','CSAT',
         ],$steps->pluck('action')->all());
         $this->assertSame([
-            'OPERATIONS_MANAGER','PROJECT_MANAGER','PROJECT_MANAGER','TECHNICIAN','CUSTOMER','FINANCE','OPERATIONS_MANAGER','CUSTOMER',
+            'OPERATIONS_MANAGER','PROJECT_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN','CUSTOMER','FINANCE_MANAGER','OPERATIONS_MANAGER','CUSTOMER',
         ],$steps->pluck('approval_role')->all());
         $this->assertSame('PENDING',$steps->first()->status);
         $this->assertSame(10,(int)$steps->first()->sla_minutes);
@@ -245,7 +245,7 @@ class ServiceRequestWorkflowTest extends TestCase
             'currency'=>'SAR','amount'=>100,'open_amount'=>100,'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'DRAFT','created_by'=>$c['requester']->id,
         ]);
         $request->update(['workflow_context'=>['invoice_id'=>$invoice->id]]);
-        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'FINANCE_REVIEW','approval_role'=>'FINANCE','step_order'=>1,'status'=>'PENDING','requested_by'=>$c['requester']->id]);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'FINANCE_REVIEW','approval_role'=>'FINANCE_MANAGER','step_order'=>1,'status'=>'PENDING','requested_by'=>$c['requester']->id]);
         ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CLOSURE','approval_role'=>'OPERATIONS_MANAGER','step_order'=>2,'status'=>'WAITING','requested_by'=>$c['requester']->id]);
         ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CSAT','approval_role'=>'CUSTOMER','step_order'=>3,'status'=>'WAITING','requested_by'=>$c['requester']->id]);
         foreach([['AR','Accounts Receivable','ASSET','DEBIT'],['REV','Service Revenue','REVENUE','CREDIT']] as $a) ChartAccount::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'code'=>$a[0],'name'=>$a[1],'type'=>$a[2],'normal_balance'=>$a[3],'posting_allowed'=>true,'status'=>'ACTIVE']);
