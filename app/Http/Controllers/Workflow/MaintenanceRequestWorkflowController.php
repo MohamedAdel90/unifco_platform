@@ -159,6 +159,40 @@ class MaintenanceRequestWorkflowController extends Controller
         return back()->with('status', 'Project Manager review recorded.');
     }
 
+    public function stageReview(Request $request, ServiceRequest $serviceRequest, MaintenanceRequestTransitionService $transitions): RedirectResponse
+    {
+        $data=$request->validate([
+            'decision'=>['required','in:APPROVE,RETURN,REWORK'],
+            'notes'=>['nullable','string','max:3000'],
+        ]);
+        $stage=(string)$serviceRequest->workflow_stage;
+        $allowed=[
+            'MAINTENANCE_MANAGER_REVIEW',
+            'TECHNICAL_ASSESSMENT',
+            'TECHNICAL_REVIEW',
+        ];
+        abort_unless(in_array($stage,$allowed,true),422,'This stage is not handled by technical review.');
+
+        if($data['decision']==='APPROVE'){
+            $transitions->complete($request->user(),$serviceRequest,[$stage],$data['notes']??null);
+        } else {
+            $target=match($stage){
+                'MAINTENANCE_MANAGER_REVIEW'=>'PROJECT_MANAGER_REVIEW',
+                'TECHNICAL_ASSESSMENT'=>'MAINTENANCE_MANAGER_REVIEW',
+                'TECHNICAL_REVIEW'=>'EXECUTION',
+            };
+            $transitions->returnToStage(
+                $request->user(),
+                $serviceRequest,
+                [$stage],
+                $target,
+                $data['notes']??'Returned for additional work.'
+            );
+        }
+
+        return back()->with('status','Technical workflow review recorded.');
+    }
+
     public function assignTechnician(Request $request, ServiceRequest $serviceRequest, MaintenanceRequestTransitionService $transitions): RedirectResponse
     {
         $data = $request->validate(['technician_id' => ['required','integer'],'notes' => ['nullable','string','max:2000']]);
@@ -177,10 +211,20 @@ class MaintenanceRequestWorkflowController extends Controller
     {
         $data = $request->validate(['decision' => ['required','in:APPROVE,REWORK'],'notes' => ['nullable','string','max:2000']]);
         $stage = $serviceRequest->workflow_stage;
-        abort_unless(in_array($stage, ['QUALITY_VERIFICATION','HSE_VERIFICATION'], true), 422);
-        if ($data['decision'] === 'REWORK') $transitions->rework($request->user(), $serviceRequest, $stage, $data['notes'] ?? null);
-        else $transitions->complete($request->user(), $serviceRequest, [$stage], $data['notes'] ?? null);
-        return back()->with('status', 'Verification decision recorded.');
+        abort_unless(in_array($stage, ['QUALITY_VERIFICATION','HSE_CLEARANCE'], true), 422);
+        if ($data['decision'] === 'REWORK') {
+            if($stage==='HSE_CLEARANCE'){
+                $target=$serviceRequest->workflow_key==='EMERGENCY_MAINTENANCE'
+                    ? 'MAINTENANCE_MANAGER_REVIEW'
+                    : 'TECHNICAL_ASSESSMENT';
+                $transitions->returnToStage($request->user(),$serviceRequest,[$stage],$target,$data['notes']??'HSE changes required before execution.');
+            } else {
+                $transitions->rework($request->user(), $serviceRequest, $stage, $data['notes'] ?? null);
+            }
+        } else {
+            $transitions->complete($request->user(), $serviceRequest, [$stage], $data['notes'] ?? null);
+        }
+        return back()->with('status', $stage==='HSE_CLEARANCE'?'HSE clearance decision recorded.':'Quality verification decision recorded.');
     }
 
     public function close(Request $request, ServiceRequest $serviceRequest, MaintenanceRequestTransitionService $transitions): RedirectResponse
