@@ -38,6 +38,7 @@
                     <td><span class="status-pill {{ strtoupper($p->status) }}">{{ $p->status }}</span></td>
                     <td><div class="row-actions">
                         <a class="btn secondary" href="{{ route('projects.projects.edit',$p) }}">تعديل</a>
+                        <a class="btn secondary" href="{{ route('projects.projects.team',$p) }}">الفريق والصلاحيات</a>
                         @if($p->status==='DRAFT')<form method="POST" action="{{ route('projects.projects.activate',$p) }}">@csrf<button class="btn activate-btn" type="submit">تفعيل</button></form>@endif
                     </div></td>
                 </tr>
