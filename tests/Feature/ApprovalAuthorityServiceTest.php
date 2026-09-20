@@ -129,4 +129,40 @@ class ApprovalAuthorityServiceTest extends TestCase
         );
     }
 
+
+    public function test_user_specific_authority_does_not_grant_same_role_colleague(): void
+    {
+        $tenant=Tenant::create(['name'=>'User Authority','code'=>'AUTH-USER','status'=>'ACTIVE']);
+        $role=Role::query()->firstOrCreate(
+            ['tenant_id'=>$tenant->id,'code'=>'FINANCE_MANAGER'],
+            ['name_en'=>'Finance Manager','is_active'=>true,'grants_business_authority'=>true]
+        );
+        $allowed=User::create([
+            'tenant_id'=>$tenant->id,'name'=>'Allowed Finance','email'=>'allowed-finance@example.test',
+            'password'=>'password','role'=>'FINANCE_MANAGER','status'=>'ACTIVE','user_type'=>'INTERNAL',
+        ]);
+        $other=User::create([
+            'tenant_id'=>$tenant->id,'name'=>'Other Finance','email'=>'other-finance@example.test',
+            'password'=>'password','role'=>'FINANCE_MANAGER','status'=>'ACTIVE','user_type'=>'INTERNAL',
+        ]);
+        foreach([$allowed,$other] as $user){
+            DB::table('user_roles')->insert([
+                'tenant_id'=>$tenant->id,'user_id'=>$user->id,'role_id'=>$role->id,'is_primary'=>true,
+                'granted_at'=>now(),'created_at'=>now(),'updated_at'=>now(),
+            ]);
+        }
+
+        ApprovalAuthority::create([
+            'tenant_id'=>$tenant->id,'approval_type'=>'PAYMENT_APPROVAL','role_id'=>$role->id,
+            'user_id'=>$allowed->id,'level'=>1,'amount_from'=>0,'amount_to'=>5000,
+            'amount_limit'=>5000,'is_active'=>true,
+        ]);
+
+        app(ApprovalAuthorityService::class)->assertTransaction($allowed,'PAYMENT_APPROVAL',1000);
+        $this->assertTrue(true);
+
+        $this->expectException(ValidationException::class);
+        app(ApprovalAuthorityService::class)->assertTransaction($other,'PAYMENT_APPROVAL',1000);
+    }
+
 }
