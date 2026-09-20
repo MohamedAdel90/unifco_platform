@@ -18,7 +18,10 @@
 @if($canAct)
 <div style="margin-top:16px">
 @if(in_array($serviceRequest->workflow_stage,['TRIAGE','EMERGENCY_DISPATCH']))
-<form class="wf-form" method="post" action="{{ route('service-requests.workflow.triage',$serviceRequest) }}">@csrf<textarea name="notes" rows="3" placeholder="Triage / dispatch notes"></textarea><button>Complete & Route</button></form>
+<form class="wf-form" method="post" action="{{ route('service-requests.workflow.triage',$serviceRequest) }}">@csrf
+<label><span class="muted">Responsible Project</span><select name="project_id"><option value="">Unassigned / no project</option>@foreach($projectOptions as $project)<option value="{{ $project->id }}" @selected((int)old('project_id',$serviceRequest->project_id)===(int)$project->id)>{{ $project->project_no }} · {{ $project->name }}</option>@endforeach</select></label>
+@if($projectOptions->count()>1 && !$serviceRequest->project_id)<div class="muted" style="color:#a72c36">Select the responsible project before routing. Requests are never sent to a Project Manager from another project.</div>@endif
+<textarea name="notes" rows="3" placeholder="Triage / dispatch notes"></textarea><button>Complete & Route</button></form>
 @elseif($serviceRequest->workflow_stage==='PROJECT_MANAGER_REVIEW')
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.project-review',$serviceRequest) }}">@csrf<select name="decision" required><option value="APPROVE">Approve</option><option value="RETURN">Return for review</option></select><textarea name="notes" rows="3" placeholder="Project review notes"></textarea><button>Record Project Review</button></form>
 @elseif($serviceRequest->workflow_stage==='TECHNICIAN_ASSIGNMENT')
