@@ -114,7 +114,7 @@ class ServiceRequestWorkflowTemplateRegistry
             self::TECHNICAL_VISIT => [
                 ['stage' => 'SALES_REVIEW', 'role' => 'SALES', 'department' => 'SALES'],
                 ['stage' => 'PROJECT_MANAGER_REVIEW', 'role' => 'PROJECT_MANAGER', 'department' => 'OPERATIONS'],
-                ['stage' => 'TEAM_AND_SCHEDULE', 'role' => 'TECHNICAL_SUPERVISOR', 'department' => 'OPERATIONS'],
+                ['stage' => 'TECHNICIAN_ASSIGNMENT', 'role' => 'TECHNICAL_SUPERVISOR', 'department' => 'OPERATIONS'],
                 ['stage' => 'SITE_VISIT', 'role' => 'TECHNICIAN', 'department' => 'OPERATIONS'],
                 ['stage' => 'TECHNICAL_REPORT', 'role' => 'MAINTENANCE_ENGINEER', 'department' => 'OPERATIONS'],
                 ['stage' => 'PRICING', 'role' => 'SALES', 'department' => 'SALES'],
@@ -125,7 +125,7 @@ class ServiceRequestWorkflowTemplateRegistry
             self::TECHNICAL_CONSULTATION => [
                 ['stage' => 'OPERATIONS_REVIEW', 'role' => 'OPERATIONS_MANAGER', 'department' => 'OPERATIONS'],
                 ['stage' => 'PROJECT_MANAGER_REVIEW', 'role' => 'PROJECT_MANAGER', 'department' => 'OPERATIONS'],
-                ['stage' => 'TEAM_AND_SCHEDULE', 'role' => 'TECHNICAL_SUPERVISOR', 'department' => 'OPERATIONS'],
+                ['stage' => 'TECHNICIAN_ASSIGNMENT', 'role' => 'TECHNICAL_SUPERVISOR', 'department' => 'OPERATIONS'],
                 ['stage' => 'SITE_VISIT', 'role' => 'TECHNICIAN', 'department' => 'OPERATIONS'],
                 ['stage' => 'TECHNICAL_REPORT', 'role' => 'MAINTENANCE_ENGINEER', 'department' => 'OPERATIONS'],
                 ['stage' => 'CUSTOMER_DELIVERY', 'role' => 'CUSTOMER', 'department' => 'CUSTOMER'],
