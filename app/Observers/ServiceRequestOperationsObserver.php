@@ -14,7 +14,7 @@ class ServiceRequestOperationsObserver
 
     public function updated(ServiceRequest $request): void
     {
-        if ($request->wasChanged(['asset_id','operational_domain_id','customer_id','customer_site_id','service_contract_id'])) {
+        if ($request->wasChanged(['asset_id','operational_domain_id','customer_id','customer_site_id','service_contract_id','project_id'])) {
             app(OperationsRoutingService::class)->assign($request);
         }
     }
