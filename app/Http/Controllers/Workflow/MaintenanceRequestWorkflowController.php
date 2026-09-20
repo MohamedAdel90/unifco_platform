@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Workflow;
 
 use App\Http\Controllers\Controller;
 use App\Models\{ApprovalRequest,Project,ProjectUserAssignment,ServiceRequest,User};
-use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,ScopeService};
+use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,RequestStageOwnerService,ScopeService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\View\View;
 
 class MaintenanceRequestWorkflowController extends Controller
 {
-    public function show(Request $request, ServiceRequest $serviceRequest, AuthorizationService $authorization, ScopeService $scopes): View
+    public function show(Request $request, ServiceRequest $serviceRequest, AuthorizationService $authorization, ScopeService $scopes, RequestStageOwnerService $owners): View
     {
         $user = $request->user();
         abort_unless((int) $serviceRequest->tenant_id === (int) $user->tenant_id, 404);
@@ -55,7 +55,47 @@ class MaintenanceRequestWorkflowController extends Controller
             ->when($serviceRequest->customer_id,fn($q)=>$q->where('customer_id',$serviceRequest->customer_id))
             ->orderBy('project_no')->get(['id','project_no','name','customer_id']);
 
-        return view('workflow.maintenance-request', compact('serviceRequest','step','canAct','technicians','projectOptions'));
+        $canAssignOwner = $step
+            && $step->routing_status === 'NEEDS_ASSIGNMENT'
+            && $authorization->allows($user,'service_requests.assign',$serviceRequest);
+        $ownerCandidates = $canAssignOwner
+            ? $owners->candidates($serviceRequest,(string)$step->approval_role)
+            : collect();
+
+        return view('workflow.maintenance-request', compact('serviceRequest','step','canAct','technicians','projectOptions','canAssignOwner','ownerCandidates'));
+    }
+
+    public function assignStageOwner(Request $request, ServiceRequest $serviceRequest, AuthorizationService $authorization, ScopeService $scopes, RequestStageOwnerService $owners): RedirectResponse
+    {
+        $user=$request->user();
+        abort_unless((int)$serviceRequest->tenant_id===(int)$user->tenant_id,404);
+        $authorization->authorize($user,'service_requests.assign',$serviceRequest);
+
+        $visible=$scopes->apply(
+            ServiceRequest::query()->where('tenant_id',$user->tenant_id)->whereKey($serviceRequest->id),
+            $user
+        )->exists();
+        abort_unless($visible,403,'Request is outside your access scope.');
+
+        $step=ApprovalRequest::query()
+            ->where('tenant_id',$serviceRequest->tenant_id)
+            ->where('entity_type',ServiceRequest::class)
+            ->where('entity_id',$serviceRequest->id)
+            ->where('action',$serviceRequest->workflow_stage)
+            ->where('status','PENDING')
+            ->firstOrFail();
+
+        $data=$request->validate(['owner_user_id'=>['required','integer']]);
+        $candidate=$owners->candidates($serviceRequest,(string)$step->approval_role)
+            ->firstWhere('id',(int)$data['owner_user_id']);
+        abort_unless($candidate,422,'Selected user is not eligible for this project, role, or workflow stage.');
+
+        $step->update([
+            'assigned_user_id'=>$candidate->id,
+            'routing_status'=>'ASSIGNED',
+        ]);
+
+        return back()->with('status','Workflow stage owner assigned to '.$candidate->name.'.');
     }
 
     public function triage(Request $request, ServiceRequest $serviceRequest, MaintenanceRequestTransitionService $transitions): RedirectResponse
