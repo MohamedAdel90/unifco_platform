@@ -22,6 +22,12 @@ class ApprovalController extends Controller
         $base=ApprovalRequest::query()
             ->where('tenant_id',$user->tenant_id)
             ->whereIn('approval_role',$roles)
+            ->where(function($q) use($user){
+                $q->where('assigned_user_id',$user->id)
+                  ->orWhere(function($roleQueue){
+                      $roleQueue->whereNull('assigned_user_id')->where('routing_status','ROLE_QUEUE');
+                  });
+            })
             ->where(function($q) use($serviceRequestIds){
                 $q->where('entity_type','!=',ServiceRequest::class)
                   ->orWhere(function($service) use($serviceRequestIds){
