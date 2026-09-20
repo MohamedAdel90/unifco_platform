@@ -61,6 +61,32 @@ class RequestStageOwnerService
         return ['user_id'=>null,'status'=>'ROLE_QUEUE'];
     }
 
+    public function candidates(ServiceRequest $request,string $role)
+    {
+        $role=strtoupper($role);
+        $query=User::query()
+            ->where('tenant_id',$request->tenant_id)
+            ->whereIn('status',['ACTIVE','ENABLED'])
+            ->where(function($q) use($role){
+                $q->where('role',$role)
+                  ->orWhereHas('activeRoles',fn($r)=>$r->where('roles.code',$role));
+            });
+
+        if($request->project_id && in_array($role,self::PROJECT_BOUND,true)){
+            $ids=ProjectUserAssignment::query()
+                ->where('tenant_id',$request->tenant_id)
+                ->where('project_id',$request->project_id)
+                ->where('project_role',$role)
+                ->where('status','ACTIVE')
+                ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
+                ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
+                ->pluck('user_id');
+            $query->whereIn('id',$ids);
+        }
+
+        return $query->orderBy('name')->get(['id','name','email','role']);
+    }
+
     public function refresh(ServiceRequest $request): void
     {
         $steps=\App\Models\ApprovalRequest::query()
