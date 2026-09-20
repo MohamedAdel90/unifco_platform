@@ -37,6 +37,16 @@ class ProductionRequestLifecycleSmoke extends Command
                     throw new \RuntimeException('Unable to resolve production customer safely.');
                 }
             }
+            $this->info("Customer ID: {$customer->id}");
+            $this->line("Customer Code: ".($customer->customer_code ?? '—'));
+            $this->line("Name: ".($customer->name ?? '—'));
+            $this->line("Email: ".($customer->email ?? '—'));
+            $this->line("Phone: ".($customer->phone ?? '—'));
+            $this->line("City: ".($customer->city ?? '—'));
+            $this->line("Status: ".($customer->status ?? '—'));
+            $this->line("Contact: ".($customer->contact_name ?? '—'));
+            $this->line("Commercial Registration: ".($customer->commercial_registration ?? '—'));
+
             $asset=Asset::withoutGlobalScopes()->where('customer_id',$customer->id)->orderBy('id')->firstOrFail();
             $contract=ServiceContract::withoutGlobalScopes()->where('customer_id',$customer->id)->where('status','ACTIVE')->orderBy('id')->first();
 
