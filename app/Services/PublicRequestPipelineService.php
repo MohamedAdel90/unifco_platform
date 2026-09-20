@@ -138,14 +138,20 @@ class PublicRequestPipelineService
             return $public->fresh();
         }
 
+        $assetCriticality=$serviceRequest->asset_id
+            ? strtoupper((string)(Asset::whereKey($serviceRequest->asset_id)->value('criticality')??''))
+            : '';
+        $emergency=strtoupper((string)$serviceRequest->priority)==='EMERGENCY';
+        $highCriticality=in_array($assetCriticality,['HIGH','CRITICAL'],true);
+
         $workflowContext=[
                 'estimated_value'=>0,
                 'margin_pct'=>null,
                 'payment_terms_days'=>0,
-                'risk_level'=>'NORMAL',
+                'risk_level'=>($emergency||$highCriticality)?'HIGH':'NORMAL',
                 'procurement_required'=>in_array($serviceRequest->request_subtype,['SPARE_PARTS_QUOTE','SPARE_PARTS'],true),
-                'quality_required'=>false,
-                'hse_required'=>false,
+                'quality_required'=>$emergency||$highCriticality,
+                'hse_required'=>$emergency||$highCriticality,
                 'has_cost'=>$serviceRequest->eligibility==='CHARGEABLE',
                 'chargeable'=>$serviceRequest->eligibility==='CHARGEABLE',
                 'administrative_approval_required'=>true,
