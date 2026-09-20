@@ -75,6 +75,18 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
     private function approveCurrent(ServiceRequest $request): void
     {
         $request->refresh();
+
+        if($request->workflow_stage==='TECHNICIAN_ASSIGNMENT'){
+            $this->actingAs($this->actors['TECHNICAL_SUPERVISOR']);
+            app(MaintenanceRequestTransitionService::class)->assignTechnician(
+                $this->actors['TECHNICAL_SUPERVISOR'],
+                $request,
+                $this->actors['TECHNICIAN']->id,
+                'E2E technician assignment completed.'
+            );
+            return;
+        }
+
         $approval=ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$request->id)
             ->where('action',$request->workflow_stage)->where('status','PENDING')->firstOrFail();
         $actor=$this->actors[$approval->approval_role]??null;
