@@ -30,11 +30,12 @@
 <form class="card form-grid" method="POST" action="{{ route('finance.core.documents.store') }}">@csrf
 <label>No<input name="document_no" required></label><label>Type<select name="document_type"><option>AP_INVOICE</option><option>AR_INVOICE</option></select></label>
 <label>Counterparty<input name="counterparty_name" required></label><label>Date<input type="date" name="document_date" required></label><label>Due<input type="date" name="due_date"></label>
-<label>Currency<input name="currency" value="USD" maxlength="3" required></label><label>Amount<input type="number" step="0.01" min="0.01" name="amount" required></label>
+<label>Currency<input name="currency" value="SAR" maxlength="3" required></label><label>Amount<input type="number" step="0.01" min="0.01" name="amount" required></label>
+<label>Project<select name="project_id"><option value="">No project / corporate</option>@foreach($projects as $project)<option value="{{ $project->id }}">{{ $project->project_no }} — {{ $project->name }}</option>@endforeach</select></label>
 <label>Control Account<input name="control_account_code" placeholder="AP or AR" required></label><label>Offset Account<input name="offset_account_code" placeholder="EXPENSE or REVENUE" required></label><div><button class="btn">Create Document</button></div>
 </form>
-<table class="table"><thead><tr><th>No</th><th>Type</th><th>Counterparty</th><th>Amount</th><th>Open</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-@foreach($documents as $d)<tr><td>{{ $d->document_no }}</td><td>{{ $d->document_type }}</td><td>{{ $d->counterparty_name }}</td><td>{{ $d->currency }} {{ number_format($d->amount,2) }}</td><td>{{ number_format($d->open_amount,2) }}</td><td>{{ $d->status }}</td><td>
+<table class="table"><thead><tr><th>No</th><th>Project</th><th>Type</th><th>Counterparty</th><th>Amount</th><th>Open</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+@foreach($documents as $d)<tr><td>{{ $d->document_no }}</td><td>{{ $d->project?->project_no ?: '—' }}</td><td>{{ $d->document_type }}</td><td>{{ $d->counterparty_name }}</td><td>{{ $d->currency }} {{ number_format($d->amount,2) }}</td><td>{{ number_format($d->open_amount,2) }}</td><td>{{ $d->status }}</td><td>
 @if($d->status==='DRAFT')<form method="POST" action="{{ route('finance.core.documents.post',$d) }}">@csrf<button>Post</button></form>@endif
 @if(in_array($d->status,['POSTED']) && $d->open_amount>0)<form class="row" method="POST" action="{{ route('finance.core.documents.pay',$d) }}">@csrf<input name="payment_no" placeholder="Payment no" required><input type="date" name="payment_date" required><input type="number" step="0.01" name="amount" max="{{ $d->open_amount }}" required><input name="cash_account_code" placeholder="Cash/Bank acct" required><button>Settle</button></form>@endif
 </td></tr>@endforeach
