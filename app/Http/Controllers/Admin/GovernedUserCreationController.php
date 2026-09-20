@@ -14,7 +14,7 @@ class GovernedUserCreationController extends Controller
 {
     private const STATUSES=['ACTIVE','INACTIVE','SUSPENDED'];
     // One portal login per customer. Department/persona portal roles are retired.
-    private const PORTAL_ROLE_CODES=['CUSTOMER_ADMIN'];
+    private const PORTAL_ROLE_CODES=['CUSTOMER'];
 
     private function authorize(Request $request,string $permission): void
     {
@@ -44,8 +44,8 @@ class GovernedUserCreationController extends Controller
             'managedUser'=>new User(),
             'mode'=>'create',
             'portalMode'=>$portalMode,
-            'selectedRoleCodes'=>$portalMode?['CUSTOMER_ADMIN']:[],
-            'selectedPrimaryRole'=>$portalMode?'CUSTOMER_ADMIN':null,
+            'selectedRoleCodes'=>$portalMode?['CUSTOMER']:[],
+            'selectedPrimaryRole'=>$portalMode?'CUSTOMER':null,
             'selectedScopeIds'=>[],
             'selectedCustomerId'=>$request->integer('customer_id') ?: null,
             'selectedSiteIds'=>[],
@@ -113,7 +113,7 @@ class GovernedUserCreationController extends Controller
         if($employeeId) abort_unless(Employee::where('tenant_id',$tenant)->whereKey($employeeId)->exists(),422);
 
         $displayName=trim((string)($data['name_en']??'')) ?: trim((string)($data['name_ar']??'')) ?: trim((string)($data['name']??''));
-        $portalRole=$isPortal?'CUSTOMER_ADMIN':null;
+        $portalRole=$isPortal?'CUSTOMER':null;
         $password=$data['password']??str()->random(64);
 
         $user=DB::transaction(function() use($request,$audit,$tenant,$data,$roleCodes,$isPortal,$customer,$siteIds,$organizationId,$employeeId,$displayName,$portalRole,$password){
@@ -151,7 +151,7 @@ class GovernedUserCreationController extends Controller
 
     private function portalRole(string $roleCode): string
     {
-        return 'CUSTOMER_ADMIN';
+        return 'CUSTOMER';
     }
 
     private function syncRoles(Request $request,User $user,array $codes): void
