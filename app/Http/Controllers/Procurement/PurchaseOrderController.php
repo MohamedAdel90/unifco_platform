@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Procurement;
 
 use App\Http\Controllers\Controller;
 use App\Models\PurchaseOrder;
-use App\Services\AuditService;
+use App\Services\{ApprovalAuthorityService,AuditService};
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,10 +17,11 @@ class PurchaseOrderController extends Controller
 {
     public function index(): View { return view('procurement.purchase-orders.index',['orders'=>PurchaseOrder::latest()->paginate(20)]); }
 
-    public function approve(PurchaseOrder $purchaseOrder, AuditService $audit): RedirectResponse
+    public function approve(PurchaseOrder $purchaseOrder, AuditService $audit, ApprovalAuthorityService $authorities): RedirectResponse
     {
         if ($purchaseOrder->status !== 'DRAFT') throw ValidationException::withMessages(['purchase_order'=>'Only DRAFT purchase orders can be approved.']);
         if ((int)$purchaseOrder->created_by === (int)Auth::id()) throw ValidationException::withMessages(['purchase_order'=>'Segregation of duties: creator cannot approve their own purchase order.']);
+        $authorities->assertTransaction(Auth::user(),'PURCHASE_ORDER_APPROVAL',(float)$purchaseOrder->total);
 
         DB::transaction(function () use ($purchaseOrder,$audit) {
             $before=$purchaseOrder->toArray();
