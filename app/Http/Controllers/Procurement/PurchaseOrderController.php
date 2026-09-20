@@ -21,7 +21,7 @@ class PurchaseOrderController extends Controller
     {
         if ($purchaseOrder->status !== 'DRAFT') throw ValidationException::withMessages(['purchase_order'=>'Only DRAFT purchase orders can be approved.']);
         if ((int)$purchaseOrder->created_by === (int)Auth::id()) throw ValidationException::withMessages(['purchase_order'=>'Segregation of duties: creator cannot approve their own purchase order.']);
-        $authorities->assertTransaction(Auth::user(),'PURCHASE_ORDER_APPROVAL',(float)$purchaseOrder->total);
+        $authorities->assertTransaction(Auth::user(),'PURCHASE_ORDER_APPROVAL',(float)$purchaseOrder->total,['project_id'=>$purchaseOrder->project_id]);
 
         DB::transaction(function () use ($purchaseOrder,$audit) {
             $before=$purchaseOrder->toArray();
