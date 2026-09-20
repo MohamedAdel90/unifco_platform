@@ -13,6 +13,8 @@ class ServiceRequestWorkflowService
         'SALES_REVIEW' => 120,
         'OPERATIONS_REVIEW' => 120,
         'PROJECT_MANAGER_REVIEW' => 120,
+        'MAINTENANCE_MANAGER_REVIEW' => 120,
+        'TECHNICAL_ASSESSMENT' => 180,
         'TECHNICIAN_ASSIGNMENT' => 60,
         'EXECUTION' => 1440,
         'TECHNICAL_REVIEW' => 120,
