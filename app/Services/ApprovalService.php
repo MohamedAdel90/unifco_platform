@@ -34,6 +34,12 @@ class ApprovalService
         if($request->approval_role && !$roles->contains(strtoupper((string)$request->approval_role))){
             throw ValidationException::withMessages(['approval'=>'This approval belongs to '.$request->approval_role.'.']);
         }
+        if($request->assigned_user_id && (int)$request->assigned_user_id!==(int)$user->id){
+            throw ValidationException::withMessages(['approval'=>'This workflow stage is assigned to another user.']);
+        }
+        if($request->routing_status==='NEEDS_ASSIGNMENT'){
+            throw ValidationException::withMessages(['approval'=>'This workflow stage has no resolved owner yet. Assign the responsible user before continuing.']);
+        }
 
         if($request->entity_type===ServiceRequest::class){
             $serviceRequest=ServiceRequest::where('tenant_id',$user->tenant_id)->find($request->entity_id);
