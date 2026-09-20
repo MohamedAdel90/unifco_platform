@@ -64,10 +64,30 @@ class AccessControlController extends Controller
     public function authority(Request $request,AuditService $audit): RedirectResponse
     {
         $tenant=$request->user()->tenant_id;
-        $data=$request->validate(['approval_type'=>['required','string','max:100'],'role_id'=>['required','integer'],'level'=>['required','integer','min:1'],'access_scope_id'=>['nullable','integer'],'amount_limit'=>['nullable','numeric','min:0'],'reason'=>['required','string','max:500']]);
+        $data=$request->validate([
+            'approval_type'=>['required','string','max:100'],
+            'role_id'=>['required','integer'],
+            'level'=>['required','integer','min:1'],
+            'access_scope_id'=>['nullable','integer'],
+            'amount_from'=>['nullable','numeric','min:0'],
+            'amount_to'=>['nullable','numeric','min:0','gte:amount_from'],
+            'amount_limit'=>['nullable','numeric','min:0'],
+            'reason'=>['required','string','max:500'],
+        ]);
         $role=Role::whereKey($data['role_id'])->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant))->firstOrFail();
         if(isset($data['access_scope_id'])) AccessScope::where('tenant_id',$tenant)->findOrFail($data['access_scope_id']);
-        $authority=ApprovalAuthority::create(['tenant_id'=>$tenant,'approval_type'=>$data['approval_type'],'role_id'=>$role->id,'level'=>$data['level'],'access_scope_id'=>$data['access_scope_id']??null,'amount_limit'=>$data['amount_limit']??null,'is_active'=>true,'configured_by'=>$request->user()->id]);
+        $authority=ApprovalAuthority::create([
+            'tenant_id'=>$tenant,
+            'approval_type'=>strtoupper($data['approval_type']),
+            'role_id'=>$role->id,
+            'level'=>$data['level'],
+            'access_scope_id'=>$data['access_scope_id']??null,
+            'amount_from'=>$data['amount_from']??null,
+            'amount_to'=>$data['amount_to']??($data['amount_limit']??null),
+            'amount_limit'=>$data['amount_limit']??($data['amount_to']??null),
+            'is_active'=>true,
+            'configured_by'=>$request->user()->id,
+        ]);
         $audit->record('security.approval_authority.created',$authority,[],$authority->toArray(),reason:$data['reason']);
         return back()->with('status','Approval authority configured. The administrator does not inherit it.');
     }
