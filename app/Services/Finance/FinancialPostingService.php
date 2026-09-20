@@ -3,13 +3,13 @@
 namespace App\Services\Finance;
 
 use App\Models\{ChartAccount,FinancialDocument,FiscalPeriod,Journal,Payment,ServiceRequest};
-use App\Services\AuditService;
+use App\Services\{ApprovalAuthorityService,AuditService};
 use Illuminate\Support\Facades\{Auth,DB};
 use Illuminate\Validation\ValidationException;
 
 class FinancialPostingService
 {
-    public function __construct(private AuditService $audit, private \App\Services\ServiceRequestWorkflowService $workflow) {}
+    public function __construct(private AuditService $audit, private \App\Services\ServiceRequestWorkflowService $workflow, private ApprovalAuthorityService $authorities) {}
 
     public function assertOpenPeriod(string $date): void
     {
@@ -28,6 +28,12 @@ class FinancialPostingService
         return DB::transaction(function () use ($document) {
             if ($document->status !== 'DRAFT') throw ValidationException::withMessages(['document'=>'Only DRAFT documents can be posted.']);
             if ((int)$document->created_by === (int)Auth::id()) throw ValidationException::withMessages(['document'=>'Segregation of duties: creator cannot post the same document.']);
+            $this->authorities->assertTransaction(
+                Auth::user(),
+                'FINANCE_DOCUMENT_POST',
+                (float)$document->amount,
+                ['customer_id'=>$document->customer_id]
+            );
             $this->assertOpenPeriod($document->document_date->toDateString());
             $this->assertPostingAccounts([$document->control_account_code,$document->offset_account_code]);
 
@@ -60,6 +66,12 @@ class FinancialPostingService
             if ($document->status !== 'POSTED' || (float)$document->open_amount <= 0) throw ValidationException::withMessages(['document'=>'Only open posted documents can be settled.']);
             $amount=(float)$data['amount'];
             if ($amount <= 0 || $amount > (float)$document->open_amount) throw ValidationException::withMessages(['amount'=>'Payment must be positive and cannot exceed the open amount.']);
+            $this->authorities->assertTransaction(
+                Auth::user(),
+                'PAYMENT_APPROVAL',
+                $amount,
+                ['customer_id'=>$document->customer_id]
+            );
             $this->assertOpenPeriod($data['payment_date']);
             $this->assertPostingAccounts([$document->control_account_code,$data['cash_account_code']]);
 
