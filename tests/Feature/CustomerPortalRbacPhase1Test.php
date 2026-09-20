@@ -18,9 +18,8 @@ class CustomerPortalRbacPhase1Test extends TestCase
         $user=User::where('email','workflow.customer@unifco.local')->firstOrFail();
         $access=app(CustomerPortalAccessService::class);
 
-        // CUSTOMER_ADMIN remains only as a compatibility label. Access is now
-        // customer-account based, not persona/department based.
-        $this->assertSame('CUSTOMER_ADMIN',$access->role($user));
+        // The current phase uses one authoritative CUSTOMER account role.
+        $this->assertSame('CUSTOMER',$access->role($user));
         foreach(['requests','sites','assets','work-orders','maintenance','spare-parts','quotations','contracts','invoices','reports','documents','notifications'] as $section){
             $this->assertTrue($access->canSection($user,$section),$section.' should be visible to the single customer login.');
         }
