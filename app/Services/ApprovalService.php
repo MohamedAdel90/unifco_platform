@@ -43,6 +43,16 @@ class ApprovalService
             if(!$visible) throw ValidationException::withMessages(['approval'=>'This approval is outside your access scope.']);
 
             $this->assertProjectAssignment($user,$serviceRequest,(string)$request->approval_role);
+
+            if(strtoupper((string)$request->approval_role)==='TECHNICIAN' && $serviceRequest->assigned_engineer_id){
+                if((int)$serviceRequest->assigned_engineer_id!==(int)$user->id){
+                    throw ValidationException::withMessages(['approval'=>'Only the technician assigned to this request can perform this stage.']);
+                }
+            }
+
+            if($request->action==='TECHNICIAN_ASSIGNMENT'){
+                throw ValidationException::withMessages(['approval'=>'Technician assignment must be completed from the request execution workspace.']);
+            }
         }
 
         if((int)$request->requested_by===(int)$user->id) throw ValidationException::withMessages(['approval'=>'Segregation of duties: requester cannot decide their own request.']);
