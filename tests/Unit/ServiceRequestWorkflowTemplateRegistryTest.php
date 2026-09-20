@@ -67,7 +67,7 @@ class ServiceRequestWorkflowTemplateRegistryTest extends TestCase
 
         $this->assertSame(ServiceRequestWorkflowTemplateRegistry::TECHNICAL_VISIT, $key);
         $this->assertSame([
-            'SALES_REVIEW','PROJECT_MANAGER_REVIEW','TEAM_AND_SCHEDULE','SITE_VISIT',
+            'SALES_REVIEW','PROJECT_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT','SITE_VISIT',
             'TECHNICAL_REPORT','PRICING','CONTRACT_REVIEW','CUSTOMER_DECISION','COMPLETED',
         ], $stages);
         $this->assertSame([
@@ -93,7 +93,7 @@ class ServiceRequestWorkflowTemplateRegistryTest extends TestCase
         $stages = array_column($this->registry->template($key), 'stage');
 
         $this->assertSame(ServiceRequestWorkflowTemplateRegistry::TECHNICAL_CONSULTATION, $key);
-        $this->assertSame(['OPERATIONS_REVIEW','PROJECT_MANAGER_REVIEW','TEAM_AND_SCHEDULE','SITE_VISIT','TECHNICAL_REPORT','CUSTOMER_DELIVERY','CLOSURE'], $stages);
+        $this->assertSame(['OPERATIONS_REVIEW','PROJECT_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT','SITE_VISIT','TECHNICAL_REPORT','CUSTOMER_DELIVERY','CLOSURE'], $stages);
     }
 
     public function test_conditional_cost_quality_and_hse_stages_are_added_only_when_needed(): void
