@@ -104,10 +104,10 @@ class ServiceRequestWorkflowTest extends TestCase
 
         $steps=ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$request->id)->orderBy('step_order')->get();
         $this->assertSame([
-            'TRIAGE','PROJECT_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT','EXECUTION','CUSTOMER_ACCEPTANCE','CLOSURE','CSAT',
+            'TRIAGE','PROJECT_MANAGER_REVIEW','MAINTENANCE_MANAGER_REVIEW','TECHNICAL_ASSESSMENT','TECHNICIAN_ASSIGNMENT','EXECUTION','CUSTOMER_ACCEPTANCE','CLOSURE','CSAT',
         ],$steps->pluck('action')->all());
         $this->assertSame([
-            'OPERATIONS_MANAGER','PROJECT_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN','CUSTOMER','OPERATIONS_MANAGER','CUSTOMER',
+            'OPERATIONS_MANAGER','PROJECT_MANAGER','MAINTENANCE_MANAGER','MAINTENANCE_ENGINEER','TECHNICAL_SUPERVISOR','TECHNICIAN','CUSTOMER','OPERATIONS_MANAGER','CUSTOMER',
         ],$steps->pluck('approval_role')->all());
         $this->assertSame('PENDING',$steps->first()->status);
         $this->assertSame(60,(int)$steps->first()->sla_minutes);
@@ -128,10 +128,10 @@ class ServiceRequestWorkflowTest extends TestCase
         $steps=ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$request->id)->orderBy('step_order')->get();
         $this->assertSame(10,(int)$request->response_sla_minutes);
         $this->assertSame([
-            'EMERGENCY_DISPATCH','PROJECT_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT','EXECUTION','CUSTOMER_ACCEPTANCE','FINANCE_REVIEW','CLOSURE','CSAT',
+            'EMERGENCY_DISPATCH','PROJECT_MANAGER_REVIEW','MAINTENANCE_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT','EXECUTION','TECHNICAL_REVIEW','CUSTOMER_ACCEPTANCE','FINANCE_REVIEW','CLOSURE','CSAT',
         ],$steps->pluck('action')->all());
         $this->assertSame([
-            'OPERATIONS_MANAGER','PROJECT_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN','CUSTOMER','FINANCE_MANAGER','OPERATIONS_MANAGER','CUSTOMER',
+            'OPERATIONS_MANAGER','PROJECT_MANAGER','MAINTENANCE_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN','MAINTENANCE_ENGINEER','CUSTOMER','FINANCE_MANAGER','OPERATIONS_MANAGER','CUSTOMER',
         ],$steps->pluck('approval_role')->all());
         $this->assertSame('PENDING',$steps->first()->status);
         $this->assertSame(10,(int)$steps->first()->sla_minutes);
