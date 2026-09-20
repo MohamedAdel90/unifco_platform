@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{ApprovalRequest,ServiceRequest,User,WorkOrder};
+use App\Models\{ApprovalRequest,ProjectUserAssignment,ServiceRequest,User,WorkOrder};
 
 class MaintenanceRequestTransitionService
 {
@@ -31,8 +31,25 @@ class MaintenanceRequestTransitionService
             ->where('tenant_id', $actor->tenant_id)
             ->whereKey($technicianId)
             ->whereIn('status', ['ACTIVE','ENABLED'])
-            ->whereIn('role', ['TECHNICIAN','MAINTENANCE_ENGINEER'])
+            ->where(function($q){
+                $q->whereIn('role',['TECHNICIAN','MAINTENANCE_ENGINEER'])
+                  ->orWhereHas('activeRoles',fn($r)=>$r->whereIn('roles.code',['TECHNICIAN','MAINTENANCE_ENGINEER']));
+            })
             ->firstOrFail();
+
+        if($request->project_id){
+            $isProjectMember=ProjectUserAssignment::query()
+                ->where('tenant_id',$actor->tenant_id)
+                ->where('project_id',$request->project_id)
+                ->where('user_id',$technician->id)
+                ->where('status','ACTIVE')
+                ->whereIn('project_role',['TECHNICIAN','MAINTENANCE_ENGINEER'])
+                ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
+                ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
+                ->exists();
+            abort_unless($isProjectMember,422,'The selected technician is not an active technical member of this project.');
+        }
+
         $request->update(['assigned_engineer_id' => $technician->id]);
         $this->workflow->advance($request, 'TECHNICIAN_ASSIGNMENT', $actor->id, $note ?: 'Technician assigned.');
         return $technician;
