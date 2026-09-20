@@ -58,7 +58,10 @@ class ServiceRequestOperationsController extends Controller
         $assignees = User::query()
             ->where('tenant_id', $user->tenant_id)
             ->where('status', 'ACTIVE')
-            ->whereIn('role', ['MAINTENANCE_ENGINEER','TECHNICIAN','SUPERVISOR','MAINTENANCE_MANAGER'])
+            ->where(function($q){
+                $q->whereIn('role', ['MAINTENANCE_ENGINEER','TECHNICIAN','SUPERVISOR','MAINTENANCE_MANAGER'])
+                  ->orWhereHas('activeRoles', fn($r)=>$r->whereIn('roles.code',['MAINTENANCE_ENGINEER','TECHNICIAN','TECHNICAL_SUPERVISOR','MAINTENANCE_MANAGER']));
+            })
             ->orderBy('name')
             ->get(['id','name','role','employee_id']);
 
@@ -79,8 +82,23 @@ class ServiceRequestOperationsController extends Controller
             ->where('tenant_id', $user->tenant_id)
             ->whereKey($data['assigned_engineer_id'])
             ->where('status', 'ACTIVE')
-            ->whereIn('role', ['MAINTENANCE_ENGINEER','TECHNICIAN','SUPERVISOR','MAINTENANCE_MANAGER'])
+            ->where(function($q){
+                $q->whereIn('role', ['MAINTENANCE_ENGINEER','TECHNICIAN','SUPERVISOR','MAINTENANCE_MANAGER'])
+                  ->orWhereHas('activeRoles', fn($r)=>$r->whereIn('roles.code',['MAINTENANCE_ENGINEER','TECHNICIAN','TECHNICAL_SUPERVISOR','MAINTENANCE_MANAGER']));
+            })
             ->firstOrFail();
+
+        if($serviceRequest->project_id){
+            $insideProject=DB::table('project_user_assignments')
+                ->where('tenant_id',$user->tenant_id)
+                ->where('project_id',$serviceRequest->project_id)
+                ->where('user_id',$assignee->id)
+                ->where('status','ACTIVE')
+                ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
+                ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
+                ->exists();
+            abort_unless($insideProject,422,'The selected assignee is not an active member of this project.');
+        }
 
         $before = $serviceRequest->assigned_engineer_id;
         $serviceRequest->update([
