@@ -37,7 +37,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             'currency'=>'SAR','billing_cycle'=>'MONTHLY','status'=>'ACTIVE',
         ]);
 
-        foreach(['ADMIN','OPERATIONS_MANAGER','PROJECT_MANAGER','TECHNICIAN','SALES','MAINTENANCE_ENGINEER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','CEO','CUSTOMER_SERVICE'] as $role){
+        foreach(['ADMIN','OPERATIONS_MANAGER','PROJECT_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN','SALES','MAINTENANCE_ENGINEER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE_MANAGER','CEO','CUSTOMER_SERVICE'] as $role){
             $this->actors[$role]=User::create([
                 'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>$role,'email'=>strtolower($role).'@lifecycle.test',
                 'password'=>'StrongPassword123','role'=>$role,'user_type'=>'INTERNAL','status'=>'ACTIVE',
@@ -90,7 +90,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $this->assertContains($first,['TRIAGE','EMERGENCY_DISPATCH']);
         $transitions->complete($this->actors['OPERATIONS_MANAGER'],$request,[$first],'Initial operations review completed.');
         $transitions->complete($this->actors['PROJECT_MANAGER'],$request->fresh(),['PROJECT_MANAGER_REVIEW'],'Project review completed.');
-        $transitions->assignTechnician($this->actors['PROJECT_MANAGER'],$request->fresh(),$this->actors['TECHNICIAN']->id,'Technician assigned.');
+        $transitions->assignTechnician($this->actors['TECHNICAL_SUPERVISOR'],$request->fresh(),$this->actors['TECHNICIAN']->id,'Technician assigned.');
         $transitions->completeExecution($this->actors['TECHNICIAN'],$request->fresh(),'Repair completed and tested.');
 
         $request->refresh();
