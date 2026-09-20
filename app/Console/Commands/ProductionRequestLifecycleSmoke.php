@@ -17,7 +17,26 @@ class ProductionRequestLifecycleSmoke extends Command
     {
         DB::beginTransaction();
         try {
-            $customer=Customer::withoutGlobalScopes()->findOrFail((int)$this->option('customer'));
+            $customerKey=(string)$this->option('customer');
+            $customer=Customer::withoutGlobalScopes()
+                ->whereKey((int)$customerKey)
+                ->orWhere('customer_code',$customerKey)
+                ->orWhere('customer_code','UN-'.$customerKey)
+                ->first();
+            if(!$customer){
+                $candidates=Customer::withoutGlobalScopes()
+                    ->where('customer_code','like','%'.$customerKey.'%')
+                    ->orWhere('name','like','%'.$customerKey.'%')
+                    ->limit(10)->get(['id','customer_code','name']);
+                if($candidates->count()===1){
+                    $customer=$candidates->first();
+                    $this->warn("Customer key {$customerKey} resolved to ID {$customer->id} / {$customer->customer_code}.");
+                }else{
+                    $this->error("Customer key {$customerKey} did not resolve uniquely.");
+                    foreach($candidates as $candidate) $this->line("Candidate: ID {$candidate->id} | {$candidate->customer_code} | {$candidate->name}");
+                    throw new \RuntimeException('Unable to resolve production customer safely.');
+                }
+            }
             $asset=Asset::withoutGlobalScopes()->where('customer_id',$customer->id)->orderBy('id')->firstOrFail();
             $contract=ServiceContract::withoutGlobalScopes()->where('customer_id',$customer->id)->where('status','ACTIVE')->orderBy('id')->first();
 
