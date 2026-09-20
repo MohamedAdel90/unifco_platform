@@ -38,7 +38,10 @@ class ServiceRequestWorkflowService
         'COMPLETED' => 1,
     ];
 
-    public function __construct(private ServiceRequestWorkflowTemplateRegistry $templates) {}
+    public function __construct(
+        private ServiceRequestWorkflowTemplateRegistry $templates,
+        private RequestStageOwnerService $owners,
+    ) {}
 
     public function start(ServiceRequest $request, array $context = []): Collection
     {
@@ -75,10 +78,11 @@ class ServiceRequestWorkflowService
 
         if (! $requester) return collect();
 
-        return collect($steps)->values()->map(function (array $step, int $index) use ($request, $requester, $context, $workflowKey) {
+        $created = collect($steps)->values()->map(function (array $step, int $index) use ($request, $requester, $context, $workflowKey) {
             $stage = $step['stage'];
             $sla = $this->slaFor($stage);
             $status = $index === 0 ? 'PENDING' : 'WAITING';
+            $owner = $this->owners->resolve($request,(string)$step['role'],$stage);
 
             return ApprovalRequest::firstOrCreate([
                 'tenant_id' => $request->tenant_id,
@@ -90,6 +94,8 @@ class ServiceRequestWorkflowService
                 'requested_by' => $requester->id,
                 'workflow_key' => 'SERVICE_REQUEST_'.$workflowKey,
                 'approval_role' => $step['role'],
+                'assigned_user_id' => $owner['user_id'],
+                'routing_status' => $owner['status'],
                 'step_order' => $index + 1,
                 'sla_minutes' => $sla,
                 'status' => $status,
@@ -97,6 +103,9 @@ class ServiceRequestWorkflowService
                 'metadata' => $context + ['department' => $step['department'], 'stage' => $stage],
             ]);
         });
+
+        $this->owners->refresh($request->fresh());
+        return $created;
     }
 
     public function advance(ServiceRequest $request, string $completedStage, ?int $actorId = null, ?string $note = null): ?ApprovalRequest
@@ -139,8 +148,11 @@ class ServiceRequestWorkflowService
         }
 
         $metadata = (array) ($next->metadata ?? []);
+        $owner = $this->owners->resolve($request->fresh(),(string)$next->approval_role,(string)$next->action);
         $next->update([
             'status' => 'PENDING',
+            'assigned_user_id' => $owner['user_id'],
+            'routing_status' => $owner['status'],
             'due_at' => now()->addMinutes((int) $next->sla_minutes),
             'decided_by' => null,
             'decision_note' => null,
@@ -219,8 +231,11 @@ class ServiceRequestWorkflowService
 
         foreach ($steps as $step) {
             if ((int) $step->step_order < (int) $target->step_order) continue;
+            $owner = $this->owners->resolve($request->fresh(),(string)$step->approval_role,(string)$step->action);
             $step->update([
                 'status' => $step->id === $target->id ? 'PENDING' : 'WAITING',
+                'assigned_user_id' => $owner['user_id'],
+                'routing_status' => $owner['status'],
                 'due_at' => $step->id === $target->id ? now()->addMinutes((int) $step->sla_minutes) : null,
                 'decided_by' => null,
                 'decision_note' => $step->id === $target->id ? $note : null,
