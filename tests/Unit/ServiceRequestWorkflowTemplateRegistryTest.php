@@ -96,6 +96,26 @@ class ServiceRequestWorkflowTemplateRegistryTest extends TestCase
         $this->assertSame(['OPERATIONS_REVIEW','PROJECT_MANAGER_REVIEW','TECHNICIAN_ASSIGNMENT','SITE_VISIT','TECHNICAL_REPORT','CUSTOMER_DELIVERY','CLOSURE'], $stages);
     }
 
+
+    public function test_hse_clearance_precedes_execution_and_quality_follows_execution(): void
+    {
+        $request = new ServiceRequest(['request_type' => 'MAINTENANCE', 'request_subtype' => 'ROUTINE_MAINTENANCE']);
+        $key = $this->registry->keyFor($request);
+        $stages = array_column($this->registry->template($key, [
+            'hse_required' => true,
+            'quality_required' => true,
+        ]), 'stage');
+
+        $this->assertLessThan(
+            array_search('TECHNICIAN_ASSIGNMENT',$stages,true),
+            array_search('HSE_CLEARANCE',$stages,true)
+        );
+        $this->assertLessThan(
+            array_search('QUALITY_VERIFICATION',$stages,true),
+            array_search('EXECUTION',$stages,true)
+        );
+    }
+
     public function test_conditional_cost_quality_and_hse_stages_are_added_only_when_needed(): void
     {
         $request = new ServiceRequest(['request_type' => 'MAINTENANCE', 'request_subtype' => 'ROUTINE_MAINTENANCE']);
