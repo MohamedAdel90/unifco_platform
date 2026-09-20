@@ -89,4 +89,44 @@ class ApprovalAuthorityServiceTest extends TestCase
         app(ApprovalAuthorityService::class)->assertAllows($user,$approval,$request);
         $this->assertTrue(true);
     }
+
+    public function test_direct_transaction_authority_checks_role_amount_and_customer_scope(): void
+    {
+        $tenant=Tenant::create(['name'=>'Direct Authority','code'=>'AUTH-DIRECT','status'=>'ACTIVE']);
+        $customer=Customer::create([
+            'tenant_id'=>$tenant->id,'customer_code'=>'AUTH-DIRECT-C','name'=>'Direct Customer','status'=>'ACTIVE',
+        ]);
+        $role=Role::query()->firstOrCreate(
+            ['tenant_id'=>$tenant->id,'code'=>'FINANCE_MANAGER'],
+            ['name_en'=>'Finance Manager','is_active'=>true,'grants_business_authority'=>true]
+        );
+        $user=User::create([
+            'tenant_id'=>$tenant->id,'name'=>'Direct Finance','email'=>'direct-finance@example.test',
+            'password'=>'password','role'=>'FINANCE_MANAGER','status'=>'ACTIVE','user_type'=>'INTERNAL',
+        ]);
+        DB::table('user_roles')->insert([
+            'tenant_id'=>$tenant->id,'user_id'=>$user->id,'role_id'=>$role->id,'is_primary'=>true,
+            'granted_at'=>now(),'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        $scope=AccessScope::create([
+            'tenant_id'=>$tenant->id,'scope_type'=>'CUSTOMER','scope_id'=>$customer->id,
+            'name'=>'Direct customer scope','is_active'=>true,
+        ]);
+        ApprovalAuthority::create([
+            'tenant_id'=>$tenant->id,'approval_type'=>'FINANCE_DOCUMENT_POST','role_id'=>$role->id,
+            'level'=>1,'access_scope_id'=>$scope->id,'amount_from'=>1000,'amount_to'=>5000,
+            'amount_limit'=>5000,'is_active'=>true,
+        ]);
+
+        app(ApprovalAuthorityService::class)->assertTransaction(
+            $user,'FINANCE_DOCUMENT_POST',2500,['customer_id'=>$customer->id]
+        );
+        $this->assertTrue(true);
+
+        $this->expectException(ValidationException::class);
+        app(ApprovalAuthorityService::class)->assertTransaction(
+            $user,'FINANCE_DOCUMENT_POST',7500,['customer_id'=>$customer->id]
+        );
+    }
+
 }
