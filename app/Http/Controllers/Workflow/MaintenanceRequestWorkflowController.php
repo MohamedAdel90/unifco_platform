@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Workflow;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ApprovalRequest,ProjectUserAssignment,ServiceRequest,User};
+use App\Models\{ApprovalRequest,Project,ProjectUserAssignment,ServiceRequest,User};
 use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,ScopeService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\View\View;
@@ -48,12 +48,61 @@ class MaintenanceRequestWorkflowController extends Controller
             })
             ->when($technicianIds!==null,fn($q)=>$q->whereIn('id',$technicianIds))
             ->orderBy('name')->get(['id','name','role']);
-        return view('workflow.maintenance-request', compact('serviceRequest','step','canAct','technicians'));
+
+        $projectOptions=Project::query()
+            ->where('tenant_id',$user->tenant_id)
+            ->where('status','ACTIVE')
+            ->when($serviceRequest->customer_id,fn($q)=>$q->where('customer_id',$serviceRequest->customer_id))
+            ->orderBy('project_no')->get(['id','project_no','name','customer_id']);
+
+        return view('workflow.maintenance-request', compact('serviceRequest','step','canAct','technicians','projectOptions'));
     }
 
     public function triage(Request $request, ServiceRequest $serviceRequest, MaintenanceRequestTransitionService $transitions): RedirectResponse
     {
-        $data = $request->validate(['notes' => ['nullable','string','max:2000']]);
+        $data = $request->validate([
+            'project_id' => ['nullable','integer'],
+            'notes' => ['nullable','string','max:2000'],
+        ]);
+
+        $candidateProjects=Project::query()
+            ->where('tenant_id',$request->user()->tenant_id)
+            ->where('status','ACTIVE')
+            ->when($serviceRequest->customer_id,fn($q)=>$q->where('customer_id',$serviceRequest->customer_id))
+            ->get(['id']);
+
+        $projectId=$data['project_id'] ?? $serviceRequest->project_id;
+        if(!$projectId && $candidateProjects->count()===1) $projectId=$candidateProjects->first()->id;
+        if(!$projectId && $candidateProjects->count()>1){
+            return back()->withErrors(['project_id'=>'Select the project responsible for this request before routing it.']);
+        }
+
+        if($projectId){
+            $project=Project::query()
+                ->where('tenant_id',$request->user()->tenant_id)
+                ->where('status','ACTIVE')
+                ->when($serviceRequest->customer_id,fn($q)=>$q->where('customer_id',$serviceRequest->customer_id))
+                ->findOrFail($projectId);
+
+            $hasProjectManager=ProjectUserAssignment::query()
+                ->where('tenant_id',$request->user()->tenant_id)
+                ->where('project_id',$project->id)
+                ->where('project_role','PROJECT_MANAGER')
+                ->where('status','ACTIVE')
+                ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
+                ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
+                ->exists();
+
+            if(!$hasProjectManager){
+                return back()->withErrors(['project_id'=>'This project has no active Project Manager assignment. Configure Team & Access before routing the request.']);
+            }
+
+            if((int)$serviceRequest->project_id!==(int)$project->id){
+                $serviceRequest->update(['project_id'=>$project->id]);
+                $serviceRequest->refresh();
+            }
+        }
+
         $transitions->complete($request->user(), $serviceRequest, ['TRIAGE','EMERGENCY_DISPATCH'], $data['notes'] ?? null);
         return back()->with('status', 'Request routed to the next workflow stage.');
     }
