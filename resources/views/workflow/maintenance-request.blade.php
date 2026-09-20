@@ -14,7 +14,14 @@
 <div class="wf-card"><span class="muted">SLA Due</span><b style="font-size:14px">{{ optional($serviceRequest->current_stage_due_at)->format('Y-m-d H:i') ?: '-' }}</b></div>
 </section>
 <section class="wf-card">
-<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><div class="muted">Required Role</div><strong>{{ $step?->approval_role ?: '—' }}</strong></div><span class="pill">{{ $canAct ? 'ACTION AVAILABLE' : 'READ ONLY' }}</span></div>
+<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><div class="muted">Required Role</div><strong>{{ $step?->approval_role ?: '—' }}</strong><div class="muted" style="margin-top:4px">Routing: {{ $step?->routing_status ?: '—' }}@if($step?->assigned_user_id) · User #{{ $step->assigned_user_id }}@endif</div></div><span class="pill">{{ $canAct ? 'ACTION AVAILABLE' : ($canAssignOwner ? 'OWNER REQUIRED' : 'READ ONLY') }}</span></div>
+@if($canAssignOwner)
+<form class="wf-form" method="post" action="{{ route('service-requests.workflow.assign-stage-owner',$serviceRequest) }}" style="margin-top:16px;padding:14px;border:1px solid #f0c7cc;border-radius:10px;background:#fff7f8">@csrf
+<div><strong style="color:#a72c36">Responsible user must be selected</strong><div class="muted">Only eligible active users with the required role inside this project are listed.</div></div>
+<select name="owner_user_id" required><option value="">Select responsible user</option>@foreach($ownerCandidates as $candidate)<option value="{{ $candidate->id }}">{{ $candidate->name }} · {{ $candidate->email }}</option>@endforeach</select>
+<button class="alt" type="submit">Assign Stage Owner</button>
+</form>
+@endif
 @if($canAct)
 <div style="margin-top:16px">
 @if(in_array($serviceRequest->workflow_stage,['TRIAGE','EMERGENCY_DISPATCH']))
