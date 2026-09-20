@@ -13,10 +13,9 @@ class CustomerPortalAccessService
      * UNIFCO issues one portal login per customer. The login represents the
      * customer account itself, not a department/persona inside the customer.
      * The same user therefore sees technical, operational, commercial and
-     * financial customer data. CUSTOMER_ADMIN is retained only as a legacy
-     * compatibility label for existing dashboard/action logic.
+     * financial customer data. The authoritative portal role is CUSTOMER.
      */
-    public const ROLES=['CUSTOMER_ADMIN'];
+    public const ROLES=['CUSTOMER'];
 
     private const SECTIONS=[
         'dashboard','requests','quotations','timeline','contracts','sites','assets',
@@ -26,7 +25,7 @@ class CustomerPortalAccessService
 
     public function role(User $user): string
     {
-        return 'CUSTOMER_ADMIN';
+        return 'CUSTOMER';
     }
 
     public function canSection(User $user,string $section): bool
