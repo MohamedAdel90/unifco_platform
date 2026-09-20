@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AccessScope,ApiToken,Employee,Organization,Permission,Role,User};
+use App\Models\{AccessScope,ApiToken,Employee,Organization,Permission,ProjectUserAssignment,Role,User};
 use App\Services\{AuditService,AuthorizationService,InvitationService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\DB;
@@ -103,7 +103,10 @@ class UserAdministrationController extends Controller
         $grantorIds=$assignedRoles->pluck('pivot.granted_by')->merge($assignedScopes->pluck('pivot.granted_by'))->filter()->unique();
         $grantors=User::where('tenant_id',$managedUser->tenant_id)->whereIn('id',$grantorIds)->pluck('name','id');
         $activeSessions=Schema::hasTable('user_sessions') ? DB::table('user_sessions')->where('user_id',$managedUser->id)->latest('last_activity_at')->get() : collect();
-        return view('navigation.users-show',array_merge($lookups,compact('managedUser','permissions','overrides','auditTimeline','apiTokens','assignedRoles','assignedScopes','grantors','activeSessions')));
+        $projectAssignments=Schema::hasTable('project_user_assignments')
+            ? ProjectUserAssignment::with('project')->where('tenant_id',$managedUser->tenant_id)->where('user_id',$managedUser->id)->orderByRaw("CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END")->latest('id')->get()
+            : collect();
+        return view('navigation.users-show',array_merge($lookups,compact('managedUser','permissions','overrides','auditTimeline','apiTokens','assignedRoles','assignedScopes','grantors','activeSessions','projectAssignments')));
     }
 
     public function edit(Request $request,int $user): View
