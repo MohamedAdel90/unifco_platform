@@ -78,7 +78,7 @@ class ServiceRequestWorkflowTemplateRegistry
                 ...($needsHse ? [['stage' => 'HSE_VERIFICATION', 'role' => 'HSE', 'department' => 'HSE']] : []),
                 ...($needsQuality ? [['stage' => 'QUALITY_VERIFICATION', 'role' => 'QUALITY', 'department' => 'QUALITY']] : []),
                 ['stage' => 'CUSTOMER_ACCEPTANCE', 'role' => 'CUSTOMER', 'department' => 'CUSTOMER'],
-                ...($hasCost ? [['stage' => 'FINANCE_REVIEW', 'role' => 'FINANCE', 'department' => 'FINANCE']] : []),
+                ...($hasCost ? [['stage' => 'FINANCE_REVIEW', 'role' => 'FINANCE_MANAGER', 'department' => 'FINANCE']] : []),
                 ['stage' => 'CLOSURE', 'role' => 'OPERATIONS_MANAGER', 'department' => 'OPERATIONS'],
                 ['stage' => 'CSAT', 'role' => 'CUSTOMER', 'department' => 'CUSTOMER'],
             ],
