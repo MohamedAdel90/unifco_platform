@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AccessScope,ApprovalAuthority,Role,UserInvitation};
+use App\Models\{AccessScope,ApprovalAuthority,Role,User,UserInvitation};
 use App\Services\{AuditService,InvitationService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\DB;
@@ -19,6 +19,7 @@ class AccessControlController extends Controller
             'roles'=>Role::where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant))->withCount('users')->orderBy('code')->get(),
             'scopes'=>AccessScope::where('tenant_id',$tenant)->orderBy('scope_type')->orderBy('name')->get(),
             'authorities'=>ApprovalAuthority::where('tenant_id',$tenant)->latest()->get(),
+            'users'=>User::where('tenant_id',$tenant)->where('status','ACTIVE')->where('user_type','INTERNAL')->orderBy('name')->get(['id','name','email','role']),
         ]);
     }
 
@@ -67,6 +68,7 @@ class AccessControlController extends Controller
         $data=$request->validate([
             'approval_type'=>['required','string','max:100'],
             'role_id'=>['required','integer'],
+            'user_id'=>['nullable','integer'],
             'level'=>['required','integer','min:1'],
             'access_scope_id'=>['nullable','integer'],
             'amount_from'=>['nullable','numeric','min:0'],
@@ -75,11 +77,16 @@ class AccessControlController extends Controller
             'reason'=>['required','string','max:500'],
         ]);
         $role=Role::whereKey($data['role_id'])->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant))->firstOrFail();
+        if(isset($data['user_id'])) {
+            $target=User::where('tenant_id',$tenant)->where('status','ACTIVE')->where('user_type','INTERNAL')->findOrFail($data['user_id']);
+            abort_unless($target->activeRoles()->where('roles.id',$role->id)->exists() || strtoupper((string)$target->role)===strtoupper((string)$role->code),422,'Selected user does not hold the selected role.');
+        }
         if(isset($data['access_scope_id'])) AccessScope::where('tenant_id',$tenant)->findOrFail($data['access_scope_id']);
         $authority=ApprovalAuthority::create([
             'tenant_id'=>$tenant,
             'approval_type'=>strtoupper($data['approval_type']),
             'role_id'=>$role->id,
+            'user_id'=>$data['user_id']??null,
             'level'=>$data['level'],
             'access_scope_id'=>$data['access_scope_id']??null,
             'amount_from'=>$data['amount_from']??null,
