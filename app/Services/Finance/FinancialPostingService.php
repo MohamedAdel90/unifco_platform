@@ -32,7 +32,7 @@ class FinancialPostingService
                 Auth::user(),
                 'FINANCE_DOCUMENT_POST',
                 (float)$document->amount,
-                ['customer_id'=>$document->customer_id]
+                ['customer_id'=>$document->customer_id,'project_id'=>$document->project_id]
             );
             $this->assertOpenPeriod($document->document_date->toDateString());
             $this->assertPostingAccounts([$document->control_account_code,$document->offset_account_code]);
