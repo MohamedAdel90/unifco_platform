@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{ApprovalRequest,Customer,ServiceRequest};
+use App\Models\{ApprovalRequest,Customer,ProjectUserAssignment,ServiceRequest};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{Auth,DB};
 use Illuminate\Validation\ValidationException;
@@ -13,6 +13,8 @@ class ApprovalService
         private AuditService $audit,
         private CustomerLifecycleService $customers,
         private ServiceRequestWorkflowService $workflow,
+        private AuthorizationService $authorization,
+        private ScopeService $scopes,
     ) {}
 
     public function request(Model $entity,string $action): ApprovalRequest
@@ -27,7 +29,22 @@ class ApprovalService
         $user=Auth::user();
         if(!$user) throw ValidationException::withMessages(['approval'=>'Authentication is required.']);
         if($request->status!=='PENDING') throw ValidationException::withMessages(['approval'=>'Approval request is not currently actionable.']);
-        if($user->role!=='ADMIN' && $request->approval_role && $request->approval_role!==$user->role) throw ValidationException::withMessages(['approval'=>'This approval belongs to '.$request->approval_role.'.']);
+
+        $roles=$this->authorization->roleCodes($user)->push(strtoupper((string)$user->role))->filter()->unique();
+        if($request->approval_role && !$roles->contains(strtoupper((string)$request->approval_role))){
+            throw ValidationException::withMessages(['approval'=>'This approval belongs to '.$request->approval_role.'.']);
+        }
+
+        if($request->entity_type===ServiceRequest::class){
+            $serviceRequest=ServiceRequest::where('tenant_id',$user->tenant_id)->find($request->entity_id);
+            if(!$serviceRequest) throw ValidationException::withMessages(['approval'=>'The service request is not available in your tenant.']);
+
+            $visible=$this->scopes->apply(ServiceRequest::query()->whereKey($serviceRequest->id),$user)->exists();
+            if(!$visible) throw ValidationException::withMessages(['approval'=>'This approval is outside your access scope.']);
+
+            $this->assertProjectAssignment($user,$serviceRequest,(string)$request->approval_role);
+        }
+
         if((int)$request->requested_by===(int)$user->id) throw ValidationException::withMessages(['approval'=>'Segregation of duties: requester cannot decide their own request.']);
         if(!in_array($decision,['APPROVED','REJECTED','RETURNED'],true)) throw ValidationException::withMessages(['approval'=>'Unsupported decision.']);
         if(in_array($decision,['REJECTED','RETURNED'],true)&&blank($note)) throw ValidationException::withMessages(['note'=>'A note is required when rejecting or returning an approval.']);
@@ -42,6 +59,32 @@ class ApprovalService
             }
             return $request->fresh();
         });
+    }
+
+    private function assertProjectAssignment($user,ServiceRequest $serviceRequest,string $approvalRole): void
+    {
+        if(!$serviceRequest->project_id) return;
+
+        $role=strtoupper($approvalRole);
+        $projectBound=[
+            'OPERATIONS_MANAGER','MAINTENANCE_MANAGER','PROJECT_MANAGER','MAINTENANCE_ENGINEER',
+            'TECHNICAL_SUPERVISOR','TECHNICIAN','QUALITY','HSE',
+        ];
+        if(!in_array($role,$projectBound,true)) return;
+
+        $assigned=ProjectUserAssignment::query()
+            ->where('tenant_id',$user->tenant_id)
+            ->where('project_id',$serviceRequest->project_id)
+            ->where('user_id',$user->id)
+            ->where('project_role',$role)
+            ->where('status','ACTIVE')
+            ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
+            ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
+            ->exists();
+
+        if(!$assigned) throw ValidationException::withMessages([
+            'approval'=>'You are not the active '.$role.' assigned to this project.',
+        ]);
     }
 
     private function advanceServiceRequest(ServiceRequest $serviceRequest,ApprovalRequest $approval,string $decision,?string $note): void
