@@ -10,6 +10,7 @@ class MaintenanceRequestTransitionService
         private AuthorizationService $authorization,
         private ScopeService $scopes,
         private ServiceRequestWorkflowService $workflow,
+        private RequestStageOwnerService $owners,
     ) {}
 
     public function complete(User $actor, ServiceRequest $request, array $stages, ?string $note = null): void
@@ -51,6 +52,7 @@ class MaintenanceRequestTransitionService
         }
 
         $request->update(['assigned_engineer_id' => $technician->id]);
+        $this->owners->refresh($request->fresh());
         $this->workflow->advance($request, 'TECHNICIAN_ASSIGNMENT', $actor->id, $note ?: 'Technician assigned.');
         return $technician;
     }
