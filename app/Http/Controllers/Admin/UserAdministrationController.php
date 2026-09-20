@@ -76,7 +76,7 @@ class UserAdministrationController extends Controller
             'tenant_id'=>$tenant,'organization_id'=>$organizationId,'employee_id'=>$employeeId,
             'name'=>$displayName,'name_ar'=>$data['name_ar']??null,'name_en'=>$data['name_en']??null,
             'email'=>$data['email'],'mobile'=>$data['mobile']??null,'password'=>$data['password']??str()->random(48),
-            'role'=>$legacyRole,'user_type'=>str_starts_with($roleCodes[0],'CUSTOMER_')?'EXTERNAL':'INTERNAL',
+            'role'=>$legacyRole,'user_type'=>($roleCodes[0]==='CUSTOMER'||str_starts_with($roleCodes[0],'CUSTOMER_'))?'EXTERNAL':'INTERNAL',
             'status'=>$data['status'],'force_password_change'=>true,
         ]);
         $this->syncRoles($request,$user,$roleCodes,$audit,'Initial assignment');
@@ -152,7 +152,7 @@ class UserAdministrationController extends Controller
         $managed->update([
             'name'=>$displayName,'name_ar'=>$data['name_ar']??null,'name_en'=>$data['name_en']??null,
             'email'=>$data['email'],'mobile'=>$data['mobile']??null,'role'=>$this->legacyRole($roleCodes[0]),
-            'user_type'=>str_starts_with($roleCodes[0],'CUSTOMER_')?'EXTERNAL':'INTERNAL','status'=>$data['status'],
+            'user_type'=>($roleCodes[0]==='CUSTOMER'||str_starts_with($roleCodes[0],'CUSTOMER_'))?'EXTERNAL':'INTERNAL','status'=>$data['status'],
             'organization_id'=>$organizationId,'employee_id'=>$employeeId,
         ]);
         $this->syncRoles($request,$managed,$roleCodes,$audit,'User access update');
@@ -339,7 +339,7 @@ class UserAdministrationController extends Controller
 
     private function legacyRole(string $code): string
     {
-        if(str_starts_with($code,'CUSTOMER_')) return 'CUSTOMER';
+        if($code==='CUSTOMER' || str_starts_with($code,'CUSTOMER_')) return 'CUSTOMER';
         return $code;
     }
 
