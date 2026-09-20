@@ -99,6 +99,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/',[ProjectController::class,'store'])->middleware('permission:projects.project.manage')->name('projects.store');
         Route::get('/{project}/edit',[ProjectController::class,'edit'])->middleware('permission:projects.project.manage')->name('projects.edit');
         Route::put('/{project}',[ProjectController::class,'update'])->middleware('permission:projects.project.manage')->name('projects.update');
+        Route::get('/{project}/team',[ProjectController::class,'team'])->middleware('permission:projects.project.manage')->name('projects.team');
+        Route::post('/{project}/team',[ProjectController::class,'assignTeam'])->middleware('permission:projects.project.manage')->name('projects.team.assign');
+        Route::delete('/{project}/team/{assignment}',[ProjectController::class,'removeTeam'])->middleware('permission:projects.project.manage')->name('projects.team.remove');
         Route::post('/{project}/activate',[ProjectController::class,'activate'])->middleware('permission:projects.project.manage')->name('projects.activate');
     });
 
