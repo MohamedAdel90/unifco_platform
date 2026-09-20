@@ -29,7 +29,10 @@ class MaintenanceRequestWorkflowController extends Controller
             ->where('status', 'PENDING')
             ->first();
         $roles = $authorization->roleCodes($user)->push(strtoupper((string) $user->role))->filter()->unique();
-        $canAct = $step && $roles->contains(strtoupper((string) $step->approval_role));
+        $canAct = $step
+            && $roles->contains(strtoupper((string) $step->approval_role))
+            && $step->routing_status !== 'NEEDS_ASSIGNMENT'
+            && (!$step->assigned_user_id || (int)$step->assigned_user_id === (int)$user->id);
         if ($serviceRequest->workflow_stage === 'EXECUTION') $canAct = $canAct && (int) $serviceRequest->assigned_engineer_id === (int) $user->id;
 
         $technicianIds=$serviceRequest->project_id
