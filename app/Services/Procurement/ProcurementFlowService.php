@@ -3,18 +3,21 @@
 namespace App\Services\Procurement;
 
 use App\Models\{FinancialDocument,PurchaseOrder,PurchaseRequisition,Supplier,SupplierInvoice};
-use App\Services\AuditService;
+use App\Services\{ApprovalAuthorityService,AuditService};
 use Illuminate\Support\Facades\{Auth,DB};
 use Illuminate\Validation\ValidationException;
 
 class ProcurementFlowService
 {
-    public function __construct(private AuditService $audit) {}
+    public function __construct(private AuditService $audit, private ApprovalAuthorityService $authorities) {}
 
     public function approveRequisition(PurchaseRequisition $requisition): PurchaseRequisition
     {
         if ($requisition->status !== 'DRAFT') throw ValidationException::withMessages(['requisition'=>'Only DRAFT requisitions can be approved.']);
         if ((int)$requisition->created_by === (int)Auth::id()) throw ValidationException::withMessages(['requisition'=>'Segregation of duties: creator cannot approve their own requisition.']);
+        $requisition->load('lines');
+        $amount=(float)$requisition->lines->sum(fn($line)=>(float)$line->quantity*(float)$line->estimated_unit_price);
+        $this->authorities->assertTransaction(Auth::user(),'PURCHASE_REQUISITION_APPROVAL',$amount);
         $before=$requisition->toArray();
         $requisition->update(['status'=>'APPROVED','approved_by'=>Auth::id(),'approved_at'=>now()]);
         $this->audit->record('procurement.requisition.approved',$requisition,$before,$requisition->fresh()->toArray());
