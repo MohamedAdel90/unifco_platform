@@ -37,7 +37,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             'currency'=>'SAR','billing_cycle'=>'MONTHLY','status'=>'ACTIVE',
         ]);
 
-        foreach(['ADMIN','OPERATIONS_MANAGER','PROJECT_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN','SALES','MAINTENANCE_ENGINEER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE_MANAGER','CEO','CUSTOMER_SERVICE'] as $role){
+        foreach(['ADMIN','OPERATIONS_MANAGER','PROJECT_MANAGER','MAINTENANCE_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN','SALES','MAINTENANCE_ENGINEER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE_MANAGER','CEO','CUSTOMER_SERVICE'] as $role){
             $this->actors[$role]=User::create([
                 'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>$role,'email'=>strtolower($role).'@lifecycle.test',
                 'password'=>'StrongPassword123','role'=>$role,'user_type'=>'INTERNAL','status'=>'ACTIVE',
@@ -101,11 +101,25 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $first=$request->fresh()->workflow_stage;
         $this->assertContains($first,['TRIAGE','EMERGENCY_DISPATCH']);
         $transitions->complete($this->actors['OPERATIONS_MANAGER'],$request,[$first],'Initial operations review completed.');
-        $transitions->complete($this->actors['PROJECT_MANAGER'],$request->fresh(),['PROJECT_MANAGER_REVIEW'],'Project review completed.');
-        $transitions->assignTechnician($this->actors['TECHNICAL_SUPERVISOR'],$request->fresh(),$this->actors['TECHNICIAN']->id,'Technician assigned.');
+
+        while($request->fresh()->workflow_stage!=='EXECUTION'){
+            $request->refresh();
+            match($request->workflow_stage){
+                'PROJECT_MANAGER_REVIEW' => $transitions->complete($this->actors['PROJECT_MANAGER'],$request,['PROJECT_MANAGER_REVIEW'],'Project review completed.'),
+                'MAINTENANCE_MANAGER_REVIEW' => $transitions->complete($this->actors['MAINTENANCE_MANAGER'],$request,['MAINTENANCE_MANAGER_REVIEW'],'Maintenance manager review completed.'),
+                'TECHNICAL_ASSESSMENT' => $transitions->complete($this->actors['MAINTENANCE_ENGINEER'],$request,['TECHNICAL_ASSESSMENT'],'Technical assessment completed.'),
+                'TECHNICIAN_ASSIGNMENT' => $transitions->assignTechnician($this->actors['TECHNICAL_SUPERVISOR'],$request,$this->actors['TECHNICIAN']->id,'Technician assigned.'),
+                default => $this->fail('Unexpected maintenance stage before execution: '.$request->workflow_stage),
+            };
+        }
+
         $transitions->completeExecution($this->actors['TECHNICIAN'],$request->fresh(),'Repair completed and tested.');
 
         $request->refresh();
+        if($request->workflow_stage==='TECHNICAL_REVIEW'){
+            $this->approveCurrent($request);
+            $request->refresh();
+        }
         $this->assertSame('CUSTOMER_ACCEPTANCE',$request->workflow_stage);
         $workOrder=WorkOrder::findOrFail($request->work_order_id);
         $this->assertSame('COMPLETED',$workOrder->status);
