@@ -45,7 +45,7 @@ class ProcurementFlowService
         if ($amount <= 0 || $amount > $received + 0.01) throw ValidationException::withMessages(['amount'=>'Supplier invoice cannot exceed the value of received goods.']);
         return DB::transaction(function () use ($po,$supplier,$data,$amount) {
             $invoice=SupplierInvoice::create(['organization_id'=>$po->organization_id,'supplier_id'=>$supplier->id,'purchase_order_id'=>$po->id,'invoice_no'=>$data['invoice_no'],'invoice_date'=>$data['invoice_date'],'amount'=>$amount,'status'=>'MATCHED','created_by'=>Auth::id()]);
-            $fin=FinancialDocument::create(['organization_id'=>$po->organization_id,'document_no'=>'AP-'.$data['invoice_no'],'document_type'=>'AP_INVOICE','counterparty_name'=>$supplier->name,'document_date'=>$data['invoice_date'],'currency'=>$data['currency'] ?? 'USD','amount'=>$amount,'control_account_code'=>$data['control_account_code'],'offset_account_code'=>$data['offset_account_code'],'status'=>'DRAFT','created_by'=>Auth::id(),'open_amount'=>0]);
+            $fin=FinancialDocument::create(['organization_id'=>$po->organization_id,'project_id'=>$po->project_id,'document_no'=>'AP-'.$data['invoice_no'],'document_type'=>'AP_INVOICE','counterparty_name'=>$supplier->name,'document_date'=>$data['invoice_date'],'currency'=>$data['currency'] ?? 'USD','amount'=>$amount,'control_account_code'=>$data['control_account_code'],'offset_account_code'=>$data['offset_account_code'],'status'=>'DRAFT','created_by'=>Auth::id(),'open_amount'=>0]);
             $invoice->update(['financial_document_id'=>$fin->id]);
             $this->audit->record('procurement.supplier_invoice.matched',$invoice,[],['financial_document_id'=>$fin->id,'amount'=>$amount]);
             return $invoice->fresh();
