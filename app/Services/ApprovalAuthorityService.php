@@ -31,7 +31,8 @@ class ApprovalAuthorityService
 
         $amount=$this->amount($approval,$serviceRequest);
 
-        $allowed=$authorities->contains(function(ApprovalAuthority $authority) use($roleIds,$amount,$serviceRequest){
+        $allowed=$authorities->contains(function(ApprovalAuthority $authority) use($roleIds,$amount,$serviceRequest,$user){
+            if($authority->user_id && (int)$authority->user_id!==(int)$user->id) return false;
             if(!$roleIds->contains((int)$authority->role_id)) return false;
             $from=$authority->amount_from!==null?(float)$authority->amount_from:0.0;
             $to=$authority->amount_to!==null?(float)$authority->amount_to:($authority->amount_limit!==null?(float)$authority->amount_limit:null);
@@ -70,7 +71,8 @@ class ApprovalAuthorityService
             ->whereNull('revoked_at')
             ->pluck('role_id');
 
-        $allowed=$authorities->contains(function(ApprovalAuthority $authority) use($roleIds,$amount,$scopeContext){
+        $allowed=$authorities->contains(function(ApprovalAuthority $authority) use($roleIds,$amount,$scopeContext,$user){
+            if($authority->user_id && (int)$authority->user_id!==(int)$user->id) return false;
             if(!$roleIds->contains((int)$authority->role_id)) return false;
 
             $from=$authority->amount_from!==null?(float)$authority->amount_from:0.0;
