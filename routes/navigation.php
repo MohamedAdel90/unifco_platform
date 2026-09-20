@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/triage',[MaintenanceRequestWorkflowController::class,'triage'])->name('triage');
         Route::post('/project-review',[MaintenanceRequestWorkflowController::class,'projectReview'])->name('project-review');
         Route::post('/assign-technician',[MaintenanceRequestWorkflowController::class,'assignTechnician'])->name('assign-technician');
+        Route::post('/assign-stage-owner',[MaintenanceRequestWorkflowController::class,'assignStageOwner'])->name('assign-stage-owner');
         Route::post('/complete-execution',[MaintenanceRequestWorkflowController::class,'completeExecution'])->name('complete-execution');
         Route::post('/verify',[MaintenanceRequestWorkflowController::class,'verify'])->name('verify');
     });
