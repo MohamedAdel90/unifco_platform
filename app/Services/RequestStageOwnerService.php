@@ -18,7 +18,7 @@ class RequestStageOwnerService
         if($role==='OPERATIONS_MANAGER'){
             return $request->operations_manager_id
                 ? ['user_id'=>(int)$request->operations_manager_id,'status'=>'ASSIGNED']
-                : ['user_id'=>null,'status'=>'NEEDS_ASSIGNMENT'];
+                : ['user_id'=>null,'status'=>$request->project_id?'NEEDS_ASSIGNMENT':'ROLE_QUEUE'];
         }
 
         if($role==='PROJECT_MANAGER'){
