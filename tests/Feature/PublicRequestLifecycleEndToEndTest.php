@@ -159,8 +159,16 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
     public function test_spare_parts_quotation_runs_from_creation_through_customer_approval_to_completion(): void
     {
         $request=$this->submit('QUOTATION','SPARE_PARTS_QUOTE',['service_category'=>'Spare Parts']);
-        $this->assertSame('QUOTATION',$request->workflow_key);
+        $this->assertSame('SPARE_PARTS_QUOTATION',$request->workflow_key);
         $this->assertTrue((bool)$request->workflow_context['procurement_required']);
+        $this->completeQuotation($request);
+    }
+
+
+    public function test_technical_visit_quotation_runs_through_site_visit_report_and_customer_decision(): void
+    {
+        $request=$this->submit('QUOTATION','TECHNICAL_VISIT',['service_category'=>'Technical Visit']);
+        $this->assertSame('TECHNICAL_VISIT',$request->workflow_key);
         $this->completeQuotation($request);
     }
 
