@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Workflow;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ApprovalRequest,ServiceRequest,User};
+use App\Models\{ApprovalRequest,ProjectUserAssignment,ServiceRequest,User};
 use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,ScopeService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\View\View;
@@ -32,8 +32,21 @@ class MaintenanceRequestWorkflowController extends Controller
         $canAct = $step && $roles->contains(strtoupper((string) $step->approval_role));
         if ($serviceRequest->workflow_stage === 'EXECUTION') $canAct = $canAct && (int) $serviceRequest->assigned_engineer_id === (int) $user->id;
 
+        $technicianIds=$serviceRequest->project_id
+            ? ProjectUserAssignment::query()
+                ->where('tenant_id',$user->tenant_id)->where('project_id',$serviceRequest->project_id)
+                ->where('status','ACTIVE')->whereIn('project_role',['TECHNICIAN','MAINTENANCE_ENGINEER'])
+                ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
+                ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
+                ->pluck('user_id')
+            : null;
         $technicians = User::query()->where('tenant_id', $user->tenant_id)
-            ->whereIn('status', ['ACTIVE','ENABLED'])->whereIn('role', ['TECHNICIAN','MAINTENANCE_ENGINEER'])
+            ->whereIn('status', ['ACTIVE','ENABLED'])
+            ->where(function($q){
+                $q->whereIn('role',['TECHNICIAN','MAINTENANCE_ENGINEER'])
+                  ->orWhereHas('activeRoles',fn($r)=>$r->whereIn('roles.code',['TECHNICIAN','MAINTENANCE_ENGINEER']));
+            })
+            ->when($technicianIds!==null,fn($q)=>$q->whereIn('id',$technicianIds))
             ->orderBy('name')->get(['id','name','role']);
         return view('workflow.maintenance-request', compact('serviceRequest','step','canAct','technicians'));
     }
