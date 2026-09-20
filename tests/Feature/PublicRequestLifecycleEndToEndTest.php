@@ -37,7 +37,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             'currency'=>'SAR','billing_cycle'=>'MONTHLY','status'=>'ACTIVE',
         ]);
 
-        foreach(['ADMIN','OPERATIONS_MANAGER','PROJECT_MANAGER','MAINTENANCE_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN','SALES','MAINTENANCE_ENGINEER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE_MANAGER','CEO','CUSTOMER_SERVICE'] as $role){
+        foreach(['ADMIN','OPERATIONS_MANAGER','PROJECT_MANAGER','MAINTENANCE_MANAGER','TECHNICAL_SUPERVISOR','TECHNICIAN','SALES','MAINTENANCE_ENGINEER','QUALITY','HSE','PROCUREMENT','TENDERS_CONTRACTS','FINANCE_MANAGER','CEO','CUSTOMER_SERVICE'] as $role){
             $this->actors[$role]=User::create([
                 'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>$role,'email'=>strtolower($role).'@lifecycle.test',
                 'password'=>'StrongPassword123','role'=>$role,'user_type'=>'INTERNAL','status'=>'ACTIVE',
@@ -108,6 +108,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
                 'PROJECT_MANAGER_REVIEW' => $transitions->complete($this->actors['PROJECT_MANAGER'],$request,['PROJECT_MANAGER_REVIEW'],'Project review completed.'),
                 'MAINTENANCE_MANAGER_REVIEW' => $transitions->complete($this->actors['MAINTENANCE_MANAGER'],$request,['MAINTENANCE_MANAGER_REVIEW'],'Maintenance manager review completed.'),
                 'TECHNICAL_ASSESSMENT' => $transitions->complete($this->actors['MAINTENANCE_ENGINEER'],$request,['TECHNICAL_ASSESSMENT'],'Technical assessment completed.'),
+                'HSE_CLEARANCE' => $transitions->complete($this->actors['HSE'],$request,['HSE_CLEARANCE'],'HSE clearance completed.'),
                 'TECHNICIAN_ASSIGNMENT' => $transitions->assignTechnician($this->actors['TECHNICAL_SUPERVISOR'],$request,$this->actors['TECHNICIAN']->id,'Technician assigned.'),
                 default => $this->fail('Unexpected maintenance stage before execution: '.$request->workflow_stage),
             };
@@ -116,8 +117,12 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $transitions->completeExecution($this->actors['TECHNICIAN'],$request->fresh(),'Repair completed and tested.');
 
         $request->refresh();
-        if($request->workflow_stage==='TECHNICAL_REVIEW'){
-            $this->approveCurrent($request);
+        while(in_array($request->workflow_stage,['TECHNICAL_REVIEW','QUALITY_VERIFICATION'],true)){
+            if($request->workflow_stage==='TECHNICAL_REVIEW'){
+                $transitions->complete($this->actors['MAINTENANCE_ENGINEER'],$request,['TECHNICAL_REVIEW'],'Technical review completed.');
+            } else {
+                $transitions->complete($this->actors['QUALITY'],$request,['QUALITY_VERIFICATION'],'Quality verification completed.');
+            }
             $request->refresh();
         }
         $this->assertSame('CUSTOMER_ACCEPTANCE',$request->workflow_stage);
