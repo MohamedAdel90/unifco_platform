@@ -17,7 +17,7 @@ class ProcurementFlowService
         if ((int)$requisition->created_by === (int)Auth::id()) throw ValidationException::withMessages(['requisition'=>'Segregation of duties: creator cannot approve their own requisition.']);
         $requisition->load('lines');
         $amount=(float)$requisition->lines->sum(fn($line)=>(float)$line->quantity*(float)$line->estimated_unit_price);
-        $this->authorities->assertTransaction(Auth::user(),'PURCHASE_REQUISITION_APPROVAL',$amount);
+        $this->authorities->assertTransaction(Auth::user(),'PURCHASE_REQUISITION_APPROVAL',$amount,['project_id'=>$requisition->project_id]);
         $before=$requisition->toArray();
         $requisition->update(['status'=>'APPROVED','approved_by'=>Auth::id(),'approved_at'=>now()]);
         $this->audit->record('procurement.requisition.approved',$requisition,$before,$requisition->fresh()->toArray());
@@ -30,7 +30,7 @@ class ProcurementFlowService
         return DB::transaction(function () use ($requisition,$supplier,$poNumber) {
             $requisition->load('lines');
             $total=$requisition->lines->sum(fn($l)=>(float)$l->quantity*(float)$l->estimated_unit_price);
-            $po=PurchaseOrder::create(['organization_id'=>$requisition->organization_id,'created_by'=>Auth::id(),'supplier_id'=>$supplier->id,'purchase_requisition_id'=>$requisition->id,'po_number'=>$poNumber,'supplier_name'=>$supplier->name,'order_date'=>now()->toDateString(),'total'=>$total,'status'=>'DRAFT']);
+            $po=PurchaseOrder::create(['organization_id'=>$requisition->organization_id,'project_id'=>$requisition->project_id,'created_by'=>Auth::id(),'supplier_id'=>$supplier->id,'purchase_requisition_id'=>$requisition->id,'po_number'=>$poNumber,'supplier_name'=>$supplier->name,'order_date'=>now()->toDateString(),'total'=>$total,'status'=>'DRAFT']);
             foreach ($requisition->lines as $line) $po->lines()->create(['line_no'=>$line->line_no,'item_id'=>$line->item_id,'quantity'=>$line->quantity,'unit_price'=>$line->estimated_unit_price]);
             $this->audit->record('procurement.purchase_order.created_from_requisition',$po,[], $po->fresh('lines')->toArray());
             return $po->fresh('lines');
