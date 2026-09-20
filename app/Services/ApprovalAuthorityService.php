@@ -33,7 +33,10 @@ class ApprovalAuthorityService
 
         $allowed=$authorities->contains(function(ApprovalAuthority $authority) use($roleIds,$amount,$serviceRequest){
             if(!$roleIds->contains((int)$authority->role_id)) return false;
-            if($authority->amount_limit!==null && $amount>(float)$authority->amount_limit) return false;
+            $from=$authority->amount_from!==null?(float)$authority->amount_from:0.0;
+            $to=$authority->amount_to!==null?(float)$authority->amount_to:($authority->amount_limit!==null?(float)$authority->amount_limit:null);
+            if($amount<$from) return false;
+            if($to!==null && $amount>$to) return false;
             if(!$authority->access_scope_id) return true;
 
             $scope=AccessScope::query()->where('is_active',true)->find($authority->access_scope_id);
