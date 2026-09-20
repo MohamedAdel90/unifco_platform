@@ -107,7 +107,7 @@ class ServiceRequestWorkflowTemplateRegistryTest extends TestCase
         ]), 'stage');
 
         $this->assertContains('QUALITY_VERIFICATION', $stages);
-        $this->assertContains('HSE_VERIFICATION', $stages);
+        $this->assertContains('HSE_CLEARANCE', $stages);
         $this->assertContains('FINANCE_REVIEW', $stages);
     }
 }
