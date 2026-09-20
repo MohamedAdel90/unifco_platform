@@ -7,7 +7,7 @@ use App\Services\ScopeService;
 
 class OperationsRoutingService
 {
-    public function __construct(private ScopeService $scopes) {}
+    public function __construct(private ScopeService $scopes, private \App\Services\RequestStageOwnerService $owners) {}
 
     /** Resolve the best Operations Manager without bypassing normal RBAC/scope. */
     public function resolve(ServiceRequest $request): ?User
@@ -55,8 +55,10 @@ class OperationsRoutingService
         $request->project_manager_id = $projectManager?->id;
         $request->project_routing_status = $request->project_id ? ($projectManager ? 'ASSIGNED' : 'UNASSIGNED') : 'NOT_APPLICABLE';
         $request->saveQuietly();
+        $fresh=$request->refresh();
+        $this->owners->refresh($fresh);
 
-        return $request->refresh();
+        return $fresh;
     }
 
     public function resolveProjectManager(ServiceRequest $request): ?User
