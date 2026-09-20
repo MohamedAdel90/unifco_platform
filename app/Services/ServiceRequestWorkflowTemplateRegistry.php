@@ -10,6 +10,8 @@ class ServiceRequestWorkflowTemplateRegistry
     public const EMERGENCY_MAINTENANCE = 'EMERGENCY_MAINTENANCE';
     public const QUOTATION = 'QUOTATION';
     public const MAINTENANCE_CONTRACT_QUOTATION = 'MAINTENANCE_CONTRACT_QUOTATION';
+    public const SPARE_PARTS_QUOTATION = 'SPARE_PARTS_QUOTATION';
+    public const TECHNICAL_VISIT = 'TECHNICAL_VISIT';
     public const TECHNICAL_CONSULTATION = 'TECHNICAL_CONSULTATION';
 
     public function keyFor(ServiceRequest $request): string
@@ -24,6 +26,14 @@ class ServiceRequestWorkflowTemplateRegistry
 
         if (in_array($subtype, ['MAINTENANCE_CONTRACT_QUOTE', 'MAINTENANCE_CONTRACT_QUOTATION', 'CONTRACT_MAINTENANCE_QUOTE'], true)) {
             return self::MAINTENANCE_CONTRACT_QUOTATION;
+        }
+
+        if (in_array($subtype, ['SPARE_PARTS_QUOTE','SPARE_PARTS_QUOTATION','PARTS_QUOTE','SPARE_PARTS'], true)) {
+            return self::SPARE_PARTS_QUOTATION;
+        }
+
+        if (in_array($subtype, ['TECHNICAL_VISIT','TECHNICAL_VISIT_QUOTE','SITE_VISIT_QUOTE','VISIT_QUOTATION'], true)) {
+            return self::TECHNICAL_VISIT;
         }
 
         if ($type === 'QUOTATION') {
@@ -90,6 +100,27 @@ class ServiceRequestWorkflowTemplateRegistry
                 ['stage' => 'EXECUTIVE_APPROVAL', 'role' => 'CEO', 'department' => 'MANAGEMENT'],
                 ['stage' => 'CUSTOMER_DECISION', 'role' => 'CUSTOMER', 'department' => 'CUSTOMER'],
                 ['stage' => 'ONBOARDING', 'role' => 'CUSTOMER_SERVICE', 'department' => 'CRM'],
+            ],
+            self::SPARE_PARTS_QUOTATION => [
+                ['stage' => 'SALES_REVIEW', 'role' => 'SALES', 'department' => 'SALES'],
+                ['stage' => 'TECHNICAL_REVIEW', 'role' => 'MAINTENANCE_ENGINEER', 'department' => 'OPERATIONS'],
+                ['stage' => 'PRICING_PROCUREMENT', 'role' => 'PROCUREMENT', 'department' => 'PROCUREMENT'],
+                ['stage' => 'CONTRACT_REVIEW', 'role' => 'TENDERS_CONTRACTS', 'department' => 'CONTRACTS'],
+                ...($adminApproval ? [['stage' => 'INTERNAL_APPROVAL', 'role' => 'OPERATIONS_MANAGER', 'department' => 'OPERATIONS']] : []),
+                ['stage' => 'CUSTOMER_DECISION', 'role' => 'CUSTOMER', 'department' => 'CUSTOMER'],
+                ['stage' => 'PROCUREMENT_HANDOFF', 'role' => 'PROCUREMENT', 'department' => 'PROCUREMENT'],
+                ['stage' => 'COMPLETED', 'role' => 'SALES', 'department' => 'SALES'],
+            ],
+            self::TECHNICAL_VISIT => [
+                ['stage' => 'SALES_REVIEW', 'role' => 'SALES', 'department' => 'SALES'],
+                ['stage' => 'PROJECT_MANAGER_REVIEW', 'role' => 'PROJECT_MANAGER', 'department' => 'OPERATIONS'],
+                ['stage' => 'TEAM_AND_SCHEDULE', 'role' => 'TECHNICAL_SUPERVISOR', 'department' => 'OPERATIONS'],
+                ['stage' => 'SITE_VISIT', 'role' => 'TECHNICIAN', 'department' => 'OPERATIONS'],
+                ['stage' => 'TECHNICAL_REPORT', 'role' => 'MAINTENANCE_ENGINEER', 'department' => 'OPERATIONS'],
+                ['stage' => 'PRICING', 'role' => 'SALES', 'department' => 'SALES'],
+                ['stage' => 'CONTRACT_REVIEW', 'role' => 'TENDERS_CONTRACTS', 'department' => 'CONTRACTS'],
+                ['stage' => 'CUSTOMER_DECISION', 'role' => 'CUSTOMER', 'department' => 'CUSTOMER'],
+                ['stage' => 'COMPLETED', 'role' => 'SALES', 'department' => 'SALES'],
             ],
             self::TECHNICAL_CONSULTATION => [
                 ['stage' => 'OPERATIONS_REVIEW', 'role' => 'OPERATIONS_MANAGER', 'department' => 'OPERATIONS'],
