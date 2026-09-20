@@ -98,6 +98,10 @@ class MaintenanceRequestTransitionService
             ->firstOrFail();
         $roles = $this->authorization->roleCodes($actor)->push(strtoupper((string) $actor->role));
         abort_unless($roles->filter()->contains(strtoupper((string) $step->approval_role)), 403, 'Your role cannot perform this workflow action.');
+        abort_if($step->routing_status==='NEEDS_ASSIGNMENT',422,'This workflow stage has no resolved owner yet.');
+        if($step->assigned_user_id){
+            abort_unless((int)$step->assigned_user_id===(int)$actor->id,403,'This workflow stage is assigned to another user.');
+        }
         return $step;
     }
 }
