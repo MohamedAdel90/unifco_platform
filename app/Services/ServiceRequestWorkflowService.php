@@ -29,7 +29,7 @@ class ServiceRequestWorkflowService
         'FINANCE_REVIEW' => 120,
         'EXECUTIVE_APPROVAL' => 240,
         'QUALITY_VERIFICATION' => 120,
-        'HSE_VERIFICATION' => 120,
+        'HSE_CLEARANCE' => 120,
         'CUSTOMER_ACCEPTANCE' => 1440,
         'CUSTOMER_DECISION' => 2880,
         'CUSTOMER_DELIVERY' => 1440,
