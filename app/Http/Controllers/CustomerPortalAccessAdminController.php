@@ -74,7 +74,7 @@ class CustomerPortalAccessAdminController extends Controller
             'asset_ids'=>['nullable','array'],'asset_ids.*'=>['integer'],
         ]);
 
-        if($user->is($admin) && ($data['customer_portal_role']!=='CUSTOMER_ADMIN' || $data['status']!=='ACTIVE')){
+        if($user->is($admin) && ($data['customer_portal_role']!=='CUSTOMER' || $data['status']!=='ACTIVE')){
             return back()->withErrors(['user'=>'You cannot remove your own Customer Admin access or deactivate your own account.']);
         }
 
@@ -103,7 +103,7 @@ class CustomerPortalAccessAdminController extends Controller
     private function replaceScopes(User $user,array $data): void
     {
         DB::table('customer_portal_user_scopes')->where('user_id',$user->id)->delete();
-        if(($data['customer_portal_role']??'')==='CUSTOMER_ADMIN') return;
+        if(($data['customer_portal_role']??'')==='CUSTOMER') return;
 
         $validSites=CustomerSite::where('customer_id',$user->customer_id)->whereIn('id',$data['site_ids']??[])->pluck('id');
         $validContracts=ServiceContract::where('customer_id',$user->customer_id)->whereIn('id',$data['contract_ids']??[])->pluck('id');
@@ -117,13 +117,14 @@ class CustomerPortalAccessAdminController extends Controller
 
     private function syncStructuredAccess(User $user,array $data,User $actor): void
     {
-        $code=match($data['customer_portal_role']){'SITE_MANAGER'=>'CUSTOMER_SITE_MANAGER','FINANCE'=>'CUSTOMER_FINANCE','VIEWER'=>'CUSTOMER_VIEWER',default=>'CUSTOMER_ADMIN'};
-        $role=Role::where('code',$code)->where(fn($q)=>$q->where('tenant_id',$user->tenant_id)->orWhereNull('tenant_id'))->orderByRaw('tenant_id is null')->firstOrFail();
+        $role=Role::where('code','CUSTOMER')->where('is_active',true)
+            ->where(fn($q)=>$q->where('tenant_id',$user->tenant_id)->orWhereNull('tenant_id'))
+            ->orderByRaw('tenant_id is null')->firstOrFail();
         DB::table('user_roles')->where('user_id',$user->id)->whereNull('revoked_at')->where('role_id','!=',$role->id)->update(['revoked_at'=>now(),'updated_at'=>now()]);
-        DB::table('user_roles')->updateOrInsert(['user_id'=>$user->id,'role_id'=>$role->id],['tenant_id'=>$user->tenant_id,'is_primary'=>true,'granted_by'=>$actor->id,'granted_at'=>now(),'revoked_at'=>null,'reason'=>'Customer portal access management','created_at'=>now(),'updated_at'=>now()]);
+        DB::table('user_roles')->updateOrInsert(['user_id'=>$user->id,'role_id'=>$role->id],['tenant_id'=>$user->tenant_id,'is_primary'=>true,'granted_by'=>$actor->id,'granted_at'=>now(),'revoked_at'=>null,'reason'=>'Unified customer portal access management','created_at'=>now(),'updated_at'=>now()]);
 
         DB::table('user_scopes')->where('user_id',$user->id)->delete();
-        if ($data['customer_portal_role']==='CUSTOMER_ADMIN') {
+        if ($data['customer_portal_role']==='CUSTOMER') {
             app(CustomerPortalScopeService::class)->grant($user,$actor->id);
             return;
         }
