@@ -37,14 +37,14 @@ class WorkflowTestUsersSeeder extends Seeder
         $site=CustomerSite::updateOrCreate(['customer_id'=>$customer->id,'site_code'=>'WF-RUH-01'],['name'=>'Workflow Riyadh Test Site','city'=>'Riyadh','address'=>'Riyadh Test Facility','contact_name'=>'Workflow Customer Admin','contact_mobile'=>'0500000001','status'=>'ACTIVE']);
 
         $portalUsers=[
-            ['email'=>'workflow.customer@unifco.local','name'=>'Workflow Customer Admin','portal_role'=>'CUSTOMER_ADMIN'],
-            ['email'=>'workflow.site.manager@unifco.local','name'=>'Workflow Site Manager','portal_role'=>'SITE_MANAGER'],
-            ['email'=>'workflow.finance@unifco.local','name'=>'Workflow Customer Finance','portal_role'=>'FINANCE'],
-            ['email'=>'workflow.viewer@unifco.local','name'=>'Workflow Customer Viewer','portal_role'=>'VIEWER'],
+            ['email'=>'workflow.customer@unifco.local','name'=>'Workflow Customer Admin','portal_role'=>'CUSTOMER'],
+            ['email'=>'workflow.site.manager@unifco.local','name'=>'Workflow Site Manager','portal_role'=>'CUSTOMER'],
+            ['email'=>'workflow.finance@unifco.local','name'=>'Workflow Customer Finance','portal_role'=>'CUSTOMER'],
+            ['email'=>'workflow.viewer@unifco.local','name'=>'Workflow Customer Viewer','portal_role'=>'CUSTOMER'],
         ];
         foreach($portalUsers as $config){
             $user=User::updateOrCreate(['email'=>$config['email']],['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'name'=>$config['name'],'password'=>Hash::make($password),'role'=>'CUSTOMER','customer_portal_role'=>$config['portal_role'],'status'=>'ACTIVE','force_password_change'=>false]);
-            if($config['portal_role']!=='CUSTOMER_ADMIN') DB::table('customer_portal_user_scopes')->updateOrInsert(['user_id'=>$user->id,'scope_type'=>'SITE','scope_id'=>$site->id],['created_at'=>now(),'updated_at'=>now()]);
+            DB::table('customer_portal_user_scopes')->where('user_id',$user->id)->delete();
         }
     }
 }
