@@ -24,14 +24,23 @@ class CustomerActionInboxController extends Controller
     {
         $role=$this->role($request);
         $query=CustomerPortalActionRequest::query();
-        if($role!=='ADMIN') $query->where('assigned_role',$role);
+        if($role!=='ADMIN'){
+            $role==='FINANCE_MANAGER'
+                ? $query->whereIn('assigned_role',['FINANCE_MANAGER','FINANCE'])
+                : $query->where('assigned_role',$role);
+        }
         return $query;
     }
 
     private function assertVisible(Request $request, CustomerPortalActionRequest $action): void
     {
         $role=$this->role($request);
-        if($role!=='ADMIN') abort_unless($action->assigned_role===$role,403);
+        if($role!=='ADMIN'){
+            $visible=$role==='FINANCE_MANAGER'
+                ? in_array($action->assigned_role,['FINANCE_MANAGER','FINANCE'],true)
+                : $action->assigned_role===$role;
+            abort_unless($visible,403);
+        }
     }
 
     public function index(Request $request): View
