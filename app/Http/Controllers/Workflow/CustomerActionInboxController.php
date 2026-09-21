@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CustomerActionInboxController extends Controller
 {
-    private const ROLES=['MAINTENANCE_MANAGER','TENDERS_CONTRACTS','FINANCE','ADMIN'];
+    private const ROLES=['MAINTENANCE_MANAGER','TENDERS_CONTRACTS','FINANCE_MANAGER','ADMIN'];
 
     private function role(Request $request): string
     {
