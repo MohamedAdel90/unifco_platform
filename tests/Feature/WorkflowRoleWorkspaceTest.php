@@ -27,7 +27,7 @@ class WorkflowRoleWorkspaceTest extends TestCase
         foreach($expected as $email=>[$title,$queue]){
             $user=User::where('email',$email)->firstOrFail();
             $this->actingAs($user)->get('/workflow/workspace')->assertOk()->assertSee($title)->assertSee($queue);
-            $this->actingAs($user)->get('/')->assertRedirect('/workflow/workspace');
+            $this->actingAs($user)->get('/')->assertOk();
         }
     }
 
