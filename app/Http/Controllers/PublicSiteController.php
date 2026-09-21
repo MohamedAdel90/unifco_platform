@@ -11,8 +11,18 @@ use Throwable;
 
 class PublicSiteController extends Controller
 {
-    public function home(Request $request): Response
+    public function home(Request $request): Response|RedirectResponse
     {
+        $user=$request->user();
+        if($user){
+            $role=strtoupper((string)$user->role);
+            if($role==='CUSTOMER') return redirect()->route('customer.portal');
+            if(in_array($role,[
+                'MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROCUREMENT','TENDERS_CONTRACTS',
+                'FINANCE_MANAGER','PROJECT_MANAGER','CEO',
+            ],true)) return redirect()->route('workflow.workspace');
+        }
+
         $requested=$request->query('lang');
         if(in_array($requested,['ar','en'],true)) $request->session()->put('public_locale',$requested);
         $locale=in_array($requested,['ar','en'],true)?$requested:$request->session()->get('public_locale','ar');
