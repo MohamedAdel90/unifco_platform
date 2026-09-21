@@ -57,11 +57,22 @@ class PublicRequestPipelineService
 
             $intent=strtoupper((string)($public->request_intent ?: $public->request_type));
             $requestType=match($intent){'QUOTATION'=>'QUOTATION','CONSULTATION'=>'CONSULTATION',default=>'MAINTENANCE'};
-            $requestSubtype=strtoupper((string)($public->request_subtype ?: match($requestType){
-                'QUOTATION'=>'SPARE_PARTS_QUOTE',
-                'CONSULTATION'=>'TECHNICAL_CONSULTATION',
-                default=>(strtoupper((string)$public->urgency)==='EMERGENCY'?'URGENT_MAINTENANCE':'ROUTINE_MAINTENANCE'),
-            }));
+            $rawSubtype=strtoupper(trim((string)$public->request_subtype));
+            $category=strtoupper(trim((string)$public->service_category));
+            $requestSubtype=match(true){
+                in_array($rawSubtype,['TECHNICAL_VISIT','TECHNICAL_VISIT_QUOTE','SITE_VISIT_QUOTE','VISIT_QUOTATION'],true)
+                    || str_contains($category,'TECHNICAL VISIT') => 'TECHNICAL_VISIT',
+                in_array($rawSubtype,['SPARE_PARTS_QUOTE','SPARE_PARTS_QUOTATION','PARTS_QUOTE','SPARE_PARTS'],true) => 'SPARE_PARTS_QUOTE',
+                in_array($rawSubtype,['MAINTENANCE_CONTRACT_QUOTE','MAINTENANCE_CONTRACT_QUOTATION','CONTRACT_MAINTENANCE_QUOTE'],true) => 'MAINTENANCE_CONTRACT_QUOTE',
+                in_array($rawSubtype,['TECHNICAL_CONSULTATION','CONSULTATION'],true) => 'TECHNICAL_CONSULTATION',
+                in_array($rawSubtype,['URGENT_MAINTENANCE','EMERGENCY_MAINTENANCE'],true) => 'URGENT_MAINTENANCE',
+                $rawSubtype==='ROUTINE_MAINTENANCE' => 'ROUTINE_MAINTENANCE',
+                default => match($requestType){
+                    'QUOTATION'=>'SPARE_PARTS_QUOTE',
+                    'CONSULTATION'=>'TECHNICAL_CONSULTATION',
+                    default=>(strtoupper((string)$public->urgency)==='EMERGENCY'?'URGENT_MAINTENANCE':'ROUTINE_MAINTENANCE'),
+                },
+            };
             $priority=match($public->urgency){'EMERGENCY'=>'EMERGENCY','URGENT'=>'HIGH','PRIORITY'=>'MEDIUM',default=>'NORMAL'};
             $plannedStart=$public->requested_date?Carbon::parse($public->requested_date->format('Y-m-d').' '.($public->requested_time?:'00:00')):now();
 
