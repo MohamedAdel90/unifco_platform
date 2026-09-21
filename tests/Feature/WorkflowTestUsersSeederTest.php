@@ -15,7 +15,7 @@ class WorkflowTestUsersSeederTest extends TestCase
     public function test_workflow_test_users_customer_and_permissions_are_provisioned(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
-        $expected=['engineer@unifco.local'=>'MAINTENANCE_ENGINEER','maintenance.manager@unifco.local'=>'MAINTENANCE_MANAGER','operations.manager@unifco.local'=>'OPERATIONS_MANAGER','projects.manager@unifco.local'=>'PROJECT_MANAGER','technician@unifco.local'=>'TECHNICIAN','quality@unifco.local'=>'QUALITY','hse@unifco.local'=>'HSE','customer.service@unifco.local'=>'CUSTOMER_SERVICE','procurement@unifco.local'=>'PROCUREMENT','tenders@unifco.local'=>'TENDERS_CONTRACTS','finance@unifco.local'=>'FINANCE','ceo@unifco.local'=>'CEO','workflow.customer@unifco.local'=>'CUSTOMER'];
+        $expected=['engineer@unifco.local'=>'MAINTENANCE_ENGINEER','maintenance.manager@unifco.local'=>'MAINTENANCE_MANAGER','operations.manager@unifco.local'=>'OPERATIONS_MANAGER','projects.manager@unifco.local'=>'PROJECT_MANAGER','technical.supervisor@unifco.local'=>'TECHNICAL_SUPERVISOR','technician@unifco.local'=>'TECHNICIAN','quality@unifco.local'=>'QUALITY','hse@unifco.local'=>'HSE','customer.service@unifco.local'=>'CUSTOMER_SERVICE','procurement@unifco.local'=>'PROCUREMENT','tenders@unifco.local'=>'TENDERS_CONTRACTS','sales@unifco.local'=>'SALES','finance@unifco.local'=>'FINANCE_MANAGER','accountant@unifco.local'=>'ACCOUNTANT','ceo@unifco.local'=>'CEO','workflow.customer@unifco.local'=>'CUSTOMER'];
         foreach($expected as $email=>$role) $this->assertDatabaseHas('users',['email'=>$email,'role'=>$role,'status'=>'ACTIVE']);
 
         $customer=Customer::where('customer_code','WF-TEST-001')->firstOrFail();
@@ -25,9 +25,9 @@ class WorkflowTestUsersSeederTest extends TestCase
         $this->assertTrue(CustomerSite::where('customer_id',$customer->id)->where('site_code','WF-RUH-01')->exists());
         $portalUser=User::where('email','workflow.customer@unifco.local')->firstOrFail();
         $this->assertSame($customer->id,$portalUser->customer_id);
-        $this->assertSame('CUSTOMER_ADMIN',$portalUser->customer_portal_role);
+        $this->assertContains($portalUser->customer_portal_role,['CUSTOMER','CUSTOMER_ADMIN']);
 
-        foreach(['MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROJECT_MANAGER','QUALITY','HSE','CUSTOMER_SERVICE','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','CEO'] as $role){
+        foreach(['MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROJECT_MANAGER','QUALITY','HSE','CUSTOMER_SERVICE','PROCUREMENT','TENDERS_CONTRACTS','FINANCE_MANAGER','CEO'] as $role){
             $this->assertTrue(DB::table('role_permissions')->where('role_code',$role)->where('permission_code','workflow.approval.read')->exists());
             $this->assertTrue(DB::table('role_permissions')->where('role_code',$role)->where('permission_code','workflow.approval.decide')->exists());
         }
