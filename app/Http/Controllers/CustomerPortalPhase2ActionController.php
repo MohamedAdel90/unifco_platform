@@ -59,7 +59,7 @@ class CustomerPortalPhase2ActionController extends Controller
         $data=$request->validate(['notes'=>['required','string','max:2000']]);
 
         $action=$this->createAction($user,[
-            'action_type'=>'INVOICE_QUERY','assigned_role'=>'FINANCE','priority'=>'NORMAL','reference_type'=>FinancialDocument::class,'reference_id'=>$invoice->id,
+            'action_type'=>'INVOICE_QUERY','assigned_role'=>'FINANCE_MANAGER','priority'=>'NORMAL','reference_type'=>FinancialDocument::class,'reference_id'=>$invoice->id,
         ],['notes'=>$data['notes'],'due_at'=>now()->addWeekdays(2)]);
 
         $this->event($user,'INVOICE_QUERY_SUBMITTED',FinancialDocument::class,$invoice->id,'Invoice query submitted: '.$invoice->document_no,$data['notes'],$action->id);
