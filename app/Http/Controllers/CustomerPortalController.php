@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\{DB, Schema};
 class CustomerPortalController extends Controller
 {
     private const WORKFLOW_ROLES = [
-        'MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE','PROJECT_MANAGER','CEO',
+        'MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROCUREMENT','TENDERS_CONTRACTS','FINANCE_MANAGER','PROJECT_MANAGER','CEO',
     ];
 
     public function __construct(private AuthorizationService $authorization) {}
