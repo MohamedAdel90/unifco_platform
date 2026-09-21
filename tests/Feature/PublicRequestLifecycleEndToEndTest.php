@@ -62,8 +62,13 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
 
     private function submit(string $intent,string $subtype,array $overrides=[]): ServiceRequest
     {
-        $this->post('/service-requests',$this->payload($intent,$subtype,$overrides))->assertRedirect();
+        $before=PublicServiceRequest::count();
+        $this->post('/service-requests',$this->payload($intent,$subtype,$overrides))
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+        $this->assertSame($before+1,PublicServiceRequest::count(),'Public request was not persisted.');
         $public=PublicServiceRequest::latest('id')->firstOrFail();
+        $this->assertSame($subtype,$public->request_subtype,'Public request subtype changed during intake.');
         $this->assertNotNull(
             $public->converted_at,
             (string) ($public->conversion_error ?: 'Public request was not converted.')
