@@ -527,14 +527,43 @@
 
 
             @if($section === 'contracts')
-                <div class="page-head"><div><h2>Contracts</h2><p>All contracts and service coverage for this customer account.</p></div></div>
-                <div class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contract</th><th>Title</th><th>Period</th><th>Status</th><th></th></tr></thead><tbody>@forelse($contracts as $contract)<tr><td>{{ $contract->contract_no }}</td><td>{{ $contract->title }}</td><td>{{ $contract->starts_on?->format('Y-m-d') }} — {{ $contract->ends_on?->format('Y-m-d') }}</td><td>{{ $contract->status }}</td><td><a class="pill" href="{{ route('customer.contracts.pdf',$contract) }}">PDF</a></td></tr>
-@empty
-<tr><td colspan="5">No contracts in scope.</td></tr>
-@endforelse
-</tbody></table></div></div>
-            
-@endif
+                @php($contractTotal = $contracts->count())
+                @php($contractActive = $contracts->where('status','ACTIVE')->count())
+                @php($contractExpiring = $contracts->filter(fn($c)=>$c->status==='ACTIVE' && $c->ends_on && $c->ends_on->between(today(),today()->addDays(90)))->count())
+                @php($nextExpiry = $contracts->where('status','ACTIVE')->whereNotNull('ends_on')->sortBy('ends_on')->first())
+                <div class="page-head"><div><div class="eyebrow">Customer Contracts</div><h2>Contracts</h2><p>All contracts and service coverage for this customer account.</p></div></div>
+                <section class="contract-stats">
+                    <div class="card contract-stat"><b>{{ $contractTotal }}</b><span>Total Contracts</span><small>All contracts in your account</small></div>
+                    <div class="card contract-stat active"><b>{{ $contractActive }}</b><span>Active Contracts</span><small>Currently in effect</small></div>
+                    <div class="card contract-stat expiring"><b>{{ $contractExpiring }}</b><span>Expiring Soon</span><small>Within 90 days</small></div>
+                    <div class="card contract-stat"><b class="date">{{ $nextExpiry?->ends_on?->format('d M Y') ?? '—' }}</b><span>Next Expiry</span><small>{{ $nextExpiry?->contract_no ?? 'No active contract' }}</small></div>
+                </section>
+                <div class="card contract-toolbar"><label class="contract-search">@include('customer.partials.icon',['name'=>'search'])<input id="contract-search" type="search" placeholder="Search contracts by number or title..."></label><select id="contract-status"><option value="">All Statuses</option><option value="ACTIVE">Active</option><option value="EXPIRED">Expired</option><option value="DRAFT">Draft</option></select><button type="button" id="contract-reset">Reset</button></div>
+                <div class="contract-desktop card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contract</th><th>Title</th><th>Period</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+                @forelse($contracts as $contract)<tr data-contract-row data-status="{{ strtoupper((string)$contract->status) }}" data-search="{{ strtolower($contract->contract_no.' '.$contract->title.' '.$contract->status) }}"><td><strong class="contract-number">{{ $contract->contract_no }}</strong></td><td>{{ $contract->title }}</td><td>{{ $contract->starts_on?->format('d M Y') ?? '—' }} — {{ $contract->ends_on?->format('d M Y') ?? '—' }}</td><td><span class="pill {{ $contract->status==='ACTIVE'?'green':'' }}">{{ $contract->status }}</span></td><td><a class="pill" href="{{ route('customer.contracts.pdf',$contract) }}">View / PDF</a></td></tr>
+                @empty<tr><td colspan="5"><div class="empty"><strong>No contracts in scope</strong>Contracts available to your account will appear here.</div></td></tr>@endforelse
+                </tbody></table></div></div>
+                <div class="contract-mobile">
+                @forelse($contracts as $contract)
+                    @php($durationDays = $contract->starts_on && $contract->ends_on ? max(1,$contract->starts_on->diffInDays($contract->ends_on)) : null)
+                    @php($elapsedDays = $durationDays && $contract->starts_on ? max(0,min($durationDays,$contract->starts_on->diffInDays(today(),false))) : 0)
+                    @php($progress = $durationDays ? (int)round(($elapsedDays/$durationDays)*100) : 0)
+                    <article class="card contract-mobile-card" data-contract-row data-status="{{ strtoupper((string)$contract->status) }}" data-search="{{ strtolower($contract->contract_no.' '.$contract->title.' '.$contract->status) }}">
+                        <div class="contract-mobile-head"><div><strong>{{ $contract->contract_no }}</strong><h3>{{ $contract->title }}</h3></div><span class="pill {{ $contract->status==='ACTIVE'?'green':'' }}">{{ $contract->status }}</span></div>
+                        <div class="contract-period"><small>Contract Period</small><b>{{ $contract->starts_on?->format('d M Y') ?? '—' }} → {{ $contract->ends_on?->format('d M Y') ?? '—' }}</b></div>
+                        @if($durationDays)<div class="contract-progress"><i style="width:{{ $progress }}%"></i></div><div class="contract-progress-copy"><span>Contract progress</span><b>{{ $progress }}%</b></div>@endif
+                        <div class="contract-coverage"><div><small>Coverage</small><strong>Maintenance Services</strong></div><div><small>Status</small><strong>{{ ucfirst(strtolower((string)$contract->status)) }}</strong></div></div>
+                        <a class="btn contract-pdf" href="{{ route('customer.contracts.pdf',$contract) }}">View Contract / Download PDF</a>
+                    </article>
+                @empty<div class="card empty"><strong>No contracts in scope</strong>Contracts available to your account will appear here.</div>@endforelse
+                </div>
+                <style>
+                    .contract-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.contract-stat{padding:15px;min-height:92px;border-top:3px solid #dbe8f7}.contract-stat.active{border-top-color:var(--green)}.contract-stat.expiring{border-top-color:var(--amber)}.contract-stat b{display:block;font-size:22px;line-height:1;color:var(--ink)}.contract-stat b.date{font-size:16px}.contract-stat span{display:block;font-size:9px;font-weight:850;margin-top:7px}.contract-stat small{display:block;font-size:7px;color:var(--muted);margin-top:4px}.contract-toolbar{padding:11px;display:grid;grid-template-columns:minmax(260px,1fr) 170px auto;gap:9px;margin-bottom:12px}.contract-search,.contract-toolbar select,.contract-toolbar button{height:38px;border:1px solid var(--line);border-radius:8px;background:#fff}.contract-search{display:flex;align-items:center;gap:8px;padding:0 11px}.contract-search .ui-icon{width:15px}.contract-search input{border:0;outline:0;width:100%;font-size:9px}.contract-toolbar select{padding:0 10px;font-size:9px}.contract-toolbar button{padding:0 14px;color:var(--ink);font-size:9px;font-weight:800;cursor:pointer}.contract-number{color:var(--blue)}.contract-mobile{display:none}
+                    @media(max-width:780px){.contract-stats{grid-template-columns:1fr 1fr}.contract-toolbar{grid-template-columns:1fr auto}.contract-search{grid-column:1/-1}.contract-toolbar select{min-width:0}.contract-desktop{display:none}.contract-mobile{display:grid;gap:12px}.contract-mobile-card{padding:16px}.contract-mobile-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.contract-mobile-head>div{min-width:0}.contract-mobile-head strong{font-size:14px}.contract-mobile-head h3{font-size:11px;margin:7px 0 0;line-height:1.4}.contract-period{margin-top:17px;padding-top:14px;border-top:1px solid #edf1f5}.contract-period small,.contract-coverage small{display:block;font-size:8px;color:var(--muted);margin-bottom:5px}.contract-period b{font-size:10px}.contract-progress{height:7px;background:#e9eef4;border-radius:999px;overflow:hidden;margin-top:13px}.contract-progress i{display:block;height:100%;background:var(--green);border-radius:inherit}.contract-progress-copy{display:flex;justify-content:space-between;font-size:8px;color:var(--muted);margin-top:6px}.contract-progress-copy b{color:var(--ink)}.contract-coverage{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.contract-coverage>div{padding:11px;border-radius:9px;background:#f7f9fc}.contract-coverage strong{font-size:9px}.contract-pdf{display:block;text-align:center;padding:11px}.contract-stat{min-height:84px;padding:12px}}
+                    @media(max-width:520px){.contract-stat b{font-size:19px}.contract-stat b.date{font-size:13px}}
+                </style>
+                <script>document.addEventListener('DOMContentLoaded',()=>{const rows=[...document.querySelectorAll('[data-contract-row]')],search=document.getElementById('contract-search'),status=document.getElementById('contract-status'),reset=document.getElementById('contract-reset');const apply=()=>{const q=(search?.value||'').toLowerCase(),s=status?.value||'';rows.forEach(row=>row.style.display=(!q||row.dataset.search.includes(q))&&(!s||row.dataset.status===s)?'':'none')};search?.addEventListener('input',apply);status?.addEventListener('change',apply);reset?.addEventListener('click',()=>{if(search)search.value='';if(status)status.value='';apply()})});</script>
+            @endif
 
 
             @if($section === 'invoices')
