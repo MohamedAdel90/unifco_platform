@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\AuthorizationService;
+use App\Services\{AuthorizationService,RequestWorkflowHealthService};
 use App\Services\Dashboard\OperationsManagerDashboardService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class OperationsManagerDashboardController extends Controller
 {
-    public function __invoke(Request $request, AuthorizationService $authorization, OperationsManagerDashboardService $dashboard): View
+    public function __invoke(Request $request, AuthorizationService $authorization, OperationsManagerDashboardService $dashboard, RequestWorkflowHealthService $workflowHealth): View
     {
         $user = $request->user();
         abort_unless($user && $user->hasRole('OPERATIONS_MANAGER'), 403);
@@ -33,6 +33,7 @@ class OperationsManagerDashboardController extends Controller
         $slaBreaches=(clone $serviceRequests)->whereNotIn('status',['CLOSED','CANCELLED','COMPLETED'])->whereNotNull('current_stage_due_at')->where('current_stage_due_at','<',now())->get();
         $unassignedRequests=(clone $serviceRequests)->where('operations_routing_status','UNASSIGNED')->whereNotNull('operational_domain_id')->whereNotIn('status',['CLOSED','CANCELLED','COMPLETED'])->get();
         $criticalAssets=(clone $assets)->where(fn($q)=>$q->whereIn('status',['DOWN','OUT_OF_SERVICE','CRITICAL'])->orWhere('health_score','<',50))->get();
+        $workflowHealthSummary=$workflowHealth->summary(clone $serviceRequests);
 
         $slaTotal=max(1,$openServiceRequests->count());
         $slaPerformance=(int) round((1-($slaBreaches->count()/$slaTotal))*100);
@@ -42,6 +43,7 @@ class OperationsManagerDashboardController extends Controller
         $operationalBand=$operationalScore>=90?'Operational':($operationalScore>=75?'Watch':($operationalScore>=60?'Degraded':'Critical'));
 
         $actionItems=collect([
+            ['count'=>$workflowHealthSummary['critical_count'],'severity'=>'Critical','ar'=>'استثناءات حرجة في دورة الطلبات','en'=>'Critical request workflow exceptions','url'=>route('operations-manager.dashboard')],
             ['count'=>$unassignedRequests->count(),'severity'=>'Critical','ar'=>'طلبات تشغيل بدون مدير مطابق','en'=>'Unassigned operational requests','url'=>route('operations-manager.dashboard')],
             ['count'=>$criticalWorkOrders->count(),'severity'=>'Critical','ar'=>'أوامر عمل حرجة تحتاج تدخلاً','en'=>'Critical work orders require attention','url'=>route('maintenance.work-orders.index')],
             ['count'=>$overdueWorkOrders->count(),'severity'=>'High','ar'=>'أوامر عمل متأخرة','en'=>'Overdue work orders','url'=>route('maintenance.work-orders.index')],
@@ -49,6 +51,6 @@ class OperationsManagerDashboardController extends Controller
             ['count'=>$criticalAssets->count(),'severity'=>'Medium','ar'=>'أصول حرجة أو متوقفة','en'=>'Critical or down assets','url'=>route('eam.assets.index')],
         ])->filter(fn($item)=>$item['count']>0)->values();
 
-        return view('operations-manager.dashboard',compact('capabilities','openWorkOrders','overdueWorkOrders','criticalWorkOrders','recentWorkOrders','openServiceRequests','slaBreaches','unassignedRequests','criticalAssets','slaPerformance','pmCompliance','averageAssetHealth','operationalScore','operationalBand','actionItems'));
+        return view('operations-manager.dashboard',compact('capabilities','openWorkOrders','overdueWorkOrders','criticalWorkOrders','recentWorkOrders','openServiceRequests','slaBreaches','unassignedRequests','criticalAssets','slaPerformance','pmCompliance','averageAssetHealth','operationalScore','operationalBand','actionItems','workflowHealthSummary'));
     }
 }

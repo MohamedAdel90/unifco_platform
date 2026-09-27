@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{Asset,CrmOpportunity,CrmQuotation,Customer,CustomerSite,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,WorkOrder};
+use App\Models\{Asset,CrmOpportunity,CrmQuotation,Customer,CustomerSite,Organization,PublicServiceRequest,ServiceRequest,Tenant};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB,Log};
 use Throwable;
@@ -13,6 +13,7 @@ class PublicRequestPipelineService
         private CustomerLifecycleService $customers,
         private ServiceRequestWorkflowService $workflow,
         private CustomerAcquisitionService $acquisition,
+        private ServiceContractCoverageResolver $contractCoverage,
     ) {}
 
     public function convert(PublicServiceRequest $public): PublicServiceRequest
@@ -76,10 +77,6 @@ class PublicRequestPipelineService
             $priority=match($public->urgency){'EMERGENCY'=>'EMERGENCY','URGENT'=>'HIGH','PRIORITY'=>'MEDIUM',default=>'NORMAL'};
             $plannedStart=$public->requested_date?Carbon::parse($public->requested_date->format('Y-m-d').' '.($public->requested_time?:'00:00')):now();
 
-            $contract=ServiceContract::where('customer_id',$customer->id)->where('status','ACTIVE')
-                ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
-                ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))->orderByDesc('starts_on')->first();
-            $eligibility=$contract?'IN_CONTRACT':'CHARGEABLE';
             $site=CustomerSite::where('customer_id',$customer->id)
                 ->where(function($q)use($public){$q->where('name',$public->site_name)->orWhere('city',$public->site_city);})
                 ->orderByRaw('CASE WHEN name = ? THEN 0 ELSE 1 END',[$public->site_name])
@@ -93,11 +90,17 @@ class PublicRequestPipelineService
                         'organization_id'=>$org->id,'customer_id'=>$customer->id,'customer_site_id'=>$site?->id,
                         'name'=>$public->asset_type?:($priority==='EMERGENCY'?'Emergency intake asset':'Service intake asset'),
                         'asset_category'=>$public->asset_type?:'GENERAL','manufacturer'=>$public->equipment_brand,'model_no'=>$public->equipment_model,
-                        'contract_reference'=>$contract?->contract_no,'status'=>'REGISTERED','verification_status'=>'DRAFT',
+                        'status'=>'REGISTERED','verification_status'=>'DRAFT',
                     ]
                 );
                 $public->update(['asset_id'=>$asset->id]);
             }
+
+            // Coverage must be proven at asset/site scope. An unrelated active
+            // contract for the same customer must never make this request free or
+            // IN_CONTRACT because that decision feeds SLA, quotation and finance.
+            $contract=$this->contractCoverage->resolve($customer,$site,$asset);
+            $eligibility=$contract?'IN_CONTRACT':'CHARGEABLE';
 
             $meta=[
                 'نوع الطلب: '.($public->request_intent?:$public->request_type),'مسار الطلب: '.$requestSubtype,'مجموعة الخدمة: '.($public->service_family?:'-'),'الأصل/المعدة: '.($public->asset_type?:'-'),
@@ -130,20 +133,16 @@ class PublicRequestPipelineService
                 } else $links['status']='CONVERTED_TO_OPPORTUNITY';
             }
 
-            if($requestType==='MAINTENANCE') {
-                $workOrder=WorkOrder::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$customer->id,'service_contract_id'=>$contract?->id,'work_order_no'=>'WO-'.$public->reference_no,'asset_id'=>$asset->id,'maintenance_type'=>'CORRECTIVE','priority'=>$priority,'status'=>'OPEN','planned_start'=>$plannedStart]);
-                $serviceRequest->update(['work_order_id'=>$workOrder->id]);
-                $links+=['work_order_id'=>$workOrder->id,'status'=>'CONVERTED_TO_WORK_ORDER'];
-                $this->customers->record($customer,'WORK_ORDER_CREATED','Work order '.$workOrder->work_order_no.' created','Maintenance execution record created.',$workOrder);
-            }
-
+            // Work orders are intentionally NOT created during public conversion.
+            // ServiceRequestWorkflowService is the single owner of Work Order
+            // creation and creates it idempotently when the request enters EXECUTION.
             $public->update($links+['converted_at'=>now(),'conversion_error'=>null]);
             return $public->fresh();
         });
 
         $public=PublicServiceRequest::query()->useWritePdo()->findOrFail($public->id);
         $serviceRequest=$public->service_request_id?ServiceRequest::find($public->service_request_id):null;
-        $convertedStatus=$public->work_order_id?'CONVERTED_TO_WORK_ORDER':($public->crm_quotation_id?'CONVERTED_TO_QUOTATION':($public->crm_opportunity_id?'CONVERTED_TO_OPPORTUNITY':'CONVERTED'));
+        $convertedStatus=$public->crm_quotation_id?'CONVERTED_TO_QUOTATION':($public->crm_opportunity_id?'CONVERTED_TO_OPPORTUNITY':'CONVERTED');
         if(!$serviceRequest || $serviceRequest->workflow_started_at){
             if($public->status==='WORKFLOW_PENDING') $public->update(['status'=>$convertedStatus,'conversion_error'=>null]);
             return $public->fresh();

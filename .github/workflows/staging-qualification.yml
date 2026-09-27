@@ -75,13 +75,12 @@ jobs:
         run: |
           mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\n' | sort | awk 'toupper(substr($0,1,1)) >= "S" && toupper(substr($0,1,1)) <= "V"' | sed 's#^#tests/Feature/#')
           if ((${#files[@]})); then php artisan test "${files[@]}"; fi
-
       - name: Run feature tests W-Z
         if: matrix.suite == 'feature-w-z'
         shell: bash
         run: |
-          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\\n' | sort | awk 'toupper(substr($0,1,1)) >= "W" && toupper(substr($0,1,1)) <= "Z"' | sed 's|^|tests/Feature/|')
-          if ((files_count=${#files[@]})); then php artisan test "${files[@]}"; fi
+          mapfile -t files < <(find tests/Feature -maxdepth 1 -type f -name '*Test.php' -printf '%f\n' | sort | awk 'toupper(substr($0,1,1)) >= "W" && toupper(substr($0,1,1)) <= "Z"' | sed 's#^#tests/Feature/#')
+          if ((${#files[@]})); then php artisan test "${files[@]}"; fi
 
   staging-validation:
     runs-on: ubuntu-latest
@@ -103,4 +102,3 @@ jobs:
         run: php artisan schedule:list
       - name: Validate staging compose
         run: docker compose -f docker-compose.staging.yml config >/dev/null
-

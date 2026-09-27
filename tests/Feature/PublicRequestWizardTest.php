@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{PublicServiceRequest,ServiceRequest,WorkOrder};
+use App\Models\{PublicServiceRequest,ServiceRequest};
 use App\Services\PublicRequestPipelineService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -274,7 +274,7 @@ class PublicRequestWizardTest extends TestCase
         $this->assertNotSame($assetA,$assetB);
     }
 
-    public function test_manual_maintenance_request_creates_customer_scoped_asset_request_and_work_order(): void
+    public function test_manual_maintenance_request_creates_customer_scoped_asset_and_defers_work_order_until_execution(): void
     {
         $tenantId=DB::table('tenants')->insertGetId(['name'=>'UNIFCO','code'=>'UNIFCO','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
         $orgId=DB::table('organizations')->insertGetId(['tenant_id'=>$tenantId,'name'=>'HQ','code'=>'HQ','status'=>'ACTIVE','created_at'=>now(),'updated_at'=>now()]);
@@ -286,12 +286,14 @@ class PublicRequestWizardTest extends TestCase
 
         $public=PublicServiceRequest::where('reference_no','UNRM-926000001')->firstOrFail();
         $serviceRequest=ServiceRequest::where('request_no','SR-UNRM-926000001')->firstOrFail();
-        $workOrder=WorkOrder::where('work_order_no','WO-UNRM-926000001')->firstOrFail();
         $this->assertNotNull($public->converted_at);
         $this->assertSame($customerId,(int)$serviceRequest->customer_id);
         $this->assertSame($siteId,(int)$serviceRequest->customer_site_id);
-        $this->assertSame($serviceRequest->work_order_id,$workOrder->id);
-        $this->assertDatabaseHas('assets',['id'=>$workOrder->asset_id,'customer_id'=>$customerId,'customer_site_id'=>$siteId,'contract_reference'=>'CNT-ROUTINE-1']);
+        $this->assertSame('CHARGEABLE',$serviceRequest->eligibility);
+        $this->assertNull($serviceRequest->service_contract_id);
+        $this->assertNull($serviceRequest->work_order_id);
+        $this->assertDatabaseCount('work_orders',0);
+        $this->assertDatabaseHas('assets',['id'=>$serviceRequest->asset_id,'customer_id'=>$customerId,'customer_site_id'=>$siteId]);
         $this->get('/request-received/UNRM-926000001?lang=en')->assertOk()->assertSee('UNRM-926000001',false);
     }
 
