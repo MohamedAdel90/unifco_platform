@@ -38,6 +38,7 @@ class ServiceRequest extends Model
                 && in_array((string)$request->workflow_stage,['CSAT','COMPLETED'],true);
 
             if ($leavingClosureForCompletion && $request->eligibility === 'CHARGEABLE') {
+                $legacyInvoiceId = data_get($request->workflow_context,'invoice_id');
                 $invoice = FinancialDocument::query()
                     ->where('tenant_id',$request->tenant_id)
                     ->where('service_request_id',$request->id)
@@ -45,20 +46,18 @@ class ServiceRequest extends Model
                     ->latest('id')
                     ->first();
 
-                if (!$invoice) {
-                    $legacyInvoiceId = data_get($request->workflow_context,'invoice_id');
-                    if ($legacyInvoiceId) {
-                        $invoice = FinancialDocument::query()
-                            ->where('tenant_id',$request->tenant_id)
-                            ->whereKey($legacyInvoiceId)
-                            ->where('document_type','AR_INVOICE')
-                            ->first();
-                    }
+                if (!$invoice && $legacyInvoiceId) {
+                    $invoice = FinancialDocument::query()
+                        ->where('tenant_id',$request->tenant_id)
+                        ->whereKey($legacyInvoiceId)
+                        ->where('document_type','AR_INVOICE')
+                        ->first();
                 }
 
-                if (!$invoice || $invoice->status !== 'SETTLED' || (float)$invoice->open_amount > 0) {
+                $financialSettlementExpected = $invoice !== null || !empty($legacyInvoiceId);
+                if ($financialSettlementExpected && (!$invoice || $invoice->status !== 'SETTLED' || (float)$invoice->open_amount > 0)) {
                     throw ValidationException::withMessages([
-                        'workflow_stage'=>'Chargeable requests cannot leave CLOSURE until the linked AR invoice is fully settled.',
+                        'workflow_stage'=>'Chargeable requests with an AR invoice cannot leave CLOSURE until that invoice is fully settled.',
                     ]);
                 }
             }
