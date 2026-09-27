@@ -65,7 +65,7 @@ class PublicSiteGuestRequestsTest extends TestCase
         $this->assertSame(2,\App\Models\CrmOpportunity::where('customer_id',$customer->id)->count());
     }
 
-    public function test_guest_emergency_is_converted_to_service_request_and_work_order(): void
+    public function test_guest_emergency_is_converted_to_service_request_and_defers_work_order_until_execution(): void
     {
         $this->post('/service-requests', [
             'request_type' => 'EMERGENCY_MAINTENANCE', 'service_category' => 'لوحات ATS',
@@ -74,9 +74,9 @@ class PublicSiteGuestRequestsTest extends TestCase
             'email' => 'ops@example.test', 'mobile' => '0500000001',
         ])->assertRedirect();
 
-        $this->assertDatabaseHas('public_service_requests', ['request_type'=>'EMERGENCY_MAINTENANCE','urgency'=>'EMERGENCY','status'=>'CONVERTED_TO_WORK_ORDER']);
-        $this->assertDatabaseHas('service_requests', ['company_name'=>'Emergency Client','priority'=>'EMERGENCY','status'=>'OPEN']);
-        $this->assertDatabaseHas('work_orders', ['maintenance_type'=>'CORRECTIVE','priority'=>'EMERGENCY','status'=>'OPEN']);
+        $this->assertDatabaseHas('public_service_requests', ['request_type'=>'EMERGENCY_MAINTENANCE','urgency'=>'EMERGENCY','status'=>'CONVERTED']);
+        $this->assertDatabaseHas('service_requests', ['company_name'=>'Emergency Client','priority'=>'EMERGENCY','status'=>'OPEN','workflow_stage'=>'EMERGENCY_DISPATCH']);
+        $this->assertDatabaseCount('work_orders',0);
         $this->assertDatabaseHas('assets', ['asset_code'=>'INTAKE-UNUM-926000001','name'=>'لوحات ATS']);
         $this->assertDatabaseHas('crm_leads', ['company'=>'Emergency Client','source_channel'=>'WEBSITE','lifecycle_stage'=>'CONVERTED']);
     }
