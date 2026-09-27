@@ -201,7 +201,6 @@ class ServiceRequestWorkflowService
                 'work_order_no' => 'WO-'.$reference,
             ], [
                 'organization_id' => $request->organization_id,
-                'customer_id' => $request->customer_id,
                 'asset_id' => $request->asset_id,
                 'service_contract_id' => $request->service_contract_id,
                 'maintenance_type' => 'CORRECTIVE',
