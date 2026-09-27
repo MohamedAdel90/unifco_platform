@@ -121,6 +121,14 @@ class FinancialRequestLifecycleTest extends TestCase
         $this->assertSame('CSAT',$request->fresh()->workflow_stage);
     }
 
+    public function test_zero_value_chargeable_request_can_close_when_no_invoice_artifact_exists(): void
+    {
+        $request=$this->request('CHARGEABLE');
+        $request->update(['workflow_stage'=>'CSAT']);
+
+        $this->assertSame('CSAT',$request->fresh()->workflow_stage);
+    }
+
     public function test_non_chargeable_request_can_close_without_an_invoice(): void
     {
         $request=$this->request('IN_CONTRACT');
