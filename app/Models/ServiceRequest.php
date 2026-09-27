@@ -4,7 +4,8 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo,HasMany};
+use Illuminate\Validation\ValidationException;
 
 class ServiceRequest extends Model
 {
@@ -30,6 +31,37 @@ class ServiceRequest extends Model
             if (!$request->operational_domain_id && $request->asset_id) {
                 $request->operational_domain_id = Asset::query()->whereKey($request->asset_id)->value('operational_domain_id');
             }
+
+            $leavingClosureForCompletion = $request->exists
+                && $request->isDirty('workflow_stage')
+                && $request->getOriginal('workflow_stage') === 'CLOSURE'
+                && in_array((string)$request->workflow_stage,['CSAT','COMPLETED'],true);
+
+            if ($leavingClosureForCompletion && $request->eligibility === 'CHARGEABLE') {
+                $invoice = FinancialDocument::query()
+                    ->where('tenant_id',$request->tenant_id)
+                    ->where('service_request_id',$request->id)
+                    ->where('document_type','AR_INVOICE')
+                    ->latest('id')
+                    ->first();
+
+                if (!$invoice) {
+                    $legacyInvoiceId = data_get($request->workflow_context,'invoice_id');
+                    if ($legacyInvoiceId) {
+                        $invoice = FinancialDocument::query()
+                            ->where('tenant_id',$request->tenant_id)
+                            ->whereKey($legacyInvoiceId)
+                            ->where('document_type','AR_INVOICE')
+                            ->first();
+                    }
+                }
+
+                if (!$invoice || $invoice->status !== 'SETTLED' || (float)$invoice->open_amount > 0) {
+                    throw ValidationException::withMessages([
+                        'workflow_stage'=>'Chargeable requests cannot leave CLOSURE until the linked AR invoice is fully settled.',
+                    ]);
+                }
+            }
         });
     }
 
@@ -38,4 +70,5 @@ class ServiceRequest extends Model
     public function operationalDomain(): BelongsTo { return $this->belongsTo(OperationalDomain::class); }
     public function operationsManager(): BelongsTo { return $this->belongsTo(User::class, 'operations_manager_id'); }
     public function projectManager(): BelongsTo { return $this->belongsTo(User::class, 'project_manager_id'); }
+    public function financialDocuments(): HasMany { return $this->hasMany(FinancialDocument::class); }
 }
