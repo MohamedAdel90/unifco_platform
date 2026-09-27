@@ -51,6 +51,7 @@ class FinancialRequestLifecycleTest extends TestCase
             'mobile'=>$this->customer->phone,
             'service_category'=>'Maintenance',
             'subject'=>'Financial lifecycle test request',
+            'details'=>'Financial lifecycle integration test fixture.',
             'priority'=>'NORMAL',
             'status'=>'OPEN',
             'workflow_stage'=>'CLOSURE',
