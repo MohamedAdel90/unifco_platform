@@ -55,8 +55,9 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
         $this->actingAs($admin)->get(route('customer.service-requests.show',$request))
             ->assertOk()
             ->assertSee('Customer Request 360')
-            ->assertSee('TRIAGE')
-            ->assertSee('Operations triage and routing')
+            ->assertSee('Under Review')
+            ->assertDontSee('TRIAGE')
+            ->assertDontSee('Operations triage and routing')
             ->assertSee('Routine pump maintenance');
     }
 
