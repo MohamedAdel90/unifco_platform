@@ -14,7 +14,7 @@ jobs:
     env:
       TARGET_SHA: ${{ github.sha }}
     steps:
-      - name: Wait for exact deployment and audit production request matrix
+      - name: Wait for deployed release containing target and audit production request matrix
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -27,14 +27,17 @@ jobs:
           printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_matrix_key"
           chmod 600 "$HOME/.ssh/unifco_matrix_key"
           for attempt in $(seq 1 45); do
-            deployed_sha="$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_matrix_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
-              "cd /var/www/unifco_platform && git rev-parse HEAD 2>/dev/null || true")"
-            if [ "$deployed_sha" = "$TARGET_SHA" ]; then
-              echo "Production is on target SHA $TARGET_SHA"
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_matrix_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+              "cd /var/www/unifco_platform && git cat-file -e '$TARGET_SHA^{commit}' 2>/dev/null && git merge-base --is-ancestor '$TARGET_SHA' HEAD"; then
+              deployed_sha="$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_matrix_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+                "cd /var/www/unifco_platform && git rev-parse HEAD")"
+              echo "Production HEAD $deployed_sha contains target SHA $TARGET_SHA"
               break
             fi
             if [ "$attempt" -eq 45 ]; then
-              echo "Production did not reach target SHA $TARGET_SHA; current SHA: ${deployed_sha:-unknown}" >&2
+              deployed_sha="$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_matrix_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+                "cd /var/www/unifco_platform && git rev-parse HEAD 2>/dev/null || true")"
+              echo "Production does not yet contain target SHA $TARGET_SHA; current SHA: ${deployed_sha:-unknown}" >&2
               exit 1
             fi
             sleep 10
