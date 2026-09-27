@@ -66,7 +66,7 @@ class ProductionRequestMatrixAudit extends Command
             $this->line('Contract DB: '.($service->service_contract_id??'—').' | Contract scoped resolver: '.($resolvedContract?->id??'—').' | Asset contract ref: '.($asset?->contract_reference??'—'));
             $this->line('Type: '.($service->request_type??'—').' | Subtype: '.($service->request_subtype??'—').' | Priority: '.($service->priority??'—').' | Eligibility: '.($service->eligibility??'—'));
             $this->line('Workflow DB: '.($service->workflow_key??'—').' | Derived: '.$derived.' | Stage: '.($service->workflow_stage??'—').' | Status: '.($service->status??'—'));
-            $this->line('Work Order: '.($workOrder?->work_order_no??'—').' | WO customer: '.($workOrder?->customer_id??'—').' | WO asset: '.($workOrder?->asset_id??'—'));
+            $this->line('Work Order: '.($workOrder?->work_order_no??'—').' | WO asset: '.($workOrder?->asset_id??'—').' | WO contract: '.($workOrder?->service_contract_id??'—'));
 
             $issues=[];
             if($derived!==$case['expected']) $issues[]='derived workflow expected '.$case['expected'].' got '.$derived;
@@ -78,8 +78,8 @@ class ProductionRequestMatrixAudit extends Command
             if($service->eligibility==='CHARGEABLE' && $resolvedContract) $issues[]='eligibility is CHARGEABLE although scoped contract coverage exists';
             if(!$service->customer_id) $issues[]='customer_id missing';
             if(in_array($case['expected'],['MAINTENANCE','EMERGENCY_MAINTENANCE'],true) && !$service->asset_id) $issues[]='maintenance request has no asset_id';
-            if($workOrder && (int)$workOrder->customer_id!==(int)$service->customer_id) $issues[]='work order customer_id does not match service request';
             if($workOrder && (int)$workOrder->asset_id!==(int)$service->asset_id) $issues[]='work order asset_id does not match service request';
+            if($workOrder && (int)($workOrder->service_contract_id??0)!==(int)($service->service_contract_id??0)) $issues[]='work order service_contract_id does not match service request';
             if($case['expected']==='SPARE_PARTS_QUOTATION' && !in_array('PRICING_PROCUREMENT',collect($registry->template($derived,(array)$service->workflow_context))->pluck('stage')->all(),true)) $issues[]='spare-parts workflow is missing PRICING_PROCUREMENT';
             if($case['expected']==='TECHNICAL_VISIT' && in_array('PRICING_PROCUREMENT',collect($registry->template($derived,(array)$service->workflow_context))->pluck('stage')->all(),true)) $issues[]='technical-visit workflow incorrectly includes PRICING_PROCUREMENT';
 
