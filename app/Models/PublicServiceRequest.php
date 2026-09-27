@@ -29,4 +29,22 @@ class PublicServiceRequest extends Model
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (PublicServiceRequest $request): void {
+            $intent = strtoupper(trim((string) $request->request_intent));
+            $category = strtoupper(trim((string) $request->service_category));
+            $subtype = strtoupper(trim((string) $request->request_subtype));
+
+            if ($intent === 'QUOTATION' && str_contains($category, 'TECHNICAL VISIT')) {
+                $request->request_subtype = 'TECHNICAL_VISIT';
+                return;
+            }
+
+            if ($intent === 'QUOTATION' && in_array($subtype, ['TECHNICAL_VISIT_QUOTE','SITE_VISIT_QUOTE','VISIT_QUOTATION'], true)) {
+                $request->request_subtype = 'TECHNICAL_VISIT';
+            }
+        });
+    }
 }
