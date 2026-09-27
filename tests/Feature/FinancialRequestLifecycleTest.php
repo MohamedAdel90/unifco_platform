@@ -91,6 +91,30 @@ class FinancialRequestLifecycleTest extends TestCase
         $this->assertSame($invoice->id,$request->financialDocuments()->firstOrFail()->id);
     }
 
+    public function test_request_invoice_number_backfills_direct_lifecycle_link_when_creator_omits_it(): void
+    {
+        $request=$this->request();
+        $invoice=FinancialDocument::create([
+            'tenant_id'=>$this->tenant->id,
+            'organization_id'=>$this->organization->id,
+            'customer_id'=>$this->customer->id,
+            'document_no'=>'INV-SR-'.$request->id,
+            'document_type'=>'AR_INVOICE',
+            'counterparty_name'=>$this->customer->name,
+            'document_date'=>today(),
+            'due_date'=>today()->addDays(30),
+            'currency'=>'SAR',
+            'amount'=>100,
+            'open_amount'=>100,
+            'control_account_code'=>'AR',
+            'offset_account_code'=>'REV',
+            'status'=>'DRAFT',
+        ]);
+
+        $this->assertSame($request->id,$invoice->service_request_id);
+        $this->assertSame($request->id,$invoice->serviceRequest->id);
+    }
+
     public function test_chargeable_request_cannot_leave_closure_with_an_open_invoice(): void
     {
         $request=$this->request();
