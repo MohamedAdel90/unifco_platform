@@ -1,0 +1,41 @@
+name: Production Request Matrix Repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/Console/Commands/RepairProductionRequestMatrix.php'
+      - '.github/workflows/production-request-matrix-repair.yml'
+  workflow_dispatch:
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_SHA: ${{ github.sha }}
+    steps:
+      - name: Wait for deployed release containing repair
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_matrix_repair_key"
+          chmod 600 "$HOME/.ssh/unifco_matrix_repair_key"
+          for attempt in $(seq 1 45); do
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_matrix_repair_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+              "cd /var/www/unifco_platform && git cat-file -e '$TARGET_SHA^{commit}' 2>/dev/null && git merge-base --is-ancestor '$TARGET_SHA' HEAD"; then
+              break
+            fi
+            if [ "$attempt" -eq 45 ]; then
+              echo "Production did not deploy repair commit $TARGET_SHA" >&2
+              exit 1
+            fi
+            sleep 10
+          done
+          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=20 -i "$HOME/.ssh/unifco_matrix_repair_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "cd /var/www/unifco_platform && php artisan unifco:repair-production-request-matrix --apply && php artisan unifco:production-request-matrix-audit"
