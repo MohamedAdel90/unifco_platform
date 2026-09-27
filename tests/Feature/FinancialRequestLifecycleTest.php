@@ -50,6 +50,7 @@ class FinancialRequestLifecycleTest extends TestCase
             'email'=>$this->customer->email,
             'mobile'=>$this->customer->phone,
             'service_category'=>'Maintenance',
+            'subject'=>'Financial lifecycle test request',
             'priority'=>'NORMAL',
             'status'=>'OPEN',
             'workflow_stage'=>'CLOSURE',
