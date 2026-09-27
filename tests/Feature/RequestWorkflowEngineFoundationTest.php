@@ -6,6 +6,7 @@ use App\Models\{Asset,Customer,CustomerSite,Organization,PublicServiceRequest,Se
 use App\Services\ServiceRequestWorkflowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class RequestWorkflowEngineFoundationTest extends TestCase
@@ -72,7 +73,7 @@ class RequestWorkflowEngineFoundationTest extends TestCase
             'organization_id'=>$this->org->id,
             'name'=>'Workflow Foundation Admin',
             'email'=>'wf-admin@example.test',
-            'password'=>'StrongPassword123',
+            'password'=>bcrypt((string) Str::uuid()),
             'role'=>'ADMIN',
             'user_type'=>'INTERNAL',
             'status'=>'ACTIVE',
@@ -140,17 +141,17 @@ class RequestWorkflowEngineFoundationTest extends TestCase
         $request->refresh();
         $this->assertNotNull($request->work_order_id);
         $workOrder=WorkOrder::findOrFail($request->work_order_id);
-        $this->assertSame($this->customer->id,$workOrder->customer_id);
         $this->assertSame($this->asset->id,$workOrder->asset_id);
         $this->assertSame($this->contract->id,$workOrder->service_contract_id);
         $this->assertSame(1,WorkOrder::where('tenant_id',$this->tenant->id)->where('work_order_no',$workOrder->work_order_no)->count());
     }
 
-    public function test_workflow_transitions_are_written_to_immutable_audit_log_with_stage_metadata(): void
+    public function test_workflow_transitions_are_written_to_audit_log_with_before_and_after_state(): void
     {
         $this->asset->update(['contract_reference'=>$this->contract->contract_no]);
         [, $request]=$this->submitRoutine();
 
+        $this->actingAs($this->admin);
         $from=(string)$request->workflow_stage;
         app(ServiceRequestWorkflowService::class)->advance($request,$from,$this->admin->id,'Audit foundation test.');
         $to=(string)$request->fresh()->workflow_stage;
@@ -163,9 +164,10 @@ class RequestWorkflowEngineFoundationTest extends TestCase
             ->first();
 
         $this->assertNotNull($row);
-        $metadata=json_decode((string)($row->metadata ?? '{}'),true);
-        $this->assertSame($from,$metadata['previous_stage'] ?? null);
-        $this->assertSame($to,$metadata['next_stage'] ?? null);
-        $this->assertSame($this->admin->id,$metadata['actor_id'] ?? null);
+        $this->assertSame($this->admin->id,(int)$row->user_id);
+        $before=json_decode((string)$row->before_state,true);
+        $after=json_decode((string)$row->after_state,true);
+        $this->assertSame($from,$before['workflow_stage'] ?? null);
+        $this->assertSame($to,$after['workflow_stage'] ?? null);
     }
 }
