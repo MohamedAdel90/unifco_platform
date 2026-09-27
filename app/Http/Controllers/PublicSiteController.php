@@ -58,7 +58,15 @@ HTML;
 
     public function store(Request $request, PublicRequestPipelineService $pipeline): RedirectResponse
     {
-        if(!$request->filled('request_intent')&&$request->filled('request_type')){
+        $submittedSubtype=strtoupper(trim((string)$request->input('request_subtype')));
+        if(!$request->filled('request_intent') && $submittedSubtype!==''){
+            $subtypeIntent=[
+                'SPARE_PARTS_QUOTE'=>'QUOTATION','MAINTENANCE_CONTRACT_QUOTE'=>'QUOTATION','TECHNICAL_VISIT'=>'QUOTATION',
+                'ROUTINE_MAINTENANCE'=>'SERVICE_REQUEST','URGENT_MAINTENANCE'=>'SERVICE_REQUEST','TECHNICAL_CONSULTATION'=>'CONSULTATION',
+            ];
+            if(isset($subtypeIntent[$submittedSubtype])) $request->merge(['request_intent'=>$subtypeIntent[$submittedSubtype]]);
+        }
+        if(!$request->filled('request_intent') && !$request->filled('request_subtype') && $request->filled('request_type')){
             $legacyType=strtoupper((string)$request->input('request_type')); $emergency=$legacyType==='EMERGENCY_MAINTENANCE';
             $request->merge([
                 'request_intent'=>$legacyType==='QUOTATION'?'QUOTATION':'SERVICE_REQUEST',
