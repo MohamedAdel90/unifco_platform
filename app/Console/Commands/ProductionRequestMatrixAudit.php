@@ -25,7 +25,7 @@ class ProductionRequestMatrixAudit extends Command
             ['no'=>'UNM-926000027','group'=>'existing-unlinked','label'=>'Maintenance contract','expected'=>'MAINTENANCE_CONTRACT_QUOTATION'],
             ['no'=>'UNM-926000021','group'=>'existing-unlinked','label'=>'Maintenance contract quotation outside contract','expected'=>'MAINTENANCE_CONTRACT_QUOTATION'],
             ['no'=>'UNC-926000022','group'=>'existing-unlinked','label'=>'Technical consultation','expected'=>'TECHNICAL_CONSULTATION'],
-            ['no'=>'UNM-926000028','group'=>'new-customer','label'=>'Routine maintenance','expected'=>'MAINTENANCE'],
+            ['no'=>'UNM-926000028','group'=>'new-customer','label'=>'Maintenance contract quotation','expected'=>'MAINTENANCE_CONTRACT_QUOTATION'],
             ['no'=>'UNRM-926000029','group'=>'new-customer','label'=>'Routine maintenance','expected'=>'MAINTENANCE'],
             ['no'=>'UNUM-926000030','group'=>'new-customer','label'=>'Emergency maintenance','expected'=>'EMERGENCY_MAINTENANCE'],
             ['no'=>'UNQ-926000031','group'=>'new-customer','label'=>'Spare parts quotation','expected'=>'SPARE_PARTS_QUOTATION'],
