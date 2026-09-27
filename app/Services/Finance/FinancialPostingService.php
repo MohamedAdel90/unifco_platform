@@ -23,6 +23,49 @@ class FinancialPostingService
         if ($count !== count(array_unique($codes))) throw ValidationException::withMessages(['accounts'=>'All posting accounts must exist, be active, and allow posting.']);
     }
 
+    private function resolveServiceRequest(FinancialDocument $document): ?ServiceRequest
+    {
+        if ($document->service_request_id) {
+            return ServiceRequest::query()
+                ->where('tenant_id',$document->tenant_id)
+                ->whereKey($document->service_request_id)
+                ->first();
+        }
+
+        return ServiceRequest::query()
+            ->where('tenant_id',$document->tenant_id)
+            ->where('customer_id',$document->customer_id)
+            ->get()
+            ->first(function(ServiceRequest $request) use($document){
+                return (int)data_get($request->workflow_context,'invoice_id')===(int)$document->id;
+            });
+    }
+
+    private function bindDocumentToRequest(FinancialDocument $document, ?ServiceRequest $request): void
+    {
+        if (!$request) return;
+
+        $links = array_filter([
+            'service_request_id'=>$request->id,
+            'work_order_id'=>$request->work_order_id,
+            'crm_quotation_id'=>$request->quotation_id,
+        ], fn($value) => $value !== null);
+
+        if ($links) $document->update($links);
+    }
+
+    private function syncRequestFinanceContext(?ServiceRequest $request, FinancialDocument $document): void
+    {
+        if (!$request) return;
+
+        $context=(array)($request->workflow_context ?? []);
+        $context['invoice_id']=$document->id;
+        $context['invoice_no']=$document->document_no;
+        $context['invoice_status']=$document->status;
+        $context['invoice_open_amount']=(float)$document->open_amount;
+        $request->update(['workflow_context'=>$context]);
+    }
+
     public function postDocument(FinancialDocument $document): FinancialDocument
     {
         return DB::transaction(function () use ($document) {
@@ -49,13 +92,19 @@ class FinancialPostingService
                 $journal->lines()->create(['line_no'=>1,'account_code'=>$document->control_account_code,'debit'=>$document->amount,'credit'=>0,'description'=>$document->counterparty_name]);
                 $journal->lines()->create(['line_no'=>2,'account_code'=>$document->offset_account_code,'debit'=>0,'credit'=>$document->amount,'description'=>$document->counterparty_name]);
             }
+
             $before=$document->toArray();
             $document->update(['status'=>'POSTED','posted_by'=>Auth::id(),'posted_at'=>now(),'journal_id'=>$journal->id,'open_amount'=>$document->amount]);
-            $this->audit->record('finance.document.posted',$document,$before,$document->fresh()->toArray());
-            $serviceRequest=ServiceRequest::query()->where('tenant_id',$document->tenant_id)->where('customer_id',$document->customer_id)->where('workflow_stage','FINANCE_REVIEW')->get()->first(function($request) use($document){
-                return (int)data_get($request->workflow_context,'invoice_id')===(int)$document->id;
-            });
-            if($serviceRequest) $this->workflow->advance($serviceRequest,'FINANCE_REVIEW',Auth::id(),'Invoice posted: '.$document->document_no);
+            $serviceRequest=$this->resolveServiceRequest($document->fresh());
+            $this->bindDocumentToRequest($document,$serviceRequest);
+            $document->refresh();
+            $this->syncRequestFinanceContext($serviceRequest,$document);
+            $this->audit->record('finance.document.posted',$document,$before,$document->toArray());
+
+            if($serviceRequest && $serviceRequest->fresh()->workflow_stage==='FINANCE_REVIEW') {
+                $this->workflow->advance($serviceRequest->fresh(),'FINANCE_REVIEW',Auth::id(),'Invoice posted: '.$document->document_no);
+            }
+
             return $document->fresh('journal');
         });
     }
@@ -93,7 +142,17 @@ class FinancialPostingService
             $payment->update(['journal_id'=>$journal->id]);
             $remaining=round((float)$document->open_amount-$amount,2);
             $document->update(['open_amount'=>$remaining,'status'=>$remaining<=0?'SETTLED':'POSTED']);
-            $this->audit->record('finance.payment.recorded',$payment,[],['document_id'=>$document->id,'amount'=>$amount,'remaining'=>$remaining]);
+            $document->refresh();
+            $serviceRequest=$this->resolveServiceRequest($document);
+            $this->bindDocumentToRequest($document,$serviceRequest);
+            $this->syncRequestFinanceContext($serviceRequest,$document);
+            $this->audit->record('finance.payment.recorded',$payment,[],[
+                'document_id'=>$document->id,
+                'service_request_id'=>$serviceRequest?->id,
+                'amount'=>$amount,
+                'remaining'=>$remaining,
+                'settled'=>$remaining<=0,
+            ]);
             return $payment->fresh('journal');
         });
     }
