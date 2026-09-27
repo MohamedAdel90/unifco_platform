@@ -23,6 +23,7 @@ class ServiceRequestWorkflowService
         'TECHNICAL_REPORT' => 480,
         'PRICING' => 240,
         'PRICING_PROCUREMENT' => 240,
+        'PROCUREMENT_HANDOFF' => 240,
         'CONTRACT_REVIEW' => 240,
         'OPERATIONS_FEASIBILITY' => 240,
         'INTERNAL_APPROVAL' => 240,
@@ -43,6 +44,7 @@ class ServiceRequestWorkflowService
     public function __construct(
         private ServiceRequestWorkflowTemplateRegistry $templates,
         private RequestStageOwnerService $owners,
+        private AuditService $audit,
     ) {}
 
     public function start(ServiceRequest $request, array $context = []): Collection
@@ -58,6 +60,7 @@ class ServiceRequestWorkflowService
         $workflowKey = $this->templates->keyFor($request);
         $steps = $this->templates->template($workflowKey, $context);
         $first = $steps[0] ?? ['stage' => 'TRIAGE', 'department' => 'OPERATIONS'];
+        $before = $this->state($request);
 
         $requester = User::where('tenant_id', $request->tenant_id)
             ->where('role', '!=', 'CUSTOMER')
@@ -76,7 +79,15 @@ class ServiceRequestWorkflowService
             'current_stage_due_at' => now()->addMinutes($this->slaFor($first['stage'])),
         ]);
 
-        $this->ensureStageArtifacts($request);
+        $this->ensureStageArtifacts($request->fresh());
+        $this->audit->record(
+            'SERVICE_REQUEST_WORKFLOW_STARTED',
+            $request->fresh(),
+            $before,
+            $this->state($request->fresh()),
+            reason: 'Workflow initialized',
+            metadata: ['workflow_key' => $workflowKey, 'next_stage' => $first['stage']]
+        );
 
         if (! $requester) return collect();
 
@@ -112,6 +123,8 @@ class ServiceRequestWorkflowService
 
     public function advance(ServiceRequest $request, string $completedStage, ?int $actorId = null, ?string $note = null): ?ApprovalRequest
     {
+        $request->refresh();
+        $before = $this->state($request);
         $current = ApprovalRequest::query()
             ->where('tenant_id', $request->tenant_id)
             ->where('entity_type', ServiceRequest::class)
@@ -146,6 +159,8 @@ class ServiceRequestWorkflowService
                 'status' => 'COMPLETED',
                 'resolved_at' => $request->resolved_at ?: now(),
             ]);
+            $request->refresh();
+            $this->recordTransition($request, $before, $completedStage, 'COMPLETED', $actorId, $note);
             return null;
         }
 
@@ -169,6 +184,8 @@ class ServiceRequestWorkflowService
         ]);
 
         $this->ensureStageArtifacts($request->fresh());
+        $request->refresh();
+        $this->recordTransition($request, $before, $completedStage, (string) $next->action, $actorId, $note);
 
         return $next->fresh();
     }
@@ -176,10 +193,15 @@ class ServiceRequestWorkflowService
     private function ensureStageArtifacts(ServiceRequest $request): void
     {
         if ($request->workflow_stage === 'EXECUTION' && ! $request->work_order_id && $request->asset_id) {
-            $workOrder = WorkOrder::create([
+            $reference = str_starts_with((string) $request->request_no, 'SR-')
+                ? substr((string) $request->request_no, 3)
+                : (string) $request->request_no;
+            $workOrder = WorkOrder::firstOrCreate([
                 'tenant_id' => $request->tenant_id,
+                'work_order_no' => 'WO-'.$reference,
+            ], [
                 'organization_id' => $request->organization_id,
-                'work_order_no' => 'SR-'.$request->id.'-WO',
+                'customer_id' => $request->customer_id,
                 'asset_id' => $request->asset_id,
                 'service_contract_id' => $request->service_contract_id,
                 'maintenance_type' => 'CORRECTIVE',
@@ -222,6 +244,9 @@ class ServiceRequestWorkflowService
 
     public function returnTo(ServiceRequest $request, string $targetStage, ?int $actorId = null, ?string $note = null): ApprovalRequest
     {
+        $request->refresh();
+        $before = $this->state($request);
+        $fromStage = (string) $request->workflow_stage;
         $steps = ApprovalRequest::query()
             ->where('tenant_id', $request->tenant_id)
             ->where('entity_type', ServiceRequest::class)
@@ -254,6 +279,8 @@ class ServiceRequestWorkflowService
             'current_stage_due_at' => now()->addMinutes((int) $target->sla_minutes),
             'status' => 'OPEN',
         ]);
+        $request->refresh();
+        $this->recordTransition($request, $before, $fromStage, (string) $target->action, $actorId, $note, ['transition_type' => 'RETURN']);
 
         return $target->fresh();
     }
@@ -280,6 +307,8 @@ class ServiceRequestWorkflowService
 
     public function reject(ServiceRequest $request, string $currentStage, ?int $actorId = null, ?string $note = null): void
     {
+        $request->refresh();
+        $before = $this->state($request);
         $current = ApprovalRequest::query()
             ->where('tenant_id', $request->tenant_id)
             ->where('entity_type', ServiceRequest::class)
@@ -309,6 +338,43 @@ class ServiceRequestWorkflowService
             'next_action' => null,
             'current_stage_due_at' => null,
         ]);
+        $request->refresh();
+        $this->recordTransition($request, $before, $currentStage, 'REJECTED', $actorId, $note, ['transition_type' => 'REJECT']);
+    }
+
+    private function recordTransition(ServiceRequest $request, array $before, string $from, string $to, ?int $actorId, ?string $note, array $metadata = []): void
+    {
+        $this->audit->record(
+            'SERVICE_REQUEST_WORKFLOW_TRANSITION',
+            $request,
+            $before,
+            $this->state($request),
+            reason: $note,
+            metadata: $metadata + [
+                'actor_id' => $actorId,
+                'previous_stage' => $from,
+                'next_stage' => $to,
+                'work_order_id' => $request->work_order_id,
+                'quotation_id' => $request->quotation_id,
+            ]
+        );
+    }
+
+    private function state(ServiceRequest $request): array
+    {
+        return [
+            'status' => $request->status,
+            'workflow_key' => $request->workflow_key,
+            'workflow_stage' => $request->workflow_stage,
+            'approval_state' => $request->approval_state,
+            'next_action' => $request->next_action,
+            'assigned_department' => $request->assigned_department,
+            'assigned_engineer_id' => $request->assigned_engineer_id,
+            'service_contract_id' => $request->service_contract_id,
+            'eligibility' => $request->eligibility,
+            'work_order_id' => $request->work_order_id,
+            'quotation_id' => $request->quotation_id,
+        ];
     }
 
     private function slaFor(string $stage): int
