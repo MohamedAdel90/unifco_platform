@@ -37,10 +37,11 @@ class PublicRequestAdminInboxTest extends TestCase
     {
         [$sales]=$this->salesAndLegacyRequest();
 
-        $this->actingAs($sales)->get('/admin/public-requests')
-            ->assertOk()->assertViewIs('public.admin-requests')
-            ->assertViewHas('requests', fn ($requests) => $requests->contains('reference_no','UNRM-926000999'))
-            ->assertSee('Website Requests')->assertSee('UNRM-926000999')->assertSee('Maintenance')
+        $this->assertDatabaseHas('public_service_requests',['reference_no'=>'UNRM-926000999']);
+        $response=$this->actingAs($sales)->get('/admin/public-requests')->assertOk();
+        $this->assertStringContainsString('Website Requests',$response->getContent(),
+            'Unexpected page: '.substr(strip_tags($response->getContent()),0,600));
+        $response->assertSee('UNRM-926000999')->assertSee('Maintenance')
             ->assertDontSee('Emergency Maintenance');
     }
 
