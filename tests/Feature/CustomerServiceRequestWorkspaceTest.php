@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer,ServiceRequest,User};
+use App\Models\{Asset,Customer,ServiceRequest,User,WorkOrder};
 use Database\Seeders\WorkflowTestUsersSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -108,6 +108,44 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
         $this->actingAs($admin)->get(route('customer.service-requests.show',$foreign))->assertNotFound();
     }
 
+    public function test_own_request_with_legacy_foreign_asset_is_visible_without_exposing_the_asset_or_work_order(): void
+    {
+        [$admin,$request]=$this->adminAndRequest();
+        $other=Customer::create([
+            'tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,
+            'customer_code'=>'OTHER-ASSET','name'=>'Other Asset Customer','status'=>'ACTIVE',
+        ]);
+        $foreignAsset=Asset::create([
+            'tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,
+            'customer_id'=>$other->id,'asset_code'=>'PRIVATE-FOREIGN-ASSET','name'=>'Private equipment','status'=>'ACTIVE',
+        ]);
+        $foreignWorkOrder=WorkOrder::create([
+            'tenant_id'=>$admin->tenant_id,'organization_id'=>$admin->organization_id,
+            'work_order_no'=>'PRIVATE-FOREIGN-WO','asset_id'=>$foreignAsset->id,'status'=>'OPEN',
+        ]);
+        $request->update(['asset_id'=>$foreignAsset->id,'work_order_id'=>$foreignWorkOrder->id]);
+
+        $this->actingAs($admin)->get('/customer/service-requests')->assertOk()->assertSee($request->request_no);
+        $this->actingAs($admin)->get(route('customer.service-requests.show',$request))
+            ->assertOk()->assertSee($request->request_no)
+            ->assertDontSee('PRIVATE-FOREIGN-ASSET')->assertDontSee('PRIVATE-FOREIGN-WO');
+    }
+
+    public function test_customer_sees_authoritative_subtype_instead_of_stale_generated_details(): void
+    {
+        [$admin,$request]=$this->adminAndRequest();
+        $request->update([
+            'request_subtype'=>'TECHNICAL_VISIT',
+            'details'=>"Inspection requested.\nمسار الطلب: SPARE_PARTS_QUOTE\nPreferred date: next week.",
+        ]);
+
+        $this->actingAs($admin)->get(route('customer.service-requests.show',$request))
+            ->assertOk()->assertSee('TECHNICAL VISIT')
+            ->assertSee('Inspection requested.')->assertSee('Preferred date: next week.')
+            ->assertDontSee('SPARE_PARTS_QUOTE');
+        $this->assertSame("Inspection requested.\nمسار الطلب: SPARE_PARTS_QUOTE\nPreferred date: next week.",$request->fresh()->details);
+    }
+
     public function test_customer_can_filter_the_workspace_to_overdue_requests(): void
     {
         [$admin,$request]=$this->adminAndRequest();
@@ -133,7 +171,9 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
         $this->actingAs($admin)->get('/customer/service-requests')
             ->assertOk()
             ->assertSee('Request portfolio')
-            ->assertSee('Operations triage and routing')
+            ->assertSee('Under Review')
+            ->assertDontSee('Operations triage and routing')
+            ->assertDontSee('>Triage<',false)
             ->assertSee('Every company request and delivery stage in one unified account.');
     }
 }
