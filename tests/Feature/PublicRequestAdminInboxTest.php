@@ -39,6 +39,8 @@ class PublicRequestAdminInboxTest extends TestCase
 
         $this->assertDatabaseHas('public_service_requests',['reference_no'=>'UNRM-926000999']);
         $response=$this->actingAs($sales)->get('/admin/public-requests')->assertOk();
+        fwrite(STDERR, "INBOX_DIAG count=".PublicServiceRequest::count()
+            ." excerpt=".substr(strip_tags(substr($response->getContent(),strpos($response->getContent(),'Website Requests'))),0,1000)."\n");
         $this->assertStringContainsString('Website Requests',$response->getContent(),
             'Unexpected page: '.substr(strip_tags($response->getContent()),0,600));
         $this->assertStringContainsString('UNRM-926000999',$response->getContent(),
