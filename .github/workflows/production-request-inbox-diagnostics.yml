@@ -1,0 +1,38 @@
+name: Production Request Inbox Diagnostics
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/read-production-exception-fingerprints.php'
+      - '.github/workflows/production-request-inbox-diagnostics.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exception-fingerprints:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+      - run: php -l deploy/read-production-exception-fingerprints.php
+      - name: Read redacted exception fingerprints from production
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_inbox_diag_key"
+          chmod 600 "$HOME/.ssh/unifco_inbox_diag_key"
+          ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
+            -i "$HOME/.ssh/unifco_inbox_diag_key" -p "$DEPLOY_PORT" \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            'cd /var/www/unifco_platform && php -n' < deploy/read-production-exception-fingerprints.php
