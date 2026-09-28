@@ -128,6 +128,8 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
         $this->actingAs($admin)->get('/customer/service-requests')->assertOk()->assertSee($request->request_no);
         $this->actingAs($admin)->get(route('customer.service-requests.show',$request))
             ->assertOk()->assertSee($request->request_no)
+            ->assertSee('Details under review')
+            ->assertDontSee('Not created yet')
             ->assertDontSee('PRIVATE-FOREIGN-ASSET')->assertDontSee('PRIVATE-FOREIGN-WO');
     }
 

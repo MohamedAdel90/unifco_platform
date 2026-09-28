@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\{ApprovalRequest,Customer,FinancialDocument,ServiceRequest,User,WorkOrder};
+use App\Models\{ApprovalRequest,Asset,Customer,FinancialDocument,ServiceRequest,User,WorkOrder};
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 class ServiceRequestWorkflowService
 {
@@ -132,6 +133,20 @@ class ServiceRequestWorkflowService
             ->where('action', $completedStage)
             ->first();
 
+        $next = ApprovalRequest::query()
+            ->where('tenant_id', $request->tenant_id)
+            ->where('entity_type', ServiceRequest::class)
+            ->where('entity_id', $request->id)
+            ->where('step_order', '>', (int) ($current?->step_order ?? 0))
+            ->orderBy('step_order')
+            ->first();
+
+        // Validate before recording the approval: a failed transition must not
+        // leave a completed approval attached to an unchanged request stage.
+        if ($next?->action === 'EXECUTION' && $request->asset_id) {
+            $this->assertExecutionAssetOwnership($request);
+        }
+
         if ($current && ! in_array($current->status, ['APPROVED','COMPLETED'], true)) {
             $current->update([
                 'status' => 'COMPLETED',
@@ -140,14 +155,6 @@ class ServiceRequestWorkflowService
                 'decided_at' => now(),
             ]);
         }
-
-        $next = ApprovalRequest::query()
-            ->where('tenant_id', $request->tenant_id)
-            ->where('entity_type', ServiceRequest::class)
-            ->where('entity_id', $request->id)
-            ->where('step_order', '>', (int) ($current?->step_order ?? 0))
-            ->orderBy('step_order')
-            ->first();
 
         if (! $next) {
             $request->update([
@@ -193,6 +200,7 @@ class ServiceRequestWorkflowService
     private function ensureStageArtifacts(ServiceRequest $request): void
     {
         if ($request->workflow_stage === 'EXECUTION' && ! $request->work_order_id && $request->asset_id) {
+            $this->assertExecutionAssetOwnership($request);
             $reference = str_starts_with((string) $request->request_no, 'SR-')
                 ? substr((string) $request->request_no, 3)
                 : (string) $request->request_no;
@@ -238,6 +246,29 @@ class ServiceRequestWorkflowService
             $context['invoice_id'] = $invoice->id;
             $context['invoice_no'] = $invoice->document_no;
             $request->update(['workflow_context' => $context]);
+        }
+    }
+
+    private function assertExecutionAssetOwnership(ServiceRequest $request): void
+    {
+        if (! Asset::query()->whereKey($request->asset_id)
+            ->where('tenant_id', $request->tenant_id)
+            ->where('customer_id', $request->customer_id)->exists()) {
+            throw ValidationException::withMessages([
+                'asset_id' => 'The request asset must belong to the request customer before a work order can be created.',
+            ]);
+        }
+
+        $reference = str_starts_with((string) $request->request_no, 'SR-')
+            ? substr((string) $request->request_no, 3) : (string) $request->request_no;
+        $existing = $request->work_order_id
+            ? WorkOrder::where('tenant_id', $request->tenant_id)->find($request->work_order_id)
+            : WorkOrder::where('tenant_id', $request->tenant_id)->where('work_order_no', 'WO-'.$reference)->first();
+        if (($request->work_order_id && ! $existing)
+            || ($existing && (int) $existing->asset_id !== (int) $request->asset_id)) {
+            throw ValidationException::withMessages([
+                'work_order_id' => 'The request work order and customer asset must be reconciled before execution.',
+            ]);
         }
     }
 
