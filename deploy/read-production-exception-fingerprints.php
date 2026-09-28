@@ -30,7 +30,19 @@ foreach ($files as $file) {
         $source = preg_match('~(?:/var/www/unifco_platform/)?(app/[A-Za-z0-9_/.-]+\.php)(?:\(|:)(\d+)~', $block, $match)
             ? $match[1].':'.$match[2] : '-';
         $view = preg_match('~(resources/views/[A-Za-z0-9_/.-]+\.blade\.php)~', $block, $match) ? $match[1] : '-';
-        echo implode(' ', ["TIME=$timestamp", "LEVEL=$level", "TYPE=$class", "SQLSTATE=$sqlstate", "COLUMN=$column", "SOURCE=$source", "VIEW=$view"]).PHP_EOL;
+        // Only fixed error categories and a compiled template line are safe to
+        // expose in Actions; the exception message can contain customer data.
+        $cause = match (true) {
+            str_contains($block, 'InvalidFormatException'), str_contains($block, 'Could not parse') => 'INVALID_DATE_CAST',
+            str_contains($block, 'Call to a member function format() on null') => 'NULL_DATE_FORMAT',
+            str_contains($block, 'Call to a member function format() on string') => 'STRING_DATE_FORMAT',
+            str_contains($block, 'Undefined variable') => 'UNDEFINED_VARIABLE',
+            str_contains($block, 'Trying to access array offset') => 'ARRAY_OFFSET',
+            str_contains($block, 'foreach() argument must be') => 'INVALID_ITERABLE',
+            default => 'UNCLASSIFIED',
+        };
+        $compiledLine = preg_match('~storage/framework/views/[a-fA-F0-9]+\.php:(\d+)~', $block, $match) ? $match[1] : '-';
+        echo implode(' ', ["TIME=$timestamp", "LEVEL=$level", "TYPE=$class", "SQLSTATE=$sqlstate", "COLUMN=$column", "SOURCE=$source", "VIEW=$view", "CAUSE=$cause", "TEMPLATE_LINE=$compiledLine"]).PHP_EOL;
     }
 }
 
