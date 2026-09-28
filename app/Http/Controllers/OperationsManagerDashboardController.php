@@ -26,7 +26,7 @@ class OperationsManagerDashboardController extends Controller
 
         $workOrders=$dashboard->workOrders($user); $serviceRequests=$dashboard->serviceRequests($user); $assets=$dashboard->assets($user);
         $openWorkOrders=(clone $workOrders)->whereNotIn('status',['COMPLETED','CLOSED','CANCELLED'])->get();
-        $overdueWorkOrders=(clone $workOrders)->whereNotIn('status',['COMPLETED','CLOSED','CANCELLED'])->whereNotNull('planned_end')->where('planned_end','<',now())->get();
+        $overdueWorkOrders=(clone $workOrders)->whereNotIn('status',['COMPLETED','CLOSED','CANCELLED'])->whereNotNull('planned_start')->where('planned_start','<',now())->get();
         $criticalWorkOrders=(clone $workOrders)->whereNotIn('status',['COMPLETED','CLOSED','CANCELLED'])->whereIn('priority',['CRITICAL','EMERGENCY','URGENT'])->get();
         $recentWorkOrders=(clone $workOrders)->latest('id')->limit(10)->get();
         $openServiceRequests=(clone $serviceRequests)->whereNotIn('status',['CLOSED','CANCELLED','COMPLETED'])->get();
