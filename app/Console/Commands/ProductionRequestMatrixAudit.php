@@ -65,6 +65,7 @@ class ProductionRequestMatrixAudit extends Command
 
             $this->line('Service: id='.$service->id.' request_no='.$service->request_no);
             $this->line('Customer: '.($service->customer_id??'—').' | Site: '.($service->customer_site_id??'—').' | Asset: '.($service->asset_id??'—').' | Asset code: '.($asset?->asset_code??'—'));
+            $this->line('Asset owner: '.($asset?->customer_id??'—').' | Asset site: '.($asset?->customer_site_id??'—').' | Public asset: '.($public?->asset_id??'—'));
             $this->line('Contract DB: '.($service->service_contract_id??'—').' | Contract scoped resolver: '.($resolvedContract?->id??'—').' | Asset contract ref: '.($asset?->contract_reference??'—'));
             $this->line('Type: '.($service->request_type??'—').' | Subtype: '.($service->request_subtype??'—').' | Priority: '.($service->priority??'—').' | Eligibility: '.($service->eligibility??'—'));
             $this->line('Workflow DB: '.($service->workflow_key??'—').' | Derived: '.$derived.' | Stage: '.($service->workflow_stage??'—').' | Status: '.($service->status??'—'));
@@ -79,6 +80,10 @@ class ProductionRequestMatrixAudit extends Command
             if($service->eligibility==='IN_CONTRACT' && !$resolvedContract) $issues[]='eligibility is IN_CONTRACT without scoped contract proof';
             if($service->eligibility==='CHARGEABLE' && $resolvedContract) $issues[]='eligibility is CHARGEABLE although scoped contract coverage exists';
             if(!$service->customer_id) $issues[]='customer_id missing';
+            if($service->asset_id && !$asset) $issues[]='referenced asset is missing';
+            if($asset && (int)$asset->customer_id!==(int)$service->customer_id) $issues[]='asset owner does not match request customer';
+            if($asset && (int)$asset->tenant_id!==(int)$service->tenant_id) $issues[]='asset tenant does not match request tenant';
+            if($asset && $site && $asset->customer_site_id && (int)$asset->customer_site_id!==(int)$site->id) $issues[]='asset site does not match request site';
             if(in_array($case['expected'],['MAINTENANCE','EMERGENCY_MAINTENANCE'],true) && !$service->asset_id) $issues[]='maintenance request has no asset_id';
             if($workOrder && (int)$workOrder->asset_id!==(int)$service->asset_id) $issues[]='work order asset_id does not match service request';
             if($workOrder && (int)($workOrder->service_contract_id??0)!==(int)($service->service_contract_id??0)) $issues[]='work order service_contract_id does not match service request';
