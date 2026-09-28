@@ -208,6 +208,13 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $this->completeQuotation($request);
     }
 
+    public function test_technical_visit_subtype_is_preserved_when_the_category_is_generic(): void
+    {
+        $request=$this->submit('QUOTATION','TECHNICAL_VISIT',['service_category'=>'Quotation']);
+        $this->assertSame('TECHNICAL_VISIT',$request->request_subtype);
+        $this->assertSame('TECHNICAL_VISIT',$request->workflow_key);
+    }
+
     public function test_maintenance_contract_quotation_runs_from_creation_through_onboarding_to_completion(): void
     {
         $request=$this->submit('QUOTATION','MAINTENANCE_CONTRACT_QUOTE',['service_category'=>'Maintenance Contract']);

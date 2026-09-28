@@ -2,11 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Asset,Customer,CustomerSite,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,User,WorkOrder};
+use App\Models\{ApprovalRequest,Asset,Customer,CustomerSite,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,User,WorkOrder};
 use App\Services\ServiceRequestWorkflowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class RequestWorkflowEngineFoundationTest extends TestCase
@@ -144,6 +145,63 @@ class RequestWorkflowEngineFoundationTest extends TestCase
         $this->assertSame($this->asset->id,$workOrder->asset_id);
         $this->assertSame($this->contract->id,$workOrder->service_contract_id);
         $this->assertSame(1,WorkOrder::where('tenant_id',$this->tenant->id)->where('work_order_no',$workOrder->work_order_no)->count());
+    }
+
+    public function test_execution_rejects_foreign_asset_without_completing_the_previous_approval(): void
+    {
+        [, $request]=$this->submitRoutine();
+        $other=Customer::create([
+            'tenant_id'=>$this->tenant->id,'organization_id'=>$this->org->id,
+            'customer_code'=>'OTHER-WF','name'=>'Other Workflow Customer','status'=>'ACTIVE',
+        ]);
+        $foreign=Asset::create([
+            'tenant_id'=>$this->tenant->id,'organization_id'=>$this->org->id,
+            'customer_id'=>$other->id,'asset_code'=>'OTHER-WF-ASSET','name'=>'Other equipment','status'=>'REGISTERED',
+        ]);
+        $request->update(['asset_id'=>$foreign->id]);
+
+        $workflow=app(ServiceRequestWorkflowService::class);
+        for ($i=0; $i<30; $i++) {
+            $request->refresh();
+            $current=ApprovalRequest::where('entity_type',ServiceRequest::class)
+                ->where('entity_id',$request->id)->where('action',$request->workflow_stage)->firstOrFail();
+            $next=ApprovalRequest::where('entity_type',ServiceRequest::class)
+                ->where('entity_id',$request->id)->where('step_order','>',$current->step_order)->orderBy('step_order')->first();
+            if ($next?->action === 'EXECUTION') {
+                $stage=$request->workflow_stage;
+                $approvalStatus=$current->status;
+                try {
+                    $workflow->advance($request,$stage,$this->admin->id);
+                    $this->fail('A foreign customer asset must block execution.');
+                } catch (ValidationException $exception) {
+                    $this->assertArrayHasKey('asset_id',$exception->errors());
+                }
+                $this->assertSame($stage,$request->fresh()->workflow_stage);
+                $this->assertSame($approvalStatus,$current->fresh()->status);
+                $this->assertNull($request->fresh()->work_order_id);
+                $this->assertDatabaseMissing('work_orders',['work_order_no'=>'WO-'.substr($request->request_no,3)]);
+
+                $request->update(['asset_id'=>$this->asset->id]);
+                $foreignWorkOrder=WorkOrder::create([
+                    'tenant_id'=>$this->tenant->id,'organization_id'=>$this->org->id,
+                    'work_order_no'=>'WO-'.substr($request->request_no,3),
+                    'asset_id'=>$foreign->id,'status'=>'OPEN',
+                ]);
+                try {
+                    $workflow->advance($request,$stage,$this->admin->id);
+                    $this->fail('An existing work order on a different asset must block execution.');
+                } catch (ValidationException $exception) {
+                    $this->assertArrayHasKey('work_order_id',$exception->errors());
+                }
+                $this->assertSame($stage,$request->fresh()->workflow_stage);
+                $this->assertSame($approvalStatus,$current->fresh()->status);
+                $this->assertNull($request->fresh()->work_order_id);
+                $this->assertSame($foreign->id,$foreignWorkOrder->fresh()->asset_id);
+                return;
+            }
+            $workflow->advance($request,(string)$request->workflow_stage,$this->admin->id);
+        }
+        $this->fail('Expected the maintenance workflow to reach an execution stage.');
     }
 
     public function test_workflow_transitions_are_written_to_audit_log_with_before_and_after_state(): void
