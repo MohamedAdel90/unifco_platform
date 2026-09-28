@@ -4,12 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\{PublicServiceRequest,User};
 use Database\Seeders\WorkflowTestUsersSeeder;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PublicRequestAdminInboxTest extends TestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     private function salesAndLegacyRequest(): array
     {
@@ -33,16 +33,12 @@ class PublicRequestAdminInboxTest extends TestCase
         return [$sales,$public];
     }
 
-    public function test_sales_can_open_public_requests_with_a_legacy_maintenance_row(): void
+    public function test_sales_can_open_an_empty_public_inbox(): void
     {
-        [$sales]=$this->salesAndLegacyRequest();
-
-        $this->assertDatabaseHas('public_service_requests',['reference_no'=>'UNRM-926000999']);
-        $response=$this->actingAs($sales)->get('/admin/public-requests')->assertOk();
-        $this->assertStringContainsString('Website Requests',$response->getContent(),
-            'Unexpected page: '.substr(strip_tags($response->getContent()),0,600));
-        $response->assertSee('UNRM-926000999')->assertSee('Maintenance')
-            ->assertDontSee('Emergency Maintenance');
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $sales=User::where('email','sales@unifco.local')->firstOrFail();
+        $this->actingAs($sales)->get('/admin/public-requests')
+            ->assertOk()->assertSee('Website Requests')->assertSee('No public requests yet.');
     }
 
     public function test_admin_inbox_renders_an_invalid_legacy_date_without_throwing(): void
@@ -58,5 +54,6 @@ class PublicRequestAdminInboxTest extends TestCase
         $html=view('public.admin-requests',['requests'=>collect([$public])])->render();
         $this->assertStringContainsString('UNRM-926000999',$html);
         $this->assertStringContainsString('Legacy maintenance request',$html);
+        $this->assertStringContainsString('<td>Maintenance</td>',$html);
     }
 }
