@@ -171,7 +171,9 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
         $this->actingAs($admin)->get('/customer/service-requests')
             ->assertOk()
             ->assertSee('Request portfolio')
-            ->assertSee('Operations triage and routing')
+            ->assertSee('Under Review')
+            ->assertDontSee('Operations triage and routing')
+            ->assertDontSee('>Triage<',false)
             ->assertSee('Every company request and delivery stage in one unified account.');
     }
 }

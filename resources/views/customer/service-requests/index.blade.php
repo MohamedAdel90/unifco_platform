@@ -66,7 +66,7 @@
     <label class="request-field">{{ $ar?'بحث':'Search' }}<input name="q" value="{{ $filters['q'] }}" placeholder="{{ $ar?'رقم الطلب، الموضوع، الموقع أو الخدمة':'Request no, subject, site or service' }}"></label>
     <label class="request-field">{{ $ar?'النوع':'Type' }}<select name="type"><option value="">{{ $ar?'كل الأنواع':'All Types' }}</option>@foreach($types as $value)<option value="{{ $value }}" @selected($filters['type']===$value)>{{ $label($value) }}</option>@endforeach</select></label>
     <label class="request-field">{{ $ar?'الأولوية':'Priority' }}<select name="priority"><option value="">{{ $ar?'كل الأولويات':'All Priorities' }}</option>@foreach($priorities as $value)<option value="{{ $value }}" @selected($filters['priority']===$value)>{{ $label($value) }}</option>@endforeach</select></label>
-    <label class="request-field">{{ $ar?'المرحلة':'Stage' }}<select name="stage"><option value="">{{ $ar?'كل المراحل':'All Stages' }}</option>@foreach($stages as $value)<option value="{{ $value }}" @selected($filters['stage']===$value)>{{ $label($value) }}</option>@endforeach</select></label>
+    <label class="request-field">{{ $ar?'المرحلة':'Stage' }}<select name="stage"><option value="">{{ $ar?'كل المراحل':'All Stages' }}</option>@foreach($stages as $value)<option value="{{ $value }}" @selected($filters['stage']===$value)>{{ $statusPresenter->present(new \App\Models\ServiceRequest(['workflow_stage'=>$value]))['label'] }}</option>@endforeach</select></label>
     <label class="request-field">{{ $ar?'الحالة':'Status' }}<select name="status"><option value="">{{ $ar?'كل الحالات':'All Statuses' }}</option>@foreach($statuses as $value)<option value="{{ $value }}" @selected($filters['status']===$value)>{{ $label($value) }}</option>@endforeach</select></label>
     <label class="request-field">{{ $ar?'الموقع':'Site' }}<select name="site_id"><option value="">{{ $ar?'كل المواقع':'All Sites' }}</option>@foreach($sites as $site)<option value="{{ $site->id }}" @selected((int)$filters['site_id']===(int)$site->id)>{{ $site->name }}</option>@endforeach</select></label>
     <div class="request-filter-actions"><button class="portal-btn">{{ $ar?'تطبيق':'Apply' }}</button><a class="portal-btn soft" href="{{ route('customer.service-requests.index') }}">{{ $ar?'إعادة ضبط':'Reset' }}</a></div>
@@ -95,13 +95,14 @@
         $isOverdue=!$isClosed && $requestItem->current_stage_due_at?->isPast();
         $site=$sitesById->get($requestItem->customer_site_id);
         $asset=$assetsById->get($requestItem->asset_id);
+        $customerStatus=$statusPresenter->present($requestItem);
     @endphp
     <tr class="request-row" onclick="window.location.href='{{ $url }}'">
         <td><a class="request-link" href="{{ $url }}" onclick="event.stopPropagation()">{{ $requestItem->request_no }}</a><small style="display:block;color:var(--muted);margin-top:4px">{{ $requestItem->created_at?->format('Y-m-d H:i') }}</small></td>
         <td class="request-primary"><b>{{ $requestItem->subject ?: $requestItem->service_category ?: ($ar?'طلب خدمة':'Service request') }}</b><small>{{ $site?->name ?: ($requestItem->site_city ?: ($ar?'لا يوجد موقع مرتبط':'No linked site')) }}@if($asset) · {{ $asset->asset_code }}@endif</small></td>
         <td><span class="portal-pill">{{ $label($requestItem->request_type) }}</span></td>
         <td><span class="portal-pill {{ $tone($requestItem->priority) }}">{{ $label($requestItem->priority) }}</span></td>
-        <td class="request-stage"><span class="portal-pill {{ $tone($requestItem->workflow_stage) }}">{{ $label($requestItem->workflow_stage) }}</span><small>{{ $requestItem->next_action ?: ($ar?'يونيفكو تتابع معالجة الطلب':'UNIFCO is processing the request') }}</small></td>
+        <td class="request-stage"><span class="portal-pill">{{ $customerStatus['label'] }}</span><small>{{ $customerStatus['description'] }}</small></td>
         <td class="request-due">@if($isOverdue)<span class="portal-pill red">{{ $ar?'متجاوز':'Overdue' }}</span><small>{{ $requestItem->current_stage_due_at?->format('Y-m-d H:i') }}</small>@elseif($requestItem->current_stage_due_at)<strong>{{ $requestItem->current_stage_due_at->format('Y-m-d H:i') }}</strong><small>{{ $requestItem->current_stage_due_at->diffForHumans() }}</small>@else<span>—</span>@endif</td>
         <td><span class="portal-pill {{ $tone($requestItem->status) }}">{{ $label($requestItem->status) }}</span></td>
         <td>{{ $requestItem->updated_at?->format('Y-m-d H:i') }}</td>

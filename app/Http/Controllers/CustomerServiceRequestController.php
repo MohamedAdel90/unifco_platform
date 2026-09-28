@@ -28,7 +28,7 @@ class CustomerServiceRequestController extends Controller
         return $query;
     }
 
-    public function index(Request $request, CustomerPortalAccessService $access): View
+    public function index(Request $request, CustomerPortalAccessService $access, CustomerRequestStatusPresenter $statusPresenter): View
     {
         [$user,$customer]=$this->portalUser($access); $base=$this->scopedQuery($user,$access);
         $filters=['q'=>trim((string)$request->query('q','')),'bucket'=>trim((string)$request->query('bucket','')),'type'=>trim((string)$request->query('type','')),'priority'=>trim((string)$request->query('priority','')),'stage'=>trim((string)$request->query('stage','')),'status'=>trim((string)$request->query('status','')),'site_id'=>$request->integer('site_id')?:null];
@@ -44,7 +44,7 @@ class CustomerServiceRequestController extends Controller
         $types=(clone $base)->whereNotNull('request_type')->distinct()->orderBy('request_type')->pluck('request_type'); $priorities=(clone $base)->whereNotNull('priority')->distinct()->orderBy('priority')->pluck('priority'); $stages=(clone $base)->whereNotNull('workflow_stage')->distinct()->orderBy('workflow_stage')->pluck('workflow_stage'); $statuses=(clone $base)->whereNotNull('status')->distinct()->orderBy('status')->pluck('status');
         $siteIds=(clone $base)->whereNotNull('customer_site_id')->distinct()->pluck('customer_site_id'); $sites=CustomerSite::where('customer_id',$customer->id)->whereIn('id',$siteIds)->orderBy('name')->get();
         $pageSiteIds=$requests->getCollection()->pluck('customer_site_id')->filter()->unique(); $pageAssetIds=$requests->getCollection()->pluck('asset_id')->filter()->unique(); $sitesById=CustomerSite::where('customer_id',$customer->id)->whereIn('id',$pageSiteIds)->get()->keyBy('id'); $assetsById=Asset::where('customer_id',$customer->id)->whereIn('id',$pageAssetIds)->get()->keyBy('id');
-        return view('customer.service-requests.index',['customer'=>$customer,'requests'=>$requests,'filters'=>$filters,'types'=>$types,'priorities'=>$priorities,'stages'=>$stages,'statuses'=>$statuses,'sites'=>$sites,'sitesById'=>$sitesById,'assetsById'=>$assetsById,'summary'=>$summary,'portalRole'=>$access->role($user),'allowedSections'=>$access->allowedSections($user),'canManageUsers'=>$access->canManageUsers($user),'readOnly'=>$access->isReadOnly($user)]);
+        return view('customer.service-requests.index',['customer'=>$customer,'requests'=>$requests,'filters'=>$filters,'types'=>$types,'priorities'=>$priorities,'stages'=>$stages,'statuses'=>$statuses,'sites'=>$sites,'sitesById'=>$sitesById,'assetsById'=>$assetsById,'summary'=>$summary,'statusPresenter'=>$statusPresenter,'portalRole'=>$access->role($user),'allowedSections'=>$access->allowedSections($user),'canManageUsers'=>$access->canManageUsers($user),'readOnly'=>$access->isReadOnly($user)]);
     }
 
     public function show(ServiceRequest $serviceRequest, CustomerPortalAccessService $access, CustomerRequestStatusPresenter $statusPresenter): View
