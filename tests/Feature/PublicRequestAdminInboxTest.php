@@ -4,12 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\{PublicServiceRequest,User};
 use Database\Seeders\WorkflowTestUsersSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
 class PublicRequestAdminInboxTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseMigrations;
 
     private function salesAndLegacyRequest(): array
     {
@@ -38,15 +38,7 @@ class PublicRequestAdminInboxTest extends TestCase
         [$sales]=$this->salesAndLegacyRequest();
 
         $this->assertDatabaseHas('public_service_requests',['reference_no'=>'UNRM-926000999']);
-        fwrite(STDERR,"INBOX_BEFORE count=".PublicServiceRequest::count()." write=".PublicServiceRequest::query()->useWritePdo()->count()." pdo=".spl_object_id(\Illuminate\Support\Facades\DB::connection()->getPdo())."\n");
-        \Illuminate\Support\Facades\Event::listen(\Illuminate\Database\Events\TransactionRolledBack::class,
-            function () { fwrite(STDERR,"INBOX_ROLLBACK ".json_encode(array_slice(array_map(
-                fn ($frame) => ($frame['class'] ?? '').'::'.($frame['function'] ?? ''),debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),0,15))."\n"); });
-        \Illuminate\Support\Facades\DB::listen(function ($query) {
-            if (preg_match('/delete|truncate|rollback/i',$query->sql)) fwrite(STDERR,"INBOX_SQL ".$query->sql."\n");
-        });
         $response=$this->actingAs($sales)->get('/admin/public-requests')->assertOk();
-        fwrite(STDERR,"INBOX_AFTER count=".PublicServiceRequest::count()." write=".PublicServiceRequest::query()->useWritePdo()->count()." pdo=".spl_object_id(\Illuminate\Support\Facades\DB::connection()->getPdo())."\n");
         $this->assertStringContainsString('Website Requests',$response->getContent(),
             'Unexpected page: '.substr(strip_tags($response->getContent()),0,600));
         $response->assertSee('UNRM-926000999')->assertSee('Maintenance')
