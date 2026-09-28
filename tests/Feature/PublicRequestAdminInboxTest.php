@@ -38,7 +38,9 @@ class PublicRequestAdminInboxTest extends TestCase
         [$sales]=$this->salesAndLegacyRequest();
 
         $this->actingAs($sales)->get('/admin/public-requests')
-            ->assertOk()->assertSee('UNRM-926000999')->assertSee('Maintenance')
+            ->assertOk()->assertViewIs('public.admin-requests')
+            ->assertViewHas('requests', fn ($requests) => $requests->contains('reference_no','UNRM-926000999'))
+            ->assertSee('Website Requests')->assertSee('UNRM-926000999')->assertSee('Maintenance')
             ->assertDontSee('Emergency Maintenance');
     }
 
