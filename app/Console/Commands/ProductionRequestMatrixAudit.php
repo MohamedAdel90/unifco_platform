@@ -66,6 +66,22 @@ class ProductionRequestMatrixAudit extends Command
             $this->line('Service: id='.$service->id.' request_no='.$service->request_no);
             $this->line('Customer: '.($service->customer_id??'—').' | Site: '.($service->customer_site_id??'—').' | Asset: '.($service->asset_id??'—').' | Asset code: '.($asset?->asset_code??'—'));
             $this->line('Asset owner: '.($asset?->customer_id??'—').' | Asset site: '.($asset?->customer_site_id??'—').' | Public asset: '.($public?->asset_id??'—'));
+            if ($asset && (int)$asset->customer_id !== (int)$service->customer_id) {
+                $hasBrand=trim((string)$public?->equipment_brand)!=='';
+                $hasModel=trim((string)$public?->equipment_model)!=='';
+                $this->line('Public equipment evidence: brand='.($hasBrand?'YES':'NO').' model='.($hasModel?'YES':'NO').' type='.(trim((string)$public?->asset_type)!==''?'YES':'NO').' site='.(trim((string)$public?->site_name)!==''?'YES':'NO'));
+                $candidates=Asset::withoutGlobalScopes()
+                    ->where('tenant_id',$service->tenant_id)
+                    ->where('customer_id',$service->customer_id)
+                    ->where(fn($query)=>$query->whereNull('contract_reference')->orWhere('contract_reference',''))
+                    ->orderBy('id')->limit(25)->get();
+                $this->line('Customer-owned uncovered asset candidates (max 25): '.$candidates->count());
+                foreach ($candidates as $candidate) {
+                    $brandMatch=$hasBrand && strcasecmp(trim((string)$candidate->manufacturer),trim((string)$public->equipment_brand))===0;
+                    $modelMatch=$hasModel && strcasecmp(trim((string)$candidate->model_no),trim((string)$public->equipment_model))===0;
+                    $this->line('Candidate: id='.$candidate->id.' code='.$candidate->asset_code.' site='.($candidate->customer_site_id??'—').' brand_match='.($brandMatch?'YES':'NO').' model_match='.($modelMatch?'YES':'NO'));
+                }
+            }
             $this->line('Contract DB: '.($service->service_contract_id??'—').' | Contract scoped resolver: '.($resolvedContract?->id??'—').' | Asset contract ref: '.($asset?->contract_reference??'—'));
             $this->line('Type: '.($service->request_type??'—').' | Subtype: '.($service->request_subtype??'—').' | Priority: '.($service->priority??'—').' | Eligibility: '.($service->eligibility??'—'));
             $this->line('Workflow DB: '.($service->workflow_key??'—').' | Derived: '.$derived.' | Stage: '.($service->workflow_stage??'—').' | Status: '.($service->status??'—'));
