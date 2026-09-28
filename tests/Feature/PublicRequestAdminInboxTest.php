@@ -41,7 +41,9 @@ class PublicRequestAdminInboxTest extends TestCase
         $response=$this->actingAs($sales)->get('/admin/public-requests')->assertOk();
         $this->assertStringContainsString('Website Requests',$response->getContent(),
             'Unexpected page: '.substr(strip_tags($response->getContent()),0,600));
-        $response->assertSee('UNRM-926000999')->assertSee('Maintenance')
+        $this->assertStringContainsString('UNRM-926000999',$response->getContent(),
+            'Inbox excerpt: '.substr(strip_tags(substr($response->getContent(),strpos($response->getContent(),'Website Requests'))),0,1800));
+        $response->assertSee('Maintenance')
             ->assertDontSee('Emergency Maintenance');
     }
 
