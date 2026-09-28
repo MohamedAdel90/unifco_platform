@@ -17,7 +17,6 @@ class PublicRequestTicketSystemCompatibility
                 'SPARE_PARTS' => 'SPARE_PARTS_QUOTE',
                 'MAINTENANCE_CONTRACT' => 'MAINTENANCE_CONTRACT_QUOTE',
                 'EMERGENCY_MAINTENANCE' => 'URGENT_MAINTENANCE',
-                'TECHNICAL_VISIT' => 'SPARE_PARTS_QUOTE',
             ];
             if (isset($aliases[$subtype])) {
                 $request->merge(['request_subtype' => $aliases[$subtype]]);
@@ -25,7 +24,7 @@ class PublicRequestTicketSystemCompatibility
 
             $normalized = strtoupper(trim((string) $request->input('request_subtype', '')));
             $intent = match ($normalized) {
-                'SPARE_PARTS_QUOTE', 'MAINTENANCE_CONTRACT_QUOTE' => 'QUOTATION',
+                'SPARE_PARTS_QUOTE', 'MAINTENANCE_CONTRACT_QUOTE', 'TECHNICAL_VISIT' => 'QUOTATION',
                 'ROUTINE_MAINTENANCE', 'URGENT_MAINTENANCE' => 'SERVICE_REQUEST',
                 'TECHNICAL_CONSULTATION' => 'CONSULTATION',
                 default => strtoupper((string) $request->input('request_intent', '')),
@@ -59,6 +58,7 @@ class PublicRequestTicketSystemCompatibility
                 'asset_type' => $first($request, ['asset_type','manual_type','equipment_type','service_category'], 'GENERAL'),
                 'service_category' => $first($request, ['service_category','service_other'], match ($normalized) {
                     'SPARE_PARTS_QUOTE','MAINTENANCE_CONTRACT_QUOTE' => 'QUOTATION',
+                    'TECHNICAL_VISIT' => 'TECHNICAL VISIT',
                     'TECHNICAL_CONSULTATION' => 'CONSULTATION',
                     default => 'MAINTENANCE',
                 }),
