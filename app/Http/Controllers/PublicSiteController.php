@@ -134,5 +134,5 @@ HTML;
         }
         return view('public.received',compact('record'));
     }
-    public function adminIndex(): View { return view('public.admin-requests',['requests'=>PublicServiceRequest::latest('submitted_at')->limit(250)->get()]); }
+    public function adminIndex(): View { return view('public.admin-requests',['requests'=>PublicServiceRequest::query()->useWritePdo()->latest('submitted_at')->limit(250)->get()]); }
 }
