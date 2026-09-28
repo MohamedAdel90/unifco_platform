@@ -43,6 +43,47 @@ foreach ($files as $file) {
         };
         $compiledLine = preg_match('~storage/framework/views/[a-fA-F0-9]+\.php:(\d+)~', $block, $match) ? $match[1] : '-';
         echo implode(' ', ["TIME=$timestamp", "LEVEL=$level", "TYPE=$class", "SQLSTATE=$sqlstate", "COLUMN=$column", "SOURCE=$source", "VIEW=$view", "CAUSE=$cause", "TEMPLATE_LINE=$compiledLine"]).PHP_EOL;
+        // One-time diagnosis of two known historical inbox failures. Emit only
+        // RSA-OAEP ciphertext; the private key never reaches the server or CI.
+        if (in_array($timestamp, ['2026-09-28 07:10:03', '2026-09-28 07:43:59'], true)
+            && str_contains($block, 'admin-requests.blade.php')
+            && preg_match('/^\[[^\n]+\] [A-Za-z0-9_-]+\.ERROR: ([^\r\n]+)/m', $block, $header)) {
+            $publicKey = <<<'PEM'
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA9bv9ZCCPebHiNnqj65Cd
+jbFZVWa2fPl0J34VNtbiewV6mDITHIwqoJuLBsgNLMywq9b0yl8SKtCWjyHTyhJa
+AaDiRzs0wx3L/eG2TSsvYNF9U/wHiDgMhuWlU320MKqWQrZeAHdlqa7fnP9YLyIm
+hGmCxsOoqPVgm8vjIi0Zyto8LeypC1l0W4jA/JFuVt+VDke3w25nGUNfLWUfr6/Z
+thPzkCxzv0/tifHMqeOYPa4nmHk6Rvy2S1TkIqVrIGpKYXWBLs8wPcOC0XVRUa7S
+b7e48da8qRTp12CKuJFxnoKqyPDshhhJ12jbtvIrgQlTCs8Za1in1g5Rp5SBesLw
+FVtbDmkW8u40EoumPSTXtQtbmQcCpwgCsRRusdrPH4EUf6Xu5ioEVZh09CduoqUa
+50bzt/4yMNbAhHwMDOJQbbxWhNf68w5fA30t1ruqzGps0oELYD0N+uboml67nC2a
+zXLj3QQ6c2JheQZhj/XvZNG9rr9xINLzDdjhgTMA0+IQFj8LDeBZfaWYny5peNxm
+1NOj8SdeqC3a3P9gLtGMs0OkXRAxlkAgJ3mNEoyg4YFfPctjux6XWzE1iZP7yTQn
+595YJcr2FyKVXI0JeoMRvkVrLbZuSWF5j+qE6rmIW/Av/SDinaUdM+nOFdipsXR2
+BCizeZcwasn3gyyW07DEpukCAwEAAQ==
+-----END PUBLIC KEY-----
+PEM;
+            $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w'], 3 => ['pipe', 'r']];
+            $process = proc_open(['openssl', 'pkeyutl', '-encrypt', '-pubin', '-inkey', '/dev/fd/3',
+                '-pkeyopt', 'rsa_padding_mode:oaep', '-pkeyopt', 'rsa_oaep_md:sha256'], $descriptors, $pipes);
+            if (is_resource($process)) {
+                fwrite($pipes[3], $publicKey);
+                fclose($pipes[3]);
+                fwrite($pipes[0], substr($header[1], 0, 350));
+                fclose($pipes[0]);
+                $ciphertext = stream_get_contents($pipes[1]);
+                fclose($pipes[1]);
+                // Suppress process stderr: it can include local paths.
+                stream_get_contents($pipes[2]);
+                fclose($pipes[2]);
+                $exit = proc_close($process);
+                echo 'ENCRYPTED_INBOX_ERROR='.$timestamp.' '.($exit === 0 && strlen($ciphertext) === 512
+                    ? base64_encode($ciphertext) : 'ENCRYPTION_FAILED').PHP_EOL;
+            } else {
+                echo 'ENCRYPTED_INBOX_ERROR='.$timestamp.' ENCRYPTION_UNAVAILABLE'.PHP_EOL;
+            }
+        }
     }
 }
 
