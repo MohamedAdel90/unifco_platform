@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\{Tenant, User};
+use Database\Seeders\WorkflowTestUsersSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -33,5 +34,13 @@ class OperationsManagerDashboardAccessTest extends TestCase
     public function test_operations_route_is_named_and_protected_by_auth(): void
     {
         $this->assertSame('/operations', route('operations-manager.dashboard', [], false));
+    }
+
+    public function test_legacy_operations_manager_with_granted_dashboard_permission_can_open_command_center(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $manager=User::where('email','operations.manager@unifco.local')->firstOrFail();
+
+        $this->actingAs($manager)->get('/operations')->assertOk();
     }
 }

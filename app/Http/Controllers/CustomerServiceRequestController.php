@@ -51,23 +51,27 @@ class CustomerServiceRequestController extends Controller
     {
         [$user,$customer]=$this->portalUser($access);
         abort_unless((int)$serviceRequest->tenant_id===(int)$user->tenant_id && (int)$serviceRequest->customer_id===(int)$user->customer_id,404);
-        if($serviceRequest->asset_id) $access->assertAsset($user,(int)$serviceRequest->asset_id); if($serviceRequest->service_contract_id) $access->assertContract($user,(int)$serviceRequest->service_contract_id);
+        $assetIds=$access->accessibleAssetIds($user); if($serviceRequest->asset_id && $assetIds!==null) abort_unless($assetIds->contains((int)$serviceRequest->asset_id),404);
+        $contractIds=$access->accessibleContractIds($user); if($serviceRequest->service_contract_id && $contractIds!==null) abort_unless($contractIds->contains((int)$serviceRequest->service_contract_id),404);
         $siteIds=$access->accessibleSiteIds($user); if($serviceRequest->customer_site_id && $siteIds!==null) abort_unless($siteIds->contains((int)$serviceRequest->customer_site_id),404);
 
         $asset=$serviceRequest->asset_id?Asset::where('customer_id',$customer->id)->find($serviceRequest->asset_id):null;
         $site=$serviceRequest->customer_site_id?CustomerSite::where('customer_id',$customer->id)->find($serviceRequest->customer_site_id):null;
         $contract=$serviceRequest->service_contract_id?ServiceContract::where('customer_id',$customer->id)->find($serviceRequest->service_contract_id):null;
-        $workOrder=$serviceRequest->work_order_id?WorkOrder::where('tenant_id',$user->tenant_id)->find($serviceRequest->work_order_id):null;
+        $workOrder=$asset && $serviceRequest->work_order_id?WorkOrder::where('tenant_id',$user->tenant_id)->where('asset_id',$asset->id)->find($serviceRequest->work_order_id):null;
         $quotation=$serviceRequest->quotation_id?CrmQuotation::where('tenant_id',$user->tenant_id)->where('customer_id',$customer->id)->find($serviceRequest->quotation_id):null;
         $invoice=FinancialDocument::query()->where('tenant_id',$user->tenant_id)->where('customer_id',$customer->id)->where('document_type','AR_INVOICE')->where(function($q)use($serviceRequest){$q->where('service_request_id',$serviceRequest->id); $legacyId=data_get($serviceRequest->workflow_context,'invoice_id'); if($legacyId)$q->orWhere('id',$legacyId);})->latest('id')->first();
         $payments=$invoice?Payment::where('tenant_id',$user->tenant_id)->where('financial_document_id',$invoice->id)->orderBy('payment_date')->get():collect();
         $customerStatus=$statusPresenter->present($serviceRequest);
+        // Intake used to copy workflow metadata into the free-text description.
+        // Use the live subtype as the authority and leave the original record untouched.
+        $customerDetails=trim((string)preg_replace('/^مسار الطلب:\s*[^\r\n]*(?:\r?\n|$)/mu','',(string)$serviceRequest->details));
 
         $events=CustomerActivityEvent::query()->where('customer_id',$customer->id)->where('reference_type',ServiceRequest::class)->where('reference_id',$serviceRequest->id)->whereIn('visibility',['BOTH','CUSTOMER'])->orderByDesc('created_at')->limit(100)->get();
         $attachments=collect(); if($workOrder){$attachments=MaintenanceAttachment::where('customer_id',$customer->id)->where('work_order_id',$workOrder->id)->latest()->get();}
         $canAccept=$serviceRequest->workflow_stage==='CUSTOMER_ACCEPTANCE' && $workOrder && $workOrder->status==='COMPLETED' && $access->canAcceptWork($user);
         $canDecideDelivery=$serviceRequest->workflow_stage==='CUSTOMER_DELIVERY';
 
-        return view('customer.service-requests.show',['customer'=>$customer,'serviceRequest'=>$serviceRequest,'asset'=>$asset,'site'=>$site,'contract'=>$contract,'workOrder'=>$workOrder,'quotation'=>$quotation,'invoice'=>$invoice,'payments'=>$payments,'customerStatus'=>$customerStatus,'events'=>$events,'attachments'=>$attachments,'canAccept'=>$canAccept,'canDecideDelivery'=>$canDecideDelivery,'portalRole'=>$access->role($user),'allowedSections'=>$access->allowedSections($user),'canManageUsers'=>$access->canManageUsers($user),'readOnly'=>$access->isReadOnly($user)]);
+        return view('customer.service-requests.show',['customer'=>$customer,'serviceRequest'=>$serviceRequest,'customerDetails'=>$customerDetails,'asset'=>$asset,'site'=>$site,'contract'=>$contract,'workOrder'=>$workOrder,'quotation'=>$quotation,'invoice'=>$invoice,'payments'=>$payments,'customerStatus'=>$customerStatus,'events'=>$events,'attachments'=>$attachments,'canAccept'=>$canAccept,'canDecideDelivery'=>$canDecideDelivery,'portalRole'=>$access->role($user),'allowedSections'=>$access->allowedSections($user),'canManageUsers'=>$access->canManageUsers($user),'readOnly'=>$access->isReadOnly($user)]);
     }
 }

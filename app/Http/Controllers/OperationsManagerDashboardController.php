@@ -12,7 +12,7 @@ class OperationsManagerDashboardController extends Controller
     public function __invoke(Request $request, AuthorizationService $authorization, OperationsManagerDashboardService $dashboard, RequestWorkflowHealthService $workflowHealth): View
     {
         $user = $request->user();
-        abort_unless($user && $user->hasRole('OPERATIONS_MANAGER'), 403);
+        abort_unless($user && $authorization->roleCodes($user)->contains('OPERATIONS_MANAGER'), 403);
         $authorization->authorize($user, 'operations.dashboard.view');
 
         $capabilities = [
