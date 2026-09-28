@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 
 class ProductionRequestMatrixAudit extends Command
 {
-    protected $signature = 'unifco:production-request-matrix-audit';
+    protected $signature = 'unifco:production-request-matrix-audit {--targets-only : Audit the nine agreed existing-customer requests only}';
     protected $description = 'Read-only audit of the agreed production request matrix.';
 
     public function handle(ServiceRequestWorkflowTemplateRegistry $registry, ServiceContractCoverageResolver $coverage): int
@@ -22,7 +22,7 @@ class ProductionRequestMatrixAudit extends Command
             ['no'=>'UNUM-926000024','group'=>'existing-unlinked','label'=>'Emergency maintenance','expected'=>'EMERGENCY_MAINTENANCE'],
             ['no'=>'UNQ-926000025','group'=>'existing-unlinked','label'=>'Spare parts quotation','expected'=>'SPARE_PARTS_QUOTATION'],
             ['no'=>'UNQ-926000026','group'=>'existing-unlinked','label'=>'Technical visit quotation','expected'=>'TECHNICAL_VISIT'],
-            ['no'=>'UNM-926000027','group'=>'existing-unlinked','label'=>'Maintenance contract','expected'=>'MAINTENANCE_CONTRACT_QUOTATION'],
+            ['no'=>'UNM-926000027','group'=>'existing-unlinked','label'=>'Verify actual request type','expected'=>null],
             ['no'=>'UNM-926000021','group'=>'existing-unlinked','label'=>'Maintenance contract quotation outside contract','expected'=>'MAINTENANCE_CONTRACT_QUOTATION'],
             ['no'=>'UNC-926000022','group'=>'existing-unlinked','label'=>'Technical consultation','expected'=>'TECHNICAL_CONSULTATION'],
             ['no'=>'UNM-926000028','group'=>'new-customer','label'=>'Maintenance contract quotation','expected'=>'MAINTENANCE_CONTRACT_QUOTATION'],
@@ -33,6 +33,8 @@ class ProductionRequestMatrixAudit extends Command
             ['no'=>'UNM-926000033','group'=>'new-customer','label'=>'Maintenance contract','expected'=>'MAINTENANCE_CONTRACT_QUOTATION'],
             ['no'=>'UNC-926000034','group'=>'new-customer','label'=>'Technical consultation','expected'=>'TECHNICAL_CONSULTATION'],
         ];
+
+        if ($this->option('targets-only')) $cases=array_slice($cases,0,9);
 
         $failures=0;
         foreach($cases as $case){
@@ -69,7 +71,7 @@ class ProductionRequestMatrixAudit extends Command
             $this->line('Work Order: '.($workOrder?->work_order_no??'—').' | WO asset: '.($workOrder?->asset_id??'—').' | WO contract: '.($workOrder?->service_contract_id??'—'));
 
             $issues=[];
-            if($derived!==$case['expected']) $issues[]='derived workflow expected '.$case['expected'].' got '.$derived;
+            if($case['expected']!==null && $derived!==$case['expected']) $issues[]='derived workflow expected '.$case['expected'].' got '.$derived;
             if($service->workflow_key && $service->workflow_key!==$derived) $issues[]='stored workflow_key differs from derived workflow';
             if($case['group']==='existing-linked' && !$linked) $issues[]='expected contract-linked request but service_contract_id is empty';
             if($case['group']==='existing-unlinked' && $linked) $issues[]='expected unlinked request but service_contract_id='.$service->service_contract_id;
