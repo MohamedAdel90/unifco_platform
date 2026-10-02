@@ -11,6 +11,7 @@ on:
 jobs:
   routine-maintenance:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Wait for qualified production release and run rollback-only smoke
         shell: bash
@@ -27,7 +28,7 @@ jobs:
           chmod 600 "$HOME/.ssh/unifco_smoke_key"
 
           for attempt in $(seq 1 30); do
-            remote_sha="$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_smoke_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            remote_sha="$(ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -i "$HOME/.ssh/unifco_smoke_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
               "cd /var/www/unifco_platform && git rev-parse HEAD 2>/dev/null" || true)"
             if [ "$remote_sha" = "$TARGET_SHA" ]; then
               echo "Production is on expected release SHA: $TARGET_SHA"
@@ -38,7 +39,8 @@ jobs:
             # every intervening change is qualification evidence under deploy/status/.
             # Accept exactly that same case so the smoke validates the release that
             # was actually deployed, while still rejecting newer functional code.
-            if [ -n "$remote_sha" ] && ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
+            if [ -n "$remote_sha" ] && ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
+              -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
               -i "$HOME/.ssh/unifco_smoke_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
               "cd /var/www/unifco_platform && git cat-file -e '${TARGET_SHA}^{commit}' 2>/dev/null && git merge-base --is-ancestor '$TARGET_SHA' '$remote_sha' && test -z \"\$(git diff --name-only '$TARGET_SHA..$remote_sha' | grep -v '^deploy/status/' || true)\""; then
               echo "Production safely advanced from $TARGET_SHA to qualification-only tip $remote_sha"
@@ -53,5 +55,8 @@ jobs:
             sleep 10
           done
 
-          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=20 -i "$HOME/.ssh/unifco_smoke_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+          timeout --signal=TERM --kill-after=30s 8m \
+            ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
+            -o ServerAliveInterval=20 -o ServerAliveCountMax=3 \
+            -i "$HOME/.ssh/unifco_smoke_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
             "cd /var/www/unifco_platform && php artisan unifco:production-request-smoke --customer=14"
