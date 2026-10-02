@@ -100,7 +100,7 @@ class ProductionRequestLifecycleEvidence extends Command
                 ->where('entity_type', 'service_request')
                 ->where('entity_id', $request->id)
                 ->orderBy('id')
-                ->get(['id','approval_code','sequence_no','status','requested_by','assigned_to','decided_by','decided_at']);
+                ->get();
 
             $parts = $request->work_order_id
                 ? WorkOrderPartRequest::withoutGlobalScopes()->where('work_order_id', $request->work_order_id)->orderBy('id')->get()
@@ -151,7 +151,19 @@ class ProductionRequestLifecycleEvidence extends Command
                 'invoice'=>$invoice?['id'=>$invoice->id,'no'=>$invoice->document_no,'status'=>$invoice->status,'amount'=>$invoice->amount,'open_amount'=>$invoice->open_amount]:null,
                 'payments'=>$payments->map(fn($payment)=>['id'=>$payment->id,'no'=>$payment->payment_no,'amount'=>$payment->amount,'date'=>optional($payment->payment_date)->toDateString()])->values()->all(),
                 'outstanding'=>$invoice?->open_amount,
-                'approvals'=>$approvals->map(fn($approval)=>['id'=>$approval->id,'code'=>$approval->approval_code,'sequence'=>$approval->sequence_no,'status'=>$approval->status,'requested_by'=>$approval->requested_by,'assigned_to'=>$approval->assigned_to,'decided_by'=>$approval->decided_by,'decided_at'=>optional($approval->decided_at)->toIso8601String()])->values()->all(),
+                'approvals'=>$approvals->map(fn($approval)=>[
+                    'id'=>$approval->id,
+                    'action'=>$approval->action,
+                    'workflow_key'=>$approval->workflow_key,
+                    'role'=>$approval->approval_role,
+                    'sequence'=>$approval->step_order,
+                    'status'=>$approval->status,
+                    'routing_status'=>$approval->routing_status,
+                    'requested_by'=>$approval->requested_by,
+                    'assigned_to'=>$approval->assigned_user_id,
+                    'decided_by'=>$approval->decided_by,
+                    'decided_at'=>optional($approval->decided_at)->toIso8601String(),
+                ])->values()->all(),
                 'parts'=>$parts->map(fn($part)=>['id'=>$part->id,'request_no'=>$part->request_no,'status'=>$part->status,'asset_id'=>$part->asset_id,'approved_at'=>optional($part->approved_at)->toIso8601String(),'issued_at'=>optional($part->issued_at)->toIso8601String(),'received_at'=>optional($part->received_at)->toIso8601String()])->values()->all(),
                 'attachments'=>$attachments,
                 'audit_events'=>$auditEvents,
