@@ -14,7 +14,7 @@ jobs:
     env:
       TARGET_SHA: ${{ github.sha }}
     steps:
-      - name: Wait for deployed release containing target and audit production request matrix
+      - name: Wait for deployed release containing target and audit full production request matrix
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -43,4 +43,4 @@ jobs:
             sleep 10
           done
           ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=20 -i "$HOME/.ssh/unifco_matrix_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
-            "cd /var/www/unifco_platform && php artisan unifco:production-request-matrix-audit --targets-only"
+            "cd /var/www/unifco_platform && php artisan unifco:production-request-matrix-audit"
