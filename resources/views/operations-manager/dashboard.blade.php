@@ -17,8 +17,8 @@
                 @if($capabilities['maintenance'] ?? false)
                     <a href="{{ route('maintenance.work-orders.index') }}" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">{{ $ar ? 'أوامر العمل' : 'Work Orders' }}</a>
                 @endif
-                @if($capabilities['crm_manage'] ?? false)
-                    <a href="{{ route('admin.public-requests.index') }}" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">{{ $ar ? 'طلبات الخدمة' : 'Service Requests' }}</a>
+                @if(app(\App\Services\AuthorizationService::class)->allows(auth()->user(), 'service_requests.read'))
+                    <a href="{{ route('operations-manager.service-requests.index') }}" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">{{ $ar ? 'طلبات الخدمة' : 'Service Requests' }}</a>
                 @endif
             </div>
         </div>
