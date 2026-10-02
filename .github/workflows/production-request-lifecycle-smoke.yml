@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'app/Console/Commands/ProductionRequestLifecycleSmoke.php'
+      - 'app/Services/RequestStageOwnerService.php'
       - '.github/workflows/production-request-lifecycle-smoke.yml'
   workflow_dispatch:
 
