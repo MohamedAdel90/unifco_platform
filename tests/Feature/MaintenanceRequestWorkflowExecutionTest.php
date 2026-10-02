@@ -66,7 +66,7 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         $this->step($serviceRequest,$ops,'PROJECT_MANAGER_REVIEW','PROJECT_MANAGER',2,'WAITING');
 
         $this->actingAs($ops)->get(route('service-requests.workflow.show',$serviceRequest))
-            ->assertOk()->assertSee('Complete & Route');
+            ->assertOk()->assertSee('Complete & Route',false);
 
         $this->actingAs($ops)->post(route('service-requests.workflow.triage',$serviceRequest),[
             'notes'=>'Consultation scope reviewed.',
