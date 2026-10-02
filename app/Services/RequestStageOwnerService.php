@@ -72,7 +72,9 @@ class RequestStageOwnerService
                   ->orWhereHas('activeRoles',fn($r)=>$r->where('roles.code',$role));
             });
 
-        if($request->project_id && in_array($role,self::PROJECT_BOUND,true)){
+        // Operations owns the request queue before a project is chosen; allow its
+        // authorized assigner to recover a stage that became unowned at routing.
+        if($request->project_id && in_array($role,self::PROJECT_BOUND,true) && $role !== 'OPERATIONS_MANAGER'){
             $ids=ProjectUserAssignment::query()
                 ->where('tenant_id',$request->tenant_id)
                 ->where('project_id',$request->project_id)
