@@ -2,7 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ApprovalRequest,Organization,ServiceRequest,Tenant,User};
+use App\Models\{ApprovalRequest,Organization,Project,ProjectUserAssignment,ServiceRequest,Tenant,User};
+use App\Services\RequestStageOwnerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -73,6 +74,38 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         ])->assertRedirect();
 
         $this->assertSame('PROJECT_MANAGER_REVIEW',$serviceRequest->fresh()->workflow_stage);
+    }
+
+    public function test_operations_owner_can_be_selected_for_a_project_bound_request_without_a_project_team_slot(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('OPERATIONS_REVIEW');
+        $ops=$this->user($tenant,$org,'OPERATIONS_MANAGER','ops-recovery@example.test');
+        $project=Project::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,
+            'project_no'=>'PRJ-RECOVERY','name'=>'Recovery project','status'=>'ACTIVE']);
+        $serviceRequest->update(['project_id'=>$project->id]);
+
+        $candidates=app(RequestStageOwnerService::class)->candidates($serviceRequest->fresh(),'OPERATIONS_MANAGER');
+        $this->assertTrue($candidates->contains('id',$ops->id));
+        $this->assertSame('NEEDS_ASSIGNMENT',app(RequestStageOwnerService::class)
+            ->resolve($serviceRequest->fresh(),'OPERATIONS_MANAGER','OPERATIONS_REVIEW')['status']);
+    }
+
+    public function test_failed_project_routing_rolls_back_request_project_binding(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('OPERATIONS_REVIEW');
+        $ops=$this->user($tenant,$org,'OPERATIONS_MANAGER','ops-rollback@example.test');
+        $pm=$this->user($tenant,$org,'PROJECT_MANAGER','pm-rollback@example.test');
+        $step=$this->step($serviceRequest,$ops,'OPERATIONS_REVIEW','OPERATIONS_MANAGER',1,'PENDING');
+        $step->update(['routing_status'=>'NEEDS_ASSIGNMENT']);
+        $project=Project::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,
+            'project_no'=>'PRJ-ROLLBACK','name'=>'Rollback project','status'=>'ACTIVE']);
+        ProjectUserAssignment::create(['tenant_id'=>$tenant->id,'project_id'=>$project->id,
+            'user_id'=>$pm->id,'project_role'=>'PROJECT_MANAGER','access_level'=>'PROJECT','status'=>'ACTIVE']);
+
+        $this->actingAs($ops)->post(route('service-requests.workflow.triage',$serviceRequest),[
+            'project_id'=>$project->id,
+        ])->assertStatus(422);
+        $this->assertNull($serviceRequest->fresh()->project_id);
     }
 
     public function test_assigned_technician_can_complete_execution_and_move_to_customer_acceptance(): void

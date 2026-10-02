@@ -7,6 +7,7 @@ use App\Models\{ApprovalRequest,Project,ProjectUserAssignment,ServiceRequest,Use
 use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,RequestStageOwnerService,ScopeService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class MaintenanceRequestWorkflowController extends Controller
 {
@@ -120,6 +121,7 @@ class MaintenanceRequestWorkflowController extends Controller
             return back()->withErrors(['project_id'=>'Select the project responsible for this request before routing it.'])->withInput();
         }
 
+        return DB::transaction(function () use ($projectId, $request, $serviceRequest, $transitions, $data): RedirectResponse {
         if($projectId){
             $project=Project::query()
                 ->where('tenant_id',$request->user()->tenant_id)
@@ -148,6 +150,7 @@ class MaintenanceRequestWorkflowController extends Controller
 
         $transitions->complete($request->user(), $serviceRequest, ['TRIAGE','EMERGENCY_DISPATCH','OPERATIONS_REVIEW'], $data['notes'] ?? null);
         return back()->with('status', 'Request routed to the next workflow stage.');
+        });
     }
 
     public function projectReview(Request $request, ServiceRequest $serviceRequest, MaintenanceRequestTransitionService $transitions): RedirectResponse
