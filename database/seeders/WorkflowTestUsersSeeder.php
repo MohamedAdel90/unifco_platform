@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\{Customer,CustomerContact,CustomerSite,Organization,Tenant,User};
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\{DB,Hash};
+use Illuminate\Support\Facades\{DB,Hash,Schema};
 
 class WorkflowTestUsersSeeder extends Seeder
 {
@@ -31,6 +31,33 @@ class WorkflowTestUsersSeeder extends Seeder
             'CEO'=>['name'=>'Workflow Chief Executive Officer','email'=>'ceo@unifco.local','permissions'=>['dashboard.view','workflow.approval.read','workflow.approval.decide','reporting.executive.read','crm.customer.read','finance.journal.read','projects.project.read','procurement.po.read','maintenance.work_order.read']],
         ];
         foreach($roles as $role=>$config){User::updateOrCreate(['email'=>$config['email']],['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>$config['name'],'password'=>Hash::make($password),'role'=>$role,'status'=>'ACTIVE','force_password_change'=>false]);foreach($config['permissions'] as $permission)DB::table('role_permissions')->updateOrInsert(['tenant_id'=>$tenant->id,'role_code'=>$role,'permission_code'=>$permission],['created_at'=>now(),'updated_at'=>now()]);}
+
+        // The dedicated maintenance UAT project must have a responsible manager
+        // before the agreed request matrix can leave Operations triage.
+        if (Schema::hasTable('project_user_assignments')) {
+            $uatCustomerId=Customer::where('tenant_id',$tenant->id)->where('customer_code','100')->value('id');
+            $uatProject=$uatCustomerId ? DB::table('projects')
+                ->where('tenant_id',$tenant->id)->where('customer_id',$uatCustomerId)
+                ->where('project_no','PRJ-TEST-001')->where('status','ACTIVE')->first() : null;
+            $projectManager=User::where('tenant_id',$tenant->id)
+                ->where('email','projects.manager@unifco.local')->first();
+            if ($uatProject && $projectManager) {
+                $hasActiveManager=DB::table('project_user_assignments')
+                    ->where('tenant_id',$tenant->id)->where('project_id',$uatProject->id)
+                    ->where('project_role','PROJECT_MANAGER')->where('status','ACTIVE')
+                    ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
+                    ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
+                    ->exists();
+                if (! $hasActiveManager) {
+                    DB::table('project_user_assignments')->updateOrInsert(
+                        ['project_id'=>$uatProject->id,'user_id'=>$projectManager->id],
+                        ['tenant_id'=>$tenant->id,'project_role'=>'PROJECT_MANAGER',
+                         'access_level'=>'PROJECT','status'=>'ACTIVE','starts_on'=>null,'ends_on'=>null,
+                         'reason'=>'Dedicated UAT request-matrix routing','updated_at'=>now(),'created_at'=>now()]
+                    );
+                }
+            }
+        }
 
         $customer=Customer::updateOrCreate(['tenant_id'=>$tenant->id,'customer_code'=>'WF-TEST-001'],['organization_id'=>$org->id,'name'=>'UNIFCO Workflow Test Customer','commercial_registration'=>'WF-TEST-CR-001','email'=>'workflow.customer@unifco.local','contact_name'=>'Workflow Customer Admin','phone'=>'0500000001','city'=>'Riyadh','country'=>'Saudi Arabia','address'=>'Riyadh Test Facility','status'=>'ACTIVE','onboarding_status'=>'ACTIVE']);
         CustomerContact::updateOrCreate(['customer_id'=>$customer->id,'email'=>'workflow.customer@unifco.local'],['name'=>'Workflow Customer Admin','job_title'=>'Facility Manager','contact_type'=>'PRIMARY','mobile'=>'0500000001','is_primary'=>true]);
