@@ -84,7 +84,9 @@ class RequestStageOwnerService
             $query->whereIn('id',$ids);
         }
 
-        return $query->orderBy('name')->get(['id','name','email','role']);
+        // Keep tenant_id hydrated because callers pass these candidate models into
+        // tenant-bound authorization checks before acting on the request.
+        return $query->orderBy('name')->get(['id','tenant_id','name','email','role']);
     }
 
     public function refresh(ServiceRequest $request): void
