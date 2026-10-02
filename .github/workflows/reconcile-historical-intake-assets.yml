@@ -1,6 +1,10 @@
 name: Reconcile Historical Intake Assets
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/reconcile-historical-intake-assets.yml'
   workflow_dispatch:
     inputs:
       apply:
