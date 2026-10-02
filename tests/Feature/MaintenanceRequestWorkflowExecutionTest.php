@@ -76,7 +76,7 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         $this->assertSame('PROJECT_MANAGER_REVIEW',$serviceRequest->fresh()->workflow_stage);
     }
 
-    public function test_operations_owner_can_be_selected_for_a_project_bound_request_without_a_project_team_slot(): void
+    public function test_project_bound_operations_candidates_require_a_project_team_assignment(): void
     {
         [$tenant,$org,$serviceRequest]=$this->setupRequest('OPERATIONS_REVIEW');
         $ops=$this->user($tenant,$org,'OPERATIONS_MANAGER','ops-recovery@example.test');
@@ -85,7 +85,7 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         $serviceRequest->update(['project_id'=>$project->id]);
 
         $candidates=app(RequestStageOwnerService::class)->candidates($serviceRequest->fresh(),'OPERATIONS_MANAGER');
-        $this->assertTrue($candidates->contains('id',$ops->id));
+        $this->assertFalse($candidates->contains('id',$ops->id));
         $this->assertSame('NEEDS_ASSIGNMENT',app(RequestStageOwnerService::class)
             ->resolve($serviceRequest->fresh(),'OPERATIONS_MANAGER','OPERATIONS_REVIEW')['status']);
     }
@@ -106,6 +106,27 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
             'project_id'=>$project->id,
         ])->assertStatus(422);
         $this->assertNull($serviceRequest->fresh()->project_id);
+    }
+
+    public function test_operations_role_queue_routes_before_project_owner_is_recalculated(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('TRIAGE');
+        $ops=$this->user($tenant,$org,'OPERATIONS_MANAGER','ops-bind@example.test');
+        $pm=$this->user($tenant,$org,'PROJECT_MANAGER','pm-bind@example.test');
+        $this->step($serviceRequest,$ops,'TRIAGE','OPERATIONS_MANAGER',1,'PENDING');
+        $this->step($serviceRequest,$ops,'PROJECT_MANAGER_REVIEW','PROJECT_MANAGER',2,'WAITING');
+        $project=Project::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,
+            'project_no'=>'PRJ-BIND','name'=>'Binding project','status'=>'ACTIVE']);
+        ProjectUserAssignment::create(['tenant_id'=>$tenant->id,'project_id'=>$project->id,
+            'user_id'=>$pm->id,'project_role'=>'PROJECT_MANAGER','access_level'=>'PROJECT','status'=>'ACTIVE']);
+
+        $this->actingAs($ops)->post(route('service-requests.workflow.triage',$serviceRequest),[
+            'project_id'=>$project->id,
+        ])->assertRedirect();
+        $this->assertSame($project->id,$serviceRequest->fresh()->project_id);
+        $this->assertSame('PROJECT_MANAGER_REVIEW',$serviceRequest->fresh()->workflow_stage);
+        $this->assertSame('COMPLETED',ApprovalRequest::where('entity_id',$serviceRequest->id)
+            ->where('action','TRIAGE')->value('status'));
     }
 
     public function test_assigned_technician_can_complete_execution_and_move_to_customer_acceptance(): void

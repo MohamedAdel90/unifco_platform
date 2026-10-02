@@ -142,13 +142,14 @@ class MaintenanceRequestWorkflowController extends Controller
                 return back()->withErrors(['project_id'=>'This project has no active Project Manager assignment. Configure Team & Access before routing the request.'])->withInput();
             }
 
-            if((int)$serviceRequest->project_id!==(int)$project->id){
-                $serviceRequest->update(['project_id'=>$project->id]);
-                $serviceRequest->refresh();
-            }
         }
 
+        // Complete the Operations role-queue action before project binding
+        // re-resolves its owner. The transaction keeps both changes atomic.
         $transitions->complete($request->user(), $serviceRequest, ['TRIAGE','EMERGENCY_DISPATCH','OPERATIONS_REVIEW'], $data['notes'] ?? null);
+        if ($projectId && (int)$serviceRequest->project_id !== (int)$projectId) {
+            $serviceRequest->update(['project_id'=>$projectId]);
+        }
         return back()->with('status', 'Request routed to the next workflow stage.');
         });
     }
