@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\{ApprovalRequest,Asset,Customer,CustomerActivityEvent,ServiceContract,ServiceRequest,User,WorkOrder};
-use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,ServiceRequestWorkflowService};
+use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,RequestStageOwnerService,ScopeService,ServiceRequestWorkflowService};
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Http\Request;
@@ -181,12 +181,34 @@ class ProductionRequestLifecycleSmoke extends Command
             ->where('action',$request->workflow_stage)
             ->where('status','PENDING')
             ->firstOrFail();
-        if(!$step->assigned_user_id){
-            throw new \RuntimeException("No resolved owner for {$request->workflow_stage}.");
+
+        if($step->assigned_user_id){
+            return User::query()
+                ->where('tenant_id',$request->tenant_id)
+                ->findOrFail($step->assigned_user_id);
         }
-        return User::query()
-            ->where('tenant_id',$request->tenant_id)
-            ->findOrFail($step->assigned_user_id);
+
+        if($step->routing_status!=='ROLE_QUEUE'){
+            throw new \RuntimeException("No resolved owner for {$request->workflow_stage} ({$step->routing_status}).");
+        }
+
+        $scopes=app(ScopeService::class);
+        $actor=app(RequestStageOwnerService::class)
+            ->candidates($request,(string)$step->approval_role)
+            ->first(function(User $candidate) use($request,$scopes): bool {
+                return $scopes->apply(
+                    ServiceRequest::query()
+                        ->where('tenant_id',$request->tenant_id)
+                        ->whereKey($request->id),
+                    $candidate
+                )->exists();
+            });
+
+        if(!$actor){
+            throw new \RuntimeException("No in-scope role-queue actor for {$request->workflow_stage}.");
+        }
+
+        return $actor;
     }
 
     private function expectStage(ServiceRequest $request,string $expected): void
