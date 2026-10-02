@@ -7,6 +7,7 @@
 <div class="wf-shell">
 <section class="wf-hero"><div style="font-size:11px;font-weight:800;color:#a9c5e7">UNIFCO · REQUEST EXECUTION WORKSPACE</div><h1>{{ $serviceRequest->request_no }}</h1><div>{{ $serviceRequest->subject }}</div></section>
 @if(session('status'))<div class="wf-card" style="border-left:4px solid #1f8a5b">{{ session('status') }}</div>@endif
+@if($errors->any())<div class="wf-card" role="alert" style="border-left:4px solid #a72c36;color:#8f2230"><strong>Workflow action was not completed</strong><ul style="margin:8px 0 0;padding-left:20px">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <section class="wf-grid">
 <div class="wf-card"><span class="muted">Workflow</span><b>{{ str_replace('_',' ',$serviceRequest->workflow_key ?: '-') }}</b></div>
 <div class="wf-card"><span class="muted">Current Stage</span><b>{{ str_replace('_',' ',$serviceRequest->workflow_stage ?: '-') }}</b></div>
@@ -24,7 +25,7 @@
 @endif
 @if($canAct)
 <div style="margin-top:16px">
-@if(in_array($serviceRequest->workflow_stage,['TRIAGE','EMERGENCY_DISPATCH']))
+@if(in_array($serviceRequest->workflow_stage,['TRIAGE','EMERGENCY_DISPATCH','OPERATIONS_REVIEW']))
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.triage',$serviceRequest) }}">@csrf
 <label><span class="muted">Responsible Project</span><select name="project_id"><option value="">Unassigned / no project</option>@foreach($projectOptions as $project)<option value="{{ $project->id }}" @selected((int)old('project_id',$serviceRequest->project_id)===(int)$project->id)>{{ $project->project_no }} · {{ $project->name }}</option>@endforeach</select></label>
 @if($projectOptions->count()>1 && !$serviceRequest->project_id)<div class="muted" style="color:#a72c36">Select the responsible project before routing. Requests are never sent to a Project Manager from another project.</div>@endif

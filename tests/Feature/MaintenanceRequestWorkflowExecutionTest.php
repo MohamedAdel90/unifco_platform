@@ -57,6 +57,24 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         $this->assertSame('PENDING',ApprovalRequest::where('entity_id',$serviceRequest->id)->where('action','PROJECT_MANAGER_REVIEW')->value('status'));
     }
 
+    public function test_consultation_operations_review_shows_action_and_routes_to_project_review(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('OPERATIONS_REVIEW');
+        $serviceRequest->update(['request_type'=>'CONSULTATION','workflow_key'=>'TECHNICAL_CONSULTATION']);
+        $ops=$this->user($tenant,$org,'OPERATIONS_MANAGER','ops-consultation@example.test');
+        $this->step($serviceRequest,$ops,'OPERATIONS_REVIEW','OPERATIONS_MANAGER',1,'PENDING');
+        $this->step($serviceRequest,$ops,'PROJECT_MANAGER_REVIEW','PROJECT_MANAGER',2,'WAITING');
+
+        $this->actingAs($ops)->get(route('service-requests.workflow.show',$serviceRequest))
+            ->assertOk()->assertSee('Complete & Route',false);
+
+        $this->actingAs($ops)->post(route('service-requests.workflow.triage',$serviceRequest),[
+            'notes'=>'Consultation scope reviewed.',
+        ])->assertRedirect();
+
+        $this->assertSame('PROJECT_MANAGER_REVIEW',$serviceRequest->fresh()->workflow_stage);
+    }
+
     public function test_assigned_technician_can_complete_execution_and_move_to_customer_acceptance(): void
     {
         [$tenant,$org,$serviceRequest]=$this->setupRequest('EXECUTION');
