@@ -12,7 +12,7 @@ jobs:
   routine-maintenance:
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for exact production release and run rollback-only smoke
+      - name: Wait for qualified production release and run rollback-only smoke
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -29,13 +29,26 @@ jobs:
           for attempt in $(seq 1 30); do
             remote_sha="$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_smoke_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
               "cd /var/www/unifco_platform && git rev-parse HEAD 2>/dev/null" || true)"
+            release_ready=false
             if [ "$remote_sha" = "$TARGET_SHA" ]; then
-              echo "Production is on expected release SHA: $TARGET_SHA"
+              release_ready=true
+            elif [ -n "$remote_sha" ]; then
+              status_only_advance="$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_smoke_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+                "cd /var/www/unifco_platform && git merge-base --is-ancestor '$TARGET_SHA' '$remote_sha' && git diff --name-only '$TARGET_SHA..$remote_sha' | grep -v '^deploy/status/' || true" || true)"
+              if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_smoke_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+                "cd /var/www/unifco_platform && git merge-base --is-ancestor '$TARGET_SHA' '$remote_sha'" >/dev/null 2>&1 \
+                && [ -z "$status_only_advance" ]; then
+                release_ready=true
+                echo "Production advanced from $TARGET_SHA to $remote_sha only through deploy/status evidence commits."
+              fi
+            fi
+            if [ "$release_ready" = true ]; then
+              echo "Production contains qualified release SHA: $TARGET_SHA (current $remote_sha)"
               break
             fi
-            echo "Waiting for production release $TARGET_SHA (currently ${remote_sha:-unavailable}), attempt $attempt/30"
+            echo "Waiting for qualified production release $TARGET_SHA (currently ${remote_sha:-unavailable}), attempt $attempt/30"
             if [ "$attempt" -eq 30 ]; then
-              echo "Production deployment did not reach expected release SHA $TARGET_SHA in time." >&2
+              echo "Production did not reach qualified release SHA $TARGET_SHA (or a status-only descendant) in time." >&2
               exit 1
             fi
             sleep 10
