@@ -2,11 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ApprovalRequest;
 use App\Models\CrmQuotation;
 use App\Models\FinancialDocument;
 use App\Models\Payment;
 use App\Models\PublicServiceRequest;
 use App\Models\ServiceRequest;
+use App\Models\WorkOrderPartRequest;
+use App\Services\AuditService;
 use App\Services\CustomerRequestStatusPresenter;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +21,7 @@ class ProductionRequestLifecycleEvidence extends Command
 
     private const REFERENCES = ['UNRM-926000017','UNUM-926000018','UNQ-926000019','UNQ-926000020','UNRM-926000023','UNUM-926000024','UNQ-926000025','UNQ-926000026','UNM-926000027'];
 
-    public function handle(CustomerRequestStatusPresenter $presenter): int
+    public function handle(CustomerRequestStatusPresenter $presenter, AuditService $audit): int
     {
         $this->info('PRODUCTION REQUEST LIFECYCLE EVIDENCE — READ ONLY');
         $this->line('generated_at='.now()->toIso8601String());
@@ -58,6 +61,11 @@ class ProductionRequestLifecycleEvidence extends Command
                     'outstanding'=>null,
                     'closure'=>null,
                     'customer_facing'=>null,
+                    'approvals'=>[],
+                    'parts'=>[],
+                    'attachments'=>null,
+                    'audit_events'=>null,
+                    'scope_consistency'=>null,
                 ], JSON_UNESCAPED_SLASHES));
                 continue;
             }
@@ -88,6 +96,41 @@ class ProductionRequestLifecycleEvidence extends Command
             $payments = $documents->isEmpty() ? collect() : Payment::withoutGlobalScopes()->whereIn('financial_document_id', $documents->pluck('id'))->orderBy('id')->get();
             $customer = $presenter->present($request);
 
+            $approvals = ApprovalRequest::withoutGlobalScopes()
+                ->where('entity_type', 'service_request')
+                ->where('entity_id', $request->id)
+                ->orderBy('id')
+                ->get(['id','approval_code','sequence_no','status','requested_by','assigned_to','decided_by','decided_at']);
+
+            $parts = $request->work_order_id
+                ? WorkOrderPartRequest::withoutGlobalScopes()->where('work_order_id', $request->work_order_id)->orderBy('id')->get()
+                : collect();
+
+            $attachments = $public ? [
+                'problem_photos'=>count((array) ($public->problem_photo_paths ?? [])),
+                'equipment_photos'=>count((array) ($public->equipment_photo_paths ?? [])),
+                'previous_reports'=>count((array) ($public->previous_report_paths ?? [])),
+                'legacy_attachments'=>count((array) ($public->attachment_paths ?? [])),
+            ] : null;
+
+            $auditEvents = DB::table('audit_events')
+                ->where(function ($query) use ($request) {
+                    $query->where(function ($q) use ($request) {
+                        $q->where('entity_type', 'service_request')->where('entity_id', $request->id);
+                    })->orWhere(function ($q) use ($request) {
+                        $q->where('entity_type', ServiceRequest::class)->where('entity_id', $request->id);
+                    });
+                })
+                ->count();
+
+            $scopeConsistency = [
+                'public_customer_matches'=>!$public || !$public->customer_id || (int) $public->customer_id === (int) $request->customer_id,
+                'asset_customer_matches'=>!$request->asset_id || (int) DB::table('assets')->where('id', $request->asset_id)->value('customer_id') === (int) $request->customer_id,
+                'work_order_customer_matches'=>!$request->work_order_id || (int) DB::table('work_orders')->where('id', $request->work_order_id)->value('customer_id') === (int) $request->customer_id,
+                'quotation_customer_matches'=>!$quotation || (int) $quotation->customer_id === (int) $request->customer_id,
+                'invoice_customer_matches'=>!$invoice || (int) $invoice->customer_id === (int) $request->customer_id,
+            ];
+
             $this->line(json_encode([
                 'reference'=>$reference,
                 'record'=>'service_request',
@@ -108,13 +151,25 @@ class ProductionRequestLifecycleEvidence extends Command
                 'invoice'=>$invoice?['id'=>$invoice->id,'no'=>$invoice->document_no,'status'=>$invoice->status,'amount'=>$invoice->amount,'open_amount'=>$invoice->open_amount]:null,
                 'payments'=>$payments->map(fn($payment)=>['id'=>$payment->id,'no'=>$payment->payment_no,'amount'=>$payment->amount,'date'=>optional($payment->payment_date)->toDateString()])->values()->all(),
                 'outstanding'=>$invoice?->open_amount,
+                'approvals'=>$approvals->map(fn($approval)=>['id'=>$approval->id,'code'=>$approval->approval_code,'sequence'=>$approval->sequence_no,'status'=>$approval->status,'requested_by'=>$approval->requested_by,'assigned_to'=>$approval->assigned_to,'decided_by'=>$approval->decided_by,'decided_at'=>optional($approval->decided_at)->toIso8601String()])->values()->all(),
+                'parts'=>$parts->map(fn($part)=>['id'=>$part->id,'request_no'=>$part->request_no,'status'=>$part->status,'asset_id'=>$part->asset_id,'approved_at'=>optional($part->approved_at)->toIso8601String(),'issued_at'=>optional($part->issued_at)->toIso8601String(),'received_at'=>optional($part->received_at)->toIso8601String()])->values()->all(),
+                'attachments'=>$attachments,
+                'audit_events'=>$auditEvents,
+                'scope_consistency'=>$scopeConsistency,
                 'closure'=>in_array(strtoupper((string)$request->status),['CLOSED','COMPLETED'],true)?$request->status:null,
                 'customer_facing'=>$customer,
             ], JSON_UNESCAPED_SLASHES));
         }
 
+        $auditIntegrity = $audit->verify();
+        $this->line(json_encode(['audit_integrity'=>$auditIntegrity], JSON_UNESCAPED_SLASHES));
+        if (! ($auditIntegrity['valid'] ?? false)) {
+            $failures++;
+            $this->error('Immutable audit chain verification failed.');
+        }
+
         if ($failures > 0) {
-            $this->error("READ-ONLY EVIDENCE INCOMPLETE: {$failures} agreed request(s) could not be resolved to service_requests.");
+            $this->error("READ-ONLY EVIDENCE INCOMPLETE: {$failures} evidence check(s) failed.");
             return self::FAILURE;
         }
 
