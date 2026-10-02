@@ -25,7 +25,7 @@
 @endif
 @if($canAct)
 <div style="margin-top:16px">
-@if(in_array($serviceRequest->workflow_stage,['TRIAGE','EMERGENCY_DISPATCH']))
+@if(in_array($serviceRequest->workflow_stage,['TRIAGE','EMERGENCY_DISPATCH','OPERATIONS_REVIEW']))
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.triage',$serviceRequest) }}">@csrf
 <label><span class="muted">Responsible Project</span><select name="project_id"><option value="">Unassigned / no project</option>@foreach($projectOptions as $project)<option value="{{ $project->id }}" @selected((int)old('project_id',$serviceRequest->project_id)===(int)$project->id)>{{ $project->project_no }} · {{ $project->name }}</option>@endforeach</select></label>
 @if($projectOptions->count()>1 && !$serviceRequest->project_id)<div class="muted" style="color:#a72c36">Select the responsible project before routing. Requests are never sent to a Project Manager from another project.</div>@endif
