@@ -183,23 +183,32 @@ class ProductionRequestLifecycleEvidence extends Command
         }
 
         $checked = 0;
+        $legacy = 0;
         $broken = [];
         $previous = [];
+        $started = [];
         foreach (DB::table('audit_logs')->orderBy('id')->cursor() as $row) {
             $tenant = $row->tenant_id ?? 'global';
+            if (! $row->entry_hash && ! isset($started[$tenant])) {
+                // Rows predating the hash migration cannot be verified.
+                $legacy++;
+                continue;
+            }
             $expected = $previous[$tenant] ?? null;
             if (($row->previous_hash ?: null) !== $expected ||
                 ! preg_match('/^[a-f0-9]{64}$/', (string) $row->entry_hash)) {
                 $broken[] = $row->id;
             }
+            $started[$tenant] = true;
             $previous[$tenant] = $row->entry_hash;
             $checked++;
         }
 
         // Stored timestamps do not retain the precision used when entry_hash was
         // generated. This verifies linkage and hash presence, not content hashes.
-        return ['valid'=>empty($broken), 'method'=>'linkage_only',
-            'content_verified'=>false, 'checked'=>$checked, 'broken_ids'=>$broken];
+        return ['valid'=>$checked > 0 && empty($broken), 'method'=>'linkage_only',
+            'content_verified'=>false, 'checked'=>$checked, 'legacy_unverified'=>$legacy,
+            'broken_ids'=>$broken];
     }
 
 }
