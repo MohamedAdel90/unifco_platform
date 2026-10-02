@@ -84,7 +84,9 @@ class RequestStageOwnerService
             $query->whereIn('id',$ids);
         }
 
-        return $query->orderBy('name')->get(['id','name','email','role']);
+        // Keep tenant_id loaded: downstream transition authorization compares the
+        // selected role-queue actor tenant with the request tenant before acting.
+        return $query->orderBy('name')->get(['id','tenant_id','name','email','role']);
     }
 
     public function refresh(ServiceRequest $request): void
