@@ -25,27 +25,29 @@ jobs:
 
       - name: Wait for production release and collect read-only evidence
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          APP_DIR: ${{ secrets.APP_DIR }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          APP_DIR: /var/www/unifco_platform
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          : "${SSH_HOST:?Missing SSH_HOST}"
-          : "${SSH_USER:?Missing SSH_USER}"
-          : "${SSH_PRIVATE_KEY:?Missing SSH_PRIVATE_KEY}"
-          : "${APP_DIR:?Missing APP_DIR}"
-          SSH_PORT="${SSH_PORT:-22}"
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          : "${DEPLOY_HOST:?Missing DEPLOY_HOST}"
+          : "${DEPLOY_USER:?Missing DEPLOY_USER}"
+          : "${DEPLOY_SSH_KEY:?Missing DEPLOY_SSH_KEY}"
+          : "${DEPLOY_PORT:?Missing DEPLOY_PORT}"
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_evidence_key"
+          chmod 600 "$HOME/.ssh/unifco_evidence_key"
+          ssh_cmd=(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_evidence_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST")
+          ready=0
           for attempt in $(seq 1 40); do
-            remote_sha="$(ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "cd '$APP_DIR' && git rev-parse HEAD" 2>/dev/null || true)"
-            if [ "$remote_sha" = "$EXPECTED_SHA" ]; then break; fi
-            if [ "$attempt" -eq 40 ]; then echo "Production did not reach expected SHA $EXPECTED_SHA (remote=$remote_sha)"; exit 1; fi
-            sleep 15
+            if "${ssh_cmd[@]}" "cd '$APP_DIR' && current=\$(git rev-parse HEAD) && { [ \"\$current\" = '$EXPECTED_SHA' ] || { git merge-base --is-ancestor '$EXPECTED_SHA' \"\$current\" && [ -z \"\$(git diff --name-only '$EXPECTED_SHA..'\"\$current\" | grep -v '^deploy/status/' || true)\" ]; }; }"; then
+              ready=1
+              break
+            fi
+            [[ "$attempt" -eq 40 ]] || sleep 15
           done
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "cd '$APP_DIR' && php artisan unifco:production-request-lifecycle-evidence"
+          [ "$ready" -eq 1 ] || { echo "Production did not reach the expected qualified release lineage: $EXPECTED_SHA"; exit 1; }
+          "${ssh_cmd[@]}" "cd '$APP_DIR' && php artisan unifco:production-request-lifecycle-evidence"
