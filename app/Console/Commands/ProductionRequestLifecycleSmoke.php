@@ -3,20 +3,24 @@
 namespace App\Console\Commands;
 
 use App\Models\{Asset,Customer,CustomerActivityEvent,ServiceContract,ServiceRequest,User,WorkOrder};
-use App\Services\{MaintenanceRequestTransitionService,ServiceRequestWorkflowService};
+use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,ServiceRequestWorkflowService};
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\{Auth,DB};
 use Throwable;
 
 class ProductionRequestLifecycleSmoke extends Command
 {
     protected $signature = 'unifco:production-request-smoke {--customer=100}';
-    protected $description = 'Rollback-only smoke test for the core maintenance request lifecycle.';
+    protected $description = 'Rollback-only smoke test for request lifecycle and authenticated internal request inbox visibility.';
 
     public function handle(): int
     {
         DB::beginTransaction();
         try {
+            $this->verifyInternalRequestInbox();
+
             $customerKey=(string)$this->option('customer');
             $customer=Customer::withoutGlobalScopes()
                 ->whereKey((int)$customerKey)
@@ -139,9 +143,31 @@ class ProductionRequestLifecycleSmoke extends Command
             $this->error('FAIL: '.$e->getMessage());
             return self::FAILURE;
         } finally {
+            Auth::logout();
             if(DB::transactionLevel()>0) DB::rollBack();
             $this->line('Rollback complete: production data unchanged.');
         }
+    }
+
+    private function verifyInternalRequestInbox(): void
+    {
+        $authorization=app(AuthorizationService::class);
+        $sales=User::query()->get()->first(function(User $user) use($authorization): bool {
+            return strtoupper((string)$user->role)==='SALES' || $authorization->roleCodes($user)->contains('SALES');
+        });
+        if(!$sales) throw new \RuntimeException('No SALES user is available for the authenticated inbox smoke.');
+
+        Auth::login($sales);
+        $kernel=app(HttpKernel::class);
+        $request=Request::create('/admin/public-requests','GET');
+        $response=$kernel->handle($request);
+        $kernel->terminate($request,$response);
+        Auth::logout();
+
+        if($response->getStatusCode()!==200){
+            throw new \RuntimeException('Authenticated /admin/public-requests returned HTTP '.$response->getStatusCode().'.');
+        }
+        $this->info('PASS: Authenticated internal request inbox returned HTTP 200.');
     }
 
     private function expectStage(ServiceRequest $request,string $expected): void
