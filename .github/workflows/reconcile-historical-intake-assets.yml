@@ -24,7 +24,7 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
-          APPLY: ${{ inputs.apply }}
+          APPLY: ${{ inputs.apply || github.event_name == 'push' }}
           TARGET_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
