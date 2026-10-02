@@ -123,10 +123,20 @@ class ProductionRequestLifecycleEvidence extends Command
                 })
                 ->count();
 
+            $workOrderCustomerId = null;
+            if ($request->work_order_id) {
+                $workOrderCustomerId = DB::table('work_orders as wo')
+                    ->leftJoin('assets as a', 'a.id', '=', 'wo.asset_id')
+                    ->leftJoin('service_contracts as sc', 'sc.id', '=', 'wo.service_contract_id')
+                    ->where('wo.id', $request->work_order_id)
+                    ->selectRaw('COALESCE(a.customer_id, sc.customer_id) as customer_id')
+                    ->value('customer_id');
+            }
+
             $scopeConsistency = [
                 'public_customer_matches'=>!$public || !$public->customer_id || (int) $public->customer_id === (int) $request->customer_id,
                 'asset_customer_matches'=>!$request->asset_id || (int) DB::table('assets')->where('id', $request->asset_id)->value('customer_id') === (int) $request->customer_id,
-                'work_order_customer_matches'=>!$request->work_order_id || (int) DB::table('work_orders')->where('id', $request->work_order_id)->value('customer_id') === (int) $request->customer_id,
+                'work_order_customer_matches'=>!$request->work_order_id || (int) $workOrderCustomerId === (int) $request->customer_id,
                 'quotation_customer_matches'=>!$quotation || (int) $quotation->customer_id === (int) $request->customer_id,
                 'invoice_customer_matches'=>!$invoice || (int) $invoice->customer_id === (int) $request->customer_id,
             ];
