@@ -19,7 +19,7 @@ class CustomerRequestVisibilityContractTest extends TestCase
         $this->assertStringNotContainsString('name="stage"', $view);
         $this->assertStringNotContainsString('name="status"', $view);
         $this->assertStringNotContainsString('$label($requestItem->status)', $view);
-        $this->assertStringContainsString("$customerStatus=$statusPresenter->present($requestItem)", $view);
-        $this->assertStringContainsString("$customerState", $view);
+        $this->assertStringContainsString('$customerStatus=$statusPresenter->present($requestItem)', $view);
+        $this->assertStringContainsString('$customerState', $view);
     }
 }
