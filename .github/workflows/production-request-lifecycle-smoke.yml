@@ -12,7 +12,7 @@ jobs:
   routine-maintenance:
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for exact production release and run rollback-only smoke
+      - name: Wait for qualified production release and run rollback-only smoke
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -33,9 +33,21 @@ jobs:
               echo "Production is on expected release SHA: $TARGET_SHA"
               break
             fi
-            echo "Waiting for production release $TARGET_SHA (currently ${remote_sha:-unavailable}), attempt $attempt/30"
+
+            # deploy.sh may safely advance from TARGET_SHA to a newer main tip when
+            # every intervening change is qualification evidence under deploy/status/.
+            # Accept exactly that same case so the smoke validates the release that
+            # was actually deployed, while still rejecting newer functional code.
+            if [ -n "$remote_sha" ] && ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
+              -i "$HOME/.ssh/unifco_smoke_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+              "cd /var/www/unifco_platform && git cat-file -e '${TARGET_SHA}^{commit}' 2>/dev/null && git merge-base --is-ancestor '$TARGET_SHA' '$remote_sha' && test -z \"\$(git diff --name-only '$TARGET_SHA..$remote_sha' | grep -v '^deploy/status/' || true)\""; then
+              echo "Production safely advanced from $TARGET_SHA to qualification-only tip $remote_sha"
+              break
+            fi
+
+            echo "Waiting for qualified production release $TARGET_SHA (currently ${remote_sha:-unavailable}), attempt $attempt/30"
             if [ "$attempt" -eq 30 ]; then
-              echo "Production deployment did not reach expected release SHA $TARGET_SHA in time." >&2
+              echo "Production did not reach the qualified release $TARGET_SHA or a qualification-only descendant in time." >&2
               exit 1
             fi
             sleep 10
