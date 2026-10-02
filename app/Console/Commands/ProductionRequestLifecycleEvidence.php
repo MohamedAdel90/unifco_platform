@@ -97,7 +97,7 @@ class ProductionRequestLifecycleEvidence extends Command
             $customer = $presenter->present($request);
 
             $approvals = ApprovalRequest::withoutGlobalScopes()
-                ->where('entity_type', 'service_request')
+                ->whereIn('entity_type', ['service_request', ServiceRequest::class])
                 ->where('entity_id', $request->id)
                 ->orderBy('id')
                 ->get();
