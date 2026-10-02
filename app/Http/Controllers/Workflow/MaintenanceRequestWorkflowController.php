@@ -117,7 +117,7 @@ class MaintenanceRequestWorkflowController extends Controller
         $projectId=$data['project_id'] ?? $serviceRequest->project_id;
         if(!$projectId && $candidateProjects->count()===1) $projectId=$candidateProjects->first()->id;
         if(!$projectId && $candidateProjects->count()>1){
-            return back()->withErrors(['project_id'=>'Select the project responsible for this request before routing it.']);
+            return back()->withErrors(['project_id'=>'Select the project responsible for this request before routing it.'])->withInput();
         }
 
         if($projectId){
@@ -137,7 +137,7 @@ class MaintenanceRequestWorkflowController extends Controller
                 ->exists();
 
             if(!$hasProjectManager){
-                return back()->withErrors(['project_id'=>'This project has no active Project Manager assignment. Configure Team & Access before routing the request.']);
+                return back()->withErrors(['project_id'=>'This project has no active Project Manager assignment. Configure Team & Access before routing the request.'])->withInput();
             }
 
             if((int)$serviceRequest->project_id!==(int)$project->id){
@@ -146,7 +146,7 @@ class MaintenanceRequestWorkflowController extends Controller
             }
         }
 
-        $transitions->complete($request->user(), $serviceRequest, ['TRIAGE','EMERGENCY_DISPATCH'], $data['notes'] ?? null);
+        $transitions->complete($request->user(), $serviceRequest, ['TRIAGE','EMERGENCY_DISPATCH','OPERATIONS_REVIEW'], $data['notes'] ?? null);
         return back()->with('status', 'Request routed to the next workflow stage.');
     }
 

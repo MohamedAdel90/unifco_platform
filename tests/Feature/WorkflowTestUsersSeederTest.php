@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer,CustomerContact,CustomerSite,User};
+use App\Models\{Customer,CustomerContact,CustomerSite,Project,User};
 use Database\Seeders\WorkflowTestUsersSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +31,25 @@ class WorkflowTestUsersSeederTest extends TestCase
             $this->assertTrue(DB::table('role_permissions')->where('role_code',$role)->where('permission_code','workflow.approval.read')->exists());
             $this->assertTrue(DB::table('role_permissions')->where('role_code',$role)->where('permission_code','workflow.approval.decide')->exists());
         }
+    }
+
+    public function test_uat_project_gets_one_active_workflow_project_manager(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $customer=Customer::where('customer_code','WF-TEST-001')->firstOrFail();
+        $customer->update(['customer_code'=>'100']);
+        $project=Project::create([
+            'tenant_id'=>$customer->tenant_id,'organization_id'=>$customer->organization_id,
+            'project_no'=>'PRJ-TEST-001','name'=>'UNIFCO Maintenance UAT Project',
+            'customer_id'=>$customer->id,'status'=>'ACTIVE',
+        ]);
+
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $manager=User::where('email','projects.manager@unifco.local')->firstOrFail();
+        $this->assertSame(1,DB::table('project_user_assignments')
+            ->where('project_id',$project->id)->where('user_id',$manager->id)
+            ->where('project_role','PROJECT_MANAGER')->where('status','ACTIVE')->count());
     }
 
     public function test_workflow_seeder_is_idempotent(): void
