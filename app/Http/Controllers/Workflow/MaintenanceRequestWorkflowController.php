@@ -146,7 +146,7 @@ class MaintenanceRequestWorkflowController extends Controller
             }
         }
 
-        $transitions->complete($request->user(), $serviceRequest, ['TRIAGE','EMERGENCY_DISPATCH'], $data['notes'] ?? null);
+        $transitions->complete($request->user(), $serviceRequest, ['TRIAGE','EMERGENCY_DISPATCH','OPERATIONS_REVIEW'], $data['notes'] ?? null);
         return back()->with('status', 'Request routed to the next workflow stage.');
     }
 
