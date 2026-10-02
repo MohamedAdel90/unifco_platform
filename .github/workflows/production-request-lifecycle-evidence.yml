@@ -1,0 +1,51 @@
+name: Production Request Lifecycle Evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/Console/Commands/ProductionRequestLifecycleEvidence.php'
+      - '.github/workflows/production-request-lifecycle-evidence.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-request-lifecycle-evidence
+  cancel-in-progress: false
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Wait for production release and collect read-only evidence
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          APP_DIR: ${{ secrets.APP_DIR }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          : "${SSH_HOST:?Missing SSH_HOST}"
+          : "${SSH_USER:?Missing SSH_USER}"
+          : "${SSH_PRIVATE_KEY:?Missing SSH_PRIVATE_KEY}"
+          : "${APP_DIR:?Missing APP_DIR}"
+          SSH_PORT="${SSH_PORT:-22}"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          for attempt in $(seq 1 40); do
+            remote_sha="$(ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "cd '$APP_DIR' && git rev-parse HEAD" 2>/dev/null || true)"
+            if [ "$remote_sha" = "$EXPECTED_SHA" ]; then break; fi
+            if [ "$attempt" -eq 40 ]; then echo "Production did not reach expected SHA $EXPECTED_SHA (remote=$remote_sha)"; exit 1; fi
+            sleep 15
+          done
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "cd '$APP_DIR' && php artisan unifco:production-request-lifecycle-evidence"
