@@ -1,0 +1,45 @@
+name: Reconcile Historical Intake Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Commit the guarded reconciliation after the dry run passes
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify deployed code and reconcile legacy intake assets
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+          APPLY: ${{ inputs.apply }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/unifco_intake_key"
+          chmod 600 "$HOME/.ssh/unifco_intake_key"
+          for attempt in $(seq 1 45); do
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i "$HOME/.ssh/unifco_intake_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+              "cd /var/www/unifco_platform && git cat-file -e '$TARGET_SHA^{commit}' 2>/dev/null && git merge-base --is-ancestor '$TARGET_SHA' HEAD"; then
+              break
+            fi
+            if [ "$attempt" -eq 45 ]; then
+              echo "Production does not contain the reconciler commit $TARGET_SHA" >&2
+              exit 1
+            fi
+            sleep 10
+          done
+          remote_command='cd /var/www/unifco_platform && php artisan unifco:reconcile-historical-intake-assets'
+          if [ "$APPLY" = 'true' ]; then
+            remote_command="$remote_command --apply && php artisan unifco:production-request-matrix-audit --targets-only"
+          fi
+          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=20 -i "$HOME/.ssh/unifco_intake_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "$remote_command"
