@@ -6,6 +6,10 @@ on:
     branches: [main]
     paths:
       - 'app/Console/Commands/ProductionRequestLifecycleEvidence.php'
+      - 'app/Http/Controllers/CustomerPortalController.php'
+      - 'tests/Feature/CustomerPortalAdvancedOperationsTest.php'
+      - 'tests/Feature/ServiceRequestWorkflowTest.php'
+      - 'database/migrations/*request*lifecycle*.php'
       - '.github/workflows/production-request-lifecycle-evidence.yml'
 
 permissions:
