@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\{Asset,Customer,CustomerActivityEvent,ServiceContract,ServiceRequest,User,WorkOrder};
+use App\Models\{ApprovalRequest,Asset,Customer,CustomerActivityEvent,ServiceContract,ServiceRequest,User,WorkOrder};
 use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,ServiceRequestWorkflowService};
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
@@ -54,10 +54,7 @@ class ProductionRequestLifecycleSmoke extends Command
             $asset=Asset::withoutGlobalScopes()->where('customer_id',$customer->id)->orderBy('id')->firstOrFail();
             $contract=ServiceContract::withoutGlobalScopes()->where('customer_id',$customer->id)->where('status','ACTIVE')->orderBy('id')->first();
 
-            $ops=User::where('email','operations.manager@unifco.local')->firstOrFail();
-            $pm=User::where('email','projects.manager@unifco.local')->firstOrFail();
             $tech=User::where('email','technician@unifco.local')->firstOrFail();
-            $finance=User::where('email','finance@unifco.local')->firstOrFail();
 
             $request=ServiceRequest::create([
                 'tenant_id'=>$customer->tenant_id,
@@ -89,11 +86,15 @@ class ProductionRequestLifecycleSmoke extends Command
             $workflow->start($request,['procurement_required'=>false,'risk_level'=>'NORMAL','estimated_value'=>0,'payment_terms_days'=>0]);
 
             $this->expectStage($request,'TRIAGE');
-            $transitions->complete($ops,$request->fresh(),['TRIAGE'],'Smoke triage.');
+            $transitions->complete($this->stageActor($request),$request->fresh(),['TRIAGE'],'Smoke triage.');
             $this->expectStage($request,'PROJECT_MANAGER_REVIEW');
-            $transitions->complete($pm,$request->fresh(),['PROJECT_MANAGER_REVIEW'],'Smoke PM review.');
+            $transitions->complete($this->stageActor($request),$request->fresh(),['PROJECT_MANAGER_REVIEW'],'Smoke PM review.');
+            $this->expectStage($request,'MAINTENANCE_MANAGER_REVIEW');
+            $transitions->complete($this->stageActor($request),$request->fresh(),['MAINTENANCE_MANAGER_REVIEW'],'Smoke maintenance manager review.');
+            $this->expectStage($request,'TECHNICAL_ASSESSMENT');
+            $transitions->complete($this->stageActor($request),$request->fresh(),['TECHNICAL_ASSESSMENT'],'Smoke technical assessment.');
             $this->expectStage($request,'TECHNICIAN_ASSIGNMENT');
-            $transitions->assignTechnician($pm,$request->fresh(),$tech->id,'Smoke technician assignment.');
+            $transitions->assignTechnician($this->stageActor($request),$request->fresh(),$tech->id,'Smoke technician assignment.');
             $this->expectStage($request,'EXECUTION');
 
             $request->refresh();
@@ -107,14 +108,14 @@ class ProductionRequestLifecycleSmoke extends Command
 
             $request->refresh();
             if($request->workflow_stage==='FINANCE_REVIEW'){
-                $workflow->advance($request,'FINANCE_REVIEW',$finance->id,'Smoke finance review.');
+                $workflow->advance($request,'FINANCE_REVIEW',$this->stageActor($request)->id,'Smoke finance review.');
             }
 
             $this->expectStage($request,'CLOSURE');
             $context=(array)($request->fresh()->workflow_context??[]);
             $context['operationally_closed_at']=now()->toIso8601String();
             $request->update(['workflow_context'=>$context,'status'=>'RESOLVED','resolved_at'=>now()]);
-            $transitions->complete($ops,$request->fresh(),['CLOSURE'],'Smoke closure.');
+            $transitions->complete($this->stageActor($request),$request->fresh(),['CLOSURE'],'Smoke closure.');
             $this->expectStage($request,'CSAT');
 
             CustomerActivityEvent::create([
@@ -168,6 +169,24 @@ class ProductionRequestLifecycleSmoke extends Command
             throw new \RuntimeException('Authenticated /admin/public-requests returned HTTP '.$response->getStatusCode().'.');
         }
         $this->info('PASS: Authenticated internal request inbox returned HTTP 200.');
+    }
+
+    private function stageActor(ServiceRequest $request): User
+    {
+        $request->refresh();
+        $step=ApprovalRequest::query()
+            ->where('tenant_id',$request->tenant_id)
+            ->where('entity_type',ServiceRequest::class)
+            ->where('entity_id',$request->id)
+            ->where('action',$request->workflow_stage)
+            ->where('status','PENDING')
+            ->firstOrFail();
+        if(!$step->assigned_user_id){
+            throw new \RuntimeException("No resolved owner for {$request->workflow_stage}.");
+        }
+        return User::query()
+            ->where('tenant_id',$request->tenant_id)
+            ->findOrFail($step->assigned_user_id);
     }
 
     private function expectStage(ServiceRequest $request,string $expected): void
