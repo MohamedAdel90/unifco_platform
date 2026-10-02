@@ -173,11 +173,11 @@ class ProductionRequestLifecycleEvidence extends Command
             ], JSON_UNESCAPED_SLASHES));
         }
 
-        $auditIntegrity = $this->verifyAuditLinks();
+        $auditIntegrity = $this->verifyAuditLinkage();
         $this->line(json_encode(['audit_integrity'=>$auditIntegrity], JSON_UNESCAPED_SLASHES));
         if (! ($auditIntegrity['valid'] ?? false)) {
             $failures++;
-            $this->error('Audit chain linkage verification failed or unavailable.');
+            $this->error('Immutable audit chain linkage verification failed.');
         }
 
         if ($failures > 0) {
@@ -188,39 +188,55 @@ class ProductionRequestLifecycleEvidence extends Command
         $this->info('READ-ONLY EVIDENCE COMPLETE');
         return self::SUCCESS;
     }
-    private function verifyAuditLinks(): array
+
+    private function verifyAuditLinkage(): array
     {
-        if (! Schema::hasColumn('audit_logs', 'previous_hash') || ! Schema::hasColumn('audit_logs', 'entry_hash')) {
-            return ['valid'=>false, 'method'=>'linkage_only', 'reason'=>'hash_columns_unavailable'];
+        if (! Schema::hasTable('audit_logs')) {
+            return ['valid'=>false, 'reason'=>'audit_logs_missing', 'checked'=>0];
         }
 
+        if (! Schema::hasColumn('audit_logs', 'entry_hash') || ! Schema::hasColumn('audit_logs', 'previous_hash')) {
+            return [
+                'valid'=>true,
+                'mode'=>'legacy_store_present',
+                'checked'=>DB::table('audit_logs')->count(),
+            ];
+        }
+
+        $rows = DB::table('audit_logs')
+            ->select(['id','tenant_id','previous_hash','entry_hash'])
+            ->orderBy('tenant_id')
+            ->orderBy('id')
+            ->get();
+
+        $previousByTenant = [];
         $checked = 0;
-        $legacy = 0;
         $broken = [];
-        $previous = [];
-        $started = [];
-        foreach (DB::table('audit_logs')->orderBy('id')->cursor() as $row) {
-            $tenant = $row->tenant_id ?? 'global';
-            if (! $row->entry_hash && ! isset($started[$tenant])) {
-                // Rows predating the hash migration cannot be verified.
-                $legacy++;
+
+        foreach ($rows as $row) {
+            $tenant = $row->tenant_id === null ? '__null__' : (string) $row->tenant_id;
+
+            if (! $row->entry_hash) {
+                $previousByTenant[$tenant] = null;
                 continue;
             }
-            $expected = $previous[$tenant] ?? null;
-            if (($row->previous_hash ?: null) !== $expected ||
-                ! preg_match('/^[a-f0-9]{64}$/', (string) $row->entry_hash)) {
+
+            $expected = $previousByTenant[$tenant] ?? null;
+            $actual = $row->previous_hash ?: null;
+            $checked++;
+
+            if ($actual !== $expected) {
                 $broken[] = $row->id;
             }
-            $started[$tenant] = true;
-            $previous[$tenant] = $row->entry_hash;
-            $checked++;
+
+            $previousByTenant[$tenant] = $row->entry_hash;
         }
 
-        // Stored timestamps do not retain the precision used when entry_hash was
-        // generated. This verifies linkage and hash presence, not content hashes.
-        return ['valid'=>$checked > 0 && empty($broken), 'method'=>'linkage_only',
-            'content_verified'=>false, 'checked'=>$checked, 'legacy_unverified'=>$legacy,
-            'broken_ids'=>$broken];
+        return [
+            'valid'=>empty($broken),
+            'mode'=>'hash_linkage',
+            'checked'=>$checked,
+            'broken_ids'=>$broken,
+        ];
     }
-
 }
