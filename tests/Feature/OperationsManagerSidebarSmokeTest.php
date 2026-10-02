@@ -42,6 +42,15 @@ class OperationsManagerSidebarSmokeTest extends TestCase
         }
     }
 
+    public function test_service_requests_sidebar_points_to_scoped_operations_queue(): void
+    {
+        $manager=$this->manager();
+        $this->actingAs($manager)->get('/operations-manager')
+            ->assertOk()
+            ->assertSee('Service Requests',false)
+            ->assertSee('/operations-manager/service-requests',false);
+    }
+
     public function test_primary_operations_manager_pages_do_not_return_server_errors(): void
     {
         $manager=$this->manager();
