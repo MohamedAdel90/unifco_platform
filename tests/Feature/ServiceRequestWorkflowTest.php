@@ -281,4 +281,82 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertNotNull($request->resolved_at);
     }
 
+    public function test_legacy_maintenance_acceptance_appends_missing_closure_before_advancing(): void
+    {
+        $c=$this->context();
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'request_no'=>'SR-LEGACY-ACCEPT','request_type'=>'MAINTENANCE','company_name'=>$c['customer']->name,
+            'email'=>$c['customer']->email,'service_category'=>'Maintenance','subject'=>'Legacy acceptance',
+            'details'=>'UAT','priority'=>'NORMAL','status'=>'OPEN','workflow_stage'=>'CUSTOMER_ACCEPTANCE',
+            'workflow_key'=>'MAINTENANCE','eligibility'=>'IN_CONTRACT',
+        ]);
+        ApprovalRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CUSTOMER_ACCEPTANCE',
+            'approval_role'=>'CUSTOMER','step_order'=>7,'status'=>'PENDING','requested_by'=>$c['requester']->id,
+        ]);
+
+        app(ServiceRequestWorkflowService::class)->advance($request,'CUSTOMER_ACCEPTANCE',$c['requester']->id,'UAT acceptance');
+
+        $this->assertSame('CLOSURE',$request->fresh()->workflow_stage);
+        $this->assertSame(['CUSTOMER_ACCEPTANCE','CLOSURE','CSAT'],
+            ApprovalRequest::where('entity_id',$request->id)->orderBy('step_order')->pluck('action')->all());
+        $this->assertSame('PENDING',ApprovalRequest::where('entity_id',$request->id)->where('action','CLOSURE')->value('status'));
+    }
+
+    public function test_previously_completed_legacy_acceptance_is_reopened_once_for_closure(): void
+    {
+        $c=$this->context();
+        $asset=Asset::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'customer_id'=>$c['customer']->id,'asset_code'=>'LEGACY-UAT-ASSET','name'=>'Test Asset','status'=>'REGISTERED']);
+        $order=WorkOrder::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'asset_id'=>$asset->id,'work_order_no'=>'WO-LEGACY-ACCEPT','maintenance_type'=>'CORRECTIVE',
+            'priority'=>'NORMAL','status'=>'COMPLETED','customer_accepted_at'=>now()]);
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'asset_id'=>$asset->id,'work_order_id'=>$order->id,'request_no'=>'SR-LEGACY-COMPLETED',
+            'request_type'=>'MAINTENANCE','company_name'=>$c['customer']->name,'email'=>$c['customer']->email,
+            'service_category'=>'Maintenance','subject'=>'Legacy completion','details'=>'UAT','priority'=>'NORMAL',
+            'status'=>'COMPLETED','workflow_stage'=>'COMPLETED','workflow_key'=>'MAINTENANCE',
+            'approval_state'=>'COMPLETED','eligibility'=>'IN_CONTRACT','resolved_at'=>now(),
+        ]);
+        ApprovalRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CUSTOMER_ACCEPTANCE',
+            'approval_role'=>'CUSTOMER','step_order'=>7,'status'=>'COMPLETED','requested_by'=>$c['requester']->id,
+        ]);
+        $workflow=app(ServiceRequestWorkflowService::class);
+
+        $this->assertTrue($workflow->repairMissingMaintenanceClosureStages($request));
+        $this->assertSame('CLOSURE',$request->fresh()->workflow_stage);
+        $this->assertSame('OPEN',$request->fresh()->status);
+        $this->assertNull($request->fresh()->resolved_at);
+        $this->assertFalse($workflow->repairMissingMaintenanceClosureStages($request->fresh()));
+        $this->assertSame(3,ApprovalRequest::where('entity_id',$request->id)->count());
+    }
+
+    public function test_chargeable_legacy_acceptance_restores_finance_before_closure(): void
+    {
+        $c=$this->context();
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'request_no'=>'SR-LEGACY-CHARGEABLE','request_type'=>'MAINTENANCE','priority'=>'EMERGENCY',
+            'company_name'=>$c['customer']->name,'email'=>$c['customer']->email,'service_category'=>'Maintenance',
+            'subject'=>'Chargeable UAT','details'=>'UAT','status'=>'OPEN','workflow_stage'=>'CUSTOMER_ACCEPTANCE',
+            'workflow_key'=>'EMERGENCY_MAINTENANCE','eligibility'=>'CHARGEABLE',
+        ]);
+        ApprovalRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CUSTOMER_ACCEPTANCE',
+            'approval_role'=>'CUSTOMER','step_order'=>7,'status'=>'PENDING','requested_by'=>$c['requester']->id,
+        ]);
+
+        app(ServiceRequestWorkflowService::class)->advance($request,'CUSTOMER_ACCEPTANCE',$c['requester']->id,'UAT acceptance');
+
+        $this->assertSame('FINANCE_REVIEW',$request->fresh()->workflow_stage);
+        $this->assertSame(['CUSTOMER_ACCEPTANCE','FINANCE_REVIEW','CLOSURE','CSAT'],
+            ApprovalRequest::where('entity_id',$request->id)->orderBy('step_order')->pluck('action')->all());
+    }
+
 }
