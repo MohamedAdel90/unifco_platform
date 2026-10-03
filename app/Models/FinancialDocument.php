@@ -4,11 +4,22 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FinancialDocument extends Model
 {
     use BelongsToTenant;
+
+    public function scopeVisibleToCustomer(Builder $query): Builder
+    {
+        return $query->whereIn('status', ['POSTED', 'SETTLED']);
+    }
+
+    public function isVisibleToCustomer(): bool
+    {
+        return in_array($this->status, ['POSTED', 'SETTLED'], true);
+    }
 
     protected $fillable=[
         'tenant_id','organization_id','customer_id','project_id','service_request_id','work_order_id','crm_quotation_id',

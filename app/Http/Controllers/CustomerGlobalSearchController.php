@@ -38,7 +38,7 @@ class CustomerGlobalSearchController extends Controller
                     $results->push((object)['type'=>'Work Order','reference'=>$item->work_order_no,'title'=>$title,'status'=>$item->status,'url'=>route('customer.work-orders.show',$item)]);
                 });
 
-            FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')
+            FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')->visibleToCustomer()
                 ->where('document_no','like',$like)->latest('document_date')->limit(8)->get()->each(function($item) use($results){
                     $results->push((object)['type'=>'Invoice','reference'=>$item->document_no,'title'=>'Invoice · '.number_format((float)$item->amount,2).' '.$item->currency,'status'=>$item->status,'url'=>route('customer.section','invoices').'?q='.urlencode($item->document_no)]);
                 });

@@ -281,6 +281,45 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertNotNull($request->resolved_at);
     }
 
+    public function test_unsettled_chargeable_closure_rolls_back_request_and_approvals(): void
+    {
+        $c=$this->context();
+        $manager=User::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'name'=>'Operations Manager','email'=>'ops-closure@example.test','password'=>'StrongPassword123',
+            'role'=>'OPERATIONS_MANAGER','status'=>'ACTIVE']);
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'operations_manager_id'=>$manager->id,'request_no'=>'SR-UAT-UNSETTLED','request_type'=>'MAINTENANCE',
+            'company_name'=>$c['customer']->name,'email'=>$c['customer']->email,'service_category'=>'Maintenance',
+            'subject'=>'Draft invoice closure','details'=>'UAT','priority'=>'NORMAL','status'=>'OPEN',
+            'workflow_stage'=>'CLOSURE','workflow_key'=>'MAINTENANCE','eligibility'=>'CHARGEABLE',
+        ]);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CLOSURE',
+            'approval_role'=>'OPERATIONS_MANAGER','assigned_user_id'=>$manager->id,'step_order'=>1,
+            'status'=>'PENDING','requested_by'=>$c['requester']->id]);
+        ApprovalRequest::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>'CSAT',
+            'approval_role'=>'CUSTOMER','step_order'=>2,'status'=>'WAITING','requested_by'=>$c['requester']->id]);
+        FinancialDocument::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'customer_id'=>$c['customer']->id,'service_request_id'=>$request->id,'document_no'=>'INV-UAT-UNSETTLED',
+            'document_type'=>'AR_INVOICE','counterparty_name'=>$c['customer']->name,'document_date'=>today(),
+            'due_date'=>today(),'currency'=>'SAR','amount'=>350,'open_amount'=>350,
+            'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'DRAFT']);
+
+        $this->actingAs($manager)->post('/service-requests/'.$request->id.'/workflow/close',[
+            'notes'=>'UAT closure guard',
+        ])->assertSessionHasErrors('workflow_stage');
+
+        $request->refresh();
+        $this->assertSame('CLOSURE',$request->workflow_stage);
+        $this->assertSame('OPEN',$request->status);
+        $this->assertNull($request->resolved_at);
+        $this->assertNull(data_get($request->workflow_context,'operationally_closed_at'));
+        $this->assertSame('PENDING',ApprovalRequest::where('entity_id',$request->id)->where('action','CLOSURE')->value('status'));
+        $this->assertSame('WAITING',ApprovalRequest::where('entity_id',$request->id)->where('action','CSAT')->value('status'));
+    }
+
     public function test_legacy_maintenance_acceptance_appends_missing_closure_before_advancing(): void
     {
         $c=$this->context();

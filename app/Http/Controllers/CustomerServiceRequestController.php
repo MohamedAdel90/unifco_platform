@@ -61,7 +61,7 @@ class CustomerServiceRequestController extends Controller
         $contract=$serviceRequest->service_contract_id?ServiceContract::where('customer_id',$customer->id)->find($serviceRequest->service_contract_id):null;
         $workOrder=$asset && $serviceRequest->work_order_id?WorkOrder::where('tenant_id',$user->tenant_id)->where('asset_id',$asset->id)->find($serviceRequest->work_order_id):null;
         $quotation=$serviceRequest->quotation_id?CrmQuotation::where('tenant_id',$user->tenant_id)->where('customer_id',$customer->id)->find($serviceRequest->quotation_id):null;
-        $invoice=FinancialDocument::query()->where('tenant_id',$user->tenant_id)->where('customer_id',$customer->id)->where('document_type','AR_INVOICE')->where(function($q)use($serviceRequest){$q->where('service_request_id',$serviceRequest->id); $legacyId=data_get($serviceRequest->workflow_context,'invoice_id'); if($legacyId)$q->orWhere('id',$legacyId);})->latest('id')->first();
+        $invoice=FinancialDocument::query()->where('tenant_id',$user->tenant_id)->where('customer_id',$customer->id)->where('document_type','AR_INVOICE')->visibleToCustomer()->where(function($q)use($serviceRequest){$q->where('service_request_id',$serviceRequest->id); $legacyId=data_get($serviceRequest->workflow_context,'invoice_id'); if($legacyId)$q->orWhere('id',$legacyId);})->latest('id')->first();
         $payments=$invoice?Payment::where('tenant_id',$user->tenant_id)->where('financial_document_id',$invoice->id)->orderBy('payment_date')->get():collect();
         $customerStatus=$statusPresenter->present($serviceRequest);
         // Intake used to copy workflow metadata into the free-text description.

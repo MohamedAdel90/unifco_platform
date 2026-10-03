@@ -172,7 +172,7 @@ class CustomerPortalController extends Controller
         })->values();
 
         $quotations = CrmQuotation::where('customer_id', $customer->id)->latest('quotation_date')->limit(50)->get();
-        $invoices = FinancialDocument::where('customer_id', $customer->id)->where('document_type', 'AR_INVOICE')->latest('document_date')->limit(100)->get();
+        $invoices = FinancialDocument::where('customer_id', $customer->id)->where('document_type', 'AR_INVOICE')->visibleToCustomer()->latest('document_date')->limit(100)->get();
         $payments = DB::table('payments')->join('financial_documents', 'financial_documents.id', '=', 'payments.financial_document_id')
             ->where('financial_documents.customer_id', $customer->id)->select('payments.*', 'financial_documents.document_no')
             ->orderByDesc('payments.payment_date')->limit(100)->get();
