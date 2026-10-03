@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ApprovalRequest,Customer,CustomerContact,CustomerSite,Project,ServiceRequest,User};
+use App\Models\{ApprovalRequest,ChartAccount,Customer,CustomerContact,CustomerSite,FinancialDocument,Project,ServiceRequest,User};
 use Database\Seeders\WorkflowTestUsersSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -109,5 +109,35 @@ class WorkflowTestUsersSeederTest extends TestCase
         $customer=Customer::where('customer_code','WF-TEST-001')->firstOrFail();
         $this->assertSame(1,CustomerContact::where('customer_id',$customer->id)->where('email','workflow.customer@unifco.local')->count());
         $this->assertSame(1,CustomerSite::where('customer_id',$customer->id)->where('site_code','WF-RUH-01')->count());
+    }
+
+    public function test_seeder_repairs_only_unposted_uat_invoice_account_codes(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $customer=Customer::where('customer_code','WF-TEST-001')->firstOrFail();
+        $customer->update(['customer_code'=>'100']);
+        $project=Project::create(['tenant_id'=>$customer->tenant_id,'organization_id'=>$customer->organization_id,
+            'project_no'=>'PRJ-TEST-001','name'=>'UAT Project','customer_id'=>$customer->id,'status'=>'ACTIVE']);
+        foreach ([['1200','Accounts Receivable','ASSET','DEBIT'],['4100','Service Revenue','REVENUE','CREDIT']] as [$code,$name,$type,$balance]) {
+            ChartAccount::create(['tenant_id'=>$customer->tenant_id,'organization_id'=>$customer->organization_id,
+                'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$balance,
+                'posting_allowed'=>true,'status'=>'ACTIVE']);
+        }
+        $request=ServiceRequest::create(['tenant_id'=>$customer->tenant_id,'organization_id'=>$customer->organization_id,
+            'customer_id'=>$customer->id,'project_id'=>$project->id,'request_no'=>'SR-UNRM-926000023',
+            'request_type'=>'MAINTENANCE','company_name'=>$customer->name,'email'=>$customer->email,
+            'service_category'=>'Maintenance','subject'=>'UAT invoice','details'=>'UAT','priority'=>'NORMAL',
+            'status'=>'OPEN','workflow_stage'=>'CLOSURE','eligibility'=>'CHARGEABLE']);
+        $draft=FinancialDocument::create(['tenant_id'=>$customer->tenant_id,'organization_id'=>$customer->organization_id,
+            'customer_id'=>$customer->id,'service_request_id'=>$request->id,'document_no'=>'INV-SR-'.$request->id,
+            'document_type'=>'AR_INVOICE','counterparty_name'=>$customer->name,'document_date'=>today(),
+            'due_date'=>today()->addDays(30),'currency'=>'SAR','amount'=>225,'open_amount'=>225,
+            'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'DRAFT']);
+
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $this->assertSame('1200',$draft->fresh()->control_account_code);
+        $this->assertSame('4100',$draft->fresh()->offset_account_code);
+        $this->assertSame('DRAFT',$draft->fresh()->status);
+        $this->assertSame('CLOSURE',$request->fresh()->workflow_stage);
     }
 }
