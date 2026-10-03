@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Customer,CustomerContact,CustomerSite,Employee,Organization,ServiceRequest,Tenant,User,WorkOrderAssignment};
+use App\Models\{ChartAccount,Customer,CustomerContact,CustomerSite,Employee,FinancialDocument,Organization,ServiceRequest,Tenant,User,WorkOrderAssignment};
 use App\Services\{RequestStageOwnerService,ServiceRequestWorkflowService};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\{DB,Hash,Schema};
@@ -56,7 +56,6 @@ class WorkflowTestUsersSeeder extends Seeder
                 // Preserve an existing active owner for each role rather than replacing
                 // a deliberate project assignment during a repeat deployment.
                 $uatTeam=[
-                    'OPERATIONS_MANAGER'=>'operations.manager@unifco.local',
                     'PROJECT_MANAGER'=>'projects.manager@unifco.local',
                     'MAINTENANCE_MANAGER'=>'maintenance.manager@unifco.local',
                     'MAINTENANCE_ENGINEER'=>'engineer@unifco.local',
@@ -138,6 +137,20 @@ class WorkflowTestUsersSeeder extends Seeder
                             app(ServiceRequestWorkflowService::class)
                                 ->repairMissingMaintenanceClosureStages($request);
                         });
+                }
+
+                // Older auto-generated UAT drafts used symbolic account codes
+                // while the demo chart uses 1200/4100. Repair only these two
+                // unposted request-linked drafts; never alter posted journals.
+                if (Schema::hasTable('financial_documents')
+                    && ChartAccount::where('tenant_id',$tenant->id)->where('code','1200')->where('status','ACTIVE')->exists()
+                    && ChartAccount::where('tenant_id',$tenant->id)->where('code','4100')->where('status','ACTIVE')->exists()) {
+                    $uatRequestIds=ServiceRequest::where('tenant_id',$tenant->id)->where('project_id',$uatProject->id)
+                        ->whereIn('request_no',['SR-UNRM-926000023','SR-UNUM-926000024'])->pluck('id');
+                    FinancialDocument::where('tenant_id',$tenant->id)->whereIn('service_request_id',$uatRequestIds)
+                        ->where('document_type','AR_INVOICE')->where('status','DRAFT')
+                        ->where('control_account_code','AR')->where('offset_account_code','REV')
+                        ->update(['control_account_code'=>'1200','offset_account_code'=>'4100']);
                 }
             }
         }
