@@ -82,6 +82,7 @@ class CustomerPortalOperationsController extends Controller
     public function invoicePdf(FinancialDocument $invoice, CustomerPdfService $pdf, CustomerPortalAccessService $access): Response
     {
         $user=$this->user();abort_unless($access->canSection($user,'invoices'),403);abort_unless((int)$invoice->customer_id===(int)$user->customer_id&&$invoice->document_type==='AR_INVOICE',403);
+        abort_unless($invoice->isVisibleToCustomer(),404);
         return $this->pdfResponse($pdf->make('UNIFCO INVOICE',['Invoice: '.$invoice->document_no,'Date: '.$invoice->document_date?->format('Y-m-d'),'Due: '.$invoice->due_date?->format('Y-m-d'),'Amount: '.$invoice->amount.' '.$invoice->currency,'Open amount: '.$invoice->open_amount,'Status: '.$invoice->status]),'invoice-'.$invoice->document_no.'.pdf');
     }
 
