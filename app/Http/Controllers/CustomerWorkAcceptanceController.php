@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\{Asset,Customer,CustomerActivityEvent,ServiceRequest,WorkOrder};
 use App\Services\{CustomerPortalAccessService,ServiceRequestWorkflowService};
 use Illuminate\Http\{RedirectResponse,Request};
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class CustomerWorkAcceptanceController extends Controller
@@ -46,22 +47,26 @@ class CustomerWorkAcceptanceController extends Controller
             ->where('work_order_id',$workOrder->id)
             ->latest('id')->first();
 
-        if($data['decision']==='ACCEPT'){
-            $workOrder->update([
-                'customer_accepted_at'=>now(),'customer_rejected_at'=>null,'customer_acceptance_notes'=>$data['notes']??null,
-            ]);
-            if($serviceRequest && $serviceRequest->workflow_stage==='CUSTOMER_ACCEPTANCE'){
-                $workflow->advance($serviceRequest,'CUSTOMER_ACCEPTANCE',$user->id,$data['notes']??'Customer accepted completed work.');
+        DB::transaction(function () use ($data,$workOrder,$serviceRequest,$workflow,$user) {
+            if($data['decision']==='ACCEPT'){
+                $workOrder->update([
+                    'customer_accepted_at'=>now(),'customer_rejected_at'=>null,'customer_acceptance_notes'=>$data['notes']??null,
+                ]);
+                if($serviceRequest && $serviceRequest->workflow_stage==='CUSTOMER_ACCEPTANCE'){
+                    $workflow->advance($serviceRequest,'CUSTOMER_ACCEPTANCE',$user->id,$data['notes']??'Customer accepted completed work.');
+                    abort_if($serviceRequest->fresh()->workflow_stage==='COMPLETED',422,
+                        'Customer acceptance must pass through the remaining review and closure stages.');
+                }
+            }else{
+                $workOrder->update([
+                    'customer_rejected_at'=>now(),'customer_accepted_at'=>null,'customer_acceptance_notes'=>$data['notes']??null,
+                    'status'=>'IN_PROGRESS',
+                ]);
+                if($serviceRequest && $serviceRequest->workflow_stage==='CUSTOMER_ACCEPTANCE'){
+                    $workflow->returnTo($serviceRequest,'EXECUTION',$user->id,$data['notes']??'Customer requested rework.');
+                }
             }
-        }else{
-            $workOrder->update([
-                'customer_rejected_at'=>now(),'customer_accepted_at'=>null,'customer_acceptance_notes'=>$data['notes']??null,
-                'status'=>'IN_PROGRESS',
-            ]);
-            if($serviceRequest && $serviceRequest->workflow_stage==='CUSTOMER_ACCEPTANCE'){
-                $workflow->returnTo($serviceRequest,'EXECUTION',$user->id,$data['notes']??'Customer requested rework.');
-            }
-        }
+        });
 
         return back()->with('status',$data['decision']==='ACCEPT'?'تم اعتماد الأعمال ونقل الطلب للمرحلة التالية.':'تم طلب إعادة العمل وإرجاع الطلب للتنفيذ.');
     }
