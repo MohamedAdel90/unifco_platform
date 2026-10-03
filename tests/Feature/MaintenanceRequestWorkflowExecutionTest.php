@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ApprovalRequest,Organization,Project,ProjectUserAssignment,ServiceRequest,Tenant,User};
+use App\Models\{ApprovalRequest,Asset,Organization,Project,ProjectUserAssignment,ServiceRequest,Tenant,User,WorkOrder};
 use App\Services\RequestStageOwnerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -142,6 +142,33 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         ])->assertRedirect();
 
         $this->assertSame('CUSTOMER_ACCEPTANCE',$serviceRequest->fresh()->workflow_stage);
+    }
+
+    public function test_execution_cannot_complete_an_open_linked_work_order(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('EXECUTION');
+        $technician=$this->user($tenant,$org,'TECHNICIAN','tech-open-wo@example.test');
+        $asset=Asset::create([
+            'tenant_id'=>$tenant->id,'organization_id'=>$org->id,
+            'asset_code'=>'WF-OPEN-WO','name'=>'UAT pump',
+        ]);
+        $workOrder=WorkOrder::create([
+            'tenant_id'=>$tenant->id,'organization_id'=>$org->id,
+            'work_order_no'=>'WO-WF-OPEN','asset_id'=>$asset->id,
+            'status'=>'OPEN',
+        ]);
+        $serviceRequest->update(['assigned_engineer_id'=>$technician->id,'work_order_id'=>$workOrder->id]);
+        $this->step($serviceRequest,$technician,'EXECUTION','TECHNICIAN',1,'PENDING');
+        $this->step($serviceRequest,$technician,'CUSTOMER_ACCEPTANCE','CUSTOMER',2,'WAITING');
+
+        $this->actingAs($technician)->post(route('service-requests.workflow.complete-execution',$serviceRequest),[
+            'completion_notes'=>'Attempt to skip work order completion.',
+        ])->assertStatus(422);
+
+        $this->assertSame('OPEN',$workOrder->fresh()->status);
+        $this->assertSame('EXECUTION',$serviceRequest->fresh()->workflow_stage);
+        $this->assertSame('PENDING',ApprovalRequest::where('entity_id',$serviceRequest->id)
+            ->where('action','EXECUTION')->value('status'));
     }
 
     public function test_unassigned_technician_cannot_complete_execution(): void
