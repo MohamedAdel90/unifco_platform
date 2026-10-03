@@ -123,14 +123,20 @@ class WorkflowTestUsersSeeder extends Seeder
                 // and append the missing tail; a previously accepted order is
                 // resumed at its next stage instead of remaining falsely complete.
                 if (Schema::hasTable('approval_requests')) {
+                    $uatOperationsManager=User::where('tenant_id',$tenant->id)
+                        ->where('email','operations.manager@unifco.local')->where('status','ACTIVE')->first();
                     ServiceRequest::query()->where('tenant_id',$tenant->id)
                         ->where('project_id',$uatProject->id)
                         ->whereIn('request_no',[
                             'SR-UNRM-926000017','SR-UNUM-926000018',
                             'SR-UNRM-926000023','SR-UNUM-926000024',
-                        ])->get()->each(fn (ServiceRequest $request) =>
+                        ])->get()->each(function (ServiceRequest $request) use ($uatOperationsManager) {
+                            if (! $request->operations_manager_id && $uatOperationsManager) {
+                                $request->update(['operations_manager_id'=>$uatOperationsManager->id]);
+                            }
                             app(ServiceRequestWorkflowService::class)
-                                ->repairMissingMaintenanceClosureStages($request));
+                                ->repairMissingMaintenanceClosureStages($request);
+                        });
                 }
             }
         }

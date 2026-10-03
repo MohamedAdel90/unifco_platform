@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\{ApprovalRequest,Asset,Customer,FinancialDocument,ServiceRequest,User,WorkOrder};
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ServiceRequestWorkflowService
@@ -211,6 +212,29 @@ class ServiceRequestWorkflowService
         $last = ApprovalRequest::query()->where('tenant_id', $request->tenant_id)
             ->where('entity_type', ServiceRequest::class)->where('entity_id', $request->id)
             ->orderByDesc('step_order')->first();
+        // Some older customer-acceptance actions marked the request complete
+        // without deciding its already-persisted approval. Resume that accepted
+        // order through the existing chain instead of appending duplicate steps.
+        if ($last?->action !== 'CUSTOMER_ACCEPTANCE'
+            && $request->status === 'COMPLETED' && $request->workflow_stage === 'COMPLETED'
+            && $request->work_order_id
+            && WorkOrder::whereKey($request->work_order_id)->whereNotNull('customer_accepted_at')->exists()) {
+            $acceptance = ApprovalRequest::query()->where('tenant_id', $request->tenant_id)
+                ->where('entity_type', ServiceRequest::class)->where('entity_id', $request->id)
+                ->where('action', 'CUSTOMER_ACCEPTANCE')->where('status', 'PENDING')->first();
+            if ($acceptance && ApprovalRequest::query()->where('tenant_id', $request->tenant_id)
+                ->where('entity_type', ServiceRequest::class)->where('entity_id', $request->id)
+                ->where('step_order', '>', $acceptance->step_order)->exists()) {
+                DB::transaction(function () use ($request) {
+                    $request->update(['status' => 'OPEN', 'workflow_stage' => 'CUSTOMER_ACCEPTANCE',
+                        'assigned_department' => 'CUSTOMER', 'approval_state' => 'PENDING',
+                        'next_action' => 'CUSTOMER_ACCEPTANCE', 'resolved_at' => null]);
+                    $this->advance($request, 'CUSTOMER_ACCEPTANCE', null,
+                        'Reconciled previously recorded customer acceptance.');
+                });
+                return true;
+            }
+        }
         if ($last?->action !== 'CUSTOMER_ACCEPTANCE') return false;
 
         $context = (array) ($request->workflow_context ?? []);
