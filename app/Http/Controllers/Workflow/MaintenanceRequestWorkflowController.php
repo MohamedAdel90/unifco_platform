@@ -102,7 +102,7 @@ class MaintenanceRequestWorkflowController extends Controller
         return back()->with('status','Workflow stage owner assigned to '.$candidate->name.'.');
     }
 
-    public function triage(Request $request, ServiceRequest $serviceRequest, MaintenanceRequestTransitionService $transitions): RedirectResponse
+    public function triage(Request $request, ServiceRequest $serviceRequest, MaintenanceRequestTransitionService $transitions, RequestStageOwnerService $owners): RedirectResponse
     {
         $data = $request->validate([
             'project_id' => ['nullable','integer'],
@@ -117,11 +117,11 @@ class MaintenanceRequestWorkflowController extends Controller
 
         $projectId=$data['project_id'] ?? $serviceRequest->project_id;
         if(!$projectId && $candidateProjects->count()===1) $projectId=$candidateProjects->first()->id;
-        if(!$projectId && $candidateProjects->count()>1){
-            return back()->withErrors(['project_id'=>'Select the project responsible for this request before routing it.'])->withInput();
+        if(!$projectId){
+            return back()->withErrors(['project_id'=>'Create or select an active project for this customer before routing the request.'])->withInput();
         }
 
-        return DB::transaction(function () use ($projectId, $request, $serviceRequest, $transitions, $data): RedirectResponse {
+        return DB::transaction(function () use ($projectId, $request, $serviceRequest, $transitions, $owners, $data): RedirectResponse {
         if($projectId){
             $project=Project::query()
                 ->where('tenant_id',$request->user()->tenant_id)
@@ -147,8 +147,12 @@ class MaintenanceRequestWorkflowController extends Controller
         // Complete the Operations role-queue action before project binding
         // re-resolves its owner. The transaction keeps both changes atomic.
         $transitions->complete($request->user(), $serviceRequest, ['TRIAGE','EMERGENCY_DISPATCH','OPERATIONS_REVIEW'], $data['notes'] ?? null);
-        if ($projectId && (int)$serviceRequest->project_id !== (int)$projectId) {
+        if ((int)$serviceRequest->project_id !== (int)$projectId) {
             $serviceRequest->update(['project_id'=>$projectId]);
+            // The next stage was opened before project binding to preserve the
+            // Operations actor's original scope. Resolve its project owner now,
+            // in the same transaction, before another actor can claim it.
+            $owners->refresh($serviceRequest->fresh());
         }
         return back()->with('status', 'Request routed to the next workflow stage.');
         });
