@@ -36,6 +36,10 @@ class FieldServiceBaselineGapClosureTest extends TestCase
         $this->actingAs($c['technician'])->get('/field/technician')->assertOk()->assertSee('Offline mode')->assertSee('WO-FIELD-1');
         $this->actingAs($c['technician'])->post('/field/technician/assignments/'.$assignment->id.'/status',['status'=>'IN_PROGRESS'])->assertRedirect();
         $this->assertDatabaseHas('work_orders',['id'=>$c['workOrder']->id,'status'=>'IN_PROGRESS']);
+        $this->actingAs($c['technician'])->post('/field/technician/assignments/'.$assignment->id.'/status',['status'=>'COMPLETED'])
+            ->assertSessionHasErrors('status');
+        $this->assertDatabaseHas('work_orders',['id'=>$c['workOrder']->id,'status'=>'IN_PROGRESS']);
+        $this->assertDatabaseHas('work_order_assignments',['id'=>$assignment->id,'dispatch_status'=>'IN_PROGRESS']);
 
         $template=InspectionTemplate::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'template_no'=>'GEN-CHECK','name'=>'Generator Check','checklist'=>['Oil level','Battery'],'status'=>'ACTIVE']);
         $this->actingAs($c['technician'])->post('/field/inspections',[

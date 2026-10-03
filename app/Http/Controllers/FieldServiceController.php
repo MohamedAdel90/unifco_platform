@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class FieldServiceController extends Controller
@@ -65,13 +66,16 @@ class FieldServiceController extends Controller
     {
         $user=auth()->user(); abort_unless($user->employee_id && (int)$assignment->employee_id===(int)$user->employee_id,403);
         $data=$request->validate(['status'=>['required','in:ACCEPTED,ARRIVED,IN_PROGRESS,COMPLETED']]);
+        if ($data['status']==='COMPLETED') {
+            throw ValidationException::withMessages(['status'=>'Complete the linked work order with execution evidence and final costs before closing it.']);
+        }
+        $wo=WorkOrder::where('tenant_id',$user->tenant_id)->findOrFail($assignment->work_order_id);
+        abort_unless(in_array($wo->status,['OPEN','IN_PROGRESS'],true),422,'Only active work orders can be updated.');
         $updates=['dispatch_status'=>$data['status']];
         if($data['status']==='ACCEPTED')$updates['accepted_at']=now();
         if($data['status']==='ARRIVED')$updates['arrived_at']=now();
         $assignment->update($updates);
-        $wo=WorkOrder::findOrFail($assignment->work_order_id);
         if($data['status']==='IN_PROGRESS')$wo->update(['status'=>'IN_PROGRESS','started_at'=>$wo->started_at?:now()]);
-        if($data['status']==='COMPLETED')$wo->update(['status'=>'COMPLETED','completed_at'=>now()]);
         return back()->with('status','Work status updated.');
     }
 
