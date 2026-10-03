@@ -103,6 +103,11 @@ class MaintenanceRequestTransitionService
             ->firstOrFail();
         $roles = $this->authorization->roleCodes($actor)->push(strtoupper((string) $actor->role));
         abort_unless($roles->filter()->contains(strtoupper((string) $step->approval_role)), 403, 'Your role cannot perform this workflow action.');
+        if(!$request->project_id
+            && in_array((string)$request->workflow_key,['QUOTATION','SPARE_PARTS_QUOTATION','TECHNICAL_VISIT'],true)
+            && in_array((string)$step->approval_role,['PROJECT_MANAGER','MAINTENANCE_MANAGER','MAINTENANCE_ENGINEER','TECHNICAL_SUPERVISOR','TECHNICIAN','QUALITY','HSE'],true)){
+            abort(422,'Select the responsible customer project before this review can proceed.');
+        }
         abort_if($step->routing_status==='NEEDS_ASSIGNMENT',422,'This workflow stage has no resolved owner yet.');
         if($step->assigned_user_id){
             abort_unless((int)$step->assigned_user_id===(int)$actor->id,403,'This workflow stage is assigned to another user.');
