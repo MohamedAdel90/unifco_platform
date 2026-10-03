@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ApprovalRequest,Asset,CrmQuotation,Customer,CustomerSite,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,User,WorkOrder};
+use App\Models\{ApprovalRequest,Asset,ChartAccount,CrmQuotation,Customer,CustomerSite,FinancialDocument,FiscalPeriod,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,User,WorkOrder};
 use App\Services\{ApprovalService,MaintenanceRequestTransitionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -152,9 +152,39 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             $request->refresh();
         }
         $this->assertSame('CLOSURE',$request->workflow_stage);
+        if ($request->eligibility === 'CHARGEABLE') {
+            $invoice=FinancialDocument::query()->where('service_request_id',$request->id)->where('document_type','AR_INVOICE')->firstOrFail();
+            $this->assertSame('DRAFT',$invoice->status);
+            $this->assertSame(100.0,(float)$invoice->amount);
+            FiscalPeriod::create([
+                'tenant_id'=>$request->tenant_id,'organization_id'=>$request->organization_id,
+                'code'=>'E2E-'.today()->format('Y-m'),'starts_on'=>today()->startOfMonth(),
+                'ends_on'=>today()->endOfMonth(),'status'=>'OPEN',
+            ]);
+            foreach ([['AR','Accounts Receivable','ASSET','DEBIT'],['REV','Service Revenue','REVENUE','CREDIT'],['CASH','Cash','ASSET','DEBIT']] as [$code,$name,$type,$normal]) {
+                ChartAccount::create([
+                    'tenant_id'=>$request->tenant_id,'organization_id'=>$request->organization_id,
+                    'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$normal,
+                    'posting_allowed'=>true,'status'=>'ACTIVE',
+                ]);
+            }
+            DB::table('role_permissions')->updateOrInsert(
+                ['tenant_id'=>$request->tenant_id,'role_code'=>'FINANCE_MANAGER','permission_code'=>'finance.journal.post'],
+                ['effect'=>'ALLOW','created_at'=>now(),'updated_at'=>now()]
+            );
+            $this->actingAs($this->actors['FINANCE_MANAGER'])->post(route('finance.core.documents.post',$invoice))
+                ->assertRedirect()->assertSessionHasNoErrors();
+            $this->assertSame('POSTED',$invoice->fresh()->status);
+            $this->actingAs($this->actors['FINANCE_MANAGER'])->post(route('finance.core.documents.pay',$invoice),[
+                'payment_no'=>'RCPT-E2E-'.$request->id,'payment_date'=>today()->toDateString(),
+                'amount'=>(float)$invoice->amount,'cash_account_code'=>'CASH',
+            ])->assertRedirect()->assertSessionHasNoErrors();
+            $this->assertSame('SETTLED',$invoice->fresh()->status);
+            $this->assertSame(0.0,(float)$invoice->fresh()->open_amount);
+        }
         $this->actingAs($this->actors['OPERATIONS_MANAGER'])->post(route('service-requests.workflow.close',$request),[
             'notes'=>'Operational closure verified.',
-        ])->assertRedirect();
+        ])->assertRedirect()->assertSessionHasNoErrors();
         $this->assertSame('CSAT',$request->fresh()->workflow_stage);
         $this->actingAs($this->portalUser)->post(route('customer.requests.satisfaction',$request),[
             'rating'=>5,'nps'=>10,'comment'=>'Lifecycle completed successfully.',
