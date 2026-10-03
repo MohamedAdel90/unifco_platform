@@ -21,7 +21,7 @@ class CustomerPortalSearchController extends Controller
         $assetIds=Asset::where('tenant_id',$user->tenant_id)->where('customer_id',$customer->id)->pluck('id');
         $workOrders=$query===''?collect():WorkOrder::with('asset')->whereIn('asset_id',$assetIds)->where(function($builder)use($like){$builder->where('work_order_no','like',$like)->orWhereHas('asset',fn($asset)=>$asset->where('asset_code','like',$like)->orWhere('name','like',$like));})->latest()->limit(20)->get();
         $contracts=$query===''?collect():ServiceContract::where('tenant_id',$user->tenant_id)->where('customer_id',$customer->id)->where(function($builder)use($like){$builder->where('contract_no','like',$like)->orWhere('title','like',$like);})->latest()->limit(20)->get();
-        $invoices=$query===''?collect():FinancialDocument::where('tenant_id',$user->tenant_id)->where('customer_id',$customer->id)->where('document_type','AR_INVOICE')->where(function($builder)use($like){$builder->where('document_no','like',$like)->orWhere('status','like',$like);})->latest()->limit(20)->get();
+        $invoices=$query===''?collect():FinancialDocument::where('tenant_id',$user->tenant_id)->where('customer_id',$customer->id)->where('document_type','AR_INVOICE')->visibleToCustomer()->where(function($builder)use($like){$builder->where('document_no','like',$like)->orWhere('status','like',$like);})->latest()->limit(20)->get();
 
         $total=$requests->count()+$assets->count()+$workOrders->count()+$contracts->count()+$invoices->count();
         return view('customer.search',compact('customer','query','requests','assets','workOrders','contracts','invoices','total'));
