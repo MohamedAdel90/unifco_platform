@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Customer,CustomerContact,CustomerSite,Organization,ServiceRequest,Tenant,User};
+use App\Models\{Customer,CustomerContact,CustomerSite,Employee,Organization,ServiceRequest,Tenant,User,WorkOrderAssignment};
 use App\Services\RequestStageOwnerService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\{DB,Hash,Schema};
@@ -32,6 +32,17 @@ class WorkflowTestUsersSeeder extends Seeder
             'CEO'=>['name'=>'Workflow Chief Executive Officer','email'=>'ceo@unifco.local','permissions'=>['dashboard.view','workflow.approval.read','workflow.approval.decide','reporting.executive.read','crm.customer.read','finance.journal.read','projects.project.read','procurement.po.read','maintenance.work_order.read']],
         ];
         foreach($roles as $role=>$config){User::updateOrCreate(['email'=>$config['email']],['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>$config['name'],'password'=>Hash::make($password),'role'=>$role,'status'=>'ACTIVE','force_password_change'=>false]);foreach($config['permissions'] as $permission)DB::table('role_permissions')->updateOrInsert(['tenant_id'=>$tenant->id,'role_code'=>$role,'permission_code'=>$permission],['created_at'=>now(),'updated_at'=>now()]);}
+
+        // The workflow test technician also needs a field-service employee identity.
+        // Reuse an existing identity and never replace a deliberate user link.
+        $testTechnician=User::where('tenant_id',$tenant->id)->where('email','technician@unifco.local')->firstOrFail();
+        if (Schema::hasTable('employees') && ! $testTechnician->employee_id) {
+            $employee=Employee::firstOrCreate(
+                ['tenant_id'=>$tenant->id,'employee_no'=>'WF-TECH-001'],
+                ['organization_id'=>$org->id,'name'=>'Workflow Technician','email'=>'technician@unifco.local','hire_date'=>today(),'status'=>'ACTIVE']
+            );
+            $testTechnician->update(['employee_id'=>$employee->id]);
+        }
 
         // The dedicated maintenance UAT project must have a responsible manager
         // before the agreed request matrix can leave Operations triage.
@@ -86,6 +97,25 @@ class WorkflowTestUsersSeeder extends Seeder
                             app(RequestStageOwnerService::class)->refresh($request);
                         }
                     });
+
+                // Reconcile existing UAT execution orders so the assigned workflow
+                // technician can see them in Technician Mobile as well.
+                if ($testTechnician->employee_id && Schema::hasTable('work_order_assignments')) {
+                    ServiceRequest::query()->where('tenant_id',$tenant->id)
+                        ->where('project_id',$uatProject->id)->where('workflow_stage','EXECUTION')
+                        ->where('assigned_engineer_id',$testTechnician->id)->whereNotNull('work_order_id')
+                        ->chunkById(100,function ($requests) use ($tenant,$org,$testTechnician) {
+                            foreach ($requests as $request) {
+                                if (WorkOrderAssignment::where('work_order_id',$request->work_order_id)->exists()) continue;
+                                WorkOrderAssignment::firstOrCreate(
+                                    ['work_order_id'=>$request->work_order_id,'employee_id'=>$testTechnician->employee_id],
+                                    ['tenant_id'=>$tenant->id,'organization_id'=>$org->id,
+                                     'scheduled_start'=>now(),'dispatch_status'=>'DISPATCHED','dispatched_at'=>now(),
+                                     'dispatcher_notes'=>'Dedicated UAT workflow assignment']
+                                );
+                            }
+                        });
+                }
             }
         }
 

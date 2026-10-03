@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{ApprovalRequest,ProjectUserAssignment,ServiceRequest,User,WorkOrder};
+use App\Models\{ApprovalRequest,ProjectUserAssignment,ServiceRequest,User,WorkOrder,WorkOrderAssignment};
 
 class MaintenanceRequestTransitionService
 {
@@ -54,6 +54,14 @@ class MaintenanceRequestTransitionService
         $request->update(['assigned_engineer_id' => $technician->id]);
         $this->owners->refresh($request->fresh());
         $this->workflow->advance($request, 'TECHNICIAN_ASSIGNMENT', $actor->id, $note ?: 'Technician assigned.');
+        if ($request->work_order_id && $technician->employee_id) {
+            WorkOrderAssignment::firstOrCreate(
+                ['work_order_id'=>$request->work_order_id,'employee_id'=>$technician->employee_id],
+                ['tenant_id'=>$request->tenant_id,'organization_id'=>$request->organization_id,
+                 'scheduled_start'=>now(),'dispatch_status'=>'DISPATCHED','dispatched_at'=>now(),
+                 'dispatcher_notes'=>'Assigned from service request workflow']
+            );
+        }
         return $technician;
     }
 
