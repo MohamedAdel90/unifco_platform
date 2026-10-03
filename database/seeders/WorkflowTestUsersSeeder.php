@@ -2,7 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Customer,CustomerContact,CustomerSite,Organization,Tenant,User};
+use App\Models\{Customer,CustomerContact,CustomerSite,Organization,ServiceRequest,Tenant,User};
+use App\Services\RequestStageOwnerService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\{DB,Hash,Schema};
 
@@ -72,6 +73,19 @@ class WorkflowTestUsersSeeder extends Seeder
                          'reason'=>'Dedicated UAT request-matrix routing','updated_at'=>now(),'created_at'=>now()]
                     );
                 }
+
+                // Requests already at an open stage retain the owner calculated
+                // before the project team was populated. Reconcile those
+                // approval rows after seeding without advancing the workflow.
+                ServiceRequest::query()
+                    ->where('tenant_id',$tenant->id)
+                    ->where('project_id',$uatProject->id)
+                    ->where('status','OPEN')
+                    ->chunkById(100,function ($requests) {
+                        foreach ($requests as $request) {
+                            app(RequestStageOwnerService::class)->refresh($request);
+                        }
+                    });
             }
         }
 
