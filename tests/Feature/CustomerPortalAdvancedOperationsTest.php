@@ -69,6 +69,24 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
         $this->actingAs($c['user'])->get('/customer/contracts/'.$c['contract']->id.'/pdf')->assertOk()->assertHeader('Content-Type','application/pdf')->assertSee('%PDF',false);
     }
 
+    public function test_draft_invoice_is_not_a_customer_receivable_or_customer_action(): void
+    {
+        $c=$this->context();
+        $draft=FinancialDocument::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'document_no'=>'INV-UAT-DRAFT','document_type'=>'AR_INVOICE','counterparty_name'=>'Client One',
+            'document_date'=>today(),'due_date'=>today()->subDay(),'currency'=>'SAR','amount'=>575,'open_amount'=>575,
+            'control_account_code'=>'AR','offset_account_code'=>'REV','status'=>'DRAFT',
+        ]);
+
+        $this->actingAs($c['user'])->get('/customer/invoices')->assertOk()->assertDontSee('INV-UAT-DRAFT');
+        $this->actingAs($c['user'])->get('/customer')->assertOk()->assertDontSee('INV-UAT-DRAFT');
+        $this->actingAs($c['user'])->get('/customer/actions?type=invoices')->assertOk()->assertDontSee('INV-UAT-DRAFT');
+        $this->actingAs($c['user'])->get('/customer/invoices/'.$draft->id.'/pdf')->assertNotFound();
+        $this->actingAs($c['user'])->post('/customer/invoices/'.$draft->id.'/query',['notes'=>'Draft query'])->assertNotFound();
+        $this->assertDatabaseMissing('customer_portal_action_requests',['reference_id'=>$draft->id,'action_type'=>'INVOICE_QUERY']);
+    }
+
     public function test_customer_can_approve_only_own_quotation(): void
     {
         $c=$this->context();
