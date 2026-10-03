@@ -2,8 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Controllers\Maintenance\WorkOrderController;
 use App\Models\{ApprovalRequest,Asset,Customer,CustomerActivityEvent,ServiceContract,ServiceRequest,User,WorkOrder};
-use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,RequestStageOwnerService,ScopeService,ServiceRequestWorkflowService};
+use App\Services\{AuditService,AuthorizationService,MaintenanceRequestTransitionService,RequestStageOwnerService,ScopeService,ServiceRequestWorkflowService};
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Http\Request;
@@ -99,7 +100,24 @@ class ProductionRequestLifecycleSmoke extends Command
 
             $request->refresh();
             if(!$request->work_order_id) throw new \RuntimeException('Work order was not created.');
-            $transitions->completeExecution($tech,$request->fresh(),'Smoke execution complete.');
+            $workOrder=WorkOrder::withoutGlobalScopes()->findOrFail($request->work_order_id);
+            // Exercise the actual work-order completion path. It validates
+            // execution evidence and advances the linked request, all inside
+            // the rollback-only production smoke transaction.
+            Auth::login($tech);
+            app(WorkOrderController::class)->complete(
+                Request::create('/maintenance/work-orders/'.$workOrder->id.'/complete','POST',[
+                    'completion_notes'=>'Rollback-only smoke execution complete.',
+                    'labor_hours'=>0,
+                    'labor_cost'=>0,
+                    'external_cost'=>0,
+                ]),
+                $workOrder,
+                app(AuditService::class),
+                $transitions,
+            );
+            Auth::logout();
+            if($workOrder->fresh()->status!=='COMPLETED') throw new \RuntimeException('Work order completion failed.');
             $this->expectStage($request,'CUSTOMER_ACCEPTANCE');
 
             $workOrder=WorkOrder::withoutGlobalScopes()->findOrFail($request->fresh()->work_order_id);
