@@ -125,6 +125,9 @@ class ServiceRequestWorkflowService
     public function advance(ServiceRequest $request, string $completedStage, ?int $actorId = null, ?string $note = null): ?ApprovalRequest
     {
         $request->refresh();
+        if ($completedStage === 'CUSTOMER_ACCEPTANCE') {
+            $this->repairMissingMaintenanceClosureStages($request);
+        }
         $before = $this->state($request);
         $current = ApprovalRequest::query()
             ->where('tenant_id', $request->tenant_id)
@@ -195,6 +198,67 @@ class ServiceRequestWorkflowService
         $this->recordTransition($request, $before, $completedStage, (string) $next->action, $actorId, $note);
 
         return $next->fresh();
+    }
+
+    /** Restore the closing stages omitted from older maintenance approval chains. */
+    public function repairMissingMaintenanceClosureStages(ServiceRequest $request): bool
+    {
+        if (! in_array($request->workflow_key, [
+            ServiceRequestWorkflowTemplateRegistry::MAINTENANCE,
+            ServiceRequestWorkflowTemplateRegistry::EMERGENCY_MAINTENANCE,
+        ], true)) return false;
+
+        $last = ApprovalRequest::query()->where('tenant_id', $request->tenant_id)
+            ->where('entity_type', ServiceRequest::class)->where('entity_id', $request->id)
+            ->orderByDesc('step_order')->first();
+        if ($last?->action !== 'CUSTOMER_ACCEPTANCE') return false;
+
+        $context = (array) ($request->workflow_context ?? []);
+        $context['chargeable'] = $request->eligibility === 'CHARGEABLE';
+        $steps = collect($this->templates->template($request->workflow_key, $context));
+        $acceptanceIndex = $steps->search(fn (array $step) => $step['stage'] === 'CUSTOMER_ACCEPTANCE');
+        if ($acceptanceIndex === false) return false;
+        $tail = $steps->slice($acceptanceIndex + 1)->values();
+        if ($tail->isEmpty()) return false;
+
+        foreach ($tail as $index => $step) {
+            ApprovalRequest::firstOrCreate([
+                'tenant_id' => $request->tenant_id,
+                'entity_type' => ServiceRequest::class,
+                'entity_id' => $request->id,
+                'action' => $step['stage'],
+            ], [
+                'organization_id' => $request->organization_id,
+                'requested_by' => $last->requested_by,
+                'workflow_key' => 'SERVICE_REQUEST_'.$request->workflow_key,
+                'approval_role' => $step['role'],
+                'step_order' => $last->step_order + $index + 1,
+                'sla_minutes' => $this->slaFor($step['stage']),
+                'status' => 'WAITING',
+                'metadata' => $context + ['department' => $step['department'], 'stage' => $step['stage']],
+            ]);
+        }
+
+        // A legacy chain may already have completed at customer acceptance.
+        // Reopen only when the work was accepted and no closing stage existed.
+        if ($request->workflow_stage === 'COMPLETED' && $request->status === 'COMPLETED'
+            && $last->status === 'COMPLETED' && $request->work_order_id
+            && WorkOrder::whereKey($request->work_order_id)->whereNotNull('customer_accepted_at')->exists()) {
+            $next = ApprovalRequest::query()->where('tenant_id', $request->tenant_id)
+                ->where('entity_type', ServiceRequest::class)->where('entity_id', $request->id)
+                ->where('step_order', '>', $last->step_order)->orderBy('step_order')->firstOrFail();
+            $owner = $this->owners->resolve($request, (string) $next->approval_role, (string) $next->action);
+            $due = now()->addMinutes((int) $next->sla_minutes);
+            $next->update(['status' => 'PENDING', 'assigned_user_id' => $owner['user_id'],
+                'routing_status' => $owner['status'], 'due_at' => $due]);
+            $request->update(['workflow_stage' => $next->action,
+                'assigned_department' => data_get($next->metadata, 'department'),
+                'approval_state' => 'PENDING', 'next_action' => $next->action,
+                'current_stage_due_at' => $due, 'status' => 'OPEN', 'resolved_at' => null]);
+            $this->ensureStageArtifacts($request->fresh());
+        }
+
+        return true;
     }
 
     private function ensureStageArtifacts(ServiceRequest $request): void
