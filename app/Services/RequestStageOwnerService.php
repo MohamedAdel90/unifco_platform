@@ -15,10 +15,19 @@ class RequestStageOwnerService
     {
         $role=strtoupper($role);
 
-        if($role==='OPERATIONS_MANAGER'){
+        // Quotation execution and technical reviews must not fall back to a
+        // tenant-wide queue while the responsible customer project is unknown.
+        if(!$request->project_id
+            && in_array((string)$request->workflow_key,['QUOTATION','SPARE_PARTS_QUOTATION','TECHNICAL_VISIT'],true)
+            && in_array($role,self::PROJECT_BOUND,true)
+            && $role!=='OPERATIONS_MANAGER'){
+            return ['user_id'=>null,'status'=>'NEEDS_ASSIGNMENT'];
+        }
+
+        if($role==='OPERATIONS_MANAGER' && !$request->project_id){
             return $request->operations_manager_id
                 ? ['user_id'=>(int)$request->operations_manager_id,'status'=>'ASSIGNED']
-                : ['user_id'=>null,'status'=>$request->project_id?'NEEDS_ASSIGNMENT':'ROLE_QUEUE'];
+                : ['user_id'=>null,'status'=>'ROLE_QUEUE'];
         }
 
         // A project-bound review belongs to its active project team. A previously

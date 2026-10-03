@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ApprovalRequest,Asset,ChartAccount,CrmQuotation,Customer,CustomerSite,FinancialDocument,FiscalPeriod,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,User,WorkOrder};
+use App\Models\{ApprovalRequest,Asset,ChartAccount,CrmQuotation,Customer,CustomerSite,FinancialDocument,FiscalPeriod,Organization,Project,ProjectUserAssignment,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,User,WorkOrder};
 use App\Services\{ApprovalService,MaintenanceRequestTransitionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +17,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
     private CustomerSite $site;
     private Asset $asset;
     private User $portalUser;
+    private Project $project;
 
     protected function setUp(): void
     {
@@ -47,6 +48,22 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $this->portalUser=User::create([
             'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$this->customer->id,'name'=>'Lifecycle Customer',
             'email'=>'portal@lifecycle.test','password'=>'StrongPassword123','role'=>'CUSTOMER','user_type'=>'EXTERNAL','status'=>'ACTIVE',
+        ]);
+        $this->project=Project::create([
+            'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$this->customer->id,
+            'project_no'=>'E2E-PRJ-100','name'=>'Lifecycle customer project','status'=>'ACTIVE',
+        ]);
+        foreach(['OPERATIONS_MANAGER','PROJECT_MANAGER','MAINTENANCE_MANAGER','MAINTENANCE_ENGINEER','TECHNICAL_SUPERVISOR','TECHNICIAN','QUALITY','HSE'] as $projectRole){
+            ProjectUserAssignment::create([
+                'tenant_id'=>$tenant->id,'project_id'=>$this->project->id,
+                'user_id'=>$this->actors[$projectRole]->id,'project_role'=>$projectRole,
+                'access_level'=>'PROJECT','status'=>'ACTIVE',
+            ]);
+        }
+        DB::table('role_permissions')->insert([
+            'tenant_id'=>$tenant->id,'role_code'=>'OPERATIONS_MANAGER',
+            'permission_code'=>'service_requests.assign','effect'=>'ALLOW',
+            'created_at'=>now(),'updated_at'=>now(),
         ]);
     }
 
@@ -81,6 +98,17 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
     private function approveCurrent(ServiceRequest $request): void
     {
         $request->refresh();
+
+        if(!$request->project_id
+            && in_array((string)$request->workflow_key,['QUOTATION','SPARE_PARTS_QUOTATION','TECHNICAL_VISIT'],true)
+            && in_array((string)$request->workflow_stage,['PROJECT_MANAGER_REVIEW','TECHNICAL_REVIEW','TECHNICIAN_ASSIGNMENT'],true)){
+            $this->actingAs($this->actors['OPERATIONS_MANAGER'])
+                ->post(route('service-requests.workflow.assign-project',$request),[
+                    'project_id'=>$this->project->id,
+                ])->assertRedirect()->assertSessionHasNoErrors();
+            $request->refresh();
+            $this->assertSame($this->project->id,$request->project_id);
+        }
 
         if($request->workflow_stage==='TECHNICIAN_ASSIGNMENT'){
             $this->actingAs($this->actors['TECHNICAL_SUPERVISOR']);

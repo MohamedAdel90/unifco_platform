@@ -81,9 +81,15 @@ class ApprovalService
 
     private function assertProjectAssignment($user,ServiceRequest $serviceRequest,string $approvalRole): void
     {
-        if(!$serviceRequest->project_id) return;
-
         $role=strtoupper($approvalRole);
+        if(!$serviceRequest->project_id){
+            if(in_array((string)$serviceRequest->workflow_key,['QUOTATION','SPARE_PARTS_QUOTATION','TECHNICAL_VISIT'],true)
+                && in_array($role,['PROJECT_MANAGER','MAINTENANCE_MANAGER','MAINTENANCE_ENGINEER','TECHNICAL_SUPERVISOR','TECHNICIAN','QUALITY','HSE'],true)){
+                throw ValidationException::withMessages(['approval'=>'Select the responsible customer project before this review can proceed.']);
+            }
+            return;
+        }
+
         $projectBound=[
             'OPERATIONS_MANAGER','MAINTENANCE_MANAGER','PROJECT_MANAGER','MAINTENANCE_ENGINEER',
             'TECHNICAL_SUPERVISOR','TECHNICIAN','QUALITY','HSE',

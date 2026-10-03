@@ -16,6 +16,14 @@
 </section>
 <section class="wf-card">
 <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><div class="muted">Required Role</div><strong>{{ $step?->approval_role ?: '—' }}</strong><div class="muted" style="margin-top:4px">Routing: {{ $step?->routing_status ?: '—' }}@if($step?->assigned_user_id) · User #{{ $step->assigned_user_id }}@endif</div></div><span class="pill">{{ $canAct ? 'ACTION AVAILABLE' : ($canAssignOwner ? 'OWNER REQUIRED' : 'READ ONLY') }}</span></div>
+@if($canAssignProject)
+<form class="wf-form" method="post" action="{{ route('service-requests.workflow.assign-project',$serviceRequest) }}" style="margin-top:16px;padding:14px;border:1px solid #f0c7cc;border-radius:10px;background:#fff7f8">@csrf
+<div><strong style="color:#a72c36">Responsible customer project required</strong><div class="muted">Operations must select the active customer project before this project-scoped review can proceed.</div></div>
+<select name="project_id" required><option value="">Select responsible project</option>@foreach($projectOptions as $project)<option value="{{ $project->id }}" @selected((int)old('project_id')===(int)$project->id)>{{ $project->project_no }} · {{ $project->name }}</option>@endforeach</select>
+@if($projectOptions->isEmpty())<div class="muted" style="color:#a72c36">No active project exists for this customer. Create one and assign its Project Manager before routing.</div>@endif
+<button type="submit" @disabled($projectOptions->isEmpty())>Link Project & Reassign Review</button>
+</form>
+@endif
 @if($canAssignOwner)
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.assign-stage-owner',$serviceRequest) }}" style="margin-top:16px;padding:14px;border:1px solid #f0c7cc;border-radius:10px;background:#fff7f8">@csrf
 <div><strong style="color:#a72c36">Responsible user must be selected</strong><div class="muted">Only eligible active users with the required role inside this project are listed.</div></div>

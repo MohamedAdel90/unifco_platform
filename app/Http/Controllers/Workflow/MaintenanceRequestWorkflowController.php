@@ -33,6 +33,7 @@ class MaintenanceRequestWorkflowController extends Controller
         $canAct = $step
             && $roles->contains(strtoupper((string) $step->approval_role))
             && $step->routing_status !== 'NEEDS_ASSIGNMENT'
+            && !($this->projectRequiredForQuotation($serviceRequest,$step) && !$serviceRequest->project_id)
             && (!$step->assigned_user_id || (int)$step->assigned_user_id === (int)$user->id);
         if ($serviceRequest->workflow_stage === 'EXECUTION') $canAct = $canAct && (int) $serviceRequest->assigned_engineer_id === (int) $user->id;
 
@@ -56,17 +57,69 @@ class MaintenanceRequestWorkflowController extends Controller
         $projectOptions=Project::query()
             ->where('tenant_id',$user->tenant_id)
             ->where('status','ACTIVE')
-            ->when($serviceRequest->customer_id,fn($q)=>$q->where('customer_id',$serviceRequest->customer_id))
+            ->where('customer_id',$serviceRequest->customer_id ?? 0)
             ->orderBy('project_no')->get(['id','project_no','name','customer_id']);
 
+        $canAssignProject = $step
+            && !$serviceRequest->project_id
+            && $this->projectRequiredForQuotation($serviceRequest,$step)
+            && $authorization->allows($user,'service_requests.assign',$serviceRequest);
         $canAssignOwner = $step
+            && !$canAssignProject
             && $step->routing_status === 'NEEDS_ASSIGNMENT'
             && $authorization->allows($user,'service_requests.assign',$serviceRequest);
         $ownerCandidates = $canAssignOwner
             ? $owners->candidates($serviceRequest,(string)$step->approval_role)
             : collect();
 
-        return view('workflow.maintenance-request', compact('serviceRequest','step','canAct','technicians','projectOptions','canAssignOwner','ownerCandidates'));
+        return view('workflow.maintenance-request', compact('serviceRequest','step','canAct','technicians','projectOptions','canAssignProject','canAssignOwner','ownerCandidates'));
+    }
+
+    public function assignProject(Request $request, ServiceRequest $serviceRequest, AuthorizationService $authorization, ScopeService $scopes, RequestStageOwnerService $owners): RedirectResponse
+    {
+        $user=$request->user();
+        abort_unless((int)$serviceRequest->tenant_id===(int)$user->tenant_id,404);
+        $authorization->authorize($user,'service_requests.assign',$serviceRequest);
+        abort_unless($scopes->apply(
+            ServiceRequest::query()->where('tenant_id',$user->tenant_id)->whereKey($serviceRequest->id),
+            $user
+        )->exists(),403,'Request is outside your access scope.');
+
+        $data=$request->validate(['project_id'=>['required','integer']]);
+        return DB::transaction(function () use ($serviceRequest,$user,$data,$owners): RedirectResponse {
+            $requestRecord=ServiceRequest::query()->where('tenant_id',$user->tenant_id)
+                ->lockForUpdate()->findOrFail($serviceRequest->id);
+            $step=ApprovalRequest::query()
+                ->where('tenant_id',$requestRecord->tenant_id)
+                ->where('entity_type',ServiceRequest::class)
+                ->where('entity_id',$requestRecord->id)
+                ->where('action',$requestRecord->workflow_stage)
+                ->where('status','PENDING')->firstOrFail();
+            abort_unless(!$requestRecord->project_id && $this->projectRequiredForQuotation($requestRecord,$step),
+                422,'Project selection is not available at this stage.');
+            $project=Project::query()->where('tenant_id',$user->tenant_id)
+                ->where('customer_id',$requestRecord->customer_id)
+                ->where('status','ACTIVE')->findOrFail($data['project_id']);
+            $managerCount=ProjectUserAssignment::query()
+                ->where('tenant_id',$user->tenant_id)->where('project_id',$project->id)
+                ->where('project_role','PROJECT_MANAGER')->where('status','ACTIVE')
+                ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
+                ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
+                ->distinct()->count('user_id');
+            if($managerCount!==1){
+                return back()->withErrors(['project_id'=>'The selected project needs one active Project Manager assignment before routing.'])->withInput();
+            }
+            $requestRecord->update(['project_id'=>$project->id]);
+            $owners->refresh($requestRecord->fresh());
+            return back()->with('status','Request linked to the responsible project and stage owner recalculated.');
+        });
+    }
+
+    private function projectRequiredForQuotation(ServiceRequest $request, ?ApprovalRequest $step): bool
+    {
+        return $step
+            && in_array((string)$request->workflow_key,['QUOTATION','SPARE_PARTS_QUOTATION','TECHNICAL_VISIT'],true)
+            && in_array((string)$step->approval_role,['PROJECT_MANAGER','MAINTENANCE_MANAGER','MAINTENANCE_ENGINEER','TECHNICAL_SUPERVISOR','TECHNICIAN','QUALITY','HSE'],true);
     }
 
     public function assignStageOwner(Request $request, ServiceRequest $serviceRequest, AuthorizationService $authorization, ScopeService $scopes, RequestStageOwnerService $owners): RedirectResponse
@@ -88,6 +141,8 @@ class MaintenanceRequestWorkflowController extends Controller
             ->where('action',$serviceRequest->workflow_stage)
             ->where('status','PENDING')
             ->firstOrFail();
+        abort_unless($serviceRequest->project_id || !$this->projectRequiredForQuotation($serviceRequest,$step),
+            422,'Select the responsible customer project before assigning a stage owner.');
 
         $data=$request->validate(['owner_user_id'=>['required','integer']]);
         $candidate=$owners->candidates($serviceRequest,(string)$step->approval_role)
