@@ -53,7 +53,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             'tenant_id'=>$tenant->id,'organization_id'=>$org->id,'customer_id'=>$this->customer->id,
             'project_no'=>'E2E-PRJ-100','name'=>'Lifecycle customer project','status'=>'ACTIVE',
         ]);
-        foreach(['PROJECT_MANAGER','MAINTENANCE_MANAGER','MAINTENANCE_ENGINEER','TECHNICAL_SUPERVISOR','TECHNICIAN','QUALITY','HSE'] as $projectRole){
+        foreach(['OPERATIONS_MANAGER','PROJECT_MANAGER','MAINTENANCE_MANAGER','MAINTENANCE_ENGINEER','TECHNICAL_SUPERVISOR','TECHNICIAN','QUALITY','HSE'] as $projectRole){
             ProjectUserAssignment::create([
                 'tenant_id'=>$tenant->id,'project_id'=>$this->project->id,
                 'user_id'=>$this->actors[$projectRole]->id,'project_role'=>$projectRole,
