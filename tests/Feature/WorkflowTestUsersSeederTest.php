@@ -33,7 +33,7 @@ class WorkflowTestUsersSeederTest extends TestCase
         }
     }
 
-    public function test_uat_project_gets_one_active_workflow_project_manager(): void
+    public function test_uat_project_gets_active_scoped_workflow_team(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
         $customer=Customer::where('customer_code','WF-TEST-001')->firstOrFail();
@@ -46,10 +46,20 @@ class WorkflowTestUsersSeederTest extends TestCase
 
         $this->seed(WorkflowTestUsersSeeder::class);
         $this->seed(WorkflowTestUsersSeeder::class);
-        $manager=User::where('email','projects.manager@unifco.local')->firstOrFail();
-        $this->assertSame(1,DB::table('project_user_assignments')
-            ->where('project_id',$project->id)->where('user_id',$manager->id)
-            ->where('project_role','PROJECT_MANAGER')->where('status','ACTIVE')->count());
+        foreach ([
+            'PROJECT_MANAGER'=>'projects.manager@unifco.local',
+            'MAINTENANCE_MANAGER'=>'maintenance.manager@unifco.local',
+            'MAINTENANCE_ENGINEER'=>'engineer@unifco.local',
+            'TECHNICAL_SUPERVISOR'=>'technical.supervisor@unifco.local',
+            'TECHNICIAN'=>'technician@unifco.local',
+            'QUALITY'=>'quality@unifco.local',
+            'HSE'=>'hse@unifco.local',
+        ] as $projectRole=>$email) {
+            $owner=User::where('email',$email)->firstOrFail();
+            $this->assertSame(1,DB::table('project_user_assignments')
+                ->where('project_id',$project->id)->where('user_id',$owner->id)
+                ->where('project_role',$projectRole)->where('status','ACTIVE')->count());
+        }
     }
 
     public function test_workflow_seeder_is_idempotent(): void

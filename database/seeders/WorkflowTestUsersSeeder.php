@@ -39,19 +39,35 @@ class WorkflowTestUsersSeeder extends Seeder
             $uatProject=$uatCustomerId ? DB::table('projects')
                 ->where('tenant_id',$tenant->id)->where('customer_id',$uatCustomerId)
                 ->where('project_no','PRJ-TEST-001')->where('status','ACTIVE')->first() : null;
-            $projectManager=User::where('tenant_id',$tenant->id)
-                ->where('email','projects.manager@unifco.local')->first();
-            if ($uatProject && $projectManager) {
-                $hasActiveManager=DB::table('project_user_assignments')
-                    ->where('tenant_id',$tenant->id)->where('project_id',$uatProject->id)
-                    ->where('project_role','PROJECT_MANAGER')->where('status','ACTIVE')
-                    ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
-                    ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
-                    ->exists();
-                if (! $hasActiveManager) {
+            if ($uatProject) {
+                // Only the dedicated request-matrix project receives test team members.
+                // Preserve an existing active owner for each role rather than replacing
+                // a deliberate project assignment during a repeat deployment.
+                $uatTeam=[
+                    'PROJECT_MANAGER'=>'projects.manager@unifco.local',
+                    'MAINTENANCE_MANAGER'=>'maintenance.manager@unifco.local',
+                    'MAINTENANCE_ENGINEER'=>'engineer@unifco.local',
+                    'TECHNICAL_SUPERVISOR'=>'technical.supervisor@unifco.local',
+                    'TECHNICIAN'=>'technician@unifco.local',
+                    'QUALITY'=>'quality@unifco.local',
+                    'HSE'=>'hse@unifco.local',
+                ];
+                foreach ($uatTeam as $projectRole=>$email) {
+                    $hasActiveOwner=DB::table('project_user_assignments')
+                        ->where('tenant_id',$tenant->id)->where('project_id',$uatProject->id)
+                        ->where('project_role',$projectRole)->where('status','ACTIVE')
+                        ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
+                        ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
+                        ->exists();
+                    if ($hasActiveOwner) continue;
+
+                    $owner=User::where('tenant_id',$tenant->id)->where('email',$email)
+                        ->where('status','ACTIVE')->first();
+                    if (! $owner) continue;
+
                     DB::table('project_user_assignments')->updateOrInsert(
-                        ['project_id'=>$uatProject->id,'user_id'=>$projectManager->id],
-                        ['tenant_id'=>$tenant->id,'project_role'=>'PROJECT_MANAGER',
+                        ['project_id'=>$uatProject->id,'user_id'=>$owner->id],
+                        ['tenant_id'=>$tenant->id,'project_role'=>$projectRole,
                          'access_level'=>'PROJECT','status'=>'ACTIVE','starts_on'=>null,'ends_on'=>null,
                          'reason'=>'Dedicated UAT request-matrix routing','updated_at'=>now(),'created_at'=>now()]
                     );
