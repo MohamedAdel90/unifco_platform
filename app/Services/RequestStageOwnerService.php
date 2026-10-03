@@ -21,10 +21,12 @@ class RequestStageOwnerService
                 : ['user_id'=>null,'status'=>$request->project_id?'NEEDS_ASSIGNMENT':'ROLE_QUEUE'];
         }
 
-        if($role==='PROJECT_MANAGER'){
+        // A project-bound review belongs to its active project team. A previously
+        // stored manager ID must not route a newly bound project to another owner.
+        if($role==='PROJECT_MANAGER' && !$request->project_id){
             return $request->project_manager_id
                 ? ['user_id'=>(int)$request->project_manager_id,'status'=>'ASSIGNED']
-                : ['user_id'=>null,'status'=>$request->project_id?'NEEDS_ASSIGNMENT':'ROLE_QUEUE'];
+                : ['user_id'=>null,'status'=>'ROLE_QUEUE'];
         }
 
         if($role==='TECHNICIAN'){
