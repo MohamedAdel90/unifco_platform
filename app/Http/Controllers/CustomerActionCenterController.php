@@ -29,7 +29,7 @@ class CustomerActionCenterController extends Controller
         else $workQuery->whereIn('asset_id',Asset::where('customer_id',$customerId)->pluck('id'));
         $workOrders=$workQuery->oldest('completed_at')->limit(20)->get();
 
-        $invoiceQuery=FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')->where('open_amount','>',0)
+        $invoiceQuery=FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')->visibleToCustomer()->where('open_amount','>',0)
             ->whereNotNull('due_date')->where('due_date','<=',now()->addDays(14));
         $invoices=$invoiceQuery->orderBy('due_date')->limit(20)->get();
 
