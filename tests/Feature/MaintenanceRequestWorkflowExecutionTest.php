@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\{ApprovalRequest,Asset,Organization,Project,ProjectUserAssignment,ServiceRequest,Tenant,User,WorkOrder};
 use App\Services\RequestStageOwnerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class MaintenanceRequestWorkflowExecutionTest extends TestCase
@@ -169,6 +170,41 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         $this->assertSame('EXECUTION',$serviceRequest->fresh()->workflow_stage);
         $this->assertSame('PENDING',ApprovalRequest::where('entity_id',$serviceRequest->id)
             ->where('action','EXECUTION')->value('status'));
+    }
+
+    public function test_linked_work_order_only_completes_for_the_assigned_technician(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('EXECUTION');
+        $assigned=$this->user($tenant,$org,'TECHNICIAN','assigned-wo@example.test');
+        $other=$this->user($tenant,$org,'TECHNICIAN','other-wo@example.test');
+        $asset=Asset::create([
+            'tenant_id'=>$tenant->id,'organization_id'=>$org->id,
+            'asset_code'=>'WF-OWNER-WO','name'=>'UAT pump',
+        ]);
+        $workOrder=WorkOrder::create([
+            'tenant_id'=>$tenant->id,'organization_id'=>$org->id,
+            'work_order_no'=>'WO-WF-OWNER','asset_id'=>$asset->id,'status'=>'OPEN',
+        ]);
+        $serviceRequest->update(['assigned_engineer_id'=>$assigned->id,'work_order_id'=>$workOrder->id]);
+        $step=$this->step($serviceRequest,$assigned,'EXECUTION','TECHNICIAN',1,'PENDING');
+        $step->update(['assigned_user_id'=>$assigned->id,'routing_status'=>'ASSIGNED']);
+        $this->step($serviceRequest,$assigned,'CUSTOMER_ACCEPTANCE','CUSTOMER',2,'WAITING');
+        DB::table('role_permissions')->updateOrInsert(
+            ['tenant_id'=>$tenant->id,'role_code'=>'TECHNICIAN','permission_code'=>'maintenance.work_order.manage'],
+            ['effect'=>'ALLOW','created_at'=>now(),'updated_at'=>now()]
+        );
+        $completion=['completion_notes'=>'Repair completed and tested.','labor_hours'=>1,'labor_cost'=>100,'external_cost'=>0];
+
+        $this->actingAs($other)->post(route('maintenance.work-orders.complete',$workOrder),$completion)->assertForbidden();
+        $this->assertSame('OPEN',$workOrder->fresh()->status);
+        $this->assertSame('EXECUTION',$serviceRequest->fresh()->workflow_stage);
+        $this->assertSame('PENDING',$step->fresh()->status);
+
+        $this->actingAs($assigned)->post(route('maintenance.work-orders.complete',$workOrder),$completion)
+            ->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('COMPLETED',$workOrder->fresh()->status);
+        $this->assertSame($assigned->id,$workOrder->fresh()->completed_by);
+        $this->assertSame('CUSTOMER_ACCEPTANCE',$serviceRequest->fresh()->workflow_stage);
     }
 
     public function test_unassigned_technician_cannot_complete_execution(): void
