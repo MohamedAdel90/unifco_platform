@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ApprovalRequest,Asset,Organization,Project,ProjectUserAssignment,ServiceRequest,Tenant,User,WorkOrder};
+use App\Models\{ApprovalRequest,Asset,Customer,Organization,Project,ProjectUserAssignment,ServiceRequest,Tenant,User,WorkOrder};
 use App\Services\RequestStageOwnerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -176,6 +176,41 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
             ->where('action','PROJECT_MANAGER_REVIEW')->value('routing_status'));
         $this->assertSame('COMPLETED',ApprovalRequest::where('entity_id',$serviceRequest->id)
             ->where('action','TRIAGE')->value('status'));
+    }
+
+    public function test_unbound_technical_visit_requires_customer_project_before_project_manager_review(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('PROJECT_MANAGER_REVIEW');
+        $customer=Customer::create(['tenant_id'=>$tenant->id,'customer_code'=>'ROUTE-C1',
+            'name'=>'Routing customer','status'=>'ACTIVE']);
+        $serviceRequest->update(['customer_id'=>$customer->id,'request_type'=>'QUOTATION',
+            'workflow_key'=>'TECHNICAL_VISIT']);
+        $ops=$this->user($tenant,$org,'OPERATIONS_MANAGER','ops-quotation@example.test');
+        $pm=$this->user($tenant,$org,'PROJECT_MANAGER','pm-quotation@example.test');
+        $project=Project::create(['tenant_id'=>$tenant->id,'organization_id'=>$org->id,
+            'customer_id'=>$customer->id,'project_no'=>'PRJ-QUOTE','name'=>'Customer project','status'=>'ACTIVE']);
+        ProjectUserAssignment::create(['tenant_id'=>$tenant->id,'project_id'=>$project->id,
+            'user_id'=>$pm->id,'project_role'=>'PROJECT_MANAGER','access_level'=>'PROJECT','status'=>'ACTIVE']);
+        DB::table('role_permissions')->insert(['tenant_id'=>$tenant->id,'role_code'=>'OPERATIONS_MANAGER',
+            'permission_code'=>'service_requests.assign','effect'=>'ALLOW','created_at'=>now(),'updated_at'=>now()]);
+        $step=$this->step($serviceRequest,$pm,'PROJECT_MANAGER_REVIEW','PROJECT_MANAGER',2,'PENDING');
+        $step->update(['routing_status'=>'ROLE_QUEUE']);
+
+        $this->assertSame('NEEDS_ASSIGNMENT',app(RequestStageOwnerService::class)
+            ->resolve($serviceRequest->fresh(),'PROJECT_MANAGER','PROJECT_MANAGER_REVIEW')['status']);
+        $this->actingAs($pm)->post(route('service-requests.workflow.project-review',$serviceRequest),[
+            'decision'=>'APPROVE',
+        ])->assertStatus(422);
+        $this->assertSame('PROJECT_MANAGER_REVIEW',$serviceRequest->fresh()->workflow_stage);
+
+        $this->actingAs($ops)->get(route('service-requests.workflow.show',$serviceRequest))
+            ->assertOk()->assertSee('Link Project & Reassign Review');
+        $this->actingAs($ops)->post(route('service-requests.workflow.assign-project',$serviceRequest),[
+            'project_id'=>$project->id,
+        ])->assertRedirect();
+        $this->assertSame($project->id,$serviceRequest->fresh()->project_id);
+        $this->assertSame($pm->id,$step->fresh()->assigned_user_id);
+        $this->assertSame('ASSIGNED',$step->fresh()->routing_status);
     }
 
     public function test_assigned_technician_can_complete_execution_and_move_to_customer_acceptance(): void
