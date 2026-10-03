@@ -398,4 +398,36 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertFalse($workflow->repairMissingMaintenanceClosureStages($request->fresh()));
     }
 
+    public function test_customer_acceptance_uses_legacy_entity_alias_without_skipping_closure(): void
+    {
+        $c=$this->context();
+        $customerUser=User::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'customer_id'=>$c['customer']->id,'name'=>'UAT Customer','email'=>'uat-customer@example.test',
+            'password'=>'StrongPassword123','role'=>'CUSTOMER','status'=>'ACTIVE']);
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'request_no'=>'SR-LEGACY-ALIAS','request_type'=>'MAINTENANCE','priority'=>'NORMAL',
+            'company_name'=>$c['customer']->name,'email'=>$c['customer']->email,'service_category'=>'Maintenance',
+            'subject'=>'Legacy approval alias','details'=>'UAT','status'=>'OPEN',
+            'workflow_stage'=>'CUSTOMER_ACCEPTANCE','workflow_key'=>'MAINTENANCE','eligibility'=>'IN_CONTRACT',
+        ]);
+        foreach (['CUSTOMER_ACCEPTANCE','CLOSURE','CSAT'] as $index=>$stage) {
+            ApprovalRequest::create([
+                'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+                'entity_type'=>'service_request','entity_id'=>$request->id,'action'=>$stage,
+                'approval_role'=>$stage==='CLOSURE'?'OPERATIONS_MANAGER':'CUSTOMER',
+                'step_order'=>$index+7,'status'=>$index===0?'PENDING':'WAITING',
+                'requested_by'=>$c['requester']->id,
+            ]);
+        }
+        $this->actingAs($customerUser);
+
+        app(ServiceRequestWorkflowService::class)->advance($request,'CUSTOMER_ACCEPTANCE',$customerUser->id,'UAT');
+
+        $this->assertSame('CLOSURE',$request->fresh()->workflow_stage);
+        $this->assertSame('OPEN',$request->fresh()->status);
+        $this->assertSame('COMPLETED',ApprovalRequest::where('entity_id',$request->id)
+            ->where('action','CUSTOMER_ACCEPTANCE')->value('status'));
+    }
+
 }
