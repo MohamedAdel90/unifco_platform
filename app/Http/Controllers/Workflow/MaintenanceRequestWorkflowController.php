@@ -141,6 +141,8 @@ class MaintenanceRequestWorkflowController extends Controller
             ->where('action',$serviceRequest->workflow_stage)
             ->where('status','PENDING')
             ->firstOrFail();
+        abort_unless($serviceRequest->project_id || !$this->projectRequiredForQuotation($serviceRequest,$step),
+            422,'Select the responsible customer project before assigning a stage owner.');
 
         $data=$request->validate(['owner_user_id'=>['required','integer']]);
         $candidate=$owners->candidates($serviceRequest,(string)$step->approval_role)
