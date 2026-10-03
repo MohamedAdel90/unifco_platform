@@ -241,11 +241,13 @@ class MaintenanceRequestWorkflowController extends Controller
     public function close(Request $request, ServiceRequest $serviceRequest, MaintenanceRequestTransitionService $transitions): RedirectResponse
     {
         $data = $request->validate(['notes' => ['nullable','string','max:2000']]);
-        $context = (array) ($serviceRequest->workflow_context ?? []);
-        $context['operationally_closed_at'] = now()->toIso8601String();
-        $context['operationally_closed_by'] = $request->user()->id;
-        $serviceRequest->update(['workflow_context' => $context,'status' => 'RESOLVED','resolved_at' => $serviceRequest->resolved_at ?: now()]);
-        $transitions->complete($request->user(), $serviceRequest, ['CLOSURE'], $data['notes'] ?? 'Operational closure completed.');
+        DB::transaction(function () use ($data, $request, $serviceRequest, $transitions) {
+            $context = (array) ($serviceRequest->workflow_context ?? []);
+            $context['operationally_closed_at'] = now()->toIso8601String();
+            $context['operationally_closed_by'] = $request->user()->id;
+            $serviceRequest->update(['workflow_context' => $context,'status' => 'RESOLVED','resolved_at' => $serviceRequest->resolved_at ?: now()]);
+            $transitions->complete($request->user(), $serviceRequest, ['CLOSURE'], $data['notes'] ?? 'Operational closure completed.');
+        });
         return back()->with('status', 'Request operationally closed and sent for customer satisfaction.');
     }
 }
