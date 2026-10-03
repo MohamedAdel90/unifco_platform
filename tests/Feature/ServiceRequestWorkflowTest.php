@@ -359,4 +359,43 @@ class ServiceRequestWorkflowTest extends TestCase
             ApprovalRequest::where('entity_id',$request->id)->orderBy('step_order')->pluck('action')->all());
     }
 
+    public function test_accepted_order_with_existing_closing_steps_and_pending_acceptance_is_resumed(): void
+    {
+        $c=$this->context();
+        $asset=Asset::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'customer_id'=>$c['customer']->id,'asset_code'=>'EXISTING-TAIL-UAT','name'=>'Test Asset','status'=>'REGISTERED']);
+        $order=WorkOrder::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+            'asset_id'=>$asset->id,'work_order_no'=>'WO-EXISTING-TAIL','maintenance_type'=>'CORRECTIVE',
+            'priority'=>'NORMAL','status'=>'COMPLETED','customer_accepted_at'=>now()]);
+        $request=ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'asset_id'=>$asset->id,'work_order_id'=>$order->id,'request_no'=>'SR-EXISTING-TAIL',
+            'request_type'=>'MAINTENANCE','company_name'=>$c['customer']->name,'email'=>$c['customer']->email,
+            'service_category'=>'Maintenance','subject'=>'Existing tail','details'=>'UAT','priority'=>'NORMAL',
+            'status'=>'COMPLETED','workflow_stage'=>'COMPLETED','workflow_key'=>'MAINTENANCE',
+            'approval_state'=>'COMPLETED','eligibility'=>'IN_CONTRACT','resolved_at'=>now(),
+        ]);
+        foreach (['CUSTOMER_ACCEPTANCE','CLOSURE','CSAT'] as $index=>$stage) {
+            ApprovalRequest::create([
+                'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+                'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,'action'=>$stage,
+                'approval_role'=>$stage==='CLOSURE'?'OPERATIONS_MANAGER':'CUSTOMER',
+                'step_order'=>$index+7,'status'=>$index===0?'PENDING':'WAITING',
+                'requested_by'=>$c['requester']->id,
+            ]);
+        }
+        $workflow=app(ServiceRequestWorkflowService::class);
+
+        $this->assertTrue($workflow->repairMissingMaintenanceClosureStages($request));
+        $this->assertSame('OPEN',$request->fresh()->status);
+        $this->assertSame('CLOSURE',$request->fresh()->workflow_stage);
+        $this->assertNull($request->fresh()->resolved_at);
+        $this->assertSame('COMPLETED',ApprovalRequest::where('entity_id',$request->id)
+            ->where('action','CUSTOMER_ACCEPTANCE')->value('status'));
+        $this->assertSame('PENDING',ApprovalRequest::where('entity_id',$request->id)
+            ->where('action','CLOSURE')->value('status'));
+        $this->assertSame(3,ApprovalRequest::where('entity_id',$request->id)->count());
+        $this->assertFalse($workflow->repairMissingMaintenanceClosureStages($request->fresh()));
+    }
+
 }
