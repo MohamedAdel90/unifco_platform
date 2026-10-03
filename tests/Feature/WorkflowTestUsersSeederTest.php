@@ -111,6 +111,26 @@ class WorkflowTestUsersSeederTest extends TestCase
         $this->assertSame(1,CustomerSite::where('customer_id',$customer->id)->where('site_code','WF-RUH-01')->count());
     }
 
+    public function test_finance_test_user_with_structured_role_can_open_finance_core(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $finance=User::where('email','finance@unifco.local')->firstOrFail();
+        $roleId=DB::table('roles')->insertGetId([
+            'tenant_id'=>$finance->tenant_id,'code'=>'FINANCE_MANAGER',
+            'name_en'=>'Finance Manager','is_active'=>true,
+            'grants_business_authority'=>true,'is_system_role'=>false,
+            'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        DB::table('user_roles')->insert([
+            'tenant_id'=>$finance->tenant_id,'user_id'=>$finance->id,'role_id'=>$roleId,
+            'is_primary'=>true,'granted_at'=>now(),'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        $this->actingAs($finance)->get('/finance/core')->assertForbidden();
+
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $this->actingAs($finance->fresh())->get('/finance/core')->assertOk();
+    }
+
     public function test_seeder_repairs_only_unposted_uat_invoice_account_codes(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
