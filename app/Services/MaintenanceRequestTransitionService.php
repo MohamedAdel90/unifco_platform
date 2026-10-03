@@ -63,8 +63,8 @@ class MaintenanceRequestTransitionService
         abort_unless((int) $request->assigned_engineer_id === (int) $actor->id, 403, 'Only the assigned technician can complete execution.');
         if ($request->work_order_id) {
             $workOrder = WorkOrder::query()->where('tenant_id', $request->tenant_id)->findOrFail($request->work_order_id);
-            // The work-order completion form validates checklist, photo evidence,
-            // unresolved parts and cost before closing the order. The request
+            // The work-order completion form validates the configured checklist and photo evidence,
+            // and records final cost before closing the order. The request
             // workflow must never bypass that execution gate.
             abort_unless($workOrder->status === 'COMPLETED', 422,
                 'Complete the linked work order before completing request execution.');
