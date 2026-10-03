@@ -46,6 +46,7 @@ class RequestStageOwnerRoutingTest extends TestCase
         ]);
 
         $pm=$this->userWithRole($tenant,'PROJECT_MANAGER','owner-pm@example.test');
+        $otherProjectPm=$this->userWithRole($tenant,'PROJECT_MANAGER','other-project-pm@example.test');
         $ops=$this->userWithRole($tenant,'OPERATIONS_MANAGER','owner-ops@example.test');
         $requester=$this->userWithRole($tenant,'CUSTOMER_SERVICE','owner-cs@example.test');
 
@@ -66,7 +67,7 @@ class RequestStageOwnerRoutingTest extends TestCase
 
         $request=ServiceRequest::query()->create([
             'tenant_id'=>$tenant->id,'customer_id'=>$customer->id,'project_id'=>$project->id,
-            'operations_manager_id'=>$ops->id,'project_manager_id'=>$pm->id,
+            'operations_manager_id'=>$ops->id,'project_manager_id'=>$otherProjectPm->id,
             'request_no'=>'SR-OWNER-1','request_type'=>'MAINTENANCE','company_name'=>$customer->name,
             'service_category'=>'Maintenance','subject'=>'Owner routing','details'=>'Owner routing',
             'priority'=>'NORMAL','status'=>'OPEN','workflow_stage'=>'NEW','eligibility'=>'IN_CONTRACT',
