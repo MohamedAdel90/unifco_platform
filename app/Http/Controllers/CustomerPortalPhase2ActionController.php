@@ -56,6 +56,7 @@ class CustomerPortalPhase2ActionController extends Controller
         $user=$this->customerUser($request);
         abort_unless($access->canSection($user,'invoices'),403);
         abort_unless((int)$invoice->customer_id===(int)$user->customer_id && $invoice->document_type==='AR_INVOICE',403);
+        abort_unless($invoice->isVisibleToCustomer(),404);
         $data=$request->validate(['notes'=>['required','string','max:2000']]);
 
         $action=$this->createAction($user,[
@@ -71,6 +72,7 @@ class CustomerPortalPhase2ActionController extends Controller
         $user=$this->customerUser($request);
         abort_unless($access->canSection($user,'invoices'),403);
         abort_unless((int)$invoice->customer_id===(int)$user->customer_id && $invoice->document_type==='AR_INVOICE',403);
+        abort_unless($invoice->isVisibleToCustomer(),404);
         $data=$request->validate([
             'proof'=>['required','file','mimes:pdf,jpg,jpeg,png','max:10240'],
             'notes'=>['nullable','string','max:2000'],
