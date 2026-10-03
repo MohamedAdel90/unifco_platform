@@ -46,7 +46,7 @@ class CustomerPortalDashboardPresentation
             $count=0;
             if($access->canDecideQuotation($user)) $count+=CrmQuotation::where('customer_id',$customerId)->whereIn('status',['SENT','UNDER_REVIEW','REVISION_REQUESTED'])->count();
             if($access->canAcceptWork($user)) $count+=WorkOrder::whereIn('asset_id',$assetIds)->where('status','COMPLETED')->whereNull('customer_accepted_at')->whereNull('customer_rejected_at')->count();
-            $count+=FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')->where('open_amount','>',0)->whereNotNull('due_date')->where('due_date','<=',now()->addDays(14))->count();
+            $count+=FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')->visibleToCustomer()->where('open_amount','>',0)->whereNotNull('due_date')->where('due_date','<=',now()->addDays(14))->count();
             $contracts=ServiceContract::where('customer_id',$customerId)->where('status','ACTIVE')->whereNotNull('ends_on')->where('ends_on','<=',now()->addDays(60));
             if($contractIds!==null) $contracts->whereIn('id',$contractIds);
             $count+=$contracts->count();
@@ -136,7 +136,7 @@ class CustomerPortalDashboardPresentation
                 $contractQuery->latest()->limit(3)->get()->each(function($item) use($events){
                     $events->push(['at'=>$item->updated_at ?: $item->created_at,'title'=>'Contract '.($item->contract_no ?: '#'.$item->id),'meta'=>'Contract · '.str_replace('_',' ',(string)$item->status)]);
                 });
-                FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')->latest()->limit(3)->get()->each(function($item) use($events){
+                FinancialDocument::where('customer_id',$customerId)->where('document_type','AR_INVOICE')->visibleToCustomer()->latest()->limit(3)->get()->each(function($item) use($events){
                     $events->push(['at'=>$item->updated_at ?: $item->created_at,'title'=>'Invoice '.($item->document_no ?: '#'.$item->id),'meta'=>'Invoice · customer financial activity']);
                 });
 
