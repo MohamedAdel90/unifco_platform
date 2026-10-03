@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer,CustomerContact,CustomerSite,Project,User};
+use App\Models\{ApprovalRequest,Customer,CustomerContact,CustomerSite,Project,ServiceRequest,User};
 use Database\Seeders\WorkflowTestUsersSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -60,6 +60,42 @@ class WorkflowTestUsersSeederTest extends TestCase
                 ->where('project_id',$project->id)->where('user_id',$owner->id)
                 ->where('project_role',$projectRole)->where('status','ACTIVE')->count());
         }
+    }
+
+    public function test_existing_open_uat_approval_is_reassigned_after_team_seeding(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $customer=Customer::where('customer_code','WF-TEST-001')->firstOrFail();
+        $customer->update(['customer_code'=>'100']);
+        $project=Project::create([
+            'tenant_id'=>$customer->tenant_id,'organization_id'=>$customer->organization_id,
+            'project_no'=>'PRJ-TEST-001','name'=>'UNIFCO Maintenance UAT Project',
+            'customer_id'=>$customer->id,'status'=>'ACTIVE',
+        ]);
+        $request=ServiceRequest::create([
+            'tenant_id'=>$customer->tenant_id,'organization_id'=>$customer->organization_id,
+            'customer_id'=>$customer->id,'project_id'=>$project->id,
+            'request_no'=>'SR-UAT-OWNER','request_type'=>'MAINTENANCE',
+            'company_name'=>$customer->name,'email'=>$customer->email,
+            'service_category'=>'Maintenance','subject'=>'Existing pending review',
+            'details'=>'Test owner reconciliation','priority'=>'NORMAL',
+            'status'=>'OPEN','workflow_stage'=>'MAINTENANCE_MANAGER_REVIEW',
+            'eligibility'=>'CHARGEABLE',
+        ]);
+        $approval=ApprovalRequest::create([
+            'tenant_id'=>$customer->tenant_id,'organization_id'=>$customer->organization_id,
+            'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,
+            'action'=>'MAINTENANCE_MANAGER_REVIEW','approval_role'=>'MAINTENANCE_MANAGER',
+            'requested_by'=>User::where('email','projects.manager@unifco.local')->firstOrFail()->id,
+            'step_order'=>1,'sla_minutes'=>120,'status'=>'PENDING',
+            'routing_status'=>'NEEDS_ASSIGNMENT',
+        ]);
+
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $manager=User::where('email','maintenance.manager@unifco.local')->firstOrFail();
+        $this->assertSame($manager->id,$approval->fresh()->assigned_user_id);
+        $this->assertSame('ASSIGNED',$approval->fresh()->routing_status);
+        $this->assertSame('MAINTENANCE_MANAGER_REVIEW',$request->fresh()->workflow_stage);
     }
 
     public function test_workflow_seeder_is_idempotent(): void
