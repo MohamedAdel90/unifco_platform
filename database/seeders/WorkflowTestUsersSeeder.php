@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\{Customer,CustomerContact,CustomerSite,Employee,Organization,ServiceRequest,Tenant,User,WorkOrderAssignment};
-use App\Services\RequestStageOwnerService;
+use App\Services\{RequestStageOwnerService,ServiceRequestWorkflowService};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\{DB,Hash,Schema};
 
@@ -115,6 +115,22 @@ class WorkflowTestUsersSeeder extends Seeder
                                 );
                             }
                         });
+                }
+
+
+                // Existing matrix requests were started before closure and CSAT
+                // were added to the maintenance template. Preserve prior decisions
+                // and append the missing tail; a previously accepted order is
+                // resumed at its next stage instead of remaining falsely complete.
+                if (Schema::hasTable('approval_requests')) {
+                    ServiceRequest::query()->where('tenant_id',$tenant->id)
+                        ->where('project_id',$uatProject->id)
+                        ->whereIn('request_no',[
+                            'SR-UNRM-926000017','SR-UNUM-926000018',
+                            'SR-UNRM-926000023','SR-UNUM-926000024',
+                        ])->get()->each(fn (ServiceRequest $request) =>
+                            app(ServiceRequestWorkflowService::class)
+                                ->repairMissingMaintenanceClosureStages($request));
                 }
             }
         }
