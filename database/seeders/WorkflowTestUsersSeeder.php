@@ -56,6 +56,7 @@ class WorkflowTestUsersSeeder extends Seeder
                 // Preserve an existing active owner for each role rather than replacing
                 // a deliberate project assignment during a repeat deployment.
                 $uatTeam=[
+                    'OPERATIONS_MANAGER'=>'operations.manager@unifco.local',
                     'PROJECT_MANAGER'=>'projects.manager@unifco.local',
                     'MAINTENANCE_MANAGER'=>'maintenance.manager@unifco.local',
                     'MAINTENANCE_ENGINEER'=>'engineer@unifco.local',
