@@ -44,10 +44,25 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         ]);
     }
 
+    private function routingProject(Tenant $tenant, Organization $org): array
+    {
+        $pm=$this->user($tenant,$org,'PROJECT_MANAGER','pm-routing@example.test');
+        $project=Project::create([
+            'tenant_id'=>$tenant->id,'organization_id'=>$org->id,
+            'project_no'=>'PRJ-ROUTING','name'=>'Routing test project','status'=>'ACTIVE',
+        ]);
+        ProjectUserAssignment::create([
+            'tenant_id'=>$tenant->id,'project_id'=>$project->id,'user_id'=>$pm->id,
+            'project_role'=>'PROJECT_MANAGER','access_level'=>'PROJECT','status'=>'ACTIVE',
+        ]);
+        return [$project,$pm];
+    }
+
     public function test_operations_triage_moves_request_to_project_manager_review(): void
     {
         [$tenant,$org,$serviceRequest]=$this->setupRequest('TRIAGE');
         $ops=$this->user($tenant,$org,'OPERATIONS_MANAGER','ops-e2e@example.test');
+        [$project,$pm]=$this->routingProject($tenant,$org);
         $this->step($serviceRequest,$ops,'TRIAGE','OPERATIONS_MANAGER',1,'PENDING');
         $this->step($serviceRequest,$ops,'PROJECT_MANAGER_REVIEW','PROJECT_MANAGER',2,'WAITING');
 
@@ -56,6 +71,9 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
 
         $serviceRequest->refresh();
         $this->assertSame('PROJECT_MANAGER_REVIEW',$serviceRequest->workflow_stage);
+        $this->assertSame($project->id,$serviceRequest->project_id);
+        $this->assertSame($pm->id,ApprovalRequest::where('entity_id',$serviceRequest->id)
+            ->where('action','PROJECT_MANAGER_REVIEW')->value('assigned_user_id'));
         $this->assertSame('PENDING',ApprovalRequest::where('entity_id',$serviceRequest->id)->where('action','PROJECT_MANAGER_REVIEW')->value('status'));
     }
 
@@ -64,6 +82,7 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         [$tenant,$org,$serviceRequest]=$this->setupRequest('OPERATIONS_REVIEW');
         $serviceRequest->update(['request_type'=>'CONSULTATION','workflow_key'=>'TECHNICAL_CONSULTATION']);
         $ops=$this->user($tenant,$org,'OPERATIONS_MANAGER','ops-consultation@example.test');
+        [$project,$pm]=$this->routingProject($tenant,$org);
         $this->step($serviceRequest,$ops,'OPERATIONS_REVIEW','OPERATIONS_MANAGER',1,'PENDING');
         $this->step($serviceRequest,$ops,'PROJECT_MANAGER_REVIEW','PROJECT_MANAGER',2,'WAITING');
 
@@ -75,6 +94,31 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         ])->assertRedirect();
 
         $this->assertSame('PROJECT_MANAGER_REVIEW',$serviceRequest->fresh()->workflow_stage);
+        $this->assertSame($project->id,$serviceRequest->fresh()->project_id);
+        $this->assertSame($pm->id,ApprovalRequest::where('entity_id',$serviceRequest->id)
+            ->where('action','PROJECT_MANAGER_REVIEW')->value('assigned_user_id'));
+    }
+
+    public function test_triage_without_customer_project_keeps_the_request_in_operations(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('TRIAGE');
+        $ops=$this->user($tenant,$org,'OPERATIONS_MANAGER','ops-no-project@example.test');
+        $this->step($serviceRequest,$ops,'TRIAGE','OPERATIONS_MANAGER',1,'PENDING');
+        $this->step($serviceRequest,$ops,'PROJECT_MANAGER_REVIEW','PROJECT_MANAGER',2,'WAITING');
+
+        $this->actingAs($ops)->get(route('service-requests.workflow.show',$serviceRequest))
+            ->assertOk()->assertSee('No active project exists for this customer.');
+
+        $this->actingAs($ops)->post(route('service-requests.workflow.triage',$serviceRequest),[
+            'notes'=>'Attempt to route without a customer project.',
+        ])->assertRedirect()->assertSessionHasErrors('project_id');
+
+        $this->assertNull($serviceRequest->fresh()->project_id);
+        $this->assertSame('TRIAGE',$serviceRequest->fresh()->workflow_stage);
+        $this->assertSame('PENDING',ApprovalRequest::where('entity_id',$serviceRequest->id)
+            ->where('action','TRIAGE')->value('status'));
+        $this->assertSame('WAITING',ApprovalRequest::where('entity_id',$serviceRequest->id)
+            ->where('action','PROJECT_MANAGER_REVIEW')->value('status'));
     }
 
     public function test_project_bound_operations_candidates_require_a_project_team_assignment(): void
@@ -126,6 +170,10 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         ])->assertRedirect();
         $this->assertSame($project->id,$serviceRequest->fresh()->project_id);
         $this->assertSame('PROJECT_MANAGER_REVIEW',$serviceRequest->fresh()->workflow_stage);
+        $this->assertSame($pm->id,ApprovalRequest::where('entity_id',$serviceRequest->id)
+            ->where('action','PROJECT_MANAGER_REVIEW')->value('assigned_user_id'));
+        $this->assertSame('ASSIGNED',ApprovalRequest::where('entity_id',$serviceRequest->id)
+            ->where('action','PROJECT_MANAGER_REVIEW')->value('routing_status'));
         $this->assertSame('COMPLETED',ApprovalRequest::where('entity_id',$serviceRequest->id)
             ->where('action','TRIAGE')->value('status'));
     }
