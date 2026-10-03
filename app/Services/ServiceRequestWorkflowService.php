@@ -130,16 +130,16 @@ class ServiceRequestWorkflowService
             $this->repairMissingMaintenanceClosureStages($request);
         }
         $before = $this->state($request);
-        $current = ApprovalRequest::query()
+        $current = ApprovalRequest::withoutGlobalScopes()
             ->where('tenant_id', $request->tenant_id)
-            ->where('entity_type', ServiceRequest::class)
+            ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
             ->where('entity_id', $request->id)
             ->where('action', $completedStage)
             ->first();
 
-        $next = ApprovalRequest::query()
+        $next = ApprovalRequest::withoutGlobalScopes()
             ->where('tenant_id', $request->tenant_id)
-            ->where('entity_type', ServiceRequest::class)
+            ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
             ->where('entity_id', $request->id)
             ->where('step_order', '>', (int) ($current?->step_order ?? 0))
             ->orderBy('step_order')
@@ -161,6 +161,11 @@ class ServiceRequestWorkflowService
         }
 
         if (! $next) {
+            if ($completedStage === 'CUSTOMER_ACCEPTANCE') {
+                throw ValidationException::withMessages([
+                    'workflow_stage' => 'Customer acceptance cannot complete a maintenance request without its closing approvals.',
+                ]);
+            }
             $request->update([
                 'workflow_stage' => 'COMPLETED',
                 'assigned_department' => null,
@@ -209,8 +214,8 @@ class ServiceRequestWorkflowService
             ServiceRequestWorkflowTemplateRegistry::EMERGENCY_MAINTENANCE,
         ], true)) return false;
 
-        $last = ApprovalRequest::query()->where('tenant_id', $request->tenant_id)
-            ->where('entity_type', ServiceRequest::class)->where('entity_id', $request->id)
+        $last = ApprovalRequest::withoutGlobalScopes()->where('tenant_id', $request->tenant_id)
+            ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])->where('entity_id', $request->id)
             ->orderByDesc('step_order')->first();
         // Some older customer-acceptance actions marked the request complete
         // without deciding its already-persisted approval. Resume that accepted
@@ -219,11 +224,11 @@ class ServiceRequestWorkflowService
             && $request->status === 'COMPLETED' && $request->workflow_stage === 'COMPLETED'
             && $request->work_order_id
             && WorkOrder::whereKey($request->work_order_id)->whereNotNull('customer_accepted_at')->exists()) {
-            $acceptance = ApprovalRequest::query()->where('tenant_id', $request->tenant_id)
-                ->where('entity_type', ServiceRequest::class)->where('entity_id', $request->id)
+            $acceptance = ApprovalRequest::withoutGlobalScopes()->where('tenant_id', $request->tenant_id)
+                ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])->where('entity_id', $request->id)
                 ->where('action', 'CUSTOMER_ACCEPTANCE')->where('status', 'PENDING')->first();
-            if ($acceptance && ApprovalRequest::query()->where('tenant_id', $request->tenant_id)
-                ->where('entity_type', ServiceRequest::class)->where('entity_id', $request->id)
+            if ($acceptance && ApprovalRequest::withoutGlobalScopes()->where('tenant_id', $request->tenant_id)
+                ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])->where('entity_id', $request->id)
                 ->where('step_order', '>', $acceptance->step_order)->exists()) {
                 DB::transaction(function () use ($request) {
                     $request->update(['status' => 'OPEN', 'workflow_stage' => 'CUSTOMER_ACCEPTANCE',
@@ -268,8 +273,8 @@ class ServiceRequestWorkflowService
         if ($request->workflow_stage === 'COMPLETED' && $request->status === 'COMPLETED'
             && $last->status === 'COMPLETED' && $request->work_order_id
             && WorkOrder::whereKey($request->work_order_id)->whereNotNull('customer_accepted_at')->exists()) {
-            $next = ApprovalRequest::query()->where('tenant_id', $request->tenant_id)
-                ->where('entity_type', ServiceRequest::class)->where('entity_id', $request->id)
+            $next = ApprovalRequest::withoutGlobalScopes()->where('tenant_id', $request->tenant_id)
+                ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])->where('entity_id', $request->id)
                 ->where('step_order', '>', $last->step_order)->orderBy('step_order')->firstOrFail();
             $owner = $this->owners->resolve($request, (string) $next->approval_role, (string) $next->action);
             $due = now()->addMinutes((int) $next->sla_minutes);
