@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\{ApprovalRequest,Asset,CrmQuotation,Customer,CustomerSite,Organization,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,User,WorkOrder};
 use App\Services\{ApprovalService,MaintenanceRequestTransitionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class PublicRequestLifecycleEndToEndTest extends TestCase
@@ -119,7 +120,15 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             };
         }
 
-        $transitions->completeExecution($this->actors['TECHNICIAN'],$request->fresh(),'Repair completed and tested.');
+        $workOrder=WorkOrder::findOrFail($request->fresh()->work_order_id);
+        DB::table('role_permissions')->updateOrInsert(
+            ['tenant_id'=>$request->tenant_id,'role_code'=>'TECHNICIAN','permission_code'=>'maintenance.work_order.manage'],
+            ['effect'=>'ALLOW','created_at'=>now(),'updated_at'=>now()]
+        );
+        $this->actingAs($this->actors['TECHNICIAN'])->post(route('maintenance.work-orders.complete',$workOrder),[
+            'completion_notes'=>'Repair completed and tested.','labor_hours'=>1,
+            'labor_cost'=>100,'external_cost'=>0,
+        ])->assertRedirect()->assertSessionHasNoErrors();
 
         $request->refresh();
         while(in_array($request->workflow_stage,['TECHNICAL_REVIEW','QUALITY_VERIFICATION'],true)){
