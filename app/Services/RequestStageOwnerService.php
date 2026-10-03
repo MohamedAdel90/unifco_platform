@@ -24,10 +24,10 @@ class RequestStageOwnerService
             return ['user_id'=>null,'status'=>'NEEDS_ASSIGNMENT'];
         }
 
-        if($role==='OPERATIONS_MANAGER'){
+        if($role==='OPERATIONS_MANAGER' && !$request->project_id){
             return $request->operations_manager_id
                 ? ['user_id'=>(int)$request->operations_manager_id,'status'=>'ASSIGNED']
-                : ['user_id'=>null,'status'=>$request->project_id?'NEEDS_ASSIGNMENT':'ROLE_QUEUE'];
+                : ['user_id'=>null,'status'=>'ROLE_QUEUE'];
         }
 
         // A project-bound review belongs to its active project team. A previously
