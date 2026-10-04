@@ -320,4 +320,84 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         $this->assertNotNull($serviceRequest->resolved_at);
         $this->assertArrayHasKey('operationally_closed_at',$serviceRequest->workflow_context);
     }
+
+    public function test_assigned_technician_completes_site_visit_and_sends_it_to_the_engineer(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('SITE_VISIT');
+        $technician=$this->user($tenant,$org,'TECHNICIAN','visit-tech@example.test');
+        [$project,$pm]=$this->routingProject($tenant,$org);
+        ProjectUserAssignment::create(['tenant_id'=>$tenant->id,'project_id'=>$project->id,
+            'user_id'=>$technician->id,'project_role'=>'TECHNICIAN','access_level'=>'PROJECT','status'=>'ACTIVE']);
+        $serviceRequest->update(['workflow_key'=>'TECHNICAL_VISIT','project_id'=>$project->id,
+            'assigned_engineer_id'=>$technician->id]);
+        $visit=$this->step($serviceRequest,$pm,'SITE_VISIT','TECHNICIAN',1,'PENDING');
+        $visit->update(['assigned_user_id'=>$technician->id,'routing_status'=>'ASSIGNED']);
+        $this->step($serviceRequest,$pm,'TECHNICAL_REPORT','MAINTENANCE_ENGINEER',2,'WAITING');
+
+        $this->actingAs($technician)->get(route('service-requests.workflow.show',$serviceRequest))
+            ->assertOk()->assertSee('Complete Site Visit &amp; Send Technical Report',false);
+        $this->actingAs($technician)->post(route('service-requests.workflow.complete-execution',$serviceRequest),[
+            'completion_notes'=>'UAT visit: inspection recorded and findings sent for engineer review.',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('TECHNICAL_REPORT',$serviceRequest->fresh()->workflow_stage);
+        $this->assertSame('COMPLETED',$visit->fresh()->status);
+    }
+
+    public function test_consultation_visit_requires_notes_and_the_assigned_technician(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('SITE_VISIT');
+        $assigned=$this->user($tenant,$org,'TECHNICIAN','consultation-tech@example.test');
+        $other=$this->user($tenant,$org,'TECHNICIAN','other-visit-tech@example.test');
+        $serviceRequest->update(['workflow_key'=>'TECHNICAL_CONSULTATION','assigned_engineer_id'=>$assigned->id]);
+        $this->step($serviceRequest,$assigned,'SITE_VISIT','TECHNICIAN',1,'PENDING');
+        $this->step($serviceRequest,$assigned,'TECHNICAL_REPORT','MAINTENANCE_ENGINEER',2,'WAITING');
+
+        $this->actingAs($other)->get(route('service-requests.workflow.show',$serviceRequest))
+            ->assertOk()->assertDontSee('Complete Site Visit',false);
+        $this->actingAs($other)->post(route('service-requests.workflow.complete-execution',$serviceRequest),[
+            'completion_notes'=>'Attempt to complete another technician visit.',
+        ])->assertForbidden();
+        $this->actingAs($assigned)->post(route('service-requests.workflow.complete-execution',$serviceRequest),[])
+            ->assertRedirect()->assertSessionHasErrors('completion_notes');
+        $this->assertSame('SITE_VISIT',$serviceRequest->fresh()->workflow_stage);
+        $this->actingAs($assigned)->post(route('service-requests.workflow.complete-execution',$serviceRequest),[
+            'completion_notes'=>'UAT consultation inspection complete.',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('TECHNICAL_REPORT',$serviceRequest->fresh()->workflow_stage);
+    }
+
+    public function test_engineer_report_requires_findings_before_customer_delivery(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('TECHNICAL_REPORT');
+        $engineer=$this->user($tenant,$org,'MAINTENANCE_ENGINEER','report-engineer@example.test');
+        $serviceRequest->update(['workflow_key'=>'TECHNICAL_CONSULTATION']);
+        $this->step($serviceRequest,$engineer,'TECHNICAL_REPORT','MAINTENANCE_ENGINEER',1,'PENDING');
+        $this->step($serviceRequest,$engineer,'CUSTOMER_DELIVERY','CUSTOMER',2,'WAITING');
+        $this->actingAs($engineer)->get(route('service-requests.workflow.show',$serviceRequest))
+            ->assertOk()->assertSee('Record Review');
+        $this->actingAs($engineer)->post(route('service-requests.workflow.stage-review',$serviceRequest),[
+            'decision'=>'APPROVE',
+        ])->assertRedirect()->assertSessionHasErrors('notes');
+        $this->assertSame('TECHNICAL_REPORT',$serviceRequest->fresh()->workflow_stage);
+        $this->actingAs($engineer)->post(route('service-requests.workflow.stage-review',$serviceRequest),[
+            'decision'=>'APPROVE','notes'=>'UAT report: inspection findings, risks and recommendations recorded.',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('CUSTOMER_DELIVERY',$serviceRequest->fresh()->workflow_stage);
+    }
+
+    public function test_report_return_reopens_the_site_visit_instead_of_maintenance_execution(): void
+    {
+        [$tenant,$org,$serviceRequest]=$this->setupRequest('TECHNICAL_REPORT');
+        $engineer=$this->user($tenant,$org,'MAINTENANCE_ENGINEER','report-return@example.test');
+        $serviceRequest->update(['workflow_key'=>'TECHNICAL_CONSULTATION']);
+        $this->step($serviceRequest,$engineer,'SITE_VISIT','TECHNICIAN',1,'COMPLETED');
+        $this->step($serviceRequest,$engineer,'TECHNICAL_REPORT','MAINTENANCE_ENGINEER',2,'PENDING');
+
+        $this->actingAs($engineer)->post(route('service-requests.workflow.stage-review',$serviceRequest),[
+            'decision'=>'RETURN','notes'=>'Additional site readings are required.',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('SITE_VISIT',$serviceRequest->fresh()->workflow_stage);
+        $this->assertSame('PENDING',ApprovalRequest::where('entity_id',$serviceRequest->id)
+            ->where('action','SITE_VISIT')->value('status'));
+    }
 }
