@@ -35,7 +35,7 @@ class MaintenanceRequestWorkflowController extends Controller
             && $step->routing_status !== 'NEEDS_ASSIGNMENT'
             && !($this->projectRequiredForQuotation($serviceRequest,$step) && !$serviceRequest->project_id)
             && (!$step->assigned_user_id || (int)$step->assigned_user_id === (int)$user->id);
-        if ($serviceRequest->workflow_stage === 'EXECUTION') $canAct = $canAct && (int) $serviceRequest->assigned_engineer_id === (int) $user->id;
+        if (in_array($serviceRequest->workflow_stage, ['EXECUTION','SITE_VISIT'], true)) $canAct = $canAct && (int) $serviceRequest->assigned_engineer_id === (int) $user->id;
 
         $technicianIds=$serviceRequest->project_id
             ? ProjectUserAssignment::query()
@@ -229,13 +229,14 @@ class MaintenanceRequestWorkflowController extends Controller
     {
         $data=$request->validate([
             'decision'=>['required','in:APPROVE,RETURN,REWORK'],
-            'notes'=>['nullable','string','max:3000'],
+            'notes'=>[$serviceRequest->workflow_stage === 'TECHNICAL_REPORT' ? 'required' : 'nullable','string','max:3000'],
         ]);
         $stage=(string)$serviceRequest->workflow_stage;
         $allowed=[
             'MAINTENANCE_MANAGER_REVIEW',
             'TECHNICAL_ASSESSMENT',
             'TECHNICAL_REVIEW',
+            'TECHNICAL_REPORT',
         ];
         abort_unless(in_array($stage,$allowed,true),422,'This stage is not handled by technical review.');
 
@@ -246,6 +247,7 @@ class MaintenanceRequestWorkflowController extends Controller
                 'MAINTENANCE_MANAGER_REVIEW'=>'PROJECT_MANAGER_REVIEW',
                 'TECHNICAL_ASSESSMENT'=>'MAINTENANCE_MANAGER_REVIEW',
                 'TECHNICAL_REVIEW'=>'EXECUTION',
+                'TECHNICAL_REPORT'=>'SITE_VISIT',
             };
             $transitions->returnToStage(
                 $request->user(),
@@ -270,7 +272,7 @@ class MaintenanceRequestWorkflowController extends Controller
     {
         $data = $request->validate(['completion_notes' => ['required','string','max:5000']]);
         $transitions->completeExecution($request->user(), $serviceRequest, $data['completion_notes']);
-        return back()->with('status', 'Execution completed and sent to verification / customer acceptance.');
+        return back()->with('status', 'Technical work completed and sent to the next workflow stage.');
     }
 
     public function verify(Request $request, ServiceRequest $serviceRequest, MaintenanceRequestTransitionService $transitions): RedirectResponse
