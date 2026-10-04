@@ -122,7 +122,11 @@ $authorization=app(App\Services\AuthorizationService::class);
 foreach(["INV-SR-25","INV-SR-26"] as $number){
     $document=App\Models\FinancialDocument::where("tenant_id",$user->tenant_id)->where("document_no",$number)->first();
     if($document && !$authorization->allows($user,"finance.journal.post",$document)){
-        fwrite(STDERR,"ERROR: finance UAT document posting is denied for $number\n");exit(1);
+        $permission=$authorization->allows($user,"finance.journal.post")?"yes":"no";
+        $scopes=app(App\Services\ScopeService::class);
+        $resourceScope=$scopes->allows($user,$document)?"yes":"no";
+        $visible=$scopes->apply(App\Models\FinancialDocument::query()->whereKey($document->id),$user)->exists()?"yes":"no";
+        fwrite(STDERR,"ERROR: finance UAT document posting denied for $number; permission=$permission scope=$resourceScope visible=$visible\n");exit(1);
     }
 }
 echo "Finance UAT document posting authorization verified\n";
