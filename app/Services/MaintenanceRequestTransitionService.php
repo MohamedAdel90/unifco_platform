@@ -67,7 +67,7 @@ class MaintenanceRequestTransitionService
 
     public function completeExecution(User $actor, ServiceRequest $request, string $notes): void
     {
-        $this->assertCanAct($actor, $request, ['EXECUTION']);
+        $this->assertCanAct($actor, $request, ['EXECUTION','SITE_VISIT']);
         abort_unless((int) $request->assigned_engineer_id === (int) $actor->id, 403, 'Only the assigned technician can complete execution.');
         if ($request->work_order_id) {
             $workOrder = WorkOrder::query()->where('tenant_id', $request->tenant_id)->findOrFail($request->work_order_id);
@@ -77,7 +77,7 @@ class MaintenanceRequestTransitionService
             abort_unless($workOrder->status === 'COMPLETED', 422,
                 'Complete the linked work order before completing request execution.');
         }
-        $this->workflow->advance($request, 'EXECUTION', $actor->id, $notes);
+        $this->workflow->advance($request, $request->workflow_stage, $actor->id, $notes);
     }
 
     public function rework(User $actor, ServiceRequest $request, string $fromStage, ?string $note = null): void
