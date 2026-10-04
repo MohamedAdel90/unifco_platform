@@ -133,6 +133,24 @@ class WorkflowTestUsersSeederTest extends TestCase
         $this->actingAs($finance->fresh())->get('/finance/core')->assertOk();
     }
 
+    public function test_legacy_finance_uat_assignment_is_reconciled_idempotently_without_reviving_revoked_roles(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $finance=User::where('email','finance@unifco.local')->firstOrFail();
+        $legacyId=DB::table('roles')->insertGetId(['tenant_id'=>$finance->tenant_id,'code'=>'FINANCE','name_en'=>'Legacy Finance','is_active'=>true,'created_at'=>now(),'updated_at'=>now()]);
+        $managerId=DB::table('roles')->whereNull('tenant_id')->where('code','FINANCE_MANAGER')->value('id');
+        DB::table('user_roles')->insert(['tenant_id'=>$finance->tenant_id,'user_id'=>$finance->id,'role_id'=>$legacyId,'is_primary'=>true,'granted_at'=>now(),'created_at'=>now(),'updated_at'=>now()]);
+        $this->assertFalse(app(AuthorizationService::class)->allows($finance,'finance.journal.post'));
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $this->assertTrue(app(AuthorizationService::class)->allows($finance->fresh(),'finance.journal.post'));
+        $assignment=DB::table('user_roles')->where('user_id',$finance->id)->where('role_id',$managerId);
+        $this->assertSame(1,$assignment->count());
+        $assignment->update(['revoked_at'=>now()]);
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $this->assertFalse(app(AuthorizationService::class)->allows($finance->fresh(),'finance.journal.post'));
+    }
+
     public function test_finance_post_grant_is_rebound_to_the_assigned_role_without_overriding_a_deny(): void
     {
         $this->seed(WorkflowTestUsersSeeder::class);
