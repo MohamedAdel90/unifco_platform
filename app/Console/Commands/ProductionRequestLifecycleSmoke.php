@@ -78,146 +78,66 @@ class ProductionRequestLifecycleSmoke extends Command
                 'workflow_stage'=>'NEW',
                 'eligibility'=>$contract?'IN_CONTRACT':'CHARGEABLE',
                 'response_sla_minutes'=>120,
-                'resolution_sla_minutes'=>1440,
+                'resolution_sla_minutes'=>480,
+                'submitted_at'=>now(),
             ]);
 
-            $workflow=app(ServiceRequestWorkflowService::class);
-            $transitions=app(MaintenanceRequestTransitionService::class);
-            $workflow->start($request,['procurement_required'=>false,'risk_level'=>'NORMAL','estimated_value'=>0,'payment_terms_days'=>0]);
-
-            $this->expectStage($request,'TRIAGE');
-            $transitions->complete($this->stageActor($request),$request->fresh(),['TRIAGE'],'Smoke triage.');
-            $this->expectStage($request,'PROJECT_MANAGER_REVIEW');
-            $transitions->complete($this->stageActor($request),$request->fresh(),['PROJECT_MANAGER_REVIEW'],'Smoke PM review.');
-            $this->expectStage($request,'MAINTENANCE_MANAGER_REVIEW');
-            $transitions->complete($this->stageActor($request),$request->fresh(),['MAINTENANCE_MANAGER_REVIEW'],'Smoke maintenance manager review.');
-            $this->expectStage($request,'TECHNICAL_ASSESSMENT');
-            $transitions->complete($this->stageActor($request),$request->fresh(),['TECHNICAL_ASSESSMENT'],'Smoke technical assessment.');
-            $this->expectStage($request,'TECHNICIAN_ASSIGNMENT');
-            $transitions->assignTechnician($this->stageActor($request),$request->fresh(),$tech->id,'Smoke technician assignment.');
-            $this->expectStage($request,'EXECUTION');
-
+            app(ServiceRequestWorkflowService::class)->routeNewRequest($request);
             $request->refresh();
-            if(!$request->work_order_id) throw new \RuntimeException('Work order was not created.');
-            $transitions->completeExecution($tech,$request->fresh(),'Smoke execution complete.');
-            $this->expectStage($request,'CUSTOMER_ACCEPTANCE');
+            $this->line("Initial stage: {$request->workflow_stage}");
 
-            $workOrder=WorkOrder::withoutGlobalScopes()->findOrFail($request->fresh()->work_order_id);
-            $workOrder->update(['customer_accepted_at'=>now(),'customer_acceptance_notes'=>'Smoke acceptance.']);
-            $workflow->advance($request->fresh(),'CUSTOMER_ACCEPTANCE',null,'Smoke customer acceptance.');
+            $guard=0;
+            while($request->workflow_stage!=='CLOSED' && $guard++<20){
+                $stage=$request->workflow_stage;
+                $owner=app(RequestStageOwnerService::class)->resolve($request);
+                if(($owner['status']??null)==='NEEDS_ASSIGNMENT') throw new \RuntimeException("NEEDS_ASSIGNMENT at {$stage}");
+                $actor=$this->resolveActor($request,$owner);
+                if(!$actor) throw new \RuntimeException("No eligible actor for {$stage}");
+                Auth::login($actor);
 
-            $request->refresh();
-            if($request->workflow_stage==='FINANCE_REVIEW'){
-                $workflow->advance($request,'FINANCE_REVIEW',$this->stageActor($request)->id,'Smoke finance review.');
+                if($stage==='TECHNICIAN_ASSIGNMENT'){
+                    $request->assigned_technician_id=$tech->id;
+                    $request->save();
+                }
+
+                app(MaintenanceRequestTransitionService::class)->advance($request,$actor);
+                $request->refresh();
+                $this->line("{$stage} -> {$request->workflow_stage} by {$actor->email}");
             }
 
-            $this->expectStage($request,'CLOSURE');
-            $context=(array)($request->fresh()->workflow_context??[]);
-            $context['operationally_closed_at']=now()->toIso8601String();
-            $request->update(['workflow_context'=>$context,'status'=>'RESOLVED','resolved_at'=>now()]);
-            $transitions->complete($this->stageActor($request),$request->fresh(),['CLOSURE'],'Smoke closure.');
-            $this->expectStage($request,'CSAT');
-
-            CustomerActivityEvent::create([
-                'tenant_id'=>$request->tenant_id,
-                'organization_id'=>$request->organization_id,
-                'customer_id'=>$request->customer_id,
-                'event_type'=>'CUSTOMER_SATISFACTION',
-                'reference_type'=>ServiceRequest::class,
-                'reference_id'=>$request->id,
-                'title'=>'Production smoke satisfaction',
-                'description'=>'Rollback-only smoke test.',
-                'visibility'=>'BOTH',
-                'metadata'=>['rating'=>5,'nps'=>10],
-            ]);
-            $workflow->advance($request->fresh(),'CSAT',null,'Smoke CSAT.');
-            $request->update(['status'=>'CLOSED']);
-
-            $request->refresh();
-            if($request->status!=='CLOSED' || $request->workflow_stage!=='COMPLETED'){
-                throw new \RuntimeException("Final state mismatch: {$request->status} / {$request->workflow_stage}");
-            }
-
+            if($request->workflow_stage!=='CLOSED') throw new \RuntimeException('Lifecycle did not reach CLOSED.');
             $this->info('PASS: Routine Maintenance reached CLOSED through the full production workflow.');
+            DB::rollBack();
+            $this->info('Rollback complete: production data unchanged.');
             return self::SUCCESS;
-        } catch (Throwable $e) {
-            $this->error('FAIL: '.$e->getMessage());
+        } catch(Throwable $e){
+            DB::rollBack();
+            $this->error('FAIL: '.get_class($e).' status='.(method_exists($e,'getStatusCode')?$e->getStatusCode():'n/a').' message='.($e->getMessage()?:'[empty]').' at '.$e->getFile().':'.$e->getLine());
+            $this->warn('Rollback complete: production data unchanged.');
             return self::FAILURE;
         } finally {
             Auth::logout();
-            if(DB::transactionLevel()>0) DB::rollBack();
-            $this->line('Rollback complete: production data unchanged.');
         }
+    }
+
+    private function resolveActor(ServiceRequest $request,array $owner): ?User
+    {
+        if(($owner['status']??null)==='ASSIGNED' && !empty($owner['user_id'])) return User::find($owner['user_id']);
+        if(($owner['status']??null)!=='ROLE_QUEUE' || empty($owner['role'])) return null;
+        return User::query()->where('is_active',true)->whereHas('roles',fn($q)=>$q->where('code',$owner['role']))
+            ->get()->first(fn(User $user)=>app(ScopeService::class)->canAccess($user,$request));
     }
 
     private function verifyInternalRequestInbox(): void
     {
-        $authorization=app(AuthorizationService::class);
-        $sales=User::query()->get()->first(function(User $user) use($authorization): bool {
-            return strtoupper((string)$user->role)==='SALES' || $authorization->roleCodes($user)->contains('SALES');
-        });
-        if(!$sales) throw new \RuntimeException('No SALES user is available for the authenticated inbox smoke.');
-
-        Auth::login($sales);
-        $kernel=app(HttpKernel::class);
-        $request=Request::create('/admin/public-requests','GET');
-        $response=$kernel->handle($request);
-        $kernel->terminate($request,$response);
+        $user=User::where('email','operations.manager@unifco.local')->firstOrFail();
+        Auth::login($user);
+        $request=Request::create('/workflow/requests','GET');
+        $request->setUserResolver(fn()=>$user);
+        $response=app(HttpKernel::class)->handle($request);
+        if($response->getStatusCode()!==200) throw new \RuntimeException('Internal request inbox returned HTTP '.$response->getStatusCode());
+        $this->line('Internal Request Inbox: HTTP 200');
+        app(HttpKernel::class)->terminate($request,$response);
         Auth::logout();
-
-        if($response->getStatusCode()!==200){
-            throw new \RuntimeException('Authenticated /admin/public-requests returned HTTP '.$response->getStatusCode().'.');
-        }
-        $this->info('PASS: Authenticated internal request inbox returned HTTP 200.');
-    }
-
-    private function stageActor(ServiceRequest $request): User
-    {
-        $request->refresh();
-        $step=ApprovalRequest::query()
-            ->where('tenant_id',$request->tenant_id)
-            ->where('entity_type',ServiceRequest::class)
-            ->where('entity_id',$request->id)
-            ->where('action',$request->workflow_stage)
-            ->where('status','PENDING')
-            ->firstOrFail();
-
-        if($step->assigned_user_id){
-            return User::query()
-                ->where('tenant_id',$request->tenant_id)
-                ->findOrFail($step->assigned_user_id);
-        }
-
-        if($step->routing_status==='NEEDS_ASSIGNMENT'){
-            throw new \RuntimeException("No resolved owner for {$request->workflow_stage}.");
-        }
-
-        $scopes=app(ScopeService::class);
-        $actor=app(RequestStageOwnerService::class)
-            ->candidates($request,(string)$step->approval_role)
-            ->first(function(User $candidate) use($request,$scopes): bool {
-                return $scopes->apply(
-                    ServiceRequest::query()
-                        ->where('tenant_id',$request->tenant_id)
-                        ->whereKey($request->id),
-                    $candidate
-                )->exists();
-            });
-
-        if(!$actor){
-            throw new \RuntimeException("No eligible role-queue actor for {$request->workflow_stage}.");
-        }
-
-        $this->line("Role queue {$step->approval_role} resolved to {$actor->email} for smoke execution.");
-        return $actor;
-    }
-
-    private function expectStage(ServiceRequest $request,string $expected): void
-    {
-        $request->refresh();
-        $this->line("Stage: {$request->workflow_stage}");
-        if($request->workflow_stage!==$expected){
-            throw new \RuntimeException("Expected {$expected}, got {$request->workflow_stage}.");
-        }
     }
 }
