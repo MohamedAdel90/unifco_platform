@@ -127,6 +127,7 @@ class WorkflowTestUsersSeederTest extends TestCase
         ]);
         $this->actingAs($finance)->get('/finance/core')->assertForbidden();
 
+        auth()->logout();
         $this->seed(WorkflowTestUsersSeeder::class);
         $this->actingAs($finance->fresh())->get('/finance/core')->assertOk();
     }
