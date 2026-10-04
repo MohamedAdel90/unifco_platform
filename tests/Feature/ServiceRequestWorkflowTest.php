@@ -194,6 +194,11 @@ class ServiceRequestWorkflowTest extends TestCase
             'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
             'asset_code'=>'E2E-GEN-100','name'=>'Customer 100 Generator','status'=>'REGISTERED',
         ]);
+        foreach ([['1200','Accounts Receivable','ASSET','DEBIT'],['4100','Service Revenue','REVENUE','CREDIT']] as [$code,$name,$type,$balance]) {
+            ChartAccount::create(['tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,
+                'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$balance,
+                'posting_allowed'=>true,'status'=>'ACTIVE']);
+        }
         $request=ServiceRequest::create([
             'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,'asset_id'=>$asset->id,
             'request_no'=>'SR-E2E-INTEGRATED','request_type'=>'MAINTENANCE','company_name'=>$c['customer']->name,'email'=>$c['customer']->email,
@@ -227,6 +232,8 @@ class ServiceRequestWorkflowTest extends TestCase
         $this->assertSame('AR_INVOICE',$invoice->document_type);
         $this->assertSame('175.00',(string)$invoice->amount);
         $this->assertSame('DRAFT',$invoice->status);
+        $this->assertSame('1200',$invoice->control_account_code);
+        $this->assertSame('4100',$invoice->offset_account_code);
     }
 
     public function test_posting_generated_invoice_advances_chargeable_request_to_closure(): void

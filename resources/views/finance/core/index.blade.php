@@ -8,7 +8,7 @@
 <div class="grid">
   <div class="card"><div class="muted">Chart Accounts</div><div class="metric">{{ $accounts->count() }}</div></div>
   <div class="card"><div class="muted">Open Periods</div><div class="metric">{{ $periods->where('status','OPEN')->count() }}</div></div>
-  <div class="card"><div class="muted">Open AP/AR</div><div class="metric">{{ number_format($documents->sum('open_amount'),2) }}</div></div>
+  <div class="card"><div class="muted">Open AP/AR</div><div class="metric">{{ number_format($documents->where('status','POSTED')->sum('open_amount'),2) }}</div></div>
   <div class="card"><div class="muted">Posted Journals</div><div class="metric">{{ \App\Models\Journal::where('status','POSTED')->count() }}</div></div>
 </div>
 

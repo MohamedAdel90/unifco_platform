@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{ApprovalRequest,Asset,Customer,FinancialDocument,ServiceRequest,User,WorkOrder};
+use App\Models\{ApprovalRequest,Asset,ChartAccount,Customer,FinancialDocument,ServiceRequest,User,WorkOrder};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -332,8 +332,10 @@ class ServiceRequestWorkflowService
                 'currency' => 'SAR',
                 'amount' => $amount,
                 'open_amount' => $amount,
-                'control_account_code' => 'AR',
-                'offset_account_code' => 'REV',
+                'control_account_code' => ChartAccount::where('tenant_id',$request->tenant_id)
+                    ->where('code','AR')->where('status','ACTIVE')->where('posting_allowed',true)->exists() ? 'AR' : '1200',
+                'offset_account_code' => ChartAccount::where('tenant_id',$request->tenant_id)
+                    ->where('code','REV')->where('status','ACTIVE')->where('posting_allowed',true)->exists() ? 'REV' : '4100',
                 'status' => 'DRAFT',
             ]);
             $context['invoice_id'] = $invoice->id;

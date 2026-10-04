@@ -189,7 +189,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
                 'code'=>'E2E-'.today()->format('Y-m'),'starts_on'=>today()->startOfMonth(),
                 'ends_on'=>today()->endOfMonth(),'status'=>'OPEN',
             ]);
-            foreach ([['AR','Accounts Receivable','ASSET','DEBIT'],['REV','Service Revenue','REVENUE','CREDIT'],['CASH','Cash','ASSET','DEBIT']] as [$code,$name,$type,$normal]) {
+            foreach ([['1200','Accounts Receivable','ASSET','DEBIT'],['4100','Service Revenue','REVENUE','CREDIT'],['CASH','Cash','ASSET','DEBIT']] as [$code,$name,$type,$normal]) {
                 ChartAccount::create([
                     'tenant_id'=>$request->tenant_id,'organization_id'=>$request->organization_id,
                     'code'=>$code,'name'=>$name,'type'=>$type,'normal_balance'=>$normal,

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Customer,CustomerContact,CustomerSite,Employee,Organization,ServiceRequest,Tenant,User,WorkOrderAssignment};
+use App\Models\{ChartAccount,Customer,CustomerContact,CustomerSite,Employee,FinancialDocument,Organization,ServiceRequest,Tenant,User,WorkOrderAssignment};
 use App\Services\{RequestStageOwnerService,ServiceRequestWorkflowService};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\{DB,Hash,Schema};
@@ -33,6 +33,21 @@ class WorkflowTestUsersSeeder extends Seeder
         ];
         foreach($roles as $role=>$config){User::updateOrCreate(['email'=>$config['email']],['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>$config['name'],'password'=>Hash::make($password),'role'=>$role,'status'=>'ACTIVE','force_password_change'=>false]);foreach($config['permissions'] as $permission)DB::table('role_permissions')->updateOrInsert(['tenant_id'=>$tenant->id,'role_code'=>$role,'permission_code'=>$permission],['created_at'=>now(),'updated_at'=>now()]);}
 
+        // Older finance test users can retain a structured role assignment while
+        // their seeder-created permission rows still have only a legacy code.
+        // Bind the existing grants to that assigned role without replacing DENY.
+        $financeUser=User::where('tenant_id',$tenant->id)->where('email','finance@unifco.local')->firstOrFail();
+        $financeRoleId=DB::table('user_roles')->join('roles','roles.id','=','user_roles.role_id')
+            ->where('user_roles.user_id',$financeUser->id)->whereNull('user_roles.revoked_at')
+            ->where('roles.code','FINANCE_MANAGER')->where('roles.is_active',true)
+            ->value('roles.id');
+        if ($financeRoleId) {
+            DB::table('role_permissions')->where('tenant_id',$tenant->id)
+                ->where('role_code','FINANCE_MANAGER')
+                ->whereIn('permission_code',$roles['FINANCE_MANAGER']['permissions'])
+                ->whereNull('role_id')->update(['role_id'=>$financeRoleId]);
+        }
+
         // The workflow test technician also needs a field-service employee identity.
         // Reuse an existing identity and never replace a deliberate user link.
         $testTechnician=User::where('tenant_id',$tenant->id)->where('email','technician@unifco.local')->firstOrFail();
@@ -56,7 +71,6 @@ class WorkflowTestUsersSeeder extends Seeder
                 // Preserve an existing active owner for each role rather than replacing
                 // a deliberate project assignment during a repeat deployment.
                 $uatTeam=[
-                    'OPERATIONS_MANAGER'=>'operations.manager@unifco.local',
                     'PROJECT_MANAGER'=>'projects.manager@unifco.local',
                     'MAINTENANCE_MANAGER'=>'maintenance.manager@unifco.local',
                     'MAINTENANCE_ENGINEER'=>'engineer@unifco.local',
@@ -138,6 +152,20 @@ class WorkflowTestUsersSeeder extends Seeder
                             app(ServiceRequestWorkflowService::class)
                                 ->repairMissingMaintenanceClosureStages($request);
                         });
+                }
+
+                // Older auto-generated UAT drafts used symbolic account codes
+                // while the demo chart uses 1200/4100. Repair only these two
+                // unposted request-linked drafts; never alter posted journals.
+                if (Schema::hasTable('financial_documents')
+                    && ChartAccount::where('tenant_id',$tenant->id)->where('code','1200')->where('status','ACTIVE')->exists()
+                    && ChartAccount::where('tenant_id',$tenant->id)->where('code','4100')->where('status','ACTIVE')->exists()) {
+                    $uatRequestIds=ServiceRequest::where('tenant_id',$tenant->id)->where('project_id',$uatProject->id)
+                        ->whereIn('request_no',['SR-UNRM-926000023','SR-UNUM-926000024'])->pluck('id');
+                    FinancialDocument::where('tenant_id',$tenant->id)->whereIn('service_request_id',$uatRequestIds)
+                        ->where('document_type','AR_INVOICE')->where('status','DRAFT')
+                        ->where('control_account_code','AR')->where('offset_account_code','REV')
+                        ->update(['control_account_code'=>'1200','offset_account_code'=>'4100']);
                 }
             }
         }
