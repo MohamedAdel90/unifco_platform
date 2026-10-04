@@ -113,6 +113,20 @@ done
 echo "==> Applying migrations and workflow identities"
 php artisan migrate --force
 php artisan db:seed --class='Database\Seeders\WorkflowTestUsersSeeder' --force
+php -r '
+require "vendor/autoload.php";
+$app=require "bootstrap/app.php";
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$user=App\Models\User::where("email","finance@unifco.local")->firstOrFail();
+$authorization=app(App\Services\AuthorizationService::class);
+foreach(["INV-SR-25","INV-SR-26"] as $number){
+    $document=App\Models\FinancialDocument::where("tenant_id",$user->tenant_id)->where("document_no",$number)->first();
+    if($document && !$authorization->allows($user,"finance.journal.post",$document)){
+        fwrite(STDERR,"ERROR: finance UAT document posting is denied for $number\n");exit(1);
+    }
+}
+echo "Finance UAT document posting authorization verified\n";
+'
 php artisan unifco:bootstrap-warehouse-access
 php artisan brand:materialize
 if [[ ! -e public/storage && ! -L public/storage ]]; then php artisan storage:link; fi
