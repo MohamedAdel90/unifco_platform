@@ -126,6 +126,11 @@ foreach(["INV-SR-25","INV-SR-26"] as $number){
         $scopes=app(App\Services\ScopeService::class);
         $resourceScope=$scopes->allows($user,$document)?"yes":"no";
         $visible=$scopes->apply(App\Models\FinancialDocument::query()->whereKey($document->id),$user)->exists()?"yes":"no";
+        $db=Illuminate\Support\Facades\DB::class;
+        $assignments=$db::table("user_roles")->leftJoin("roles","roles.id","=","user_roles.role_id")->where("user_roles.user_id",$user->id)->whereNull("revoked_at")->get(["roles.id","roles.code","roles.is_active"]);
+        $grants=$db::table("role_permissions")->where(function($q)use($user){$q->whereNull("tenant_id")->orWhere("tenant_id",$user->tenant_id);})->where("permission_code","finance.journal.post")->get(["role_id","role_code","effect"]);
+        $overrides=$db::table("user_permission_overrides")->where("tenant_id",$user->tenant_id)->where("user_id",$user->id)->where("permission_code","finance.journal.post")->get(["allowed","expires_at"]);
+        fwrite(STDERR,"Finance authorization diagnostic: ".json_encode(["status"=>$user->status,"locked"=>(bool)$user->locked_at,"roles"=>$assignments,"grants"=>$grants,"overrides"=>$overrides])."\n");
         fwrite(STDERR,"ERROR: finance UAT document posting denied for $number; permission=$permission scope=$resourceScope visible=$visible\n");exit(1);
     }
 }
