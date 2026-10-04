@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\{ApprovalRequest,ChartAccount,Customer,CustomerContact,CustomerSite,FinancialDocument,Project,ServiceRequest,User};
+use App\Services\AuthorizationService;
 use Database\Seeders\WorkflowTestUsersSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -130,6 +131,54 @@ class WorkflowTestUsersSeederTest extends TestCase
         auth()->logout();
         $this->seed(WorkflowTestUsersSeeder::class);
         $this->actingAs($finance->fresh())->get('/finance/core')->assertOk();
+    }
+
+    public function test_finance_post_grant_is_rebound_to_the_assigned_role_without_overriding_a_deny(): void
+    {
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $finance=User::where('email','finance@unifco.local')->firstOrFail();
+        $financeRoleId=DB::table('roles')->insertGetId([
+            'tenant_id'=>$finance->tenant_id,'code'=>'FINANCE_MANAGER','name_en'=>'Finance Manager',
+            'is_active'=>true,'grants_business_authority'=>true,'is_system_role'=>false,
+            'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        $staleRoleId=DB::table('roles')->insertGetId([
+            'tenant_id'=>$finance->tenant_id,'code'=>'STALE_FINANCE_ROLE','name_en'=>'Stale role',
+            'is_active'=>true,'grants_business_authority'=>true,'is_system_role'=>false,
+            'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        DB::table('user_roles')->insert([
+            'tenant_id'=>$finance->tenant_id,'user_id'=>$finance->id,'role_id'=>$financeRoleId,
+            'is_primary'=>true,'granted_at'=>now(),'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        $scopeId=DB::table('access_scopes')->insertGetId([
+            'tenant_id'=>$finance->tenant_id,'scope_type'=>'GLOBAL','name'=>'Finance UAT',
+            'is_active'=>true,'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        DB::table('user_scopes')->insert([
+            'tenant_id'=>$finance->tenant_id,'user_id'=>$finance->id,'access_scope_id'=>$scopeId,
+            'source'=>'TEST','created_at'=>now(),'updated_at'=>now(),
+        ]);
+        $document=FinancialDocument::create([
+            'tenant_id'=>$finance->tenant_id,'organization_id'=>$finance->organization_id,
+            'document_no'=>'INV-UAT-AUTH','document_type'=>'AR_INVOICE',
+            'counterparty_name'=>'UAT Customer','document_date'=>today(),
+            'currency'=>'SAR','amount'=>225,'open_amount'=>225,
+            'control_account_code'=>'1200','offset_account_code'=>'4100','status'=>'DRAFT',
+        ]);
+        $grant=DB::table('role_permissions')->where('tenant_id',$finance->tenant_id)
+            ->where('role_code','FINANCE_MANAGER')->where('permission_code','finance.journal.post');
+        $grant->update(['role_id'=>$staleRoleId]);
+        $this->assertFalse(app(AuthorizationService::class)->allows($finance,'finance.journal.post',$document));
+        $this->actingAs($finance)->post(route('finance.core.documents.post',$document))->assertForbidden();
+
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $this->assertTrue(app(AuthorizationService::class)->allows($finance,'finance.journal.post',$document));
+        $this->actingAs($finance)->post(route('finance.core.documents.post',$document))->assertRedirect();
+
+        $grant->update(['effect'=>'DENY']);
+        $this->seed(WorkflowTestUsersSeeder::class);
+        $this->assertFalse(app(AuthorizationService::class)->allows($finance,'finance.journal.post',$document));
     }
 
     public function test_seeder_repairs_only_unposted_uat_invoice_account_codes(): void

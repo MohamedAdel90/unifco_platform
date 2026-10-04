@@ -34,8 +34,8 @@ class WorkflowTestUsersSeeder extends Seeder
         foreach($roles as $role=>$config){User::updateOrCreate(['email'=>$config['email']],['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>$config['name'],'password'=>Hash::make($password),'role'=>$role,'status'=>'ACTIVE','force_password_change'=>false]);foreach($config['permissions'] as $permission)DB::table('role_permissions')->updateOrInsert(['tenant_id'=>$tenant->id,'role_code'=>$role,'permission_code'=>$permission],['created_at'=>now(),'updated_at'=>now()]);}
 
         // Older finance test users can retain a structured role assignment while
-        // their seeder-created permission rows still have only a legacy code.
-        // Bind the existing grants to that assigned role without replacing DENY.
+        // their seeder-created grants point at a legacy/global role (or no role).
+        // Bind only ALLOW rows to the assigned role; preserve explicit DENY.
         $financeUser=User::where('tenant_id',$tenant->id)->where('email','finance@unifco.local')->firstOrFail();
         $financeRoleId=DB::table('user_roles')->join('roles','roles.id','=','user_roles.role_id')
             ->where('user_roles.user_id',$financeUser->id)->whereNull('user_roles.revoked_at')
@@ -45,7 +45,7 @@ class WorkflowTestUsersSeeder extends Seeder
             DB::table('role_permissions')->where('tenant_id',$tenant->id)
                 ->where('role_code','FINANCE_MANAGER')
                 ->whereIn('permission_code',$roles['FINANCE_MANAGER']['permissions'])
-                ->whereNull('role_id')->update(['role_id'=>$financeRoleId]);
+                ->where('effect','ALLOW')->update(['role_id'=>$financeRoleId]);
         }
 
         // The workflow test technician also needs a field-service employee identity.
