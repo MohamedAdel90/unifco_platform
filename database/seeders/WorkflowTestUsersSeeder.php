@@ -37,6 +37,23 @@ class WorkflowTestUsersSeeder extends Seeder
         // their seeder-created grants point at a legacy/global role (or no role).
         // Bind only ALLOW rows to the assigned role; preserve explicit DENY.
         $financeUser=User::where('tenant_id',$tenant->id)->where('email','finance@unifco.local')->firstOrFail();
+        // This UAT identity was originally assigned the retired FINANCE role.
+        // Reconcile only that legacy assignment, never revive a revoked manager role.
+        $legacyFinance=DB::table('user_roles')->join('roles','roles.id','=','user_roles.role_id')
+            ->where('user_roles.user_id',$financeUser->id)->whereNull('user_roles.revoked_at')
+            ->where('roles.code','FINANCE')->where('roles.is_active',true)->exists();
+        if ($legacyFinance) {
+            $managerRole=DB::table('roles')->where('code','FINANCE_MANAGER')->where('is_active',true)
+                ->where(fn($q)=>$q->whereNull('tenant_id')->orWhere('tenant_id',$tenant->id))
+                ->orderByDesc('tenant_id')->first();
+            if ($managerRole && ! DB::table('user_roles')->where('user_id',$financeUser->id)->where('role_id',$managerRole->id)->exists()) {
+                DB::table('user_roles')->insert([
+                    'tenant_id'=>$tenant->id,'user_id'=>$financeUser->id,'role_id'=>$managerRole->id,
+                    'is_primary'=>false,'granted_at'=>now(),'reason'=>'Reconcile legacy FINANCE UAT identity to approved FINANCE_MANAGER role',
+                    'created_at'=>now(),'updated_at'=>now(),
+                ]);
+            }
+        }
         $financeRoleId=DB::table('user_roles')->join('roles','roles.id','=','user_roles.role_id')
             ->where('user_roles.user_id',$financeUser->id)->whereNull('user_roles.revoked_at')
             ->where('roles.code','FINANCE_MANAGER')->where('roles.is_active',true)
