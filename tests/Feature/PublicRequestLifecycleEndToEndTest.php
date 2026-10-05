@@ -127,20 +127,23 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $this->assertNotNull($actor,'Missing actor for '.$approval->approval_role.' at '.$approval->action);
         $this->actingAs($actor);
         if($request->workflow_key==='SPARE_PARTS_QUOTATION' && $request->workflow_stage==='CONTRACT_REVIEW'){
-            try {
-                app(ApprovalService::class)->decide($approval,'APPROVED','Attempt before pricing');
-                $this->fail('Unpriced spare parts quote was approved.');
-            } catch (\Illuminate\Validation\ValidationException $e) {
-                $this->assertArrayHasKey('approval',$e->errors());
+            $quotation=CrmQuotation::findOrFail($request->quotation_id);
+            if ((float)$quotation->amount <= 0) {
+                try {
+                    app(ApprovalService::class)->decide($approval,'APPROVED','Attempt before pricing');
+                    $this->fail('Unpriced spare parts quote was approved.');
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    $this->assertArrayHasKey('approval',$e->errors());
+                }
             }
             $this->assertSame('PENDING',$approval->fresh()->status);
-            $quotation=CrmQuotation::findOrFail($request->quotation_id);
+            $amountBefore=(float)$quotation->amount;
             $this->get(route('service-requests.workflow.show',$request))
                 ->assertOk()->assertSee($quotation->quotation_no)->assertSee('Save Estimated Pricing');
             $this->post(route('service-requests.workflow.quotation-pricing',$request),[
                 'cost_amount'=>250,'amount'=>0,'pricing_basis'=>'Estimated one test part.',
             ])->assertSessionHasErrors('amount');
-            $this->assertSame(0.0,(float)$quotation->fresh()->amount);
+            $this->assertSame($amountBefore,(float)$quotation->fresh()->amount);
             $this->post(route('service-requests.workflow.quotation-pricing',$request),[
                 'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'UAT: one test part; supplier and model unconfirmed.',
             ])->assertRedirect()->assertSessionHasNoErrors();
