@@ -127,7 +127,8 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $this->assertNotNull($actor,'Missing actor for '.$approval->approval_role.' at '.$approval->action);
         $this->actingAs($actor);
         if(($request->workflow_key==='SPARE_PARTS_QUOTATION' && $request->workflow_stage==='CONTRACT_REVIEW')
-            || ($request->workflow_key==='TECHNICAL_VISIT' && $request->workflow_stage==='PRICING')){
+            || ($request->workflow_key==='TECHNICAL_VISIT' && $request->workflow_stage==='PRICING')
+            || ($request->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION' && $request->workflow_stage==='FINANCE_REVIEW')){
             $quotation=CrmQuotation::findOrFail($request->quotation_id);
             if ((float)$quotation->amount <= 0) {
                 try {
@@ -152,7 +153,8 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             ])->assertSessionHasErrors('amount');
             $this->assertSame($amountBefore,(float)$quotation->fresh()->amount);
             $this->post(route('service-requests.workflow.quotation-pricing',$request),[
-                'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'UAT: one test part; supplier and model unconfirmed.',
+                'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'UAT: indicative scope; duration, equipment, visits and exclusions require confirmation.',
+                ...($request->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION' ? ['payment_terms_days'=>30] : []),
             ])->assertRedirect()->assertSessionHasNoErrors();
             $this->assertSame(300.0,(float)$quotation->fresh()->amount);
             $this->assertSame(250.0,(float)$quotation->fresh()->cost_amount);
@@ -264,7 +266,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $request->refresh();
         $this->assertSame('CUSTOMER_DECISION',$request->workflow_stage);
         $quotation=CrmQuotation::findOrFail($request->quotation_id);
-        if(in_array($request->workflow_key,['SPARE_PARTS_QUOTATION','TECHNICAL_VISIT'],true)){
+        if(in_array($request->workflow_key,['SPARE_PARTS_QUOTATION','TECHNICAL_VISIT','MAINTENANCE_CONTRACT_QUOTATION'],true)){
             $this->assertSame('SENT',$quotation->status);
             $this->assertSame(300.0,(float)$quotation->amount);
         }
@@ -405,6 +407,42 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         ])->assertNotFound();
         $this->assertSame('SENT',$quotation->fresh()->status);
         $this->assertSame('CUSTOMER_DECISION',$request->fresh()->workflow_stage);
+    }
+
+
+    public function test_contract_finance_pricing_requires_terms_and_blocks_unpriced_approval(): void
+    {
+        $request=$this->submit('QUOTATION','MAINTENANCE_CONTRACT_QUOTE',['service_category'=>'Maintenance Contract']);
+        while($request->fresh()->workflow_stage!=='FINANCE_REVIEW') $this->approveCurrent($request);
+        $quotation=CrmQuotation::findOrFail($request->quotation_id);
+        $this->actingAs($this->actors['TENDERS_CONTRACTS'])->post(route('service-requests.workflow.quotation-pricing',$request),[
+            'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Test contract.','payment_terms_days'=>30,
+        ])->assertForbidden();
+        $this->actingAs($this->actors['FINANCE_MANAGER'])->post(route('service-requests.workflow.quotation-pricing',$request),[
+            'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Test contract.',
+        ])->assertSessionHasErrors('payment_terms_days');
+        $this->assertSame(0.0,(float)$quotation->fresh()->amount);
+        $this->approveCurrent($request);
+        $this->assertSame(30,(int)$quotation->fresh()->payment_terms_days);
+        $this->assertSame('EXECUTIVE_APPROVAL',$request->fresh()->workflow_stage);
+        $this->actingAs($this->actors['FINANCE_MANAGER'])->post(route('service-requests.workflow.quotation-pricing',$request),[
+            'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Out-of-stage edit.','payment_terms_days'=>30,
+        ])->assertForbidden();
+        $quotation->update(['amount'=>0]);
+        $approval=ApprovalRequest::where('entity_id',$request->id)->where('action','EXECUTIVE_APPROVAL')->where('status','PENDING')->firstOrFail();
+        $this->actingAs($this->actors['CEO']);
+        try {
+            app(ApprovalService::class)->decide($approval,'APPROVED','Unpriced executive approval.');
+            $this->fail('Executive approval accepted an unpriced contract quotation.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('approval',$e->errors());
+        }
+        $this->assertSame('PENDING',$approval->fresh()->status);
+        $this->assertSame('EXECUTIVE_APPROVAL',$request->fresh()->workflow_stage);
+        $quotation->update(['amount'=>300]);
+        $this->approveCurrent($request);
+        $this->assertSame('CUSTOMER_DECISION',$request->fresh()->workflow_stage);
+        $this->assertSame('SENT',$quotation->fresh()->status);
     }
 
     private function restrictPortalUserToCustomerScope(): void
