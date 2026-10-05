@@ -126,17 +126,24 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $actor=$this->actors[$approval->approval_role]??null;
         $this->assertNotNull($actor,'Missing actor for '.$approval->approval_role.' at '.$approval->action);
         $this->actingAs($actor);
-        if($request->workflow_key==='SPARE_PARTS_QUOTATION' && $request->workflow_stage==='CONTRACT_REVIEW'){
+        if(($request->workflow_key==='SPARE_PARTS_QUOTATION' && $request->workflow_stage==='CONTRACT_REVIEW')
+            || ($request->workflow_key==='TECHNICAL_VISIT' && $request->workflow_stage==='PRICING')){
             $quotation=CrmQuotation::findOrFail($request->quotation_id);
             if ((float)$quotation->amount <= 0) {
                 try {
                     app(ApprovalService::class)->decide($approval,'APPROVED','Attempt before pricing');
-                    $this->fail('Unpriced spare parts quote was approved.');
+                    $this->fail('Unpriced quotation was approved.');
                 } catch (\Illuminate\Validation\ValidationException $e) {
                     $this->assertArrayHasKey('approval',$e->errors());
                 }
             }
             $this->assertSame('PENDING',$approval->fresh()->status);
+            if ($request->workflow_key === 'TECHNICAL_VISIT') {
+                $this->actingAs($this->actors['TENDERS_CONTRACTS'])->post(route('service-requests.workflow.quotation-pricing',$request),[
+                    'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Wrong role attempt.',
+                ])->assertForbidden();
+                $this->actingAs($actor);
+            }
             $amountBefore=(float)$quotation->amount;
             $this->get(route('service-requests.workflow.show',$request))
                 ->assertOk()->assertSee($quotation->quotation_no)->assertSee('Save Estimated Pricing');
@@ -150,7 +157,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             $this->assertSame(300.0,(float)$quotation->fresh()->amount);
             $this->assertSame(250.0,(float)$quotation->fresh()->cost_amount);
             $this->assertSame(16.67,(float)$quotation->fresh()->margin_pct);
-            $this->assertSame('CONTRACT_REVIEW',$request->fresh()->workflow_stage);
+            $this->assertSame($approval->action,$request->fresh()->workflow_stage);
             $this->assertTrue(data_get($request->fresh()->workflow_context,'quotation_pricing.estimated'));
         }
         app(ApprovalService::class)->decide($approval,'APPROVED','E2E '.$approval->action.' completed.');
@@ -257,7 +264,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $request->refresh();
         $this->assertSame('CUSTOMER_DECISION',$request->workflow_stage);
         $quotation=CrmQuotation::findOrFail($request->quotation_id);
-        if($request->workflow_key==='SPARE_PARTS_QUOTATION'){
+        if(in_array($request->workflow_key,['SPARE_PARTS_QUOTATION','TECHNICAL_VISIT'],true)){
             $this->assertSame('SENT',$quotation->status);
             $this->assertSame(300.0,(float)$quotation->amount);
         }
