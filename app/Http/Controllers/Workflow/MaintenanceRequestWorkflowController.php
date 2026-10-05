@@ -133,7 +133,9 @@ class MaintenanceRequestWorkflowController extends Controller
         abort_unless((int)$serviceRequest->tenant_id === (int)$user->tenant_id, 404);
         abort_unless($scopes->apply(ServiceRequest::query()->where('tenant_id',$user->tenant_id)->whereKey($serviceRequest->id),$user)->exists(), 403);
         $roles = $authorization->roleCodes($user)->push(strtoupper((string)$user->role))->filter()->unique();
-        abort_unless($roles->contains('TENDERS_CONTRACTS'), 403);
+        $pricingRole = $serviceRequest->workflow_key === 'TECHNICAL_VISIT' && $serviceRequest->workflow_stage === 'PRICING'
+            ? 'SALES' : 'TENDERS_CONTRACTS';
+        abort_unless($roles->contains($pricingRole), 403);
 
         $data = $request->validate([
             'cost_amount' => ['required','numeric','gte:0'],
@@ -141,13 +143,15 @@ class MaintenanceRequestWorkflowController extends Controller
             'pricing_basis' => ['required','string','max:2000'],
         ]);
 
-        DB::transaction(function () use ($serviceRequest,$user,$data): void {
+        DB::transaction(function () use ($serviceRequest,$user,$data,$pricingRole): void {
             $serviceRequest = ServiceRequest::query()->where('tenant_id',$user->tenant_id)->lockForUpdate()->findOrFail($serviceRequest->id);
-            abort_unless($serviceRequest->workflow_key === 'SPARE_PARTS_QUOTATION' && $serviceRequest->workflow_stage === 'CONTRACT_REVIEW', 422);
+            abort_unless(
+                ($serviceRequest->workflow_key === 'SPARE_PARTS_QUOTATION' && $serviceRequest->workflow_stage === 'CONTRACT_REVIEW')
+                || ($serviceRequest->workflow_key === 'TECHNICAL_VISIT' && $serviceRequest->workflow_stage === 'PRICING'), 422);
             $step = ApprovalRequest::query()->where('tenant_id',$user->tenant_id)
                 ->where('entity_type',ServiceRequest::class)->where('entity_id',$serviceRequest->id)
-                ->where('action','CONTRACT_REVIEW')->where('status','PENDING')->lockForUpdate()->firstOrFail();
-            abort_unless($step->approval_role === 'TENDERS_CONTRACTS'
+                ->where('action',$serviceRequest->workflow_stage)->where('status','PENDING')->lockForUpdate()->firstOrFail();
+            abort_unless($step->approval_role === $pricingRole
                 && $step->routing_status !== 'NEEDS_ASSIGNMENT'
                 && (!$step->assigned_user_id || (int)$step->assigned_user_id === (int)$user->id), 403);
 
@@ -172,7 +176,7 @@ class MaintenanceRequestWorkflowController extends Controller
             $serviceRequest->update(['workflow_context'=>$context]);
         });
 
-        return back()->with('status','Estimated quotation pricing saved. Contract review is ready.');
+        return back()->with('status','Estimated quotation pricing saved. The current commercial review can continue.');
     }
 
     public function assignStageOwner(Request $request, ServiceRequest $serviceRequest, AuthorizationService $authorization, ScopeService $scopes, RequestStageOwnerService $owners): RedirectResponse
