@@ -49,13 +49,17 @@
 <textarea name="notes" rows="4" @required($serviceRequest->workflow_stage==='TECHNICAL_REPORT') placeholder="Technical review notes, findings, risks, recommendations"></textarea>
 <button>Record Review</button>
 </form>
-@elseif(($serviceRequest->workflow_stage==='CONTRACT_REVIEW' && $serviceRequest->workflow_key==='SPARE_PARTS_QUOTATION') || ($serviceRequest->workflow_stage==='PRICING' && $serviceRequest->workflow_key==='TECHNICAL_VISIT'))
+@elseif(($serviceRequest->workflow_stage==='CONTRACT_REVIEW' && $serviceRequest->workflow_key==='SPARE_PARTS_QUOTATION') || ($serviceRequest->workflow_stage==='PRICING' && $serviceRequest->workflow_key==='TECHNICAL_VISIT') || ($serviceRequest->workflow_stage==='FINANCE_REVIEW' && $serviceRequest->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION'))
 @if($quotation)
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.quotation-pricing',$serviceRequest) }}">@csrf
 <strong>Estimated quotation · {{ $quotation->quotation_no }}</strong>
 <p class="muted">Enter an indicative cost and customer quotation amount in SAR. Describe the assumed scope and quantities, and any details requiring confirmation before a binding offer.</p>
 <label>Estimated cost (SAR)<input name="cost_amount" type="number" step="0.01" min="0" required value="{{ old('cost_amount',$quotation->cost_amount) }}"></label>
 <label>Estimated customer quotation (SAR)<input name="amount" type="number" step="0.01" min="0.01" required value="{{ old('amount',$quotation->amount) }}"></label>
+@if($serviceRequest->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION')
+<label>Payment due after invoice (days)<input name="payment_terms_days" type="number" step="1" min="0" max="365" required value="{{ old('payment_terms_days',$quotation->payment_terms_days) }}"></label>
+<p class="muted">Record the proposed contract duration, equipment list, visit frequency, exclusions and billing assumptions in the pricing basis. These remain indicative until approved.</p>
+@endif
 <label>Pricing basis and unconfirmed details<textarea name="pricing_basis" rows="4" required>{{ old('pricing_basis',data_get($serviceRequest->workflow_context,'quotation_pricing.basis')) }}</textarea></label>
 <button type="submit">Save Estimated Pricing</button>
 </form>
