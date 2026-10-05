@@ -72,7 +72,11 @@ class MaintenanceRequestWorkflowController extends Controller
             ? $owners->candidates($serviceRequest,(string)$step->approval_role)
             : collect();
 
-        return view('workflow.maintenance-request', compact('serviceRequest','step','canAct','technicians','projectOptions','canAssignProject','canAssignOwner','ownerCandidates'));
+        $quotation = $serviceRequest->quotation_id
+            ? CrmQuotation::query()->where('tenant_id',$user->tenant_id)->where('customer_id',$serviceRequest->customer_id)->find($serviceRequest->quotation_id)
+            : null;
+
+        return view('workflow.maintenance-request', compact('serviceRequest','step','canAct','technicians','projectOptions','canAssignProject','canAssignOwner','ownerCandidates','quotation'));
     }
 
     public function assignProject(Request $request, ServiceRequest $serviceRequest, AuthorizationService $authorization, ScopeService $scopes, RequestStageOwnerService $owners): RedirectResponse
