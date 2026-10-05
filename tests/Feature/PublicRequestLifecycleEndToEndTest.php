@@ -254,6 +254,10 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $request->refresh();
         $this->assertSame('CUSTOMER_DECISION',$request->workflow_stage);
         $quotation=CrmQuotation::findOrFail($request->quotation_id);
+        if($request->workflow_key==='SPARE_PARTS_QUOTATION'){
+            $this->assertSame('SENT',$quotation->status);
+            $this->assertSame(300.0,(float)$quotation->amount);
+        }
         $this->actingAs($this->portalUser)->post(route('customer.quotations.decision',$quotation),[
             'decision'=>'APPROVE','notes'=>'Customer approved the commercial offer.',
         ])->assertRedirect();
