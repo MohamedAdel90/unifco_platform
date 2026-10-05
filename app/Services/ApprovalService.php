@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{ApprovalRequest,Customer,ProjectUserAssignment,ServiceRequest};
+use App\Models\{ApprovalRequest,CrmQuotation,Customer,ProjectUserAssignment,ServiceRequest};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{Auth,DB};
 use Illuminate\Validation\ValidationException;
@@ -55,6 +55,16 @@ class ApprovalService
             if(strtoupper((string)$request->approval_role)==='TECHNICIAN' && $serviceRequest->assigned_engineer_id){
                 if((int)$serviceRequest->assigned_engineer_id!==(int)$user->id){
                     throw ValidationException::withMessages(['approval'=>'Only the technician assigned to this request can perform this stage.']);
+                }
+            }
+
+            if($decision==='APPROVED' && $request->action==='CONTRACT_REVIEW' && $serviceRequest->workflow_key==='SPARE_PARTS_QUOTATION'){
+                $quotation=CrmQuotation::query()->where('tenant_id',$user->tenant_id)
+                    ->where('customer_id',$serviceRequest->customer_id)->find($serviceRequest->quotation_id);
+                $pricing=data_get($serviceRequest->workflow_context,'quotation_pricing');
+                if(!$quotation || (float)$quotation->amount<=0 || !is_array($pricing)
+                    || (int)($pricing['quotation_id']??0)!==(int)$quotation->id || blank($pricing['basis']??null)){
+                    throw ValidationException::withMessages(['approval'=>'Save the linked quotation amount and pricing basis before approving spare parts contract review.']);
                 }
             }
 
@@ -119,6 +129,16 @@ class ApprovalService
             $this->workflow->returnToPrevious($serviceRequest,$approval->action,Auth::id(),$note);
         } else {
             $this->workflow->advance($serviceRequest,$approval->action,Auth::id(),$note);
+            $serviceRequest->refresh();
+            if($serviceRequest->workflow_key==='SPARE_PARTS_QUOTATION' && $serviceRequest->workflow_stage==='CUSTOMER_DECISION'){
+                $quotation=CrmQuotation::query()->where('tenant_id',$serviceRequest->tenant_id)
+                    ->where('customer_id',$serviceRequest->customer_id)->find($serviceRequest->quotation_id);
+                if($quotation && (float)$quotation->amount>0){
+                    $before=$quotation->toArray();
+                    $quotation->update(['status'=>'SENT']);
+                    $this->audit->record('quotation.ready_for_customer',$quotation,$before,$quotation->fresh()->toArray());
+                }
+            }
         }
 
         if($serviceRequest->customer_id){

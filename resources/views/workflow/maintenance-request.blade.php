@@ -49,6 +49,19 @@
 <textarea name="notes" rows="4" @required($serviceRequest->workflow_stage==='TECHNICAL_REPORT') placeholder="Technical review notes, findings, risks, recommendations"></textarea>
 <button>Record Review</button>
 </form>
+@elseif($serviceRequest->workflow_stage==='CONTRACT_REVIEW' && $serviceRequest->workflow_key==='SPARE_PARTS_QUOTATION')
+@if($quotation)
+<form class="wf-form" method="post" action="{{ route('service-requests.workflow.quotation-pricing',$serviceRequest) }}">@csrf
+<strong>Estimated spare parts quotation · {{ $quotation->quotation_no }}</strong>
+<p class="muted">Enter an indicative cost and customer quotation amount in SAR. Describe the assumed item and quantity; confirm supplier, model and availability before a binding offer.</p>
+<label>Estimated procurement cost (SAR)<input name="cost_amount" type="number" step="0.01" min="0" required value="{{ old('cost_amount',$quotation->cost_amount) }}"></label>
+<label>Estimated customer quotation (SAR)<input name="amount" type="number" step="0.01" min="0.01" required value="{{ old('amount',$quotation->amount) }}"></label>
+<label>Pricing basis and unconfirmed details<textarea name="pricing_basis" rows="4" required>{{ old('pricing_basis',data_get($serviceRequest->workflow_context,'quotation_pricing.basis')) }}</textarea></label>
+<button type="submit">Save Estimated Pricing</button>
+</form>
+@else
+<p role="alert">The linked quotation is missing or outside this customer scope. Contract review cannot be approved.</p>
+@endif
 @elseif($serviceRequest->workflow_stage==='TECHNICIAN_ASSIGNMENT')
 <form class="wf-form" method="post" action="{{ route('service-requests.workflow.assign-technician',$serviceRequest) }}">@csrf<select name="technician_id" required><option value="">Select technician</option>@foreach($technicians as $tech)<option value="{{ $tech->id }}">{{ $tech->name }} · {{ $tech->role }}</option>@endforeach</select><textarea name="notes" rows="2" placeholder="Assignment notes"></textarea><button>Assign & Start Execution</button></form>
 @elseif(in_array($serviceRequest->workflow_stage,['EXECUTION','SITE_VISIT']))
