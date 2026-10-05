@@ -372,7 +372,7 @@ class ServiceRequestWorkflowService
         $request->refresh();
         $before = $this->state($request);
         $fromStage = (string) $request->workflow_stage;
-        $steps = ApprovalRequest::query()
+        $steps = ApprovalRequest::withoutGlobalScope('unifco_runtime_data_scope')
             ->where('tenant_id', $request->tenant_id)
             ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
             ->where('entity_id', $request->id)
@@ -412,13 +412,13 @@ class ServiceRequestWorkflowService
 
     public function returnToPrevious(ServiceRequest $request, string $currentStage, ?int $actorId = null, ?string $note = null): ApprovalRequest
     {
-        $current = ApprovalRequest::query()
+        $current = ApprovalRequest::withoutGlobalScope('unifco_runtime_data_scope')
             ->where('tenant_id', $request->tenant_id)
             ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
             ->where('entity_id', $request->id)
             ->where('action', $currentStage)
             ->firstOrFail();
-        $previous = ApprovalRequest::query()
+        $previous = ApprovalRequest::withoutGlobalScope('unifco_runtime_data_scope')
             ->where('tenant_id', $request->tenant_id)
             ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
             ->where('entity_id', $request->id)
@@ -434,7 +434,7 @@ class ServiceRequestWorkflowService
     {
         $request->refresh();
         $before = $this->state($request);
-        $current = ApprovalRequest::query()
+        $current = ApprovalRequest::withoutGlobalScope('unifco_runtime_data_scope')
             ->where('tenant_id', $request->tenant_id)
             ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
             ->where('entity_id', $request->id)
@@ -447,7 +447,7 @@ class ServiceRequestWorkflowService
                 'decision_note' => $note,
                 'decided_at' => now(),
             ]);
-            ApprovalRequest::query()
+            ApprovalRequest::withoutGlobalScope('unifco_runtime_data_scope')
                 ->where('tenant_id', $request->tenant_id)
                 ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
                 ->where('entity_id', $request->id)
