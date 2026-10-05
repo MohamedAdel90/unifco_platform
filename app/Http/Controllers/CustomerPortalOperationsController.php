@@ -48,20 +48,24 @@ class CustomerPortalOperationsController extends Controller
         $user=$this->user(); abort_unless($access->canDecideQuotation($user),403,'Your portal role cannot decide quotations.');
         abort_unless((int)$quotation->customer_id===(int)$user->customer_id,403);
         $data=$request->validate(['decision'=>['required','in:APPROVE,REJECT,REVISION'],'notes'=>['nullable','string','max:2000']]);
-        $quotation->update(match($data['decision']){'APPROVE'=>['status'=>'CUSTOMER_APPROVED','customer_approved_at'=>now(),'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null],'REJECT'=>['status'=>'CUSTOMER_REJECTED','customer_rejected_at'=>now(),'customer_approved_at'=>null,'customer_decision_notes'=>$data['notes']??null],default=>['status'=>'REVISION_REQUESTED','customer_approved_at'=>null,'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null]});
-        $serviceRequest=ServiceRequest::query()->where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)->where('quotation_id',$quotation->id)->latest('id')->first();
-        if($serviceRequest && $serviceRequest->workflow_stage==='CUSTOMER_DECISION'){
-            if($data['decision']==='APPROVE') $workflow->advance($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer approved quotation.');
-            elseif($data['decision']==='REJECT') $workflow->reject($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer rejected quotation.');
-            else {
-                $target=collect($serviceRequest->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION'
-                    ? ['FINANCE_REVIEW','OPERATIONS_FEASIBILITY','CONTRACT_REVIEW']
-                    : ['PRICING_PROCUREMENT','PRICING','TECHNICAL_REVIEW'])
-                    ->first(fn($stage)=>ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$serviceRequest->id)->where('action',$stage)->exists());
-                $target?$workflow->returnTo($serviceRequest,$target,$user->id,$data['notes']??'Customer requested quotation revision.'):$workflow->returnToPrevious($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer requested quotation revision.');
+        DB::transaction(function () use ($quotation,$data,$user,$workflow,$lifecycle): void {
+            $quotation=CrmQuotation::query()->where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)
+                ->lockForUpdate()->findOrFail($quotation->id);
+            $quotation->update(match($data['decision']){'APPROVE'=>['status'=>'CUSTOMER_APPROVED','customer_approved_at'=>now(),'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null],'REJECT'=>['status'=>'CUSTOMER_REJECTED','customer_rejected_at'=>now(),'customer_approved_at'=>null,'customer_decision_notes'=>$data['notes']??null],default=>['status'=>'REVISION_REQUESTED','customer_approved_at'=>null,'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null]});
+            $serviceRequest=ServiceRequest::query()->where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)->where('quotation_id',$quotation->id)->latest('id')->lockForUpdate()->first();
+            if($serviceRequest && $serviceRequest->workflow_stage==='CUSTOMER_DECISION'){
+                if($data['decision']==='APPROVE') $workflow->advance($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer approved quotation.');
+                elseif($data['decision']==='REJECT') $workflow->reject($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer rejected quotation.');
+                else {
+                    $target=collect($serviceRequest->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION'
+                        ? ['FINANCE_REVIEW','OPERATIONS_FEASIBILITY','CONTRACT_REVIEW']
+                        : ['PRICING_PROCUREMENT','PRICING','TECHNICAL_REVIEW'])
+                        ->first(fn($stage)=>ApprovalRequest::where('tenant_id',$user->tenant_id)->whereIn('entity_type',[ServiceRequest::class,'service_request'])->where('entity_id',$serviceRequest->id)->where('action',$stage)->exists());
+                    $target?$workflow->returnTo($serviceRequest,$target,$user->id,$data['notes']??'Customer requested quotation revision.'):$workflow->returnToPrevious($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer requested quotation revision.');
+                }
             }
-        }
-        $customer=Customer::findOrFail($user->customer_id);$lifecycle->record($customer,'QUOTATION_'.$data['decision'],'Quotation '.$quotation->quotation_no.' '.$data['decision'],$data['notes']??null,$quotation);
+            $customer=Customer::findOrFail($user->customer_id);$lifecycle->record($customer,'QUOTATION_'.$data['decision'],'Quotation '.$quotation->quotation_no.' '.$data['decision'],$data['notes']??null,$quotation);
+        });
         return back()->with('status','تم تسجيل قرار عرض السعر وتحديث سجل العميل.');
     }
 
