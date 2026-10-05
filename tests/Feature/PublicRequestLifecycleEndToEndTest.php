@@ -359,4 +359,51 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $this->assertSame('REJECTED',$quoteRequest->fresh()->approval_state);
         $this->assertFalse(ApprovalRequest::where('entity_id',$quoteRequest->id)->whereIn('status',['WAITING','PENDING'])->exists());
     }
+
+    public function test_legacy_quotation_revision_reopens_pricing_and_rejection_cancels_later_steps(): void
+    {
+        $request=$this->submit('QUOTATION','TECHNICAL_VISIT',['service_category'=>'Technical Visit']);
+        while($request->fresh()->workflow_stage!=='CUSTOMER_DECISION') $this->approveCurrent($request);
+        $quotation=CrmQuotation::findOrFail($request->quotation_id);
+        ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$request->id)
+            ->update(['entity_type'=>'service_request']);
+
+        $this->actingAs($this->portalUser)->post(route('customer.quotations.decision',$quotation),[
+            'decision'=>'REVISION','notes'=>'Please clarify the diagnostic scope.',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('PRICING',$request->fresh()->workflow_stage);
+        $this->assertSame('REVISION_REQUESTED',$quotation->fresh()->status);
+        $pricing=ApprovalRequest::where('entity_type','service_request')->where('entity_id',$request->id)
+            ->where('action','PRICING')->firstOrFail();
+        $this->assertSame('PENDING',$pricing->status);
+        $this->actingAs($this->actors['SALES'])->get(route('service-requests.workflow.show',$request))
+            ->assertOk()->assertSee('Save Estimated Pricing');
+        app(ApprovalService::class)->decide($pricing,'APPROVED','Revised pricing reviewed.');
+        $this->assertSame('CONTRACT_REVIEW',$request->fresh()->workflow_stage);
+        $contract=ApprovalRequest::where('entity_type','service_request')->where('entity_id',$request->id)
+            ->where('action','CONTRACT_REVIEW')->firstOrFail();
+        $this->actingAs($this->actors['TENDERS_CONTRACTS']);
+        app(ApprovalService::class)->decide($contract,'APPROVED','Revised quotation reviewed.');
+        $this->assertSame('CUSTOMER_DECISION',$request->fresh()->workflow_stage);
+        $this->assertSame('SENT',$quotation->fresh()->status);
+        $this->actingAs($this->portalUser)->post(route('customer.quotations.decision',$quotation),[
+            'decision'=>'REJECT','notes'=>'Reject revised test offer.',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('REJECTED',$request->fresh()->status);
+        $this->assertFalse(ApprovalRequest::where('entity_type','service_request')->where('entity_id',$request->id)
+            ->whereIn('status',['PENDING','WAITING'])->exists());
+    }
+
+    public function test_failed_customer_revision_rolls_back_quotation_decision(): void
+    {
+        $request=$this->submit('QUOTATION','TECHNICAL_VISIT',['service_category'=>'Technical Visit']);
+        while($request->fresh()->workflow_stage!=='CUSTOMER_DECISION') $this->approveCurrent($request);
+        $quotation=CrmQuotation::findOrFail($request->quotation_id);
+        ApprovalRequest::where('entity_type',ServiceRequest::class)->where('entity_id',$request->id)->delete();
+        $this->actingAs($this->portalUser)->post(route('customer.quotations.decision',$quotation),[
+            'decision'=>'REVISION','notes'=>'Unavailable return stage.',
+        ])->assertNotFound();
+        $this->assertSame('SENT',$quotation->fresh()->status);
+        $this->assertSame('CUSTOMER_DECISION',$request->fresh()->workflow_stage);
+    }
 }

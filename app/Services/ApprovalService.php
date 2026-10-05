@@ -42,7 +42,7 @@ class ApprovalService
             throw ValidationException::withMessages(['approval'=>'This workflow stage has no resolved owner yet. Assign the responsible user before continuing.']);
         }
 
-        if($request->entity_type===ServiceRequest::class){
+        if(in_array($request->entity_type,[ServiceRequest::class,'service_request'],true)){
             $serviceRequest=ServiceRequest::where('tenant_id',$user->tenant_id)->find($request->entity_id);
             if(!$serviceRequest) throw ValidationException::withMessages(['approval'=>'The service request is not available in your tenant.']);
 
@@ -84,7 +84,7 @@ class ApprovalService
             $before=$request->toArray();
             $request->update(['status'=>$decision,'decided_by'=>$user->id,'decision_note'=>$note,'decided_at'=>now()]);
             $this->audit->record('workflow.approval.'.strtolower($decision),$request,$before,$request->fresh()->toArray());
-            if($request->entity_type===ServiceRequest::class){
+            if(in_array($request->entity_type,[ServiceRequest::class,'service_request'],true)){
                 $serviceRequest=ServiceRequest::find($request->entity_id);
                 if($serviceRequest) $this->advanceServiceRequest($serviceRequest,$request,$decision,$note);
             }
