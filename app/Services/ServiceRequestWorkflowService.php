@@ -374,7 +374,7 @@ class ServiceRequestWorkflowService
         $fromStage = (string) $request->workflow_stage;
         $steps = ApprovalRequest::query()
             ->where('tenant_id', $request->tenant_id)
-            ->where('entity_type', ServiceRequest::class)
+            ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
             ->where('entity_id', $request->id)
             ->orderBy('step_order')
             ->get();
@@ -414,13 +414,13 @@ class ServiceRequestWorkflowService
     {
         $current = ApprovalRequest::query()
             ->where('tenant_id', $request->tenant_id)
-            ->where('entity_type', ServiceRequest::class)
+            ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
             ->where('entity_id', $request->id)
             ->where('action', $currentStage)
             ->firstOrFail();
         $previous = ApprovalRequest::query()
             ->where('tenant_id', $request->tenant_id)
-            ->where('entity_type', ServiceRequest::class)
+            ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
             ->where('entity_id', $request->id)
             ->where('step_order', '<', $current->step_order)
             ->orderByDesc('step_order')
@@ -436,7 +436,7 @@ class ServiceRequestWorkflowService
         $before = $this->state($request);
         $current = ApprovalRequest::query()
             ->where('tenant_id', $request->tenant_id)
-            ->where('entity_type', ServiceRequest::class)
+            ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
             ->where('entity_id', $request->id)
             ->where('action', $currentStage)
             ->first();
@@ -449,7 +449,7 @@ class ServiceRequestWorkflowService
             ]);
             ApprovalRequest::query()
                 ->where('tenant_id', $request->tenant_id)
-                ->where('entity_type', ServiceRequest::class)
+                ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
                 ->where('entity_id', $request->id)
                 ->where('step_order', '>', $current->step_order)
                 ->whereIn('status', ['WAITING','PENDING'])
