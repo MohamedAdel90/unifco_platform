@@ -99,7 +99,8 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
         ServiceRequest::create([
             'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
             'quotation_id'=>$quotation->id,'request_no'=>'SR-DETAIL-1','request_type'=>'QUOTATION',
-            'service_category'=>'Maintenance','subject'=>'Test contract quotation','status'=>'OPEN',
+            'company_name'=>'Client One','service_category'=>'Maintenance','subject'=>'Test contract quotation',
+            'details'=>'UAT quotation details for the customer portal.','status'=>'OPEN',
             'workflow_key'=>'MAINTENANCE_CONTRACT_QUOTATION','workflow_stage'=>'CUSTOMER_DECISION',
             'workflow_context'=>['quotation_pricing'=>[
                 'quotation_id'=>$quotation->id,'basis'=>'UAT estimate: duration and visits unconfirmed.',
