@@ -24,7 +24,7 @@ class MaintenanceRequestWorkflowController extends Controller
 
         $step = ApprovalRequest::query()
             ->where('tenant_id', $serviceRequest->tenant_id)
-            ->where('entity_type', ServiceRequest::class)
+            ->whereIn('entity_type', [ServiceRequest::class,'service_request'])
             ->where('entity_id', $serviceRequest->id)
             ->where('action', $serviceRequest->workflow_stage)
             ->where('status', 'PENDING')
@@ -95,7 +95,7 @@ class MaintenanceRequestWorkflowController extends Controller
                 ->lockForUpdate()->findOrFail($serviceRequest->id);
             $step=ApprovalRequest::query()
                 ->where('tenant_id',$requestRecord->tenant_id)
-                ->where('entity_type',ServiceRequest::class)
+                ->whereIn('entity_type',[ServiceRequest::class,'service_request'])
                 ->where('entity_id',$requestRecord->id)
                 ->where('action',$requestRecord->workflow_stage)
                 ->where('status','PENDING')->firstOrFail();
@@ -149,7 +149,7 @@ class MaintenanceRequestWorkflowController extends Controller
                 ($serviceRequest->workflow_key === 'SPARE_PARTS_QUOTATION' && $serviceRequest->workflow_stage === 'CONTRACT_REVIEW')
                 || ($serviceRequest->workflow_key === 'TECHNICAL_VISIT' && $serviceRequest->workflow_stage === 'PRICING'), 422);
             $step = ApprovalRequest::query()->where('tenant_id',$user->tenant_id)
-                ->where('entity_type',ServiceRequest::class)->where('entity_id',$serviceRequest->id)
+                ->whereIn('entity_type',[ServiceRequest::class,'service_request'])->where('entity_id',$serviceRequest->id)
                 ->where('action',$serviceRequest->workflow_stage)->where('status','PENDING')->lockForUpdate()->firstOrFail();
             abort_unless($step->approval_role === $pricingRole
                 && $step->routing_status !== 'NEEDS_ASSIGNMENT'
@@ -193,7 +193,7 @@ class MaintenanceRequestWorkflowController extends Controller
 
         $step=ApprovalRequest::query()
             ->where('tenant_id',$serviceRequest->tenant_id)
-            ->where('entity_type',ServiceRequest::class)
+            ->whereIn('entity_type',[ServiceRequest::class,'service_request'])
             ->where('entity_id',$serviceRequest->id)
             ->where('action',$serviceRequest->workflow_stage)
             ->where('status','PENDING')
