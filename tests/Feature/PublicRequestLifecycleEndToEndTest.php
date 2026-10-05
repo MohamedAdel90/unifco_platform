@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ApprovalRequest,Asset,ChartAccount,CrmQuotation,Customer,CustomerSite,FinancialDocument,FiscalPeriod,Organization,Project,ProjectUserAssignment,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,User,WorkOrder};
+use App\Models\{AccessScope,Role,ApprovalRequest,Asset,ChartAccount,CrmQuotation,Customer,CustomerSite,FinancialDocument,FiscalPeriod,Organization,Project,ProjectUserAssignment,PublicServiceRequest,ServiceContract,ServiceRequest,Tenant,User,WorkOrder};
 use App\Services\{ApprovalService,MaintenanceRequestTransitionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -405,5 +405,90 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         ])->assertNotFound();
         $this->assertSame('SENT',$quotation->fresh()->status);
         $this->assertSame('CUSTOMER_DECISION',$request->fresh()->workflow_stage);
+    }
+
+    private function restrictPortalUserToCustomerScope(): void
+    {
+        $role=Role::firstOrCreate(['tenant_id'=>$this->portalUser->tenant_id,'code'=>'CUSTOMER'],[
+            'name_en'=>'Customer','is_active'=>true,
+        ]);
+        DB::table('user_roles')->insert([
+            'tenant_id'=>$this->portalUser->tenant_id,'user_id'=>$this->portalUser->id,
+            'role_id'=>$role->id,'is_primary'=>true,'granted_at'=>now(),
+            'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        $scope=AccessScope::create([
+            'tenant_id'=>$this->portalUser->tenant_id,'scope_type'=>'CUSTOMER',
+            'scope_id'=>$this->customer->id,'name'=>'Customer records','is_active'=>true,
+        ]);
+        DB::table('user_scopes')->insert([
+            'tenant_id'=>$this->portalUser->tenant_id,'user_id'=>$this->portalUser->id,
+            'access_scope_id'=>$scope->id,'source'=>'DIRECT',
+            'created_at'=>now(),'updated_at'=>now(),
+        ]);
+        $this->actingAs($this->portalUser);
+    }
+
+    public function test_customer_scoped_revision_and_rejection_update_internal_steps_without_exposing_them(): void
+    {
+        $request=$this->submit('QUOTATION','TECHNICAL_VISIT',['service_category'=>'Technical Visit']);
+        while($request->fresh()->workflow_stage!=='CUSTOMER_DECISION') $this->approveCurrent($request);
+        $quotation=CrmQuotation::findOrFail($request->quotation_id);
+        $this->restrictPortalUserToCustomerScope();
+        $this->assertTrue(ServiceRequest::whereKey($request->id)->exists());
+        $this->assertFalse(ApprovalRequest::where('entity_id',$request->id)->exists());
+
+        $this->post(route('customer.quotations.decision',$quotation),[
+            'decision'=>'REVISION','notes'=>'Revise the scoped customer quotation.',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('PRICING',$request->fresh()->workflow_stage);
+        $this->assertSame('REVISION_REQUESTED',$quotation->fresh()->status);
+        $this->assertDatabaseHas('approval_requests',[
+            'tenant_id'=>$request->tenant_id,'entity_type'=>ServiceRequest::class,
+            'entity_id'=>$request->id,'action'=>'PRICING','status'=>'PENDING',
+        ]);
+        $this->assertDatabaseHas('approval_requests',[
+            'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,
+            'action'=>'CUSTOMER_DECISION','status'=>'WAITING',
+        ]);
+        $this->assertFalse(ApprovalRequest::where('entity_id',$request->id)->exists());
+
+        $this->actingAs($this->actors['SALES']);
+        while($request->fresh()->workflow_stage!=='CUSTOMER_DECISION') $this->approveCurrent($request);
+        $this->actingAs($this->portalUser)->post(route('customer.quotations.decision',$quotation),[
+            'decision'=>'REJECT','notes'=>'Reject the revised scoped customer quotation.',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('REJECTED',$request->fresh()->status);
+        $this->assertDatabaseHas('approval_requests',[
+            'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,
+            'action'=>'CUSTOMER_DECISION','status'=>'REJECTED',
+        ]);
+        $this->assertFalse(DB::table('approval_requests')->where('tenant_id',$request->tenant_id)
+            ->where('entity_type',ServiceRequest::class)->where('entity_id',$request->id)
+            ->whereIn('status',['PENDING','WAITING'])->exists());
+        $this->assertFalse(ApprovalRequest::where('entity_id',$request->id)->exists());
+    }
+
+    public function test_customer_scope_cannot_revise_another_customers_quotation(): void
+    {
+        $request=$this->submit('QUOTATION','TECHNICAL_VISIT',['service_category'=>'Technical Visit']);
+        while($request->fresh()->workflow_stage!=='CUSTOMER_DECISION') $this->approveCurrent($request);
+        $quotation=CrmQuotation::findOrFail($request->quotation_id);
+        $other=Customer::create([
+            'tenant_id'=>$request->tenant_id,'organization_id'=>$request->organization_id,
+            'customer_code'=>'E2E-OTHER','name'=>'Other customer','status'=>'ACTIVE',
+        ]);
+        $quotation->update(['customer_id'=>$other->id]);
+        $request->update(['customer_id'=>$other->id]);
+        $this->restrictPortalUserToCustomerScope();
+        $this->post(route('customer.quotations.decision',$quotation),[
+            'decision'=>'REVISION','notes'=>'Unauthorized revision.',
+        ])->assertNotFound();
+        $this->assertSame('SENT',$quotation->fresh()->status);
+        $this->assertSame('CUSTOMER_DECISION',$request->fresh()->workflow_stage);
+        $this->assertDatabaseHas('approval_requests',[
+            'entity_type'=>ServiceRequest::class,'entity_id'=>$request->id,
+            'action'=>'CUSTOMER_DECISION','status'=>'PENDING',
+        ]);
     }
 }
