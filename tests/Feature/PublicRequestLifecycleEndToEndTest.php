@@ -428,7 +428,8 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $this->actingAs($this->actors['FINANCE_MANAGER'])->post(route('service-requests.workflow.quotation-pricing',$request),[
             'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Out-of-stage edit.','payment_terms_days'=>30,
         ])->assertForbidden();
-        $quotation->update(['amount'=>0]);
+        $quotation->refresh()->update(['amount'=>0]);
+        $this->assertSame(0.0,(float)$quotation->fresh()->amount);
         $approval=ApprovalRequest::where('entity_id',$request->id)->where('action','EXECUTIVE_APPROVAL')->where('status','PENDING')->firstOrFail();
         $this->actingAs($this->actors['CEO']);
         try {
