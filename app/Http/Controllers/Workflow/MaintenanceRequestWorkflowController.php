@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Workflow;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ApprovalRequest,Project,ProjectUserAssignment,ServiceRequest,User};
+use App\Models\{ApprovalRequest,CrmQuotation,Project,ProjectUserAssignment,ServiceRequest,User};
 use App\Services\{AuthorizationService,MaintenanceRequestTransitionService,RequestStageOwnerService,ScopeService};
 use Illuminate\Http\{RedirectResponse,Request};
 use Illuminate\View\View;
@@ -120,6 +120,55 @@ class MaintenanceRequestWorkflowController extends Controller
         return $step
             && in_array((string)$request->workflow_key,['QUOTATION','SPARE_PARTS_QUOTATION','TECHNICAL_VISIT'],true)
             && in_array((string)$step->approval_role,['PROJECT_MANAGER','MAINTENANCE_MANAGER','MAINTENANCE_ENGINEER','TECHNICAL_SUPERVISOR','TECHNICIAN','QUALITY','HSE'],true);
+    }
+
+
+    public function saveQuotationPricing(Request $request, ServiceRequest $serviceRequest, AuthorizationService $authorization, ScopeService $scopes): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless((int)$serviceRequest->tenant_id === (int)$user->tenant_id, 404);
+        abort_unless($scopes->apply(ServiceRequest::query()->where('tenant_id',$user->tenant_id)->whereKey($serviceRequest->id),$user)->exists(), 403);
+        $roles = $authorization->roleCodes($user)->push(strtoupper((string)$user->role))->filter()->unique();
+        abort_unless($roles->contains('TENDERS_CONTRACTS'), 403);
+
+        $data = $request->validate([
+            'cost_amount' => ['required','numeric','gte:0'],
+            'amount' => ['required','numeric','gt:0'],
+            'pricing_basis' => ['required','string','max:2000'],
+        ]);
+
+        DB::transaction(function () use ($serviceRequest,$user,$data): void {
+            $serviceRequest = ServiceRequest::query()->where('tenant_id',$user->tenant_id)->lockForUpdate()->findOrFail($serviceRequest->id);
+            abort_unless($serviceRequest->workflow_key === 'SPARE_PARTS_QUOTATION' && $serviceRequest->workflow_stage === 'CONTRACT_REVIEW', 422);
+            $step = ApprovalRequest::query()->where('tenant_id',$user->tenant_id)
+                ->where('entity_type',ServiceRequest::class)->where('entity_id',$serviceRequest->id)
+                ->where('action','CONTRACT_REVIEW')->where('status','PENDING')->lockForUpdate()->firstOrFail();
+            abort_unless($step->approval_role === 'TENDERS_CONTRACTS'
+                && $step->routing_status !== 'NEEDS_ASSIGNMENT'
+                && (!$step->assigned_user_id || (int)$step->assigned_user_id === (int)$user->id), 403);
+
+            $quotation = CrmQuotation::query()->where('tenant_id',$user->tenant_id)
+                ->where('customer_id',$serviceRequest->customer_id)
+                ->whereKey($serviceRequest->quotation_id)->lockForUpdate()->firstOrFail();
+            abort_unless(in_array($quotation->status,['DRAFT','UNDER_REVIEW','REVISION_REQUESTED'],true), 422);
+            $quotation->update([
+                'cost_amount'=>$data['cost_amount'],
+                'amount'=>$data['amount'],
+                'margin_pct'=>round(((float)$data['amount']-(float)$data['cost_amount'])*100/(float)$data['amount'],2),
+                'currency'=>'SAR',
+            ]);
+            $context = (array)($serviceRequest->workflow_context ?? []);
+            $context['quotation_pricing'] = [
+                'quotation_id'=>$quotation->id,
+                'basis'=>$data['pricing_basis'],
+                'estimated'=>true,
+                'recorded_by'=>$user->id,
+                'recorded_at'=>now()->toIso8601String(),
+            ];
+            $serviceRequest->update(['workflow_context'=>$context]);
+        });
+
+        return back()->with('status','Estimated quotation pricing saved. Contract review is ready.');
     }
 
     public function assignStageOwner(Request $request, ServiceRequest $serviceRequest, AuthorizationService $authorization, ScopeService $scopes, RequestStageOwnerService $owners): RedirectResponse
