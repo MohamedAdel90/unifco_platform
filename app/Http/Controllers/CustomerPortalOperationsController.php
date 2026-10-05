@@ -60,7 +60,7 @@ class CustomerPortalOperationsController extends Controller
                     $target=collect($serviceRequest->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION'
                         ? ['FINANCE_REVIEW','OPERATIONS_FEASIBILITY','CONTRACT_REVIEW']
                         : ['PRICING_PROCUREMENT','PRICING','TECHNICAL_REVIEW'])
-                        ->first(fn($stage)=>ApprovalRequest::where('tenant_id',$user->tenant_id)->whereIn('entity_type',[ServiceRequest::class,'service_request'])->where('entity_id',$serviceRequest->id)->where('action',$stage)->exists());
+                        ->first(fn($stage)=>ApprovalRequest::withoutGlobalScope('unifco_runtime_data_scope')->where('tenant_id',$user->tenant_id)->whereIn('entity_type',[ServiceRequest::class,'service_request'])->where('entity_id',$serviceRequest->id)->where('action',$stage)->exists());
                     $target?$workflow->returnTo($serviceRequest,$target,$user->id,$data['notes']??'Customer requested quotation revision.'):$workflow->returnToPrevious($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer requested quotation revision.');
                 }
             }
