@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Asset,CrmLead,CrmOpportunity,CrmQuotation,Customer,FinancialDocument,Organization,ServiceContract,Tenant,User};
+use App\Models\{Asset,CrmLead,CrmOpportunity,CrmQuotation,Customer,ServiceRequest,FinancialDocument,Organization,ServiceContract,Tenant,User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -85,6 +85,34 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
         $this->actingAs($c['user'])->get('/customer/invoices/'.$draft->id.'/pdf')->assertNotFound();
         $this->actingAs($c['user'])->post('/customer/invoices/'.$draft->id.'/query',['notes'=>'Draft query'])->assertNotFound();
         $this->assertDatabaseMissing('customer_portal_action_requests',['reference_id'=>$draft->id,'action_type'=>'INVOICE_QUERY']);
+    }
+
+    public function test_customer_can_review_quotation_scope_and_terms_before_deciding(): void
+    {
+        $c=$this->context();
+        $opportunity=$this->opportunity($c,'DETAIL');
+        $quotation=CrmQuotation::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'opportunity_id'=>$opportunity->id,
+            'customer_id'=>$c['customer']->id,'quotation_no'=>'QT-DETAIL-1','quotation_date'=>now(),
+            'currency'=>'SAR','cost_amount'=>250,'amount'=>300,'payment_terms_days'=>30,'status'=>'SENT',
+        ]);
+        ServiceRequest::create([
+            'tenant_id'=>$c['tenant']->id,'organization_id'=>$c['org']->id,'customer_id'=>$c['customer']->id,
+            'quotation_id'=>$quotation->id,'request_no'=>'SR-DETAIL-1','request_type'=>'QUOTATION',
+            'company_name'=>'Client One','service_category'=>'Maintenance','subject'=>'Test contract quotation',
+            'details'=>'UAT quotation details for the customer portal.','status'=>'OPEN',
+            'workflow_key'=>'MAINTENANCE_CONTRACT_QUOTATION','workflow_stage'=>'CUSTOMER_DECISION',
+            'workflow_context'=>['quotation_pricing'=>[
+                'quotation_id'=>$quotation->id,'basis'=>'UAT estimate: duration and visits unconfirmed.',
+                'payment_terms_days'=>30,
+            ]],
+        ]);
+
+        $this->actingAs($c['user'])->get('/customer/quotations')->assertOk()
+            ->assertSee('QT-DETAIL-1')->assertSee('SR-DETAIL-1')
+            ->assertSee('UAT estimate: duration and visits unconfirmed.')
+            ->assertSee('30 days')->assertSee('View details')
+            ->assertDontSee('250.00 SAR');
     }
 
     public function test_customer_can_approve_only_own_quotation(): void
