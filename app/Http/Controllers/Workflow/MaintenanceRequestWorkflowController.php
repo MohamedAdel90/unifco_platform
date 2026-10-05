@@ -134,20 +134,22 @@ class MaintenanceRequestWorkflowController extends Controller
         abort_unless($scopes->apply(ServiceRequest::query()->where('tenant_id',$user->tenant_id)->whereKey($serviceRequest->id),$user)->exists(), 403);
         $roles = $authorization->roleCodes($user)->push(strtoupper((string)$user->role))->filter()->unique();
         $pricingRole = $serviceRequest->workflow_key === 'TECHNICAL_VISIT' && $serviceRequest->workflow_stage === 'PRICING'
-            ? 'SALES' : 'TENDERS_CONTRACTS';
+            ? 'SALES' : ($serviceRequest->workflow_key === 'MAINTENANCE_CONTRACT_QUOTATION' && $serviceRequest->workflow_stage === 'FINANCE_REVIEW' ? 'FINANCE_MANAGER' : 'TENDERS_CONTRACTS');
         abort_unless($roles->contains($pricingRole), 403);
 
         $data = $request->validate([
             'cost_amount' => ['required','numeric','gte:0'],
             'amount' => ['required','numeric','gt:0'],
             'pricing_basis' => ['required','string','max:2000'],
+            'payment_terms_days' => [$serviceRequest->workflow_key === 'MAINTENANCE_CONTRACT_QUOTATION' ? 'required' : 'nullable','integer','min:0','max:365'],
         ]);
 
         DB::transaction(function () use ($serviceRequest,$user,$data,$pricingRole): void {
             $serviceRequest = ServiceRequest::query()->where('tenant_id',$user->tenant_id)->lockForUpdate()->findOrFail($serviceRequest->id);
             abort_unless(
                 ($serviceRequest->workflow_key === 'SPARE_PARTS_QUOTATION' && $serviceRequest->workflow_stage === 'CONTRACT_REVIEW')
-                || ($serviceRequest->workflow_key === 'TECHNICAL_VISIT' && $serviceRequest->workflow_stage === 'PRICING'), 422);
+                || ($serviceRequest->workflow_key === 'TECHNICAL_VISIT' && $serviceRequest->workflow_stage === 'PRICING')
+                || ($serviceRequest->workflow_key === 'MAINTENANCE_CONTRACT_QUOTATION' && $serviceRequest->workflow_stage === 'FINANCE_REVIEW'), 422);
             $step = ApprovalRequest::query()->where('tenant_id',$user->tenant_id)
                 ->whereIn('entity_type',[ServiceRequest::class,'service_request'])->where('entity_id',$serviceRequest->id)
                 ->where('action',$serviceRequest->workflow_stage)->where('status','PENDING')->lockForUpdate()->firstOrFail();
@@ -164,12 +166,14 @@ class MaintenanceRequestWorkflowController extends Controller
                 'amount'=>$data['amount'],
                 'margin_pct'=>round(((float)$data['amount']-(float)$data['cost_amount'])*100/(float)$data['amount'],2),
                 'currency'=>'SAR',
+                ...($pricingRole === 'FINANCE_MANAGER' ? ['payment_terms_days'=>$data['payment_terms_days']] : []),
             ]);
             $context = (array)($serviceRequest->workflow_context ?? []);
             $context['quotation_pricing'] = [
                 'quotation_id'=>$quotation->id,
                 'basis'=>$data['pricing_basis'],
                 'estimated'=>true,
+                ...($pricingRole === 'FINANCE_MANAGER' ? ['payment_terms_days'=>(int)$data['payment_terms_days']] : []),
                 'recorded_by'=>$user->id,
                 'recorded_at'=>now()->toIso8601String(),
             ];
