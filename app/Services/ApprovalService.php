@@ -129,6 +129,16 @@ class ApprovalService
             $this->workflow->returnToPrevious($serviceRequest,$approval->action,Auth::id(),$note);
         } else {
             $this->workflow->advance($serviceRequest,$approval->action,Auth::id(),$note);
+            $serviceRequest->refresh();
+            if($serviceRequest->workflow_key==='SPARE_PARTS_QUOTATION' && $serviceRequest->workflow_stage==='CUSTOMER_DECISION'){
+                $quotation=CrmQuotation::query()->where('tenant_id',$serviceRequest->tenant_id)
+                    ->where('customer_id',$serviceRequest->customer_id)->find($serviceRequest->quotation_id);
+                if($quotation && (float)$quotation->amount>0){
+                    $before=$quotation->toArray();
+                    $quotation->update(['status'=>'SENT']);
+                    $this->audit->record('quotation.ready_for_customer',$quotation,$before,$quotation->fresh()->toArray());
+                }
+            }
         }
 
         if($serviceRequest->customer_id){
