@@ -172,6 +172,10 @@ class CustomerPortalController extends Controller
         })->values();
 
         $quotations = CrmQuotation::where('customer_id', $customer->id)->latest('quotation_date')->limit(50)->get();
+        $quotationRequests = $section === 'quotations' && $quotations->isNotEmpty()
+            ? ServiceRequest::query()->where('tenant_id', $customer->tenant_id)->where('customer_id', $customer->id)
+                ->whereIn('quotation_id', $quotations->pluck('id'))->get(['quotation_id', 'request_no', 'workflow_context'])->keyBy('quotation_id')
+            : collect();
         $invoices = FinancialDocument::where('customer_id', $customer->id)->where('document_type', 'AR_INVOICE')->visibleToCustomer()->latest('document_date')->limit(100)->get();
         $payments = DB::table('payments')->join('financial_documents', 'financial_documents.id', '=', 'payments.financial_document_id')
             ->where('financial_documents.customer_id', $customer->id)->select('payments.*', 'financial_documents.document_no')
@@ -297,7 +301,7 @@ class CustomerPortalController extends Controller
 
         return response()->view('customer.section', compact(
             'section', 'customer', 'sites', 'contracts', 'assets', 'plans', 'workOrders', 'invoices', 'payments', 'materials',
-            'requests', 'quotations', 'timeline', 'visitReports', 'attachments', 'alerts', 'locations', 'warrantyParts',
+            'requests', 'quotations', 'quotationRequests', 'timeline', 'visitReports', 'attachments', 'alerts', 'locations', 'warrantyParts',
             'openInvoiceAmount', 'openWorkOrders', 'openRequestCount', 'pendingQuotationCount', 'activeContractCount',
             'inProgressCount', 'completedCount', 'overdueCount', 'criticalWorkOrders', 'recentWorkOrders', 'recentRequests',
             'upcomingPlans', 'slaPerformance', 'preventiveCount', 'correctiveCount', 'siteFilter', 'contractFilter',
