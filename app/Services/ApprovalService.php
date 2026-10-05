@@ -61,13 +61,21 @@ class ApprovalService
             if($decision==='APPROVED' && (
                 ($request->action==='CONTRACT_REVIEW' && $serviceRequest->workflow_key==='SPARE_PARTS_QUOTATION')
                 || (in_array($request->action,['PRICING','CONTRACT_REVIEW'],true) && $serviceRequest->workflow_key==='TECHNICAL_VISIT')
+                || (in_array($request->action,['FINANCE_REVIEW','EXECUTIVE_APPROVAL'],true) && $serviceRequest->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION')
             )){
                 $quotation=CrmQuotation::query()->where('tenant_id',$user->tenant_id)
                     ->where('customer_id',$serviceRequest->customer_id)->find($serviceRequest->quotation_id);
                 $pricing=data_get($serviceRequest->workflow_context,'quotation_pricing');
                 if(!$quotation || (float)$quotation->amount<=0 || !is_array($pricing)
-                    || (int)($pricing['quotation_id']??0)!==(int)$quotation->id || blank($pricing['basis']??null)){
-                    throw ValidationException::withMessages(['approval'=>'Save the linked quotation amount and pricing basis before approving quotation pricing or contract review.']);
+                    || (int)($pricing['quotation_id']??0)!==(int)$quotation->id || blank($pricing['basis']??null)
+                    || ($serviceRequest->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION' && (
+                        !array_key_exists('payment_terms_days',$pricing)
+                        || !is_numeric($pricing['payment_terms_days'])
+                        || (int)$pricing['payment_terms_days']<0 || (int)$pricing['payment_terms_days']>365
+                        || $quotation->payment_terms_days===null
+                        || (int)$quotation->payment_terms_days!==(int)$pricing['payment_terms_days']
+                    ))){
+                    throw ValidationException::withMessages(['approval'=>'Save the linked quotation amount, pricing basis and required payment terms before approving this commercial review.']);
                 }
             }
 
@@ -133,7 +141,7 @@ class ApprovalService
         } else {
             $this->workflow->advance($serviceRequest,$approval->action,Auth::id(),$note);
             $serviceRequest->refresh();
-            if(in_array($serviceRequest->workflow_key,['SPARE_PARTS_QUOTATION','TECHNICAL_VISIT'],true) && $serviceRequest->workflow_stage==='CUSTOMER_DECISION'){
+            if(in_array($serviceRequest->workflow_key,['SPARE_PARTS_QUOTATION','TECHNICAL_VISIT','MAINTENANCE_CONTRACT_QUOTATION'],true) && $serviceRequest->workflow_stage==='CUSTOMER_DECISION'){
                 $quotation=CrmQuotation::query()->where('tenant_id',$serviceRequest->tenant_id)
                     ->where('customer_id',$serviceRequest->customer_id)->find($serviceRequest->quotation_id);
                 if($quotation && (float)$quotation->amount>0){
