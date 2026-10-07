@@ -270,6 +270,11 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             $this->assertSame('SENT',$quotation->status);
             $this->assertSame(300.0,(float)$quotation->amount);
         }
+        if ($request->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION') {
+            $context=$request->workflow_context ?? [];
+            data_set($context,'quotation_pricing.customer_scope','Confirmed maintenance scope for the E2E fixture.');
+            $request->update(['workflow_context'=>$context]);
+        }
         $this->actingAs($this->portalUser)->post(route('customer.quotations.decision',$quotation),[
             'decision'=>'APPROVE','notes'=>'Customer approved the commercial offer.',
         ])->assertRedirect();

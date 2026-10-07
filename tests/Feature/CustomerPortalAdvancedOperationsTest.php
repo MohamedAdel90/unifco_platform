@@ -103,16 +103,22 @@ class CustomerPortalAdvancedOperationsTest extends TestCase
             'details'=>'UAT quotation details for the customer portal.','status'=>'OPEN',
             'workflow_key'=>'MAINTENANCE_CONTRACT_QUOTATION','workflow_stage'=>'CUSTOMER_DECISION',
             'workflow_context'=>['quotation_pricing'=>[
-                'quotation_id'=>$quotation->id,'basis'=>'UAT estimate: duration and visits unconfirmed.',
+                'quotation_id'=>$quotation->id,'basis'=>'Internal cost 250 SAR. UAT estimate: duration and visits unconfirmed.',
                 'payment_terms_days'=>30,
             ]],
         ]);
 
         $this->actingAs($c['user'])->get('/customer/quotations')->assertOk()
             ->assertSee('QT-DETAIL-1')->assertSee('SR-DETAIL-1')
-            ->assertSee('UAT estimate: duration and visits unconfirmed.')
+            ->assertSee('Scope is not confirmed. Request a revision before approval.')
             ->assertSee('30 days')->assertSee('View details')
-            ->assertDontSee('250.00 SAR');
+            ->assertDontSee('Internal cost 250 SAR')
+            ->assertDontSee('<option value="APPROVE">',false);
+
+        $this->actingAs($c['user'])->post('/customer/quotations/'.$quotation->id.'/decision',[
+            'decision'=>'APPROVE',
+        ])->assertSessionHasErrors('decision');
+        $this->assertDatabaseHas('crm_quotations',['id'=>$quotation->id,'status'=>'SENT']);
     }
 
     public function test_customer_can_approve_only_own_quotation(): void
