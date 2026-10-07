@@ -174,7 +174,7 @@ class CustomerPortalController extends Controller
         $quotations = CrmQuotation::where('customer_id', $customer->id)->latest('quotation_date')->limit(50)->get();
         $quotationRequests = $section === 'quotations' && $quotations->isNotEmpty()
             ? ServiceRequest::query()->where('tenant_id', $customer->tenant_id)->where('customer_id', $customer->id)
-                ->whereIn('quotation_id', $quotations->pluck('id'))->get(['quotation_id', 'request_no', 'workflow_context'])->keyBy('quotation_id')
+                ->whereIn('quotation_id', $quotations->pluck('id'))->get(['quotation_id', 'request_no', 'workflow_key', 'workflow_context'])->keyBy('quotation_id')
             : collect();
         $invoices = FinancialDocument::where('customer_id', $customer->id)->where('document_type', 'AR_INVOICE')->visibleToCustomer()->latest('document_date')->limit(100)->get();
         $payments = DB::table('payments')->join('financial_documents', 'financial_documents.id', '=', 'payments.financial_document_id')
