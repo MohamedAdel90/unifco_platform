@@ -51,8 +51,17 @@ class CustomerPortalOperationsController extends Controller
         DB::transaction(function () use ($quotation,$data,$user,$workflow,$lifecycle): void {
             $quotation=CrmQuotation::query()->where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)
                 ->lockForUpdate()->findOrFail($quotation->id);
-            $quotation->update(match($data['decision']){'APPROVE'=>['status'=>'CUSTOMER_APPROVED','customer_approved_at'=>now(),'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null],'REJECT'=>['status'=>'CUSTOMER_REJECTED','customer_rejected_at'=>now(),'customer_approved_at'=>null,'customer_decision_notes'=>$data['notes']??null],default=>['status'=>'REVISION_REQUESTED','customer_approved_at'=>null,'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null]});
             $serviceRequest=ServiceRequest::query()->where('tenant_id',$user->tenant_id)->where('customer_id',$user->customer_id)->where('quotation_id',$quotation->id)->latest('id')->lockForUpdate()->first();
+            if ($data['decision']==='APPROVE' && $serviceRequest?->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION'
+                && $serviceRequest->workflow_stage==='CUSTOMER_DECISION'
+                && ((int) data_get($serviceRequest, 'workflow_context.quotation_pricing.quotation_id') !== (int) $quotation->id
+                    || !filled(data_get($serviceRequest, 'workflow_context.quotation_pricing.customer_scope')))) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'decision'=>'The customer scope is not confirmed. Request a revision before approving this quotation.',
+                ]);
+            }
+            $quotation->update(match($data['decision']){'APPROVE'=>['status'=>'CUSTOMER_APPROVED','customer_approved_at'=>now(),'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null],'REJECT'=>['status'=>'CUSTOMER_REJECTED','customer_rejected_at'=>now(),'customer_approved_at'=>null,'customer_decision_notes'=>$data['notes']??null],default=>['status'=>'REVISION_REQUESTED','customer_approved_at'=>null,'customer_rejected_at'=>null,'customer_decision_notes'=>$data['notes']??null]});
+            
             if($serviceRequest && $serviceRequest->workflow_stage==='CUSTOMER_DECISION'){
                 if($data['decision']==='APPROVE') $workflow->advance($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer approved quotation.');
                 elseif($data['decision']==='REJECT') $workflow->reject($serviceRequest,'CUSTOMER_DECISION',$user->id,$data['notes']??'Customer rejected quotation.');
