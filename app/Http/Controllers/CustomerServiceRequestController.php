@@ -72,7 +72,8 @@ class CustomerServiceRequestController extends Controller
         $attachments=collect(); if($workOrder){$attachments=MaintenanceAttachment::where('customer_id',$customer->id)->where('work_order_id',$workOrder->id)->latest()->get();}
         $canAccept=$serviceRequest->workflow_stage==='CUSTOMER_ACCEPTANCE' && $workOrder && $workOrder->status==='COMPLETED' && $access->canAcceptWork($user);
         $canDecideDelivery=$serviceRequest->workflow_stage==='CUSTOMER_DELIVERY';
+        $technicalDeliveryReport=trim((string)data_get($serviceRequest,'workflow_context.customer_delivery_report.text'));
 
-        return view('customer.service-requests.show',['customer'=>$customer,'serviceRequest'=>$serviceRequest,'customerDetails'=>$customerDetails,'asset'=>$asset,'site'=>$site,'contract'=>$contract,'workOrder'=>$workOrder,'quotation'=>$quotation,'invoice'=>$invoice,'payments'=>$payments,'customerStatus'=>$customerStatus,'events'=>$events,'attachments'=>$attachments,'canAccept'=>$canAccept,'canDecideDelivery'=>$canDecideDelivery,'portalRole'=>$access->role($user),'allowedSections'=>$access->allowedSections($user),'canManageUsers'=>$access->canManageUsers($user),'readOnly'=>$access->isReadOnly($user)]);
+        return view('customer.service-requests.show',['customer'=>$customer,'serviceRequest'=>$serviceRequest,'customerDetails'=>$customerDetails,'asset'=>$asset,'site'=>$site,'contract'=>$contract,'workOrder'=>$workOrder,'quotation'=>$quotation,'invoice'=>$invoice,'payments'=>$payments,'customerStatus'=>$customerStatus,'events'=>$events,'attachments'=>$attachments,'canAccept'=>$canAccept,'canDecideDelivery'=>$canDecideDelivery,'technicalDeliveryReport'=>$technicalDeliveryReport,'portalRole'=>$access->role($user),'allowedSections'=>$access->allowedSections($user),'canManageUsers'=>$access->canManageUsers($user),'readOnly'=>$access->isReadOnly($user)]);
     }
 }

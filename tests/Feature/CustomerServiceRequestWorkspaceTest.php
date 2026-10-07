@@ -178,4 +178,23 @@ class CustomerServiceRequestWorkspaceTest extends TestCase
             ->assertDontSee('>Triage<',false)
             ->assertSee('Every company request and delivery stage in one unified account.');
     }
+    public function test_consultation_without_customer_report_cannot_be_accepted(): void
+    {
+        [$admin,$request]=$this->adminAndRequest();
+        $request->update([
+            'request_type'=>'CONSULTATION',
+            'workflow_key'=>'TECHNICAL_CONSULTATION',
+            'workflow_stage'=>'CUSTOMER_DELIVERY',
+        ]);
+
+        $this->actingAs($admin)->get(route('customer.service-requests.show',$request))
+            ->assertOk()->assertSee('Consultation report not delivered')
+            ->assertDontSee('Accept Delivery');
+
+        $this->actingAs($admin)->post(route('customer.requests.decision',$request),[
+            'decision'=>'ACCEPT',
+        ])->assertSessionHasErrors('decision');
+        $this->assertSame('CUSTOMER_DELIVERY',$request->fresh()->workflow_stage);
+    }
+
 }

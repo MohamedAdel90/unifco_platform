@@ -84,6 +84,11 @@ class CustomerPortalOperationsController extends Controller
         abort_unless((int)$serviceRequest->tenant_id===(int)$user->tenant_id && (int)$serviceRequest->customer_id===(int)$user->customer_id,404);
         abort_unless($serviceRequest->workflow_stage==='CUSTOMER_DELIVERY',422,'This request is not waiting for customer delivery confirmation.');
         $data=$request->validate(['decision'=>['required','in:ACCEPT,REJECT,REVISION'],'notes'=>['nullable','string','max:2000']]);
+        if ($data['decision']==='ACCEPT' && !filled(data_get($serviceRequest,'workflow_context.customer_delivery_report.text'))) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'decision'=>'A customer-visible technical report must be delivered before acceptance.',
+            ]);
+        }
         if($data['decision']==='ACCEPT') $workflow->advance($serviceRequest,'CUSTOMER_DELIVERY',$user->id,$data['notes']??'Customer accepted technical delivery.');
         elseif($data['decision']==='REJECT') $workflow->reject($serviceRequest,'CUSTOMER_DELIVERY',$user->id,$data['notes']??'Customer rejected technical delivery.');
         else $workflow->returnTo($serviceRequest,'TECHNICAL_REPORT',$user->id,$data['notes']??'Customer requested report revision.');

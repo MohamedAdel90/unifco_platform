@@ -162,6 +162,14 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             $this->assertSame($approval->action,$request->fresh()->workflow_stage);
             $this->assertTrue(data_get($request->fresh()->workflow_context,'quotation_pricing.estimated'));
         }
+        if ($request->workflow_stage==='TECHNICAL_REPORT') {
+            $this->post(route('service-requests.workflow.stage-review',$request),[
+                'decision'=>'APPROVE',
+                'notes'=>'Internal technical review completed.',
+                'customer_report'=>'Site findings and recommendations for the E2E consultation customer.',
+            ])->assertRedirect()->assertSessionHasNoErrors();
+            return;
+        }
         app(ApprovalService::class)->decide($approval,'APPROVED','E2E '.$approval->action.' completed.');
     }
 
@@ -339,6 +347,9 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         $request=$this->submit('CONSULTATION','TECHNICAL_CONSULTATION',['service_category'=>'Technical Consultation']);
         $this->assertSame('TECHNICAL_CONSULTATION',$request->workflow_key);
         while($request->fresh()->workflow_stage!=='CUSTOMER_DELIVERY') $this->approveCurrent($request);
+        $this->actingAs($this->portalUser)->get(route('customer.service-requests.show',$request))
+            ->assertOk()->assertSee('Site findings and recommendations for the E2E consultation customer.')
+            ->assertDontSee('Internal technical review completed.');
         $this->actingAs($this->portalUser)->post(route('customer.requests.decision',$request),[
             'decision'=>'ACCEPT','notes'=>'Technical report accepted.',
         ])->assertRedirect();

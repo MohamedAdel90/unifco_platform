@@ -381,6 +381,7 @@ class MaintenanceRequestWorkflowExecutionTest extends TestCase
         $this->assertSame('TECHNICAL_REPORT',$serviceRequest->fresh()->workflow_stage);
         $this->actingAs($engineer)->post(route('service-requests.workflow.stage-review',$serviceRequest),[
             'decision'=>'APPROVE','notes'=>'UAT report: inspection findings, risks and recommendations recorded.',
+            'customer_report'=>'UAT customer-facing findings and recommended next steps.',
         ])->assertRedirect()->assertSessionHasNoErrors();
         $this->assertSame('CUSTOMER_DELIVERY',$serviceRequest->fresh()->workflow_stage);
     }

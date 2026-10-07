@@ -47,6 +47,10 @@
 <option value="RETURN">Return for revision</option>
 </select>
 <textarea name="notes" rows="4" @required($serviceRequest->workflow_stage==='TECHNICAL_REPORT') placeholder="Technical review notes, findings, risks, recommendations"></textarea>
+@if($serviceRequest->workflow_stage==='TECHNICAL_REPORT')
+<label>Customer-visible consultation report<textarea name="customer_report" rows="6" placeholder="Describe the findings, outcome and recommendations the customer should review before accepting delivery.">{{ old('customer_report') }}</textarea></label>
+<p class="muted">This report is shown to the customer. Keep internal notes in the field above.</p>
+@endif
 <button>Record Review</button>
 </form>
 @elseif(($serviceRequest->workflow_stage==='CONTRACT_REVIEW' && $serviceRequest->workflow_key==='SPARE_PARTS_QUOTATION') || ($serviceRequest->workflow_stage==='PRICING' && $serviceRequest->workflow_key==='TECHNICAL_VISIT') || ($serviceRequest->workflow_stage==='FINANCE_REVIEW' && $serviceRequest->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION'))
