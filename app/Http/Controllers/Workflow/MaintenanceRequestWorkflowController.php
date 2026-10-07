@@ -291,6 +291,7 @@ class MaintenanceRequestWorkflowController extends Controller
         $data=$request->validate([
             'decision'=>['required','in:APPROVE,RETURN,REWORK'],
             'notes'=>[$serviceRequest->workflow_stage === 'TECHNICAL_REPORT' ? 'required' : 'nullable','string','max:3000'],
+            'customer_report'=>[$serviceRequest->workflow_stage === 'TECHNICAL_REPORT' && $request->input('decision') === 'APPROVE' ? 'required' : 'nullable','string','max:5000'],
         ]);
         $stage=(string)$serviceRequest->workflow_stage;
         $allowed=[
@@ -302,7 +303,20 @@ class MaintenanceRequestWorkflowController extends Controller
         abort_unless(in_array($stage,$allowed,true),422,'This stage is not handled by technical review.');
 
         if($data['decision']==='APPROVE'){
-            $transitions->complete($request->user(),$serviceRequest,[$stage],$data['notes']??null);
+            if ($stage==='TECHNICAL_REPORT') {
+                DB::transaction(function () use ($transitions,$request,$serviceRequest,$stage,$data): void {
+                    $transitions->complete($request->user(),$serviceRequest,[$stage],$data['notes']??null);
+                    $current=$serviceRequest->fresh();
+                    $context=(array)($current->workflow_context ?? []);
+                    $context['customer_delivery_report']=[
+                        'text'=>trim($data['customer_report']),
+                        'submitted_at'=>now()->toIso8601String(),
+                    ];
+                    $current->update(['workflow_context'=>$context]);
+                });
+            } else {
+                $transitions->complete($request->user(),$serviceRequest,[$stage],$data['notes']??null);
+            }
         } else {
             $target=match($stage){
                 'MAINTENANCE_MANAGER_REVIEW'=>'PROJECT_MANAGER_REVIEW',
