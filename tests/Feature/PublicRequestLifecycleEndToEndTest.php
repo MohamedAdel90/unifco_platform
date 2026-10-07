@@ -154,7 +154,7 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
             $this->assertSame($amountBefore,(float)$quotation->fresh()->amount);
             $this->post(route('service-requests.workflow.quotation-pricing',$request),[
                 'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'UAT: indicative scope; duration, equipment, visits and exclusions require confirmation.',
-                ...($request->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION' ? ['payment_terms_days'=>30] : []),
+                ...($request->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION' ? ['payment_terms_days'=>30,'customer_scope'=>'UAT test only: proposed maintenance scope; equipment, visit frequency and exclusions require confirmation before any real agreement.'] : []),
             ])->assertRedirect()->assertSessionHasNoErrors();
             $this->assertSame(300.0,(float)$quotation->fresh()->amount);
             $this->assertSame(250.0,(float)$quotation->fresh()->cost_amount);
@@ -432,17 +432,22 @@ class PublicRequestLifecycleEndToEndTest extends TestCase
         while($request->fresh()->workflow_stage!=='FINANCE_REVIEW') $this->approveCurrent($request);
         $quotation=CrmQuotation::findOrFail($request->quotation_id);
         $this->actingAs($this->actors['TENDERS_CONTRACTS'])->post(route('service-requests.workflow.quotation-pricing',$request),[
-            'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Test contract.','payment_terms_days'=>30,
+            'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Test contract.','payment_terms_days'=>30,'customer_scope'=>'UAT test scope.',
         ])->assertForbidden();
         $this->actingAs($this->actors['FINANCE_MANAGER'])->post(route('service-requests.workflow.quotation-pricing',$request),[
             'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Test contract.',
         ])->assertSessionHasErrors('payment_terms_days');
         $this->assertSame(0.0,(float)$quotation->fresh()->amount);
+        $this->actingAs($this->actors['FINANCE_MANAGER'])->post(route('service-requests.workflow.quotation-pricing',$request),[
+            'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Internal UAT basis.','payment_terms_days'=>30,
+        ])->assertSessionHasErrors('customer_scope');
+        $this->get(route('service-requests.workflow.show',$request))->assertOk()->assertSee('Customer-facing scope');
         $this->approveCurrent($request);
+        $this->assertStringContainsString('UAT test only',data_get($request->fresh()->workflow_context,'quotation_pricing.customer_scope'));
         $this->assertSame(30,(int)$quotation->fresh()->payment_terms_days);
         $this->assertSame('EXECUTIVE_APPROVAL',$request->fresh()->workflow_stage);
         $this->actingAs($this->actors['FINANCE_MANAGER'])->post(route('service-requests.workflow.quotation-pricing',$request),[
-            'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Out-of-stage edit.','payment_terms_days'=>30,
+            'cost_amount'=>250,'amount'=>300,'pricing_basis'=>'Out-of-stage edit.','payment_terms_days'=>30,'customer_scope'=>'Out-of-stage scope.',
         ])->assertForbidden();
         $quotation->refresh()->update(['amount'=>0]);
         $this->assertSame(0.0,(float)$quotation->fresh()->amount);

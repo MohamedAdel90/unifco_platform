@@ -141,6 +141,7 @@ class MaintenanceRequestWorkflowController extends Controller
             'cost_amount' => ['required','numeric','gte:0'],
             'amount' => ['required','numeric','gt:0'],
             'pricing_basis' => ['required','string','max:2000'],
+            'customer_scope' => [$serviceRequest->workflow_key === 'MAINTENANCE_CONTRACT_QUOTATION' ? 'required' : 'nullable','string','max:2000'],
             'payment_terms_days' => [$serviceRequest->workflow_key === 'MAINTENANCE_CONTRACT_QUOTATION' ? 'required' : 'nullable','integer','min:0','max:365'],
         ]);
 
@@ -172,6 +173,7 @@ class MaintenanceRequestWorkflowController extends Controller
             $context['quotation_pricing'] = [
                 'quotation_id'=>$quotation->id,
                 'basis'=>$data['pricing_basis'],
+                'customer_scope'=>trim((string)($data['customer_scope'] ?? '')),
                 'estimated'=>true,
                 ...($pricingRole === 'FINANCE_MANAGER' ? ['payment_terms_days'=>(int)$data['payment_terms_days']] : []),
                 'recorded_by'=>$user->id,
