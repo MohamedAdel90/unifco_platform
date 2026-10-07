@@ -65,6 +65,10 @@
 <p class="muted">Record the proposed contract duration, equipment list, visit frequency, exclusions and billing assumptions in the pricing basis. These remain indicative until approved.</p>
 @endif
 <label>Pricing basis and unconfirmed details<textarea name="pricing_basis" rows="4" required>{{ old('pricing_basis',data_get($serviceRequest->workflow_context,'quotation_pricing.basis')) }}</textarea></label>
+@if($serviceRequest->workflow_key==='MAINTENANCE_CONTRACT_QUOTATION')
+<label>Customer-facing scope (shown with the quotation)<textarea name="customer_scope" rows="5" required placeholder="Describe only the proposed service scope, assumptions, exclusions and test-only status for the customer.">{{ old('customer_scope',data_get($serviceRequest->workflow_context,'quotation_pricing.customer_scope')) }}</textarea></label>
+<p class="muted">The customer can read this scope before deciding. Keep internal costs and pricing assumptions in the field above.</p>
+@endif
 <button type="submit">Save Estimated Pricing</button>
 </form>
 @else
