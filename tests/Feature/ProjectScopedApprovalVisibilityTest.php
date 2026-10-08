@@ -60,7 +60,7 @@ class ProjectScopedApprovalVisibilityTest extends TestCase
         $this->actingAs($supervisor);
         $this->assertSame(
             [$approvals[0]->id],
-            ApprovalRequest::query()->whereIn('id', array_column($approvals, 'id'))->pluck('id')->all()
+            ApprovalRequest::query()->whereIn('id', array_map(fn ($approval) => $approval->id, $approvals))->pluck('id')->all()
         );
     }
 }
