@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Asset,CrmQuotation,Customer,Organization,PublicServiceRequest,ServiceRequest,Tenant,WorkOrder};
+use App\Models\{Asset,CrmOpportunity,CrmQuotation,Customer,Organization,PublicServiceRequest,ServiceRequest,Tenant,WorkOrder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -60,7 +60,13 @@ class HistoricalIntakeAssetReconciliationTest extends TestCase
                 'submitted_at' => now(),
             ]);
             if ($reference === 'UNRM-926000029') {
+                $opportunity = CrmOpportunity::create([
+                    'tenant_id' => $tenant->id, 'organization_id' => $organization->id,
+                    'customer_id' => $requestCustomer->id, 'opportunity_no' => 'OPP-'.$reference,
+                    'name' => 'Intake quotation opportunity', 'status' => 'OPEN',
+                ]);
                 $quotation = CrmQuotation::create([
+                    'opportunity_id' => $opportunity->id,
                     'tenant_id' => $tenant->id, 'organization_id' => $organization->id,
                     'customer_id' => $requestCustomer->id, 'quotation_no' => 'QT-'.$reference,
                     'quotation_date' => today(), 'currency' => 'SAR', 'amount' => 0, 'status' => 'DRAFT',
