@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'app/Console/Commands/ReconcileHistoricalIntakeAssets.php'
       - '.github/workflows/reconcile-historical-intake-assets.yml'
   workflow_dispatch:
     inputs:
@@ -24,7 +25,7 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
-          APPLY: ${{ inputs.apply || github.event_name == 'push' }}
+          APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.apply }}
           TARGET_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
@@ -44,6 +45,6 @@ jobs:
           done
           remote_command='cd /var/www/unifco_platform && php artisan unifco:reconcile-historical-intake-assets'
           if [ "$APPLY" = 'true' ]; then
-            remote_command="$remote_command --apply && php artisan unifco:production-request-matrix-audit --targets-only"
+            remote_command="$remote_command --apply && php artisan unifco:production-request-matrix-audit"
           fi
           ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=20 -i "$HOME/.ssh/unifco_intake_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "$remote_command"
