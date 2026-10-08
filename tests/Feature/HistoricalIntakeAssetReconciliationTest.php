@@ -54,7 +54,6 @@ class HistoricalIntakeAssetReconciliationTest extends TestCase
                 'details' => 'Customer submitted equipment details', 'company_name' => $requestCustomer->name,
                 'commercial_registration' => '1010000123', 'email' => $requestCustomer->email,
                 'mobile' => $requestCustomer->phone, 'tenant_id' => $tenant->id,
-                'customer_id' => $requestCustomer->id,
                 'organization_id' => $organization->id, 'service_request_id' => $service->id,
                 'asset_type' => 'Generator', 'equipment_brand' => 'Example Brand',
                 'site_name' => 'Customer Site', 'status' => 'CONVERTED_TO_WORK_ORDER',
@@ -105,7 +104,12 @@ class HistoricalIntakeAssetReconciliationTest extends TestCase
     {
         $records = $this->legacyRequests();
         [$service, $public, $workOrder] = $records['UNRM-926000029'];
-        $public->update(['customer_id' => $records['UNRM-926000023'][0]->customer_id]);
+        $foreignTenant = Tenant::create(['name' => 'Foreign', 'code' => 'FOREIGN-INTAKE', 'status' => 'ACTIVE']);
+        $foreignCustomer = Customer::create([
+            'tenant_id' => $foreignTenant->id, 'customer_code' => 'FOREIGN-CUSTOMER',
+            'name' => 'Foreign Customer', 'status' => 'ACTIVE',
+        ]);
+        $service->update(['customer_id' => $foreignCustomer->id]);
 
         $this->artisan('unifco:reconcile-historical-intake-assets', ['--apply' => true])->assertFailed();
 
