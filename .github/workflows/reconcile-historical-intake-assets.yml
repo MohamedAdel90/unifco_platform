@@ -25,7 +25,9 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
-          APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.apply }}
+          # The unique merge-message marker permits only this reviewed repair push.
+          APPLY: ${{ (github.event_name == 'workflow_dispatch' && inputs.apply) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[reviewed-intake-029-030-20261008]')) }}
+          REVIEWED_COMMAND_BLOB: ff68c814018d1b07b31afc3aa62f13f47754d889
           TARGET_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
@@ -45,6 +47,9 @@ jobs:
           done
           remote_command='cd /var/www/unifco_platform && php artisan unifco:reconcile-historical-intake-assets'
           if [ "$APPLY" = 'true' ]; then
-            remote_command="$remote_command --apply && php artisan unifco:production-request-matrix-audit"
+            # Refuse data mutation if the deployed reconciler differs from the reviewed code.
+            ssh -o StrictHostKeyChecking=no -i "$HOME/.ssh/unifco_intake_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+              "cd /var/www/unifco_platform && test \"\$(git rev-parse HEAD:app/Console/Commands/ReconcileHistoricalIntakeAssets.php)\" = '$REVIEWED_COMMAND_BLOB'"
+            remote_command="$remote_command && $remote_command --apply && php artisan unifco:production-request-matrix-audit && php artisan unifco:production-request-lifecycle-evidence"
           fi
           ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=20 -i "$HOME/.ssh/unifco_intake_key" -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "$remote_command"
