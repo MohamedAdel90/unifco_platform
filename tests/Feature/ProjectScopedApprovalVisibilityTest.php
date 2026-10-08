@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{AccessScope,ApprovalRequest,Customer,Project,ServiceRequest,Tenant,User};
+use App\Models\{AccessScope,ApprovalRequest,Customer,Project,Role,ServiceRequest,Tenant,User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -28,6 +28,14 @@ class ProjectScopedApprovalVisibilityTest extends TestCase
         $supervisor = User::create([
             'tenant_id' => $tenant->id, 'name' => 'Supervisor', 'email' => 'scoped-supervisor@example.test',
             'password' => 'password', 'role' => 'TECHNICAL_SUPERVISOR', 'user_type' => 'INTERNAL', 'status' => 'ACTIVE',
+        ]);
+        $role = Role::firstOrCreate(
+            ['tenant_id' => $tenant->id, 'code' => 'TECHNICAL_SUPERVISOR'],
+            ['name_en' => 'Technical Supervisor', 'is_active' => true, 'grants_business_authority' => true]
+        );
+        DB::table('user_roles')->insert([
+            'tenant_id' => $tenant->id, 'user_id' => $supervisor->id, 'role_id' => $role->id,
+            'is_primary' => true, 'granted_at' => now(), 'created_at' => now(), 'updated_at' => now(),
         ]);
         $scope = AccessScope::create([
             'tenant_id' => $tenant->id, 'scope_type' => 'PROJECT', 'scope_id' => $visibleProject->id,
