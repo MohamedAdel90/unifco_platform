@@ -19,7 +19,13 @@ class ProductionRequestLifecycleEvidence extends Command
     protected $signature = 'unifco:production-request-lifecycle-evidence';
     protected $description = 'Emit read-only lifecycle evidence for the agreed production request matrix';
 
-    private const REFERENCES = ['UNRM-926000017','UNUM-926000018','UNQ-926000019','UNQ-926000020','UNRM-926000023','UNUM-926000024','UNQ-926000025','UNQ-926000026','UNM-926000027'];
+    private const REFERENCES = [
+        'UNRM-926000017', 'UNUM-926000018', 'UNQ-926000019', 'UNQ-926000020',
+        'UNRM-926000023', 'UNUM-926000024', 'UNQ-926000025', 'UNQ-926000026',
+        'UNM-926000027', 'UNM-926000021', 'UNC-926000022',
+        'UNM-926000028', 'UNRM-926000029', 'UNUM-926000030', 'UNQ-926000031',
+        'UNQ-926000032', 'UNM-926000033', 'UNC-926000034',
+    ];
 
     public function handle(CustomerRequestStatusPresenter $presenter): int
     {
