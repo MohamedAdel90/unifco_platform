@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Asset,Customer,Organization,PublicServiceRequest,ServiceRequest,Tenant,WorkOrder};
+use App\Models\{Asset,CrmOpportunity,CrmQuotation,Customer,Organization,PublicServiceRequest,ServiceRequest,Tenant,WorkOrder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -59,6 +59,21 @@ class HistoricalIntakeAssetReconciliationTest extends TestCase
                 'site_name' => 'Customer Site', 'status' => 'CONVERTED_TO_WORK_ORDER',
                 'submitted_at' => now(),
             ]);
+            if ($reference === 'UNRM-926000029') {
+                $opportunity = CrmOpportunity::create([
+                    'tenant_id' => $tenant->id, 'organization_id' => $organization->id,
+                    'customer_id' => $requestCustomer->id, 'opportunity_no' => 'OPP-'.$reference,
+                    'name' => 'Intake quotation opportunity', 'status' => 'OPEN',
+                ]);
+                $quotation = CrmQuotation::create([
+                    'opportunity_id' => $opportunity->id,
+                    'tenant_id' => $tenant->id, 'organization_id' => $organization->id,
+                    'customer_id' => $requestCustomer->id, 'quotation_no' => 'QT-'.$reference,
+                    'quotation_date' => today(), 'currency' => 'SAR', 'amount' => 0, 'status' => 'DRAFT',
+                ]);
+                $service->update(['quotation_id' => $quotation->id]);
+                $public->update(['status' => 'CONVERTED_TO_QUOTATION']);
+            }
             $result[$reference] = [$service, $public, $workOrder];
         }
 
@@ -118,4 +133,18 @@ class HistoricalIntakeAssetReconciliationTest extends TestCase
         $this->assertNull($public->fresh()->asset_id);
         $this->assertDatabaseMissing('assets', ['asset_code' => 'INTAKE-UNRM-926000029']);
     }
+    public function test_quotation_intake_refuses_an_approved_quote_without_mutation(): void
+    {
+        $records = $this->legacyRequests();
+        [$service, $public, $workOrder] = $records['UNRM-926000029'];
+        CrmQuotation::findOrFail($service->quotation_id)->update([
+            'status' => 'CUSTOMER_APPROVED', 'customer_approved_at' => now(),
+        ]);
+        $this->artisan('unifco:reconcile-historical-intake-assets', ['--apply' => true])->assertFailed();
+        $this->assertNull($public->fresh()->asset_id);
+        $this->assertSame((int) $service->asset_id, (int) $service->fresh()->asset_id);
+        $this->assertSame((int) $workOrder->asset_id, (int) $workOrder->fresh()->asset_id);
+        $this->assertDatabaseMissing('assets', ['asset_code' => 'INTAKE-UNRM-926000029']);
+    }
+
 }
