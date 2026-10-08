@@ -47,6 +47,7 @@ class FinancialPostingService
 
         $links = array_filter([
             'service_request_id'=>$request->id,
+            'customer_id'=>$request->customer_id,
             'work_order_id'=>$request->work_order_id,
             'crm_quotation_id'=>$request->quotation_id,
         ], fn($value) => $value !== null);
@@ -71,11 +72,15 @@ class FinancialPostingService
         return DB::transaction(function () use ($document) {
             if ($document->status !== 'DRAFT') throw ValidationException::withMessages(['document'=>'Only DRAFT documents can be posted.']);
             if ((int)$document->created_by === (int)Auth::id()) throw ValidationException::withMessages(['document'=>'Segregation of duties: creator cannot post the same document.']);
+            $serviceRequest=$this->resolveServiceRequest($document);
+            if ($serviceRequest && $document->customer_id && (int)$document->customer_id !== (int)$serviceRequest->customer_id) {
+                throw ValidationException::withMessages(['customer_id'=>'Invoice customer does not match its service request.']);
+            }
             $this->authorities->assertTransaction(
                 Auth::user(),
                 'FINANCE_DOCUMENT_POST',
                 (float)$document->amount,
-                ['customer_id'=>$document->customer_id,'project_id'=>$document->project_id]
+                ['customer_id'=>$serviceRequest?->customer_id ?? $document->customer_id,'project_id'=>$document->project_id]
             );
             $this->assertOpenPeriod($document->document_date->toDateString());
             $this->assertPostingAccounts([$document->control_account_code,$document->offset_account_code]);
@@ -95,7 +100,6 @@ class FinancialPostingService
 
             $before=$document->toArray();
             $document->update(['status'=>'POSTED','posted_by'=>Auth::id(),'posted_at'=>now(),'journal_id'=>$journal->id,'open_amount'=>$document->amount]);
-            $serviceRequest=$this->resolveServiceRequest($document->fresh());
             $this->bindDocumentToRequest($document,$serviceRequest);
             $document->refresh();
             $this->syncRequestFinanceContext($serviceRequest,$document);
