@@ -111,7 +111,7 @@ class ScopeService
 
         if($predicates->isEmpty()) return $query->whereRaw('1 = 0');
 
-        return $query->where(function (Builder $builder) use ($predicates, $user): void {
+        return $query->where(function (Builder $builder) use ($predicates, $user, $scopes): void {
             foreach ($predicates->unique(fn($p)=>implode('|',array_map(fn($v)=>is_scalar($v)||$v===null?(string)$v:gettype($v),$p))) as $predicate) {
                 [$kind,$target,$value] = $predicate;
                 if ($kind === 'column') {
@@ -129,11 +129,13 @@ class ScopeService
                         ->whereIn($approval->getModel()->qualifyColumn('entity_type'), [ServiceRequest::class, 'service_request'])
                         ->whereIn($approval->getModel()->qualifyColumn('entity_id'), $requests));
                 } elseif ($kind === 'service-request-work-order') {
-                    $requests = $this->apply(
-                        ServiceRequest::query()->where('tenant_id', $user->tenant_id)
-                            ->whereNotNull('work_order_id')->select('work_order_id'),
-                        $user
-                    );
+                    $projectIds = $scopes
+                        ->filter(fn ($scope) => strtoupper((string) $scope->scope_type) === 'PROJECT')
+                        ->pluck('scope_id');
+                    $requests = ServiceRequest::withoutGlobalScope('unifco_runtime_data_scope')
+                        ->where('tenant_id', $user->tenant_id)
+                        ->whereIn('project_id', $projectIds)
+                        ->whereNotNull('work_order_id')->select('work_order_id');
                     $builder->orWhereIn($builder->getModel()->qualifyColumn('id'), $requests);
                 } elseif ($kind === 'parent-relation') {
                     // The related model's RuntimeDataScope is applied automatically.
