@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\{ApprovalRequest,Asset,Customer,CustomerSite,Project,ServiceContract,ServiceRequest};
+use App\Models\{ApprovalRequest,Asset,Customer,CustomerSite,Project,ServiceContract,ServiceRequest,WorkOrder};
 use App\Scopes\RuntimeDataScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -86,6 +86,14 @@ class ScopeService
             $predicates->push(['service-request-approval', '', null]);
         }
 
+        // A project-bound work order inherits visibility from its linked,
+        // project-scoped service request; work orders have no project_id.
+        if ($model instanceof WorkOrder
+            && strtoupper((string) $user->role) !== 'CUSTOMER'
+            && $scopes->contains(fn ($scope) => strtoupper((string) $scope->scope_type) === 'PROJECT')) {
+            $predicates->push(['service-request-work-order', '', null]);
+        }
+
         // Child/detail models inherit visibility from a scope-capable parent. This
         // closes direct child endpoints without duplicating every parent's scope columns.
         foreach (self::PARENT_SCOPE_RELATIONS as $relationName) {
@@ -120,6 +128,13 @@ class ScopeService
                     $builder->orWhere(fn (Builder $approval) => $approval
                         ->whereIn($approval->getModel()->qualifyColumn('entity_type'), [ServiceRequest::class, 'service_request'])
                         ->whereIn($approval->getModel()->qualifyColumn('entity_id'), $requests));
+                } elseif ($kind === 'service-request-work-order') {
+                    $requests = $this->apply(
+                        ServiceRequest::query()->where('tenant_id', $user->tenant_id)
+                            ->whereNotNull('work_order_id')->select('work_order_id'),
+                        $user
+                    );
+                    $builder->orWhereIn($builder->getModel()->qualifyColumn('id'), $requests);
                 } elseif ($kind === 'parent-relation') {
                     // The related model's RuntimeDataScope is applied automatically.
                     $builder->orWhereHas($target);
