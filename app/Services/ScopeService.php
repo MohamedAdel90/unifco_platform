@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\{Asset,Customer,CustomerSite,Project,ServiceContract};
+use App\Models\{ApprovalRequest,Asset,Customer,CustomerSite,Project,ServiceContract,ServiceRequest};
 use App\Scopes\RuntimeDataScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -79,6 +79,13 @@ class ScopeService
             }
         }
 
+        // Approval rows inherit their project visibility from the service request.
+        if ($model instanceof ApprovalRequest
+            && strtoupper((string) $user->role) !== 'CUSTOMER'
+            && $scopes->contains(fn ($scope) => strtoupper((string) $scope->scope_type) === 'PROJECT')) {
+            $predicates->push(['service-request-approval', '', null]);
+        }
+
         // Child/detail models inherit visibility from a scope-capable parent. This
         // closes direct child endpoints without duplicating every parent's scope columns.
         foreach (self::PARENT_SCOPE_RELATIONS as $relationName) {
@@ -96,7 +103,7 @@ class ScopeService
 
         if($predicates->isEmpty()) return $query->whereRaw('1 = 0');
 
-        return $query->where(function (Builder $builder) use ($predicates): void {
+        return $query->where(function (Builder $builder) use ($predicates, $user): void {
             foreach ($predicates->unique(fn($p)=>implode('|',array_map(fn($v)=>is_scalar($v)||$v===null?(string)$v:gettype($v),$p))) as $predicate) {
                 [$kind,$target,$value] = $predicate;
                 if ($kind === 'column') {
@@ -105,6 +112,14 @@ class ScopeService
                     $builder->orWhereHas($target,fn(Builder $q)=>$q->where('department',$value));
                 } elseif ($kind === 'employee-department') {
                     $builder->orWhereHas($target,fn(Builder $q)=>$q->whereHas('position',fn(Builder $p)=>$p->where('department',$value)));
+                } elseif ($kind === 'service-request-approval') {
+                    $requests = $this->apply(
+                        ServiceRequest::query()->where('tenant_id', $user->tenant_id)->select('id'),
+                        $user
+                    );
+                    $builder->orWhere(fn (Builder $approval) => $approval
+                        ->whereIn($approval->getModel()->qualifyColumn('entity_type'), [ServiceRequest::class, 'service_request'])
+                        ->whereIn($approval->getModel()->qualifyColumn('entity_id'), $requests));
                 } elseif ($kind === 'parent-relation') {
                     // The related model's RuntimeDataScope is applied automatically.
                     $builder->orWhereHas($target);
