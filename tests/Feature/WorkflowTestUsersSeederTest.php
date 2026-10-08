@@ -30,6 +30,9 @@ class WorkflowTestUsersSeederTest extends TestCase
         $portalUser=User::where('email','workflow.customer@unifco.local')->firstOrFail();
         $this->assertSame($customer->id,$portalUser->customer_id);
         $this->assertSame('CUSTOMER',$portalUser->customer_portal_role);
+        $accountant=User::where('email','accountant@unifco.local')->firstOrFail();
+        $this->assertTrue(app(AuthorizationService::class)->allows($accountant,'finance.journal.post'));
+
 
         foreach(['MAINTENANCE_ENGINEER','MAINTENANCE_MANAGER','PROJECT_MANAGER','QUALITY','HSE','CUSTOMER_SERVICE','PROCUREMENT','TENDERS_CONTRACTS','FINANCE_MANAGER','CEO'] as $role){
             $this->assertTrue(DB::table('role_permissions')->where('role_code',$role)->where('permission_code','workflow.approval.read')->exists());
