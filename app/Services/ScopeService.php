@@ -80,7 +80,9 @@ class ScopeService
         }
 
         // Approval rows inherit their project visibility from the service request.
-        if ($model instanceof ApprovalRequest) {
+        if ($model instanceof ApprovalRequest
+            && strtoupper((string) $user->role) !== 'CUSTOMER'
+            && $scopes->contains(fn ($scope) => strtoupper((string) $scope->scope_type) === 'PROJECT')) {
             $predicates->push(['service-request-approval', '', null]);
         }
 
