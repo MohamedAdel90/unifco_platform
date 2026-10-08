@@ -40,7 +40,7 @@ class MaintenanceRequestWorkflowController extends Controller
         $technicianIds=$serviceRequest->project_id
             ? ProjectUserAssignment::query()
                 ->where('tenant_id',$user->tenant_id)->where('project_id',$serviceRequest->project_id)
-                ->where('status','ACTIVE')->whereIn('project_role',['TECHNICIAN','MAINTENANCE_ENGINEER'])
+                ->where('status','ACTIVE')->where('project_role','TECHNICIAN')
                 ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
                 ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
                 ->pluck('user_id')
@@ -48,8 +48,8 @@ class MaintenanceRequestWorkflowController extends Controller
         $technicians = User::query()->where('tenant_id', $user->tenant_id)
             ->whereIn('status', ['ACTIVE','ENABLED'])
             ->where(function($q){
-                $q->whereIn('role',['TECHNICIAN','MAINTENANCE_ENGINEER'])
-                  ->orWhereHas('activeRoles',fn($r)=>$r->whereIn('roles.code',['TECHNICIAN','MAINTENANCE_ENGINEER']));
+                $q->where('role','TECHNICIAN')
+                  ->orWhereHas('activeRoles',fn($r)=>$r->where('roles.code','TECHNICIAN'));
             })
             ->when($technicianIds!==null,fn($q)=>$q->whereIn('id',$technicianIds))
             ->orderBy('name')->get(['id','name','role']);

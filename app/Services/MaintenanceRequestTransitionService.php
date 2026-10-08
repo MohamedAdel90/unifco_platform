@@ -33,8 +33,8 @@ class MaintenanceRequestTransitionService
             ->whereKey($technicianId)
             ->whereIn('status', ['ACTIVE','ENABLED'])
             ->where(function($q){
-                $q->whereIn('role',['TECHNICIAN','MAINTENANCE_ENGINEER'])
-                  ->orWhereHas('activeRoles',fn($r)=>$r->whereIn('roles.code',['TECHNICIAN','MAINTENANCE_ENGINEER']));
+                $q->where('role','TECHNICIAN')
+                  ->orWhereHas('activeRoles',fn($r)=>$r->where('roles.code','TECHNICIAN'));
             })
             ->firstOrFail();
 
@@ -44,7 +44,7 @@ class MaintenanceRequestTransitionService
                 ->where('project_id',$request->project_id)
                 ->where('user_id',$technician->id)
                 ->where('status','ACTIVE')
-                ->whereIn('project_role',['TECHNICIAN','MAINTENANCE_ENGINEER'])
+                ->where('project_role','TECHNICIAN')
                 ->where(fn($q)=>$q->whereNull('starts_on')->orWhere('starts_on','<=',today()))
                 ->where(fn($q)=>$q->whereNull('ends_on')->orWhere('ends_on','>=',today()))
                 ->exists();
