@@ -12,9 +12,9 @@ use Throwable;
 class ReconcileHistoricalIntakeAssets extends Command
 {
     protected $signature = 'unifco:reconcile-historical-intake-assets {--apply : Commit the guarded reconciliation}';
-    protected $description = 'Reconcile the two legacy maintenance requests linked to the shared intake placeholder.';
+    protected $description = 'Reconcile agreed legacy maintenance requests linked to the shared intake placeholder.';
 
-    private const REFERENCES = ['UNRM-926000023', 'UNUM-926000024'];
+    private const REFERENCES = ['UNRM-926000023', 'UNUM-926000024', 'UNRM-926000029', 'UNUM-926000030'];
 
     public function handle(AuditService $audit): int
     {
@@ -35,6 +35,8 @@ class ReconcileHistoricalIntakeAssets extends Command
                     if ((int) $public->service_request_id !== (int) $service->id
                         || (int) $public->tenant_id !== (int) $service->tenant_id
                         || (int) $public->organization_id !== (int) $service->organization_id
+                        || ($public->customer_id && (int) $public->customer_id !== (int) $service->customer_id)
+                        || ! $service->customer_id
                         || $public->status !== 'CONVERTED_TO_WORK_ORDER'
                         || ! in_array($service->workflow_stage, ['TRIAGE', 'EMERGENCY_DISPATCH'], true)
                         || $service->status !== 'OPEN' || $service->eligibility !== 'CHARGEABLE'
