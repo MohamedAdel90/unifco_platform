@@ -28,7 +28,7 @@ class WorkflowTestUsersSeeder extends Seeder
             'TENDERS_CONTRACTS'=>['name'=>'Workflow Tenders & Contracts','email'=>'tenders@unifco.local','permissions'=>['dashboard.view','workflow.approval.read','workflow.approval.decide','crm.customer.read','crm.customer.manage','reporting.executive.read']],
             'SALES'=>['name'=>'Workflow Sales','email'=>'sales@unifco.local','permissions'=>['dashboard.view','workflow.approval.read','workflow.approval.decide','crm.customer.read','crm.customer.manage']],
             'FINANCE_MANAGER'=>['name'=>'Workflow Finance Manager','email'=>'finance@unifco.local','permissions'=>['dashboard.view','workflow.approval.read','workflow.approval.decide','finance.journal.read','finance.journal.create','finance.journal.post','reporting.executive.read','crm.customer.read']],
-            'ACCOUNTANT'=>['name'=>'Workflow Accountant','email'=>'accountant@unifco.local','permissions'=>['dashboard.view','finance.journal.read','finance.journal.create','crm.customer.read']],
+            'ACCOUNTANT'=>['name'=>'Workflow Accountant','email'=>'accountant@unifco.local','permissions'=>['dashboard.view','finance.journal.read','finance.journal.create','finance.journal.post','crm.customer.read']],
             'CEO'=>['name'=>'Workflow Chief Executive Officer','email'=>'ceo@unifco.local','permissions'=>['dashboard.view','workflow.approval.read','workflow.approval.decide','reporting.executive.read','crm.customer.read','finance.journal.read','projects.project.read','procurement.po.read','maintenance.work_order.read']],
         ];
         foreach($roles as $role=>$config){User::updateOrCreate(['email'=>$config['email']],['tenant_id'=>$tenant->id,'organization_id'=>$org->id,'name'=>$config['name'],'password'=>Hash::make($password),'role'=>$role,'status'=>'ACTIVE','force_password_change'=>false]);foreach($config['permissions'] as $permission)DB::table('role_permissions')->updateOrInsert(['tenant_id'=>$tenant->id,'role_code'=>$role,'permission_code'=>$permission],['created_at'=>now(),'updated_at'=>now()]);}
@@ -63,6 +63,21 @@ class WorkflowTestUsersSeeder extends Seeder
                 ->where('role_code','FINANCE_MANAGER')
                 ->whereIn('permission_code',$roles['FINANCE_MANAGER']['permissions'])
                 ->where('effect','ALLOW')->update(['role_id'=>$financeRoleId]);
+        }
+
+        // Posting still requires a different creator and a matching approval authority.
+        // Rebind the UAT accountant's ALLOW grants to an existing structured role;
+        // never restore a revoked assignment or override an explicit DENY.
+        $accountantUser=User::where('tenant_id',$tenant->id)->where('email','accountant@unifco.local')->firstOrFail();
+        $accountantRoleId=DB::table('user_roles')->join('roles','roles.id','=','user_roles.role_id')
+            ->where('user_roles.user_id',$accountantUser->id)->whereNull('user_roles.revoked_at')
+            ->where('roles.code','ACCOUNTANT')->where('roles.is_active',true)
+            ->value('roles.id');
+        if ($accountantRoleId) {
+            DB::table('role_permissions')->where('tenant_id',$tenant->id)
+                ->where('role_code','ACCOUNTANT')
+                ->whereIn('permission_code',$roles['ACCOUNTANT']['permissions'])
+                ->where('effect','ALLOW')->update(['role_id'=>$accountantRoleId]);
         }
 
         // The workflow test technician also needs a field-service employee identity.
