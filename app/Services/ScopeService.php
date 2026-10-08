@@ -101,7 +101,7 @@ class ScopeService
 
         if($predicates->isEmpty()) return $query->whereRaw('1 = 0');
 
-        return $query->where(function (Builder $builder) use ($predicates): void {
+        return $query->where(function (Builder $builder) use ($predicates, $user): void {
             foreach ($predicates->unique(fn($p)=>implode('|',array_map(fn($v)=>is_scalar($v)||$v===null?(string)$v:gettype($v),$p))) as $predicate) {
                 [$kind,$target,$value] = $predicate;
                 if ($kind === 'column') {
