@@ -97,7 +97,25 @@ class ProjectScopedWorkOrderWorkflowTest extends TestCase
         ]);
         $requests[0]->update(['assigned_engineer_id'=>$technician->id]);
 
+        foreach (['field.operations.read','maintenance.work_order.assign'] as $permission) {
+            DB::table('role_permissions')->insert([
+                'tenant_id'=>$tenant->id,'role_id'=>$role->id,'role_code'=>'TECHNICAL_SUPERVISOR',
+                'permission_code'=>$permission,'effect'=>'ALLOW',
+                'created_at'=>now(),'updated_at'=>now(),
+            ]);
+        }
+
         $this->actingAs($supervisor);
+        $this->assertFalse(Employee::whereKey($employee->id)->exists());
+        $this->get('/field/operations')->assertOk()->assertSee('Project technician');
+        $this->post('/field/assignments',[
+            'work_order_id'=>$orders[0]->id,'employee_id'=>$employee->id,
+            'scheduled_start'=>now()->addHour()->format('Y-m-d H:i:s'),
+        ])->assertRedirect();
+        $this->assertDatabaseHas('work_order_assignments',[
+            'tenant_id'=>$tenant->id,'work_order_id'=>$orders[0]->id,
+            'employee_id'=>$employee->id,'dispatch_status'=>'DISPATCHED',
+        ]);
         $scopeService = app(ScopeService::class);
         $this->assertTrue($scopeService->allows($supervisor,$orders[0]));
         $this->assertFalse($scopeService->allows($supervisor,$orders[1]));
