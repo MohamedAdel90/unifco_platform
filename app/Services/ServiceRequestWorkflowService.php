@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{ApprovalRequest,Asset,ChartAccount,Customer,FinancialDocument,ServiceRequest,User,WorkOrder};
+use App\Models\{ApprovalRequest,Asset,ChartAccount,Customer,FinancialDocument,ProjectUserAssignment,ServiceRequest,User,WorkOrder,WorkOrderAssignment};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -310,6 +310,39 @@ class ServiceRequestWorkflowService
                 'planned_start' => now(),
             ]);
             $request->update(['work_order_id' => $workOrder->id]);
+        }
+
+        if ($request->workflow_stage === 'EXECUTION' && $request->work_order_id && $request->assigned_engineer_id) {
+            // Entering execution can occur through the workflow engine as well
+            // as the assignment workspace. Keep field dispatch in sync.
+            $technician = User::withoutGlobalScope('unifco_runtime_data_scope')
+                ->where('tenant_id', $request->tenant_id)
+                ->whereKey($request->assigned_engineer_id)
+                ->whereIn('status', ['ACTIVE','ENABLED'])->first();
+            $assigned = $technician && ApprovalRequest::withoutGlobalScope('unifco_runtime_data_scope')
+                ->where('tenant_id', $request->tenant_id)
+                ->whereIn('entity_type', [ServiceRequest::class, 'service_request'])
+                ->where('entity_id', $request->id)->where('action', 'EXECUTION')
+                ->where('status', 'PENDING')
+                ->where('assigned_user_id', $technician->id)->exists();
+            $projectMember = ! $request->project_id || ($technician && ProjectUserAssignment::withoutGlobalScope('unifco_runtime_data_scope')
+                ->where('tenant_id', $request->tenant_id)->where('project_id', $request->project_id)
+                ->where('user_id', $technician->id)->where('project_role', 'TECHNICIAN')
+                ->where('status', 'ACTIVE')
+                ->where(fn ($q) => $q->whereNull('starts_on')->orWhere('starts_on', '<=', today()))
+                ->where(fn ($q) => $q->whereNull('ends_on')->orWhere('ends_on', '>=', today()))
+                ->exists());
+            if ($technician?->employee_id && $assigned && $projectMember
+                && WorkOrder::withoutGlobalScope('unifco_runtime_data_scope')
+                    ->where('tenant_id', $request->tenant_id)->whereKey($request->work_order_id)
+                    ->where('asset_id', $request->asset_id)->exists()) {
+                WorkOrderAssignment::firstOrCreate(
+                    ['work_order_id' => $request->work_order_id, 'employee_id' => $technician->employee_id],
+                    ['tenant_id' => $request->tenant_id, 'organization_id' => $request->organization_id,
+                     'scheduled_start' => now(), 'dispatch_status' => 'DISPATCHED',
+                     'dispatched_at' => now(), 'dispatcher_notes' => 'Assigned from service request workflow']
+                );
+            }
         }
 
         if ($request->workflow_stage === 'FINANCE_REVIEW' && $request->eligibility === 'CHARGEABLE' && $request->customer_id) {

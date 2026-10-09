@@ -35,6 +35,17 @@ class ScopeService
         $scopes = $this->forUser($user);
         if ($scopes->isEmpty()) return false;
         if ($scopes->contains(fn ($scope) => strtoupper((string) $scope->scope_type) === 'GLOBAL')) return true;
+        // A project-scoped work order inherits authorization from its linked
+        // service request, while retaining the tenant boundary.
+        if ($resource instanceof WorkOrder && (int) $resource->tenant_id === (int) $user->tenant_id) {
+            $projectIds = $scopes->filter(
+                fn ($scope) => strtoupper((string) $scope->scope_type) === 'PROJECT'
+            )->pluck('scope_id');
+            if ($projectIds->isNotEmpty() && ServiceRequest::withoutGlobalScope('unifco_runtime_data_scope')
+                ->where('tenant_id', $user->tenant_id)
+                ->whereIn('project_id', $projectIds)
+                ->where('work_order_id', $resource->id)->exists()) return true;
+        }
         $context = $resource instanceof Model ? $this->contextFromModel($resource) : $resource;
         foreach ($scopes as $scope) {
             $type = strtoupper((string) $scope->scope_type);

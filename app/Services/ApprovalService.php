@@ -79,8 +79,8 @@ class ApprovalService
                 }
             }
 
-            if($request->action==='TECHNICIAN_ASSIGNMENT'){
-                throw ValidationException::withMessages(['approval'=>'Technician assignment must be completed from the request execution workspace.']);
+            if(in_array($request->action,['TECHNICIAN_ASSIGNMENT','EXECUTION'],true)){
+                throw ValidationException::withMessages(['approval'=>'Complete this stage from the request execution workspace after the linked work order requirements are met.']);
             }
         }
 
