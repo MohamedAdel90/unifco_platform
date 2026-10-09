@@ -22,7 +22,9 @@
     <td style="color:{{ $isBreached ? '#b42239' : 'inherit' }}"><strong>{{ $isBreached ? 'BREACHED' : $remaining }}</strong><br><small>{{ $approval->sla_minutes ? $approval->sla_minutes.' min SLA' : 'No SLA' }}</small></td>
     <td>{{ $approval->status }}</td>
     <td>
-    @if($approval->status==='PENDING')
+    @if($approval->status==='PENDING' && in_array($approval->entity_type,[\App\Models\ServiceRequest::class,'service_request'],true) && in_array($approval->action,['TECHNICIAN_ASSIGNMENT','EXECUTION'],true))
+        <a href="{{ route('service-requests.workflow.show',$approval->entity_id) }}">Open request workspace</a>
+    @elseif($approval->status==='PENDING')
     <form method="POST" action="{{ route('workflow.approvals.decide',$approval) }}" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">@csrf
         <select name="decision"><option value="APPROVED">Approve</option><option value="RETURNED">Return for correction</option><option value="REJECTED">Reject</option></select>
         <input name="note" placeholder="Decision note / reason">
