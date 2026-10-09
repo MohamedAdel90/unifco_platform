@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\{ApprovalRequest,Asset,Customer,CustomerSite,Project,ServiceContract,ServiceRequest};
+use App\Models\{ApprovalRequest,Asset,Customer,CustomerSite,Project,ServiceContract,ServiceRequest,WorkOrder};
 use App\Scopes\RuntimeDataScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -86,6 +86,14 @@ class ScopeService
             $predicates->push(['service-request-approval', '', null]);
         }
 
+        // A project-bound work order inherits visibility from its linked,
+        // project-scoped service request; work orders have no project_id.
+        if ($model instanceof WorkOrder
+            && strtoupper((string) $user->role) !== 'CUSTOMER'
+            && $scopes->contains(fn ($scope) => strtoupper((string) $scope->scope_type) === 'PROJECT')) {
+            $predicates->push(['service-request-work-order', '', null]);
+        }
+
         // Child/detail models inherit visibility from a scope-capable parent. This
         // closes direct child endpoints without duplicating every parent's scope columns.
         foreach (self::PARENT_SCOPE_RELATIONS as $relationName) {
@@ -103,7 +111,7 @@ class ScopeService
 
         if($predicates->isEmpty()) return $query->whereRaw('1 = 0');
 
-        return $query->where(function (Builder $builder) use ($predicates, $user): void {
+        return $query->where(function (Builder $builder) use ($predicates, $user, $scopes): void {
             foreach ($predicates->unique(fn($p)=>implode('|',array_map(fn($v)=>is_scalar($v)||$v===null?(string)$v:gettype($v),$p))) as $predicate) {
                 [$kind,$target,$value] = $predicate;
                 if ($kind === 'column') {
@@ -120,6 +128,15 @@ class ScopeService
                     $builder->orWhere(fn (Builder $approval) => $approval
                         ->whereIn($approval->getModel()->qualifyColumn('entity_type'), [ServiceRequest::class, 'service_request'])
                         ->whereIn($approval->getModel()->qualifyColumn('entity_id'), $requests));
+                } elseif ($kind === 'service-request-work-order') {
+                    $projectIds = $scopes
+                        ->filter(fn ($scope) => strtoupper((string) $scope->scope_type) === 'PROJECT')
+                        ->pluck('scope_id');
+                    $requests = ServiceRequest::withoutGlobalScope('unifco_runtime_data_scope')
+                        ->where('tenant_id', $user->tenant_id)
+                        ->whereIn('project_id', $projectIds)
+                        ->whereNotNull('work_order_id')->select('work_order_id');
+                    $builder->orWhereIn($builder->getModel()->qualifyColumn('id'), $requests);
                 } elseif ($kind === 'parent-relation') {
                     // The related model's RuntimeDataScope is applied automatically.
                     $builder->orWhereHas($target);

@@ -346,7 +346,7 @@ class ServiceRequestWorkflowService
 
     private function assertExecutionAssetOwnership(ServiceRequest $request): void
     {
-        if (! Asset::query()->whereKey($request->asset_id)
+        if (! Asset::withoutGlobalScope('unifco_runtime_data_scope')->whereKey($request->asset_id)
             ->where('tenant_id', $request->tenant_id)
             ->where('customer_id', $request->customer_id)->exists()) {
             throw ValidationException::withMessages([
@@ -357,8 +357,8 @@ class ServiceRequestWorkflowService
         $reference = str_starts_with((string) $request->request_no, 'SR-')
             ? substr((string) $request->request_no, 3) : (string) $request->request_no;
         $existing = $request->work_order_id
-            ? WorkOrder::where('tenant_id', $request->tenant_id)->find($request->work_order_id)
-            : WorkOrder::where('tenant_id', $request->tenant_id)->where('work_order_no', 'WO-'.$reference)->first();
+            ? WorkOrder::withoutGlobalScope('unifco_runtime_data_scope')->where('tenant_id', $request->tenant_id)->find($request->work_order_id)
+            : WorkOrder::withoutGlobalScope('unifco_runtime_data_scope')->where('tenant_id', $request->tenant_id)->where('work_order_no', 'WO-'.$reference)->first();
         if (($request->work_order_id && ! $existing)
             || ($existing && (int) $existing->asset_id !== (int) $request->asset_id)) {
             throw ValidationException::withMessages([
