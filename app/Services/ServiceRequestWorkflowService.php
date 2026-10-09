@@ -336,9 +336,10 @@ class ServiceRequestWorkflowService
                 && WorkOrder::withoutGlobalScope('unifco_runtime_data_scope')
                     ->where('tenant_id', $request->tenant_id)->whereKey($request->work_order_id)
                     ->where('asset_id', $request->asset_id)->exists()) {
-                WorkOrderAssignment::firstOrCreate(
-                    ['work_order_id' => $request->work_order_id, 'employee_id' => $technician->employee_id],
-                    ['tenant_id' => $request->tenant_id, 'organization_id' => $request->organization_id,
+                WorkOrderAssignment::withoutGlobalScope('unifco_runtime_data_scope')->firstOrCreate(
+                    ['work_order_id' => $request->work_order_id, 'employee_id' => $technician->employee_id,
+                     'tenant_id' => $request->tenant_id],
+                    ['organization_id' => $request->organization_id,
                      'scheduled_start' => now(), 'dispatch_status' => 'DISPATCHED',
                      'dispatched_at' => now(), 'dispatcher_notes' => 'Assigned from service request workflow']
                 );

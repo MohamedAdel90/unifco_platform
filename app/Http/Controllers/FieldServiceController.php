@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{AiInteraction,Asset,Employee,Inspection,InspectionTemplate,PlatformNotification,WorkOrder,WorkOrderAssignment};
+use App\Models\{AiInteraction,Asset,Employee,Inspection,InspectionTemplate,PlatformNotification,ServiceRequest,User,WorkOrder,WorkOrderAssignment};
 use App\Services\{AuthorizationService,ScopeService};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse,Request};
@@ -21,9 +21,14 @@ class FieldServiceController extends Controller
         $visibleIds=$workOrders->pluck('id');
         $assignments=WorkOrderAssignment::whereIn('work_order_id',$visibleIds)->latest('scheduled_start')->limit(100)->get();
         $inspections=Inspection::whereIn('work_order_id',$visibleIds)->latest()->limit(100)->get();
+        $assignedEmployeeIds=$this->assignedEmployeeIds($visibleIds->all(),$user->tenant_id);
+        $employees=Employee::where('tenant_id',$user->tenant_id)->where('status','ACTIVE')->pluck('id')
+            ->merge($assignedEmployeeIds)->unique();
         return view('field.operations', [
             'workOrders'=>$workOrders,
-            'employees'=>Employee::where('tenant_id',$user->tenant_id)->where('status','ACTIVE')->orderBy('name')->get(),
+            'employees'=>Employee::withoutGlobalScope('unifco_runtime_data_scope')
+                ->where('tenant_id',$user->tenant_id)->where('status','ACTIVE')
+                ->whereIn('id',$employees)->orderBy('name')->get(),
             'assignments'=>$assignments,
             'templates'=>InspectionTemplate::where('tenant_id',$user->tenant_id)->where('status','ACTIVE')->orderBy('name')->get(),
             'inspections'=>$inspections,
@@ -41,7 +46,15 @@ class FieldServiceController extends Controller
         ]);
         $wo=WorkOrder::where('tenant_id',$user->tenant_id)->findOrFail($data['work_order_id']);
         $this->authorizePermission('maintenance.work_order.assign',$wo);
-        $employee=Employee::where('tenant_id',$user->tenant_id)->whereKey($data['employee_id'])->where('status','ACTIVE')->firstOrFail();
+        $assignedEmployeeIds=$this->assignedEmployeeIds([$wo->id],$user->tenant_id);
+        $employee=Employee::where('tenant_id',$user->tenant_id)->whereKey($data['employee_id'])
+            ->where('status','ACTIVE')->first();
+        if (! $employee && $assignedEmployeeIds->contains((int)$data['employee_id'])) {
+            $employee=Employee::withoutGlobalScope('unifco_runtime_data_scope')
+                ->where('tenant_id',$user->tenant_id)->whereKey($data['employee_id'])
+                ->where('status','ACTIVE')->first();
+        }
+        abort_unless($employee,404);
         WorkOrderAssignment::updateOrCreate(
             ['work_order_id'=>$wo->id,'employee_id'=>$employee->id],
             $data+['tenant_id'=>$user->tenant_id,'organization_id'=>$user->organization_id,'dispatch_status'=>'DISPATCHED','dispatched_at'=>now()]
@@ -123,6 +136,18 @@ class FieldServiceController extends Controller
         }
         AiInteraction::create(['tenant_id'=>auth()->user()->tenant_id,'organization_id'=>auth()->user()->organization_id,'user_id'=>auth()->id(),'query'=>$data['query'],'response'=>$answer,'citations'=>$citations,'recommended_actions'=>$actions,'result'=>'ANSWERED']);
         return back()->with('status','Assistant response generated.');
+    }
+
+    private function assignedEmployeeIds(array $workOrderIds, int $tenantId): \Illuminate\Support\Collection
+    {
+        if (! $workOrderIds) return collect();
+        $engineerIds=ServiceRequest::withoutGlobalScope('unifco_runtime_data_scope')
+            ->where('tenant_id',$tenantId)->whereIn('work_order_id',$workOrderIds)
+            ->whereNotNull('assigned_engineer_id')->pluck('assigned_engineer_id');
+        return User::withoutGlobalScope('unifco_runtime_data_scope')
+            ->where('tenant_id',$tenantId)->where('status','ACTIVE')
+            ->whereIn('id',$engineerIds)->whereNotNull('employee_id')
+            ->pluck('employee_id')->map(fn ($id)=>(int)$id)->unique();
     }
 
     private function authorizePermission(string $permission, ?Model $resource=null): void
