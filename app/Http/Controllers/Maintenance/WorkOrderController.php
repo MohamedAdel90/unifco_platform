@@ -17,7 +17,7 @@ class WorkOrderController extends Controller
 {
     public function index(Request $request,ScopeService $scopes): View
     {
-        $orders=WorkOrder::with(['asset','plan','contract'])->whereHas('asset',fn($query)=>$scopes->apply($query,$request->user()));
+        $orders=$scopes->apply(WorkOrder::with(['asset','plan','contract']),$request->user());
         return view('maintenance.work-orders.index',[
             'orders'=>$orders->latest('id')->paginate(25),
         ]);
