@@ -114,6 +114,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/customer/attachments/{id}', [CustomerPortalOperationsController::class, 'attachment'])->name('customer.attachments.download');
     Route::get('/customer/work-acceptance', [CustomerWorkAcceptanceController::class, 'index'])->name('customer.work-acceptance.index');
     Route::post('/customer/work-orders/{workOrder}/acceptance', [CustomerWorkAcceptanceController::class, 'decide'])->name('customer.work-acceptance.decide');
+    Route::post('/customer/service-requests/{serviceRequest}/satisfaction', [CustomerWorkAcceptanceController::class, 'satisfaction'])->name('customer.work-acceptance.satisfaction');
 
     Route::middleware('permission:crm.customer.manage')->group(function () {
         Route::get('/crm/customer-inbox', [CustomerInboxController::class, 'adminIndex'])->name('crm.customer-inbox.index');
